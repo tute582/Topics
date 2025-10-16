@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- 響應式，讓手機可正確縮放 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>看診資訊</title>
+
+  <style>
+    /* ==============================
+       全域設定：版面與字體
+       ============================== */
+    body { 
+      font-family: "Microsoft JhengHei", sans-serif;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    .input-container, .search-container {
+      margin-left: 25px;
+      margin-right: 25px;
+    }
+
+    .input-container {
+      margin-top: 15px;
+    }
+
+    .search-container {
+      margin-bottom: 30px;
+    }
+
+    .title {
+      margin: 5px 0;
+      font-size: 26px;
+    }
+
+    /* 標題樣式 */
+    h1 { 
+      margin-top: 5px;
+      margin-bottom: 5px;
+      /*font-size: 42px; */ 
+    }
+    h2 { 
+      margin-top: 5px;
+      margin-bottom: 5px;
+      font-size: 20px; 
+      display: inline-block; }
+
+    h3 { 
+      margin: 0; 
+      font-size: 16px; 
+      color: #555; 
+    }
+
+    /* 表單外框樣式 */
+    .input-container > form {
+      width:100%; 
+      margin: 10px 0;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      box-sizing: border-box;
+    }
+
+    /* ==============================
+       表格容器樣式
+       ============================== */
+    .table-container {
+      width: 100%;
+      margin: 5px ;
+      /* 允許水平滾動，必要時顯示水平滾軸 */
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* 行動裝置平滑滾動 */
+      /* 若希望在內容超出時總是顯示水平滾軸（某些系統會隱藏），可改用 overflow: auto; */
+      /* max-height: 200px;  限制高度，超過出現滾輪 */
+      border: 1px solid #aaa;
+      border-radius: 20px;
+      background-color: white;
+      display: none; /* ✅ 一開始整個容器隱藏 */
+    }
+
+    /* 表格基本樣式 */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      /* 設定比容器寬，當容器較窄會出現橫向滾動 */
+      min-width: 800px; 
+      box-sizing: border-box;
+    }
+    
+    th, td { 
+      padding:10px; 
+      text-align:center; 
+      border: 1px solid #ddd;
+      white-space: nowrap; /* 防止換行，配合橫向滾動 */
+    }
+    
+    /* 行動裝置上仍可觸發橫向捲動（若想在窄螢幕降低 min-width 可用下面的設定） */
+    @media (max-width: 600px) {
+      table { min-width: 700px; }
+    }
+
+    /* 表頭固定 */
+    th { 
+      background-color:#f9f9f9; 
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    /* ==============================
+       響應式設定（手機介面）
+       ============================== */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8em; }
+      form { width: 95%; }
+      /* 在手機上移除強制最小寬度 讓表格可縮放並出現橫向滾動 */
+      table { min-width: 0; width:100%; }
+      /* 調整輸入欄位字級與按鈕更適合手機 */
+      input[type="text"], input[type="date"], input[type="time"], textarea { font-size:16px; padding:10px; }
+      button { padding:12px 18px; font-size:16px; }
+    }
+
+    /* 表單輸入欄位樣式 */
+    label{ 
+      display:block;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    input[type="text"], input[type="date"], input[type="time"],
+    textarea {
+      width:100% ;
+      padding:8px;
+      margin-top:5px;
+      border-radius:10px;
+      border:1px solid #888;
+      font-size:14px;
+      box-sizing:border-box;
+      background-color: white; /* 主表單預設白底 */
+      color: #222;
+    }
+    /* 若輸入欄位為 readonly，也保持白底（覆蓋瀏覽器預設灰底） */
+    input[readonly], textarea[readonly], input[readonly]:not([type="checkbox"]) {
+      background-color: white;
+      cursor: default;
+    }
+    textarea { font-size:16px; }
+
+    /* 按鈕樣式 */
+    button {
+      margin-top:15px; 
+      padding:10px 20px; 
+      border:none; 
+      border-radius:10px;
+      background-color:#4a90e2; color:white; 
+      cursor:pointer; 
+      font-size:16px;
+    }
+    button:hover { background-color:#357abd; }
+
+    /* 表格列的交錯顏色 */
+    .evenrowcolor{ background-color: #f9f9f9; }
+    .oddrowcolor{ background-color: #ffffff; }
+
+    /* ==============================
+       Modal 編輯視窗樣式
+       ============================== */
+    #editModal {
+      display:none;
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      background-color:rgba(0,0,0,0.5);
+      z-index:1000;
+      opacity:0;
+      transition:opacity 0.3s ease;
+    }
+    #editModal.show { display:block; opacity:1; }
+
+    /* Modal 盒子：固定寬度但會在窄螢幕縮放；內容可垂直滾動 */
+    #editModal > div {
+      background:#fff;
+      width:420px;
+      max-width: calc(100% - 40px); /* 在小螢幕時自動縮小 */
+      margin:80px auto;
+      padding:20px 24px;
+      border-radius:15px;
+      position:relative;
+      box-sizing: border-box;
+      max-height: calc(100vh - 100px); /* 可見範圍內最大高度 */
+      overflow-y: auto; /* 內容超出時顯示捲軸 */
+      transform:translateY(-20px);
+      transition:transform 0.3s ease;
+    }
+    #editModal.show > div { transform:translateY(0); }
+
+    /* 手機優化：減少外邊距、增加內距、圓角調整 */
+    @media (max-width: 480px) {
+      #editModal > div {
+        width: auto;
+        max-width: calc(100% - 20px);
+        margin:40px 10px;
+        padding:14px;
+        border-radius:10px;
+        max-height: calc(100vh - 60px);
+      }
+      /* 讓按鈕區靠近可視底部（但仍在可滾動內容內） */
+      #editModal > div button {
+        touch-action: manipulation;
+      }
+    }
+
+    /* ==============================
+       編輯視窗按鈕樣式
+       ============================== */
+    #cancelEditBtn {
+      background:none;
+      border:none;
+      color:#555;
+      font-size:20px;
+      position:absolute;
+      top:10px;
+      left:10px;
+      cursor:pointer;
+      border-radius:5px;
+      padding:5px 10px;
+      transition: all 0.3s ease;
+    }
+    #cancelEditBtn:hover {
+      background-color:#e74c3c; /* 紅色背景 */
+      color:white;
+      transform: scale(1.1);
+    }
+
+    /* 編輯按鈕 */
+    #enterEditBtn {
+      position:absolute; top:10px; right:10px;
+      background-color:#f4b977; color:#333;
+      border:none; border-radius:8px; padding:6px 12px; cursor:pointer;
+      transition:all 0.3s ease;
+    }
+    #enterEditBtn:hover { background-color:#e0b557; }
+
+    /* 儲存與刪除按鈕 */
+    #saveEditBtn, #deleteEditBtn {
+      margin-top:10px; font-size:16px; padding:8px 15px;
+      border-radius:10px; border:none; cursor:pointer; display:none;
+    }
+    #saveEditBtn { background-color:#4a90e2; color:white; }
+    #saveEditBtn:hover { background-color:#357abd; }
+    #deleteEditBtn { background-color:#f37a7a; color:white; }
+    #deleteEditBtn:hover { background-color:#d94a4a; }
+
+    h3{ margin-top:0; text-align:center; }
+
+    /* ==============================
+       儲存提示視窗 (是否儲存變更)
+       ============================== */
+    #saveConfirmModal {
+      display:none;
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      background-color:rgba(0,0,0,0.5);
+      z-index:2000;
+      opacity:0;
+      transition:opacity 0.3s ease;
+    }
+    #saveConfirmModal.show { display:block; opacity:1; }
+
+    #saveConfirmModal > div {
+      background:#fff;
+      width:350px;
+      margin:150px auto;
+      padding:25px;
+      border-radius:15px;
+      text-align:center;
+      transform:translateY(-20px);
+      transition:transform 0.3s ease;
+    }
+    #saveConfirmModal.show > div { transform:translateY(0); }
+
+    /* 提示視窗按鈕樣式 */
+    #saveConfirmModal button {
+      margin:10px;
+      padding:8px 18px;
+      font-size:16px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      transition: all 0.3s ease;
+    }
+    #confirmSaveBtn { background-color:#4a90e2; color:white; }
+    #confirmSaveBtn:hover { background-color:#357abd; }
+
+    #confirmDiscardBtn { background-color:#f37a7a; color:white; }
+    #confirmDiscardBtn:hover { background-color:#d94a4a; }
+
+    #continueEditBtn {
+      background-color:#f2f2f2;
+      color:white;
+      font-size:15px;
+    }
+    #continueEditBtn:hover { background-color:#ffffff; }
+    
+    /* 導覽列 */
+  .nav-1{
+    display: flex;                 /* 水平排列內容 */
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 1001;                 /* 保證在其他元素之上 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    left: 0;
+    right: 0;
+    color: black;
+    background-color: white;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+    
+  }
+
+  /* volunteer area */
+  .volunteer-area { display:flex; align-items:center; gap:8px; }
+  .volunteer-area .avatar {
+    width:36px; height:36px; border-radius:50%; object-fit:cover;
+    border:1px solid #ddd; display:none;
+  }
+  /* 可點擊的登入區域樣式 */
+  .volunteer-area #volunteerName {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: transparent;
+  }
+  .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
+  </style>
+</head>
+
+<body>
+<!-- ==============================
+     頁面標題與表單
+     ============================== -->
+<!-- 導覽列 -->
+<nav class="nav-1">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <h1 style="margin:0;" font-weight: 700>看診資訊</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
+      </span>
+    </h1>
+  </div>
+</nav>
+
+<div class="input-container"> 
+<h1 class="title"> 輸入內容</h1>
+<!-- 輸入表單區 -->
+<form>
+  <label>長輩姓名<input type="text" id="elderName"></label>
+  <label>看診日期<input type="date" id="date"></label>
+  <label>看診時間<input type="time" id="time"></label>
+  <label>醫生姓名<input type="text" id="name"></label>
+  <label>醫生科別
+  <input type="text" id="department" list="departmentList">
+  <datalist id="departmentList">
+    <option value="內科"></option>
+    <option value="外科"></option>
+    <option value="小兒科"></option>
+    <option value="婦產科"></option>
+    <option value="耳鼻喉科"></option>
+    <option value="眼科"></option>
+    <option value="皮膚科"></option>
+    <option value="骨科"></option>
+    <option value="泌尿科"></option>
+    <option value="神經內科"></option>
+    <option value="精神科"></option>
+    <option value="心臟內科"></option>
+    <option value="胸腔內科"></option>
+    <option value="胃腸肝膽科"></option>
+    <option value="內分泌新陳代謝科"></option>
+    <option value="復健科"></option>
+    <option value="整形外科"></option>
+    <option value="大腸直腸外科"></option>
+    <option value="急診醫學科"></option>
+    <option value="家庭醫學科"></option>
+  </datalist>
+</label>
+    <label for="record">看診內容 <textarea id="record" rows="2"></textarea></label>
+   
+
+    <label for="note">備註<textarea id="note" rows="2"></textarea></label>
+    
+  
+  <button type="button" onclick="addRow()">新增</button>
+</form>
+</div>
+
+<div class="search-container"> 
+<!-- 查詢標題 -->
+
+  <h1 class="title">查詢</h1>
+
+
+<!-- ==============================
+     資料表格區域
+     ============================== -->
+<div class="table-container">
+  <table id="dataTable">
+    <thead>
+    <tr>
+      <th>長輩姓名</th>
+      <th>看診日期</th>
+      <th>看診時間</th>
+      <th>醫生姓名</th>
+      <th>醫生科別</th>
+      <th>看診內容</th>
+      <th>備註</th>
+      <th>操作</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+</div>
+
+<!-- ==============================
+     編輯資料 Modal 視窗
+     ============================== -->
+<div id="editModal">
+  <div>
+    <button id="cancelEditBtn" title="按 Esc 或點我關閉">✖</button>
+    <button id="enterEditBtn">編輯</button>
+
+    <div style="display: flex; justify-content: center;">
+  <h2>看診資訊</h2>
+</div>
+    <!-- 欄位資料 -->
+    <label>長輩姓名<input type="text" id="editElderName" placeholder="長輩姓名" readonly></label>
+    <label>日期<input type="date" id="editDate" readonly></label>
+    <label>時間<input type="time" id="editTime" readonly></label>
+    <label>醫生姓名<input type="text" id="editDoctorName" placeholder="請輸入醫生姓名" readonly>
+    </label>
+    <label>醫生科別
+  <input type="text" id="editDepartment" list="editDepartmentList" placeholder="請選擇科別" readonly>
+  <datalist id="editDepartmentList">
+    <option value="內科"></option>
+    <option value="外科"></option>
+    <option value="小兒科"></option>
+    <option value="婦產科"></option>
+    <option value="耳鼻喉科"></option>
+    <option value="眼科"></option>
+    <option value="皮膚科"></option>
+    <option value="骨科"></option>
+    <option value="泌尿科"></option>
+    <option value="神經內科"></option>
+    <option value="精神科"></option>
+    <option value="心臟內科"></option>
+    <option value="胸腔內科"></option>
+    <option value="胃腸肝膽科"></option>
+    <option value="內分泌新陳代謝科"></option>
+    <option value="復健科"></option>
+    <option value="整形外科"></option>
+    <option value="大腸直腸外科"></option>
+    <option value="急診醫學科"></option>
+    <option value="家庭醫學科"></option>
+  </datalist>
+  </label>
+    <label>內容<textarea id="editRecord" rows="3" readonly></textarea></label>
+    <label>備註<textarea id="editNote" rows="3" readonly></textarea></label>
+
+    <!-- 儲存/刪除按鈕 -->
+    <div style="text-align:center; margin-top:10px;">
+      <button id="saveEditBtn">儲存</button>
+      <button id="deleteEditBtn">刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     儲存確認提示視窗
+     ============================== -->
+<div id="saveConfirmModal">
+  <div>
+    <h3>此次修改需要儲存嗎？</h3>
+    <p>若未儲存，變更的內容將會遺失。</p>
+    <button id="confirmSaveBtn">儲存</button>
+    <button id="continueEditBtn">繼續編輯</button>
+    <button id="confirmDiscardBtn">放棄</button>
+  </div>
+</div>
+
+<!-- ==============================
+     JavaScript 程式區
+     ============================== -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+let editRowIndex = null;
+let isEditing = false;
+let originalData = {};
+
+function clearInputs(){
+  ["elderName","date","time","name","department","record","note"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+}
+
+function addRow(){
+  const elderName=document.getElementById("elderName").value.trim();
+  const date=document.getElementById("date").value.trim();
+  const time=document.getElementById("time").value.trim();
+  if(!date||!time){ alert("請輸入日期與時間！"); return; }
+
+  const name=document.getElementById("name").value.trim();
+  const department=document.getElementById("department").value.trim();
+  const record=document.getElementById("record").value.trim();
+  const note=document.getElementById("note").value.trim();
+
+  const table=document.getElementById("dataTable");
+  const tbody = table.querySelector("tbody");
+
+  // ✅ 顯示外層容器
+  document.querySelector(".table-container").style.display = "block";
+
+  // 新增一列資料
+  const newRow = tbody.insertRow(-1);
+  newRow.insertCell(0).innerText=elderName;
+  newRow.insertCell(1).innerText=date;
+  newRow.insertCell(2).innerText=time;
+  newRow.insertCell(3).innerText=name;
+  newRow.insertCell(4).innerText=department;
+  newRow.insertCell(5).innerText=record;
+  newRow.insertCell(6).innerText=note;
+
+  // 新增操作欄（編輯按鈕），不再綁定整列點擊
+  const actionCell = newRow.insertCell(7);
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.innerText = "編輯";
+  editBtn.style.padding = "6px 10px";
+  editBtn.onclick = ()=> openEditModal(newRow);
+  actionCell.appendChild(editBtn);
+
+  // ✅ 重新排序
+  sortTableByDateTime('dataTable');
+  altRows('dataTable');
+  clearInputs();
+
+  // 確保所有列都有編輯按鈕（給既有或由其他流程產生的列）
+  addEditButtonsToRows();
+}
+
+/* ==============================
+   ✅ 日期 + 時間排序函式（穩定版）
+   ============================== */
+function sortTableByDateTime(tableId){
+  const table=document.getElementById(tableId);
+  const tbody = table.querySelector("tbody");
+  const rows = Array.from(tbody.rows);
+
+  // 依日期+時間排序
+  rows.sort((a,b)=>{
+    const dateA=a.cells[1]?.innerText || "";
+    const timeA=a.cells[2]?.innerText || "";
+    const dateB=b.cells[1]?.innerText || "";
+    const timeB=b.cells[2]?.innerText || "";
+    const dtA = new Date(`${dateA} ${timeA}`);
+    const dtB = new Date(`${dateB} ${timeB}`);
+    return dtA - dtB; // 舊→新，如要新→舊改成 dtB - dtA
+  });
+
+  // 重新附加排序後的列
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+function saveData() {
+  localStorage.setItem("clinicData", document.getElementById("dataTable").innerHTML);
+}
+function loadData() {
+  const saved = localStorage.getItem("clinicData");
+  if(saved){
+    document.getElementById("dataTable").innerHTML = saved;
+    document.querySelector(".table-container").style.display = "block";
+    addEditButtonsToRows();
+  }
+}
+window.onload = loadData;
+
+
+function altRows(id){
+  const table=document.getElementById(id);
+  const rows=table.getElementsByTagName("tr");
+  for(let i=1;i<rows.length;i++)
+    rows[i].className=(i%2===0)?"evenrowcolor":"oddrowcolor";
+}
+
+function openReadOnlyModal(row){
+  editRowIndex=row.rowIndex;
+  const modal=document.getElementById("editModal");
+  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
+    const val=row.cells[i].innerText;
+    document.getElementById("edit"+f).value=val;
+    originalData[f]=val;
+  });
+  setReadOnly(true);
+  modal.style.display="block";
+  setTimeout(()=>modal.classList.add("show"),10);
+}
+
+// 以「編輯模式」開啟 modal（欄位直接可改）
+function openEditModal(row){
+  editRowIndex = row.rowIndex;
+  const modal = document.getElementById("editModal");
+  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
+    const val = row.cells[i].innerText;
+    document.getElementById("edit"+f).value = val;
+    originalData[f] = val;
+  });
+  // 直接可編輯
+  setReadOnly(false);
+  modal.style.display = "block";
+  setTimeout(()=>modal.classList.add("show"),10);
+
+  // ✅ 隱藏導覽列
+  document.querySelector('.nav-1').style.display = 'none';
+}
+
+function setReadOnly(readOnly){
+  document.querySelectorAll("#editModal input, #editModal textarea").forEach(el=>{
+    el.readOnly = readOnly;
+    // 日期與時間欄位即使 readonly 也要白底
+    if(el.type === "date" || el.type === "time"){
+      el.style.backgroundColor = "white";
+    } else {
+      el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
+    }
+  });
+  document.getElementById("saveEditBtn").style.display=readOnly?"none":"inline-block";
+  document.getElementById("deleteEditBtn").style.display=readOnly?"none":"inline-block";
+  document.getElementById("enterEditBtn").style.display=readOnly?"inline-block":"none";
+  isEditing=!readOnly;
+}
+
+document.getElementById("enterEditBtn").onclick=()=>setReadOnly(false);
+
+document.getElementById("saveEditBtn").onclick=()=>{
+  const row=document.getElementById("dataTable").rows[editRowIndex];
+  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
+    row.cells[i].innerText=document.getElementById("edit"+f).value;
+  });
+
+  sortTableByDateTime('dataTable');
+  altRows('dataTable');
+  alert("資料已更新 ✅");
+  closeModal();
+};
+
+document.getElementById("deleteEditBtn").onclick=()=>{
+  if(confirm("確定刪除此筆資料？")){
+    document.getElementById("dataTable").deleteRow(editRowIndex);
+    sortTableByDateTime('dataTable');
+    altRows('dataTable');
+    alert("資料已刪除 ✅");
+    closeModal();
+  }
+};
+
+function hasChanges(){
+  return ["ElderName","Date","Time","DoctorName","Department","Record","Note"].some(f =>
+    document.getElementById("edit"+f).value !== originalData[f]
+  );
+}
+
+function tryCloseModal(){
+  if(isEditing && hasChanges()){
+    showSaveConfirmModal();
+  } else {
+    closeModal();
+  }
+}
+
+function closeModal(){
+  const modal=document.getElementById("editModal");
+  modal.classList.remove("show");
+  setTimeout(()=>modal.style.display="none",300);
+  setReadOnly(true);
+
+  // ✅ 隱藏導覽列
+  document.querySelector('.nav-1').style.display = 'flex';
+}
+
+document.getElementById("cancelEditBtn").onclick=()=>tryCloseModal();
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") tryCloseModal();
+});
+
+function showSaveConfirmModal(){
+  const modal=document.getElementById("saveConfirmModal");
+  modal.style.display="block";
+  setTimeout(()=>modal.classList.add("show"),10);
+}
+
+function closeSaveConfirmModal(){
+  const modal=document.getElementById("saveConfirmModal");
+  modal.classList.remove("show");
+  setTimeout(()=>modal.style.display="none",300);
+}
+
+document.getElementById("confirmSaveBtn").onclick=()=>{
+  document.getElementById("saveEditBtn").click();
+  closeSaveConfirmModal();
+};
+
+document.getElementById("confirmDiscardBtn").onclick=()=>{
+  closeSaveConfirmModal();
+  closeModal();
+};
+
+document.getElementById("continueEditBtn").onclick=()=>{
+  closeSaveConfirmModal();
+};
+
+// ===== LIFF 初始化與顯示志工姓名/頭像/登出 =====
+const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+
+// 初始化 LIFF（一定要先執行）
+async function initLiffAndSetProfile() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    // 若尚未登入，顯示「未登入」狀態
+    if (!liff.isLoggedIn()) {
+      nameEl.innerText = "未登入";
+      avatarEl.style.display = "none";
+      return;
+    }
+
+    // 已登入 → 取得 LINE 使用者資料
+    const profile = await liff.getProfile();
+    nameEl.innerText = profile.displayName || "志工";
+    if (profile.pictureUrl) {
+      avatarEl.src = profile.pictureUrl;
+      avatarEl.style.display = "inline-block";
+    } else {
+      avatarEl.style.display = "none";
+    }
+  } catch (err) {
+    console.error("LIFF init error:", err);
+  }
+}
+
+// 點擊頭像 → 登入或前往個資頁
+avatarEl.addEventListener("click", () => {
+  if (liff.isLoggedIn()) {
+    // 已登入，直接前往個資頁
+    window.location.href = "註冊頁面.html";
+  } else {
+    // 尚未登入，登入完自動前往個資頁
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  }
+});
+
+// 點擊「未登入」文字也可登入
+nameEl.addEventListener("click", () => {
+  if (!liff.isLoggedIn()) {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  } else {
+    alert("已登入：" + (nameEl.innerText || "志工"));
+  }
+});
+
+// 頁面載入時執行 LIFF 初始化
+initLiffAndSetProfile();
+
+// 初始化頁面資料（你的其他功能）
+renderAllTable();
+
+// 補上既有列的編輯按鈕
+function addEditButtonsToRows() {
+  const tbody = document.getElementById("dataTable").querySelector("tbody");
+  Array.from(tbody.rows).forEach((row) => {
+    if (row.cells.length < 8) {
+      const actionCell = row.insertCell(7);
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.innerText = "編輯";
+      editBtn.style.padding = "6px 10px";
+      editBtn.onclick = () => openEditModal(row);
+      actionCell.appendChild(editBtn);
+    } else {
+      const cell = row.cells[7];
+      if (!cell.querySelector("button")) {
+        cell.innerHTML = "";
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.innerText = "編輯";
+        editBtn.style.padding = "6px 10px";
+        editBtn.onclick = () => openEditModal(row);
+        cell.appendChild(editBtn);
+      }
+    }
+  });
+}
+
+</script>
+
+</body>
+</html>

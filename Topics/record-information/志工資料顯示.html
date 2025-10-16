@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>志工資料顯示</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      max-width: 720px;
+      margin: 24px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 16px 0;
+      font-size: 22px;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0078d4;
+      margin-bottom: 16px;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px 16px;
+      text-align: left;
+      margin-top: 10px;
+    }
+    dt {
+      font-weight: 700;
+      color: #333;
+    }
+    dd {
+      margin: 0;
+      color: #222;
+      word-break: break-word;
+    }
+    .back {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 14px;
+      background: #0078d4;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .empty {
+      color: #666;
+    }
+
+     /* 導覽列 */
+    .nav-1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1001;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      width: 100%;
+      left: 0;
+      right: 0;
+      box-sizing: border-box; /* 確保padding不會超出寬度 */
+    }
+  </style>
+</head>
+<body>
+  <!-- 導覽列 -->
+<nav class="nav-1">
+  <div>
+    <h1>志工個人資料</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="avatar" class="avatar" src="default-avatar.png" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
+      </span>
+    </h1>
+  </div>
+</nav>
+  <div class="card">
+    <h1>志工個人資料</h1>
+    <img id="avatar" class="avatar" src="default-avatar.png" alt="使用者頭像">
+    <div id="content"></div>
+    <a class="back" href="註冊頁面.html">回到填寫頁</a>
+  </div>
+  </div>
+
+  <script>
+  const content = document.getElementById('content');
+  const avatarImg = document.getElementById("volunteerAvatar");
+  const volunteerName = document.getElementById("volunteerName");
+  const raw = localStorage.getItem('lastVolunteer');
+
+  if (!raw) {
+      content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
+    } else {
+      try {
+        // 取最後一筆（最新填寫的資料）
+        const list = JSON.parse(raw);
+        const d = list[list.length - 1];
+
+        // 如果沒有頭像，就顯示預設圖
+        avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+        volunteerName.textContent = d.name || "未登入";
+
+      // 顯示詳細資料
+      const html = [
+          '<dl>',
+            `<dt>志工代碼</dt><dd>${d.id || ''}</dd>`,
+            `<dt>姓名</dt><dd>${d.name || ''}</dd>`,
+            `<dt>電子郵件Email</dt><dd>${d.email || ''}</dd>`,
+            `<dt>連絡電話</dt><dd>${d.phone || ''}</dd>`,
+            `<dt>出生年月日</dt><dd>${d.birthday || ''}</dd>`,
+            `<dt>性別</dt><dd>${d.gender || ''}</dd>`,
+            `<dt>地址</dt><dd>${d.address || ''}</dd>`,
+            `<dt>專長或可服務項目</dt><dd>${d.skills || ''}</dd>`,
+            `<dt>標籤</dt><dd>${d.tags || ''}</dd>`,
+            `<dt>簡介</dt><dd>${(d.desc || '').replace(/\n/g,'<br>')}</dd>`,
+          '</dl>'
+        ].join('');
+        content.innerHTML = html;
+    } catch (e) {
+      content.innerHTML = '<p class="empty">資料解析錯誤。</p>';
+      console.error(e);
+    }
+  }
+</script>
+
+</body>
+</html>

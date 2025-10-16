@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 響應式，讓手機可正確縮放 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>申請資料填寫</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+     /* 瀏覽列 */
+      .nav-1{
+    display: flex;                 /* 水平排列內容 */
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 0 16px 0 0;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 2000;                 /* 保證在其他元素之上 */
+    background-color: #fff;
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+    width: 100%;
+    left: 0;
+    right: 0;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    }
+
+    /* ✅ 正確獨立出 container */
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  
+   /* 頭像樣式 */
+    #avatarPreview {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0984e3;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      display: block;       /* 讓圖片成為區塊元素 */
+      margin: 0 auto;       /* 水平置中 */
+    }
+
+    #avatarPreview:hover {
+      transform: scale(1.05);
+    }
+    h1{
+      margin: 0;  
+      padding: 0;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .button-group {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center; /* 置中按鈕 */
+      gap: 12px; /* 按鈕間距 */
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .submit-btn {
+      background-color: #0078d4;
+      color: white;
+    }
+    /* 已移除儲存按鈕樣式 */
+    .form-section {
+      display: none;
+      margin-top: 20px;
+    }
+    .form-section.active {
+      display: block;
+    }
+    /* 必填欄位星號樣式 */
+    label.required::after{
+      content: " *";
+      color: #e53935;
+      margin-left: 4px;
+      font-weight: 600;
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      }
+
+    input[type="text"], input[type="date"], 
+    textarea {
+      width:100% ;
+      padding:8px;
+      margin-top:5px;
+      border-radius:10px;
+      border:1px solid #888;
+      font-size:14px;
+      box-sizing:border-box;
+      background-color: white; /* 主表單預設白底 */
+      color: #222;
+    }
+  
+  </style>
+</head>
+<body>
+<!-- 導覽列 -->
+<nav class="nav-1">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <h1 style="margin:0;">申請資料填寫</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+       
+      </span>
+    </h1>
+  </div>
+</nav>
+
+  <div class="container">
+    <img id="avatarPreview" src="default-avatar.png" alt="頭像預覽" >
+    
+  
+  <!-- ✅ 這裡應該在 container 裡 -->
+    <label for="role" class="required">申請身分</label>
+    <select id="role" name="role" onchange="toggleForm()" required>
+      <option value="">請選擇</option>
+      <option value="volunteer">志工</option>
+      <option value="senior">長輩</option>
+    </select>
+
+    <!-- 志工表單 -->
+    <form id="volunteerForm" class="form-section">
+      <h3>志工資料填寫</h3>
+      <label class="required">志工代碼</label><input type="text" name="volunteerId" required />
+      <label class="required">姓名</label><input type="text" name="name" required />
+      <label class="required">電子郵件Email</label><input type="email" name="email" required />
+      <label class="required">連絡電話</label><input type="tel" name="phone" required />
+      <label class="required">出生年月日</label><input type="date" name="birthday" required />
+      <label class="required">性別</label>
+      <select name="gender" required>
+        <option value="">請選擇</option>
+        <option value="male">男性</option>
+        <option value="female">女性</option>
+        <option value="other">其他</option>
+      </select>
+      <label class="required">地址</label><input type="text" name="address" required />
+      <label>專長或可服務項目</label><input type="text" name="skills" />
+      <label>個性標籤（以逗號分隔）：</label>
+      <input type="text" id="vTags" placeholder="例如：熱心, 有耐心, 擅長溝通" />
+      <label>簡介：</label>
+      <textarea id="vDesc" rows="3"></textarea>
+      <div class="button-group">
+        <button type="submit" class="submit-btn">送出</button>
+      </div>
+    </form>
+
+    <!-- 長輩表單 -->
+    <form id="seniorForm" class="form-section">
+      <h3>長輩資料填寫</h3>
+      <label class="required">姓名</label><input type="text" name="name" required />
+      <label class="required">連絡電話</label><input type="tel" name="phone" required />
+      <label class="required">出生年月日</label><input type="date" name="birthday" required />
+      <label class="required">性別</label>
+      <select name="gender" required>
+        <option value="">請選擇</option>
+        <option value="male">男性</option>
+        <option value="female">女性</option>
+        <option value="other">其他</option>
+      </select>
+      <label class="required">地址</label><input type="text" name="address" required />
+      <label>緊急聯絡人</label><input type="text" name="emergencyContact" />
+      <label>健康狀況備註</label><input type="text" name="healthNote" />
+
+      <div class="button-group">
+        <button type="submit" class="submit-btn">送出</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 載入 LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  // ====== LIFF 設定：把 YOUR_LIFF_ID 換成你的 LIFF ID ======
+  const LIFF_ID = "2008228534-R8763A2n";
+  const avatarEl = document.getElementById("avatarPreview");
+
+    async function initLiffAndLoadAvatar() {
+    try {
+      // 初始化 LIFF
+      await liff.init({ liffId: LIFF_ID });
+
+      // 若未登入 → 自動導向 LINE 登入，登入後會回到這頁
+      if (!liff.isLoggedIn()) {
+         liff.login({
+          redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+        });
+        return;
+      }
+
+      // 綁定事件
+      
+
+      // ✅ 初始化時先載入 LINE 頭像
+      const profile = await liff.getProfile();
+      
+      // 設定頭像與名稱
+      if (profile && profile.pictureUrl) {
+        avatarEl.src = profile.pictureUrl;
+      } else {
+        avatarEl.src = "default-avatar.png";
+      }
+
+      // 可顯示使用者名稱（若你想在頁面中顯示）
+      const nameEl = document.getElementById("volunteerName");
+      if (nameEl) nameEl.textContent = profile.displayName || "志工";
+
+    } catch (err) {
+      console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
+      avatarEl.src = "default-avatar.png";
+    }
+  }
+
+  // ✅ 頁面載入後執行
+  document.addEventListener("DOMContentLoaded", initLiffAndLoadAvatar);
+
+  // 上傳圖片預覽
+  function previewImage(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    document.getElementById("avatarPreview").src = url;
+  }
+
+  // 表單切換
+  function toggleForm() {
+    const role = document.getElementById("role").value;
+    document.getElementById("volunteerForm").classList.remove("active");
+    document.getElementById("seniorForm").classList.remove("active");
+    if (role === "volunteer") {
+      document.getElementById("volunteerForm").classList.add("active");
+    } else if (role === "senior") {
+      document.getElementById("seniorForm").classList.add("active");
+    }
+  }
+
+  // 志工表單送出
+  document.getElementById("volunteerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      avatar: document.getElementById("avatarPreview").src,
+      volunteerId: form.elements["volunteerId"].value.trim(),
+      name: form.elements["name"].value.trim(),
+      email: form.elements["email"].value.trim(),
+      phone: form.elements["phone"].value.trim(),
+      birthday: form.elements["birthday"].value,
+      gender: form.elements["gender"].value,
+      address: form.elements["address"].value.trim(),
+      skills: form.elements["skills"].value.trim(),
+      tags: document.getElementById("vTags")?.value.trim() || "",
+      desc: document.getElementById("vDesc")?.value.trim() || ""
+    };
+    localStorage.setItem("lastVolunteer", JSON.stringify(data));
+    window.location.href = encodeURI("志工資料顯示.html");
+  });
+
+  // 長輩表單送出
+  document.getElementById("seniorForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      avatar: document.getElementById("avatarPreview").src,
+      name: form.elements["name"].value.trim(),
+      phone: form.elements["phone"].value.trim(),
+      birthday: form.elements["birthday"].value,
+      gender: form.elements["gender"].value,
+      address: form.elements["address"].value.trim(),
+      emergencyContact: form.elements["emergencyContact"].value.trim(),
+      healthNote: form.elements["healthNote"].value.trim()
+    };
+    const seniors = JSON.parse(localStorage.getItem("seniors") || "[]");
+    seniors.push(data);
+    localStorage.setItem("seniors", JSON.stringify(seniors));
+    window.location.href = encodeURI("長輩資料顯示.html");
+  });
+</script>
+</body>
+</html>

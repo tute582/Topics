@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>志工端管理介面</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  h1 {
+    width: 100%;
+    text-align: center;
+    color: #2d3436;
+  }
+
+  /* 左側編輯區 */
+  .editor {
+    width: 350px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+
+  .editor label {
+    display: block;
+    margin: 8px 0 4px;
+    font-weight: bold;
+  }
+
+  .editor input, .editor textarea, .editor select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .editor button {
+    background: #0984e3;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .editor button:hover {
+    background: #74b9ff;
+  }
+
+  /* 頭像預覽 */
+  .preview-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid #0984e3;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* 右側卡片預覽 */
+  .card {
+    width: 400px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-cover {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .card-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid white;
+    position: absolute;
+    top: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    object-fit: cover;
+  }
+
+  .card-content {
+    padding: 60px 20px 20px;
+    text-align: center;
+  }
+
+  .card-title {
+    font-size: 1.3em;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .special {
+    background: #ffeaa7;
+    color: #2d3436;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.8em;
+  }
+
+  .tag-list {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .tag {
+    background: #74b9ff;
+    color: white;
+    border-radius: 8px;
+    padding: 3px 8px;
+    margin-right: 5px;
+    font-size: 0.8em;
+  }
+
+  .card-text {
+    margin-top: 10px;
+    color: #636e72;
+    text-align: center;
+  }
+
+  /* 表格：使用者預約紀錄 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 14px;
+  }
+
+  th, td {
+    border: 1px solid #b2bec3;
+    text-align: center;
+    padding: 8px;
+  }
+
+  th {
+    background: #dfe6e9;
+  }
+
+  .cancel-btn {
+    background: #d63031;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* 彈出視窗 */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+  }
+
+  .modal textarea {
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+
+  .modal button {
+    margin-top: 10px;
+    width: 45%;
+  }
+
+</style>
+</head>
+<body>
+  <h1>志工端管理介面</h1>
+
+  <!-- 左側資料編輯區 -->
+  <div class="editor">
+    <h2>✏️ 編輯志工資料</h2>
+
+  <label>頭像圖片：</label>
+  <img id="avatarPreview" class="preview-img" src="https://i.pravatar.cc/150?img=32">
+  <input type="file" id="avatarInput" accept="image/*" onchange="previewImage(event)" style="display:block;margin:0 auto 10px auto;">
+
+    <label>姓名：</label>
+    <input type="text" id="vName" value="王小明">
+
+    <label>擁有證照：</label>
+    <select id="vCert">
+      <option value="">無</option>
+      <option value="醫護證照">醫護證照</option>
+      <option value="心理輔導證照">心理輔導證照</option>
+    </select>
+
+    <label>標籤（以逗號分隔）：</label>
+    <input type="text" id="vTags" value="親切,細心,熱心助人">
+
+    <label>簡介：</label>
+    <textarea id="vDesc" rows="3">擁有豐富的醫院志工經驗，熱愛幫助他人。</textarea>
+ <button onclick="updateCard()">更新卡片</button>
+    <!-- 行事曆已移至右側卡片下方 -->
+
+   
+
+    <h3>📅 使用者預約紀錄</h3>
+    <table id="bookingTable">
+      <tr><th>使用者姓名</th><th>日期</th><th>科別</th><th>預約時間</th><th>操作</th></tr>
+    </table>
+  </div>
+
+  <!-- 右側志工卡片與行事曆 -->
+  <div style="display: flex; flex-direction: column; align-items: center; width: 350px;">
+    <div class="card" id="volunteerCard" style="min-height: 380px; max-height: 500px; margin-bottom: 24px;">
+      <img class="card-cover" src="https://picsum.photos/600/300?random=1" alt="固定封面">
+      <img class="card-avatar" id="cardAvatar" src="https://i.pravatar.cc/150?img=32">
+      <div class="card-content">
+        <h2 class="card-title">
+          <span id="cardName">王小明</span>
+          <span id="cardCert" class="special">醫護證照</span>
+        </h2>
+        <div class="tag-list" id="cardTags">
+          <span class="tag">親切</span>
+          <span class="tag">細心</span>
+          <span class="tag">熱心助人</span>
+        </div>
+        <p class="card-text" id="cardDesc">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈出取消原因視窗 -->
+  <div class="modal" id="cancelModal">
+    <div class="modal-content">
+      <h3>取消預約</h3>
+      <textarea id="cancelReason" placeholder="請輸入取消原因"></textarea>
+      <div>
+        <button onclick="confirmCancel()">確定</button>
+        <button onclick="closeModal()">關閉</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  const bookedList = [
+    { volunteer: "王小明", user: "陳美美", date: "2025-10-10", department: "心臟內科", wishTime: "09:30" },
+    { volunteer: "王小明", user: "李阿華", date: "2025-10-12", department: "小兒科", wishTime: "15:45" },
+  ];
+  let cancelIndex = null;
+
+  // 頭像預覽
+  function previewImage(event) {
+    const file = event.target.files[0];
+    const img = document.getElementById("avatarPreview");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.src = reader.result;
+        document.getElementById("cardAvatar").src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // 更新卡片
+  function updateCard() {
+    document.getElementById("cardName").textContent = document.getElementById("vName").value;
+    const cert = document.getElementById("vCert").value;
+    const certLabel = document.getElementById("cardCert");
+    certLabel.textContent = cert || "";
+    certLabel.style.display = cert ? "inline-block" : "none";
+    const tags = document.getElementById("vTags").value.split(",").map(t => t.trim()).filter(Boolean);
+    document.getElementById("cardTags").innerHTML = tags.map(t => `<span class='tag'>${t}</span>`).join("");
+    document.getElementById("cardDesc").textContent = document.getElementById("vDesc").value;
+  }
+
+  // 已移除左側可預約時段互動
+
+  // 顯示使用者預約紀錄
+  function loadBookings() {
+    const table = document.getElementById("bookingTable");
+    bookedList.forEach((b, i) => {
+      const row = table.insertRow(-1);
+      row.insertCell(0).textContent = b.user;
+      row.insertCell(1).textContent = b.date;
+      row.insertCell(2).textContent = b.department;
+      row.insertCell(3).textContent = b.wishTime || "-";
+      const btnCell = row.insertCell(4);
+      const btn = document.createElement("button");
+      btn.className = "cancel-btn";
+      btn.textContent = "取消";
+      btn.onclick = () => openCancelModal(i);
+      btnCell.appendChild(btn);
+    });
+  }
+
+  // 開啟取消彈窗
+  function openCancelModal(index) {
+    cancelIndex = index;
+    document.getElementById("cancelModal").style.display = "flex";
+  }
+
+  // 關閉彈窗
+  function closeModal() {
+    document.getElementById("cancelModal").style.display = "none";
+    document.getElementById("cancelReason").value = "";
+  }
+
+  // 確定取消
+  function confirmCancel() {
+    const reason = document.getElementById("cancelReason").value.trim();
+    if (!reason) return alert("請輸入取消原因");
+    alert(`已取消 ${bookedList[cancelIndex].user} 的預約。\n原因：${reason}`);
+    bookedList.splice(cancelIndex, 1);
+  document.getElementById("bookingTable").innerHTML = `<tr><th>使用者姓名</th><th>日期</th><th>科別</th><th>想預約時間（時:分）</th><th>操作</th></tr>`;
+    loadBookings();
+    closeModal();
+  }
+
+  loadBookings();
+</script>
+</body>
+</html>

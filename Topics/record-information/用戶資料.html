@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用戶資料註冊</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 18px;
+      color: white;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 30px;
+      background: #e9f5ff;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .result h3 {
+      margin-top: 0;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>用戶資料填寫</h1>
+
+    <form id="userForm">
+      <label>姓名：</label>
+      <input type="text" id="name" placeholder="請輸入姓名" required>
+
+      <label>Email：</label>
+      <input type="email" id="email" placeholder="請輸入電子郵件" required>
+
+      <label>電話：</label>
+      <input type="tel" id="phone" placeholder="請輸入電話號碼" required>
+
+      <label>生日：</label>
+      <input type="date" id="birthday" required>
+
+      <label>性別：</label>
+      <select id="gender" required>
+        <option value="">請選擇性別</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
+
+      <label>地址：</label>
+      <textarea id="address" rows="3" placeholder="請輸入地址" required></textarea>
+
+      <button type="submit">送出資料</button>
+    </form>
+
+    <div class="result" id="result">
+      <h3>送出結果：</h3>
+      <p id="output"></p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("userForm");
+    const result = document.getElementById("result");
+    const output = document.getElementById("output");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const birthday = document.getElementById("birthday").value;
+      const gender = document.getElementById("gender").value;
+      const address = document.getElementById("address").value.trim();
+
+      if (!name || !email || !phone || !birthday || !gender || !address) {
+        alert("請完整填寫所有欄位！");
+        return;
+      }
+
+      output.innerHTML = `
+        <strong>姓名：</strong> ${name}<br>
+        <strong>Email：</strong> ${email}<br>
+        <strong>電話：</strong> ${phone}<br>
+        <strong>生日：</strong> ${birthday}<br>
+        <strong>性別：</strong> ${gender}<br>
+        <strong>地址：</strong> ${address}
+      `;
+
+      result.style.display = "block";
+    });
+  </script>
+</body>
+</html>
