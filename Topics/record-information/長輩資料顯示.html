@@ -82,7 +82,7 @@
 <!-- 導覽列 -->
   <nav class="nav-1">
   <div>
-    <h1>使用者個人資料</h1>
+    <h1>長輩個人資料</h1>
   </div>
 
   <div style="display:flex; align-items:center;">
@@ -95,7 +95,7 @@
   </div>
 </nav>
   <div class="card">
-    <h1>使用者個人資料</h1>
+    <h1>長輩個人資料</h1>
     <img id="avatar" class="avatar" src="default-avatar.png" alt="使用者頭像">
     <div id="content"></div>
     <a class="back" href="註冊頁面.html">回到填寫頁</a>
@@ -116,6 +116,7 @@
 
         // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+        volunteerName.textContent = d.name || "未登入";
 
         const html = [
           '<dl>',
