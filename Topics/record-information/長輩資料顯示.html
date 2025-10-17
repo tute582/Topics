@@ -103,45 +103,9 @@
   </div>
 
   <script>
-    const content = document.getElementById('content');
-  const avatarPreview = document.getElementById("avatarPreview"); // 卡片頭像
-  const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
-  const volunteerName = document.getElementById("volunteerName");
-
-
-    async function initLiffAndLoadAvatar() {
-  try {
-    // 初始化 LIFF
-    await liff.init({ liffId: LIFF_ID });
-
-    // 若未登入 → 自動導向 LINE 登入
-    if (!liff.isLoggedIn()) {
-      liff.login({
-        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
-      });
-      return;
-    }
-
-    // ✅ 抓取 LINE 使用者資料
-    const profile = await liff.getProfile();
-
-    // 頁面上的兩個頭像元素
-    const avatarEl = document.getElementById("avatarPreview");
-    const navAvatar = document.getElementById("volunteerAvatar");
-
-    // ✅ 設定頭像（導覽列 + 表單上方）
-    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
-    avatarEl.src = avatarUrl;
-    if (navAvatar) navAvatar.src = avatarUrl;
-
-  } catch (err) {
-    console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
-    document.getElementById("avatarPreview").src = "default-avatar.png";
-    const navAvatar = document.getElementById("volunteerAvatar");
-    if (navAvatar) navAvatar.src = "default-avatar.png";
-  }
-}
-
+  const content = document.getElementById('content');
+    const avatar = document.getElementById('avatar');
+    const raw = localStorage.getItem('seniors');
 
     if (!raw) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
@@ -150,15 +114,9 @@
         // 取最後一筆（最新填寫的資料）
         const list = JSON.parse(raw);
         const d = list[list.length - 1];
-        
-        // 設定頭像
-      const avatarUrl = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-      if (avatarPreview) avatarPreview.src = avatarUrl;
-      if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
 
         // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-        volunteerName.textContent = d.name || "未登入";
 
         const html = [
           '<dl>',

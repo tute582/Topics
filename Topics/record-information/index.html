@@ -541,6 +541,13 @@ function updateNoRecordMessage() {
   }
 }
 
+// ✅ 初始化載入 localStorage 資料
+// =============================
+window.onload = function () {
+  loadData();
+  updateNoRecordMessage(); // 初次檢查
+};
+
 function addRow() {
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
