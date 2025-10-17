@@ -119,6 +119,9 @@
         // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
 
+      if (avatarPreview) avatarPreview.src = avatar.src;
+      if (volunteerAvatar) volunteerAvatar.src = avatar.src;
+
         const html = [
           '<dl>',
             `<dt>姓名</dt><dd>${d.name || ''}</dd>`,
