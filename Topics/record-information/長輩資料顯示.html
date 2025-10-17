@@ -104,10 +104,11 @@
 
   <script>
     const content = document.getElementById('content');
-    const avatar = document.getElementById('avatar');
-    const raw = localStorage.getItem('seniors');
-    const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
-    const avatarEl = document.getElementById("volunteerAvatar");
+  const avatarPreview = document.getElementById("avatarPreview"); // 卡片頭像
+  const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
+  const volunteerName = document.getElementById("volunteerName");
+
+
     async function initLiffAndLoadAvatar() {
   try {
     // 初始化 LIFF
@@ -149,6 +150,11 @@
         // 取最後一筆（最新填寫的資料）
         const list = JSON.parse(raw);
         const d = list[list.length - 1];
+        
+        // 設定頭像
+      const avatarUrl = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+      if (avatarPreview) avatarPreview.src = avatarUrl;
+      if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
 
         // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
