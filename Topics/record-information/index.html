@@ -516,245 +516,242 @@ let editRowIndex = null;
 let isEditing = false;
 let originalData = {};
 
-function clearInputs(){
-  ["elderName","date","time","name","department","record","note"].forEach(id => {
+function clearInputs() {
+  ["elderName", "date", "time", "name", "department", "record", "note"].forEach(id => {
     document.getElementById(id).value = "";
   });
 }
 
-function addRow(){
-  const elderName=document.getElementById("elderName").value.trim();
-  const date=document.getElementById("date").value.trim();
-  const time=document.getElementById("time").value.trim();
-  if(!date||!time){ alert("請輸入日期與時間！"); return; }
-
-  const name=document.getElementById("name").value.trim();
-  const department=document.getElementById("department").value.trim();
-  const record=document.getElementById("record").value.trim();
-  const note=document.getElementById("note").value.trim();
-
-  const table=document.getElementById("dataTable");
+/* ==============================
+   ✅ 顯示／隱藏「目前尚未有紀錄」提示
+   ============================== */
+function updateNoRecordMessage() {
+  const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
+  const hasRecords = tbody.rows.length > 0;
+  const container = document.querySelector(".table-container");
+  const noRecordMsg = document.getElementById("no-record-msg");
 
-  // ✅ 顯示外層容器
-  document.querySelector(".table-container").style.display = "block";
+  if (hasRecords) {
+    container.style.display = "block";
+    noRecordMsg.style.display = "none";
+  } else {
+    container.style.display = "none";
+    noRecordMsg.style.display = "block";
+  }
+}
+
+function addRow() {
+  const elderName = document.getElementById("elderName").value.trim();
+  const date = document.getElementById("date").value.trim();
+  const time = document.getElementById("time").value.trim();
+  if (!date || !time) {
+    alert("請輸入日期與時間！");
+    return;
+  }
+
+  const name = document.getElementById("name").value.trim();
+  const department = document.getElementById("department").value.trim();
+  const record = document.getElementById("record").value.trim();
+  const note = document.getElementById("note").value.trim();
+
+  const table = document.getElementById("dataTable");
+  const tbody = table.querySelector("tbody");
 
   // 新增一列資料
   const newRow = tbody.insertRow(-1);
-  newRow.insertCell(0).innerText=elderName;
-  newRow.insertCell(1).innerText=date;
-  newRow.insertCell(2).innerText=time;
-  newRow.insertCell(3).innerText=name;
-  newRow.insertCell(4).innerText=department;
-  newRow.insertCell(5).innerText=record;
-  newRow.insertCell(6).innerText=note;
+  newRow.insertCell(0).innerText = elderName;
+  newRow.insertCell(1).innerText = date;
+  newRow.insertCell(2).innerText = time;
+  newRow.insertCell(3).innerText = name;
+  newRow.insertCell(4).innerText = department;
+  newRow.insertCell(5).innerText = record;
+  newRow.insertCell(6).innerText = note;
 
-  // 新增操作欄（編輯按鈕），不再綁定整列點擊
+  // 操作欄
   const actionCell = newRow.insertCell(7);
   const editBtn = document.createElement("button");
   editBtn.type = "button";
   editBtn.innerText = "編輯";
   editBtn.style.padding = "6px 10px";
-  editBtn.onclick = ()=> openEditModal(newRow);
+  editBtn.onclick = () => openEditModal(newRow);
   actionCell.appendChild(editBtn);
 
-  // ✅ 重新排序
-  sortTableByDateTime('dataTable');
-  altRows('dataTable');
-  clearInputs();
-
-  // 確保所有列都有編輯按鈕（給既有或由其他流程產生的列）
+  // 更新表格狀態
+  sortTableByDateTime("dataTable");
+  altRows("dataTable");
   addEditButtonsToRows();
+  clearInputs();
+  updateNoRecordMessage(); // ✅ 新增後立即更新提示
 }
 
 /* ==============================
    ✅ 日期 + 時間排序函式（穩定版）
    ============================== */
-function sortTableByDateTime(tableId){
-  const table=document.getElementById(tableId);
+function sortTableByDateTime(tableId) {
+  const table = document.getElementById(tableId);
   const tbody = table.querySelector("tbody");
   const rows = Array.from(tbody.rows);
 
-  // 依日期+時間排序
-  rows.sort((a,b)=>{
-    const dateA=a.cells[1]?.innerText || "";
-    const timeA=a.cells[2]?.innerText || "";
-    const dateB=b.cells[1]?.innerText || "";
-    const timeB=b.cells[2]?.innerText || "";
+  rows.sort((a, b) => {
+    const dateA = a.cells[1]?.innerText || "";
+    const timeA = a.cells[2]?.innerText || "";
+    const dateB = b.cells[1]?.innerText || "";
+    const timeB = b.cells[2]?.innerText || "";
     const dtA = new Date(`${dateA} ${timeA}`);
     const dtB = new Date(`${dateB} ${timeB}`);
-    return dtA - dtB; // 舊→新，如要新→舊改成 dtB - dtA
+    return dtA - dtB;
   });
 
-  // 重新附加排序後的列
-  rows.forEach(r=>tbody.appendChild(r));
+  rows.forEach(r => tbody.appendChild(r));
 }
 
 function saveData() {
   localStorage.setItem("clinicData", document.getElementById("dataTable").innerHTML);
 }
+
 function loadData() {
   const saved = localStorage.getItem("clinicData");
-  if(saved){
+  if (saved) {
     document.getElementById("dataTable").innerHTML = saved;
-    document.querySelector(".table-container").style.display = "block";
     addEditButtonsToRows();
   }
+  updateNoRecordMessage(); // ✅ 載入後檢查
 }
+
 window.onload = loadData;
 
-
-function altRows(id){
-  const table=document.getElementById(id);
-  const rows=table.getElementsByTagName("tr");
-  for(let i=1;i<rows.length;i++)
-    rows[i].className=(i%2===0)?"evenrowcolor":"oddrowcolor";
+function altRows(id) {
+  const table = document.getElementById(id);
+  const rows = table.getElementsByTagName("tr");
+  for (let i = 1; i < rows.length; i++)
+    rows[i].className = (i % 2 === 0) ? "evenrowcolor" : "oddrowcolor";
 }
 
-function openReadOnlyModal(row){
-  editRowIndex=row.rowIndex;
-  const modal=document.getElementById("editModal");
-  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
-    const val=row.cells[i].innerText;
-    document.getElementById("edit"+f).value=val;
-    originalData[f]=val;
-  });
-  setReadOnly(true);
-  modal.style.display="block";
-  setTimeout(()=>modal.classList.add("show"),10);
-}
-
-// 以「編輯模式」開啟 modal（欄位直接可改）
-function openEditModal(row){
+function openEditModal(row) {
   editRowIndex = row.rowIndex;
   const modal = document.getElementById("editModal");
-  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
+  ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     const val = row.cells[i].innerText;
-    document.getElementById("edit"+f).value = val;
+    document.getElementById("edit" + f).value = val;
     originalData[f] = val;
   });
-  // 直接可編輯
   setReadOnly(false);
   modal.style.display = "block";
-  setTimeout(()=>modal.classList.add("show"),10);
-
-  // ✅ 隱藏導覽列
-  document.querySelector('.nav-1').style.display = 'none';
+  setTimeout(() => modal.classList.add("show"), 10);
+  document.querySelector(".nav-1").style.display = "none";
 }
 
-function setReadOnly(readOnly){
-  document.querySelectorAll("#editModal input, #editModal textarea").forEach(el=>{
+function setReadOnly(readOnly) {
+  document.querySelectorAll("#editModal input, #editModal textarea").forEach(el => {
     el.readOnly = readOnly;
-    // 日期與時間欄位即使 readonly 也要白底
-    if(el.type === "date" || el.type === "time"){
+    if (el.type === "date" || el.type === "time") {
       el.style.backgroundColor = "white";
     } else {
       el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
     }
   });
-  document.getElementById("saveEditBtn").style.display=readOnly?"none":"inline-block";
-  document.getElementById("deleteEditBtn").style.display=readOnly?"none":"inline-block";
-  document.getElementById("enterEditBtn").style.display=readOnly?"inline-block":"none";
-  isEditing=!readOnly;
+  document.getElementById("saveEditBtn").style.display = readOnly ? "none" : "inline-block";
+  document.getElementById("deleteEditBtn").style.display = readOnly ? "none" : "inline-block";
+  document.getElementById("enterEditBtn").style.display = readOnly ? "inline-block" : "none";
+  isEditing = !readOnly;
 }
 
-document.getElementById("enterEditBtn").onclick=()=>setReadOnly(false);
+document.getElementById("enterEditBtn").onclick = () => setReadOnly(false);
 
-document.getElementById("saveEditBtn").onclick=()=>{
-  const row=document.getElementById("dataTable").rows[editRowIndex];
-  ["ElderName","Date","Time","DoctorName","Department","Record","Note"].forEach((f,i)=>{
-    row.cells[i].innerText=document.getElementById("edit"+f).value;
+document.getElementById("saveEditBtn").onclick = () => {
+  const row = document.getElementById("dataTable").rows[editRowIndex];
+  ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
+    row.cells[i].innerText = document.getElementById("edit" + f).value;
   });
 
-  sortTableByDateTime('dataTable');
-  altRows('dataTable');
+  sortTableByDateTime("dataTable");
+  altRows("dataTable");
   alert("資料已更新 ✅");
   closeModal();
 };
 
-document.getElementById("deleteEditBtn").onclick=()=>{
-  if(confirm("確定刪除此筆資料？")){
+document.getElementById("deleteEditBtn").onclick = () => {
+  if (confirm("確定刪除此筆資料？")) {
     document.getElementById("dataTable").deleteRow(editRowIndex);
-    sortTableByDateTime('dataTable');
-    altRows('dataTable');
+    sortTableByDateTime("dataTable");
+    altRows("dataTable");
     alert("資料已刪除 ✅");
+    updateNoRecordMessage(); // ✅ 刪除後檢查
     closeModal();
   }
 };
 
-function hasChanges(){
-  return ["ElderName","Date","Time","DoctorName","Department","Record","Note"].some(f =>
-    document.getElementById("edit"+f).value !== originalData[f]
+function hasChanges() {
+  return ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].some(
+    f => document.getElementById("edit" + f).value !== originalData[f]
   );
 }
 
-function tryCloseModal(){
-  if(isEditing && hasChanges()){
+function tryCloseModal() {
+  if (isEditing && hasChanges()) {
     showSaveConfirmModal();
   } else {
     closeModal();
   }
 }
 
-function closeModal(){
-  const modal=document.getElementById("editModal");
+function closeModal() {
+  const modal = document.getElementById("editModal");
   modal.classList.remove("show");
-  setTimeout(()=>modal.style.display="none",300);
+  setTimeout(() => (modal.style.display = "none"), 300);
   setReadOnly(true);
-
-  // ✅ 隱藏導覽列
-  document.querySelector('.nav-1').style.display = 'flex';
+  document.querySelector(".nav-1").style.display = "flex";
 }
 
-document.getElementById("cancelEditBtn").onclick=()=>tryCloseModal();
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape") tryCloseModal();
+document.getElementById("cancelEditBtn").onclick = () => tryCloseModal();
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") tryCloseModal();
 });
 
-function showSaveConfirmModal(){
-  const modal=document.getElementById("saveConfirmModal");
-  modal.style.display="block";
-  setTimeout(()=>modal.classList.add("show"),10);
+function showSaveConfirmModal() {
+  const modal = document.getElementById("saveConfirmModal");
+  modal.style.display = "block";
+  setTimeout(() => modal.classList.add("show"), 10);
 }
 
-function closeSaveConfirmModal(){
-  const modal=document.getElementById("saveConfirmModal");
+function closeSaveConfirmModal() {
+  const modal = document.getElementById("saveConfirmModal");
   modal.classList.remove("show");
-  setTimeout(()=>modal.style.display="none",300);
+  setTimeout(() => (modal.style.display = "none"), 300);
 }
 
-document.getElementById("confirmSaveBtn").onclick=()=>{
+document.getElementById("confirmSaveBtn").onclick = () => {
   document.getElementById("saveEditBtn").click();
   closeSaveConfirmModal();
 };
 
-document.getElementById("confirmDiscardBtn").onclick=()=>{
+document.getElementById("confirmDiscardBtn").onclick = () => {
   closeSaveConfirmModal();
   closeModal();
 };
 
-document.getElementById("continueEditBtn").onclick=()=>{
+document.getElementById("continueEditBtn").onclick = () => {
   closeSaveConfirmModal();
 };
 
-// ===== LIFF 初始化與顯示志工姓名/頭像/登出 =====
-const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
+/* ==============================
+   ✅ LIFF 初始化
+   ============================== */
+const LIFF_ID = "2008228534-R8763A2n";
 const avatarEl = document.getElementById("volunteerAvatar");
 const nameEl = document.getElementById("volunteerName");
 
-// 初始化 LIFF（一定要先執行）
 async function initLiffAndSetProfile() {
   try {
     await liff.init({ liffId: LIFF_ID });
 
-    // 若尚未登入，顯示「未登入」狀態
     if (!liff.isLoggedIn()) {
       nameEl.innerText = "未登入";
       avatarEl.style.display = "none";
       return;
     }
 
-    // 已登入 → 取得 LINE 使用者資料
     const profile = await liff.getProfile();
     nameEl.innerText = profile.displayName || "志工";
     if (profile.pictureUrl) {
@@ -768,20 +765,16 @@ async function initLiffAndSetProfile() {
   }
 }
 
-// 點擊頭像 → 登入或前往個資頁
 avatarEl.addEventListener("click", () => {
   if (liff.isLoggedIn()) {
-    // 已登入，直接前往個資頁
     window.location.href = "註冊頁面.html";
   } else {
-    // 尚未登入，登入完自動前往個資頁
     liff.login({
       redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
     });
   }
 });
 
-// 點擊「未登入」文字也可登入
 nameEl.addEventListener("click", () => {
   if (!liff.isLoggedIn()) {
     liff.login({
@@ -792,16 +785,14 @@ nameEl.addEventListener("click", () => {
   }
 });
 
-// 頁面載入時執行 LIFF 初始化
 initLiffAndSetProfile();
 
-// 初始化頁面資料（你的其他功能）
-renderAllTable();
-
-// 補上既有列的編輯按鈕
+/* ==============================
+   ✅ 初始化表格按鈕
+   ============================== */
 function addEditButtonsToRows() {
   const tbody = document.getElementById("dataTable").querySelector("tbody");
-  Array.from(tbody.rows).forEach((row) => {
+  Array.from(tbody.rows).forEach(row => {
     if (row.cells.length < 8) {
       const actionCell = row.insertCell(7);
       const editBtn = document.createElement("button");
@@ -810,36 +801,14 @@ function addEditButtonsToRows() {
       editBtn.style.padding = "6px 10px";
       editBtn.onclick = () => openEditModal(row);
       actionCell.appendChild(editBtn);
-    } else {
-      const cell = row.cells[7];
-      if (!cell.querySelector("button")) {
-        cell.innerHTML = "";
-        const editBtn = document.createElement("button");
-        editBtn.type = "button";
-        editBtn.innerText = "編輯";
-        editBtn.style.padding = "6px 10px";
-        editBtn.onclick = () => openEditModal(row);
-        cell.appendChild(editBtn);
-      }
     }
   });
 }
 
-  const records = []; // 空資料
-const container = document.querySelector(".table-container");
-const noRecordMsg = document.getElementById("no-record-msg");
-
-// 沒有資料就顯示提示文字、隱藏表格
-if (records.length === 0) {
-  container.style.display = "none";
-  noRecordMsg.style.display = "block";
-} else {
-  container.style.display = "block";
-  noRecordMsg.style.display = "none";
-}
-
-
+// ✅ 頁面初次載入時顯示提示或表格
+document.addEventListener("DOMContentLoaded", updateNoRecordMessage);
 </script>
+
 
 </body>
 </html>
