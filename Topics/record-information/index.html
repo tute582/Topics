@@ -312,7 +312,7 @@
     /* 導覽列 */
   .nav-1{
     display: flex;                 /* 水平排列內容 */
-    font-weight: 700;
+    font-weight: bold;
     align-items: center;           /* 垂直置中 */
     justify-content: space-between;/* 兩端對齊：左/右 */
     padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
@@ -353,9 +353,9 @@
      頁面標題與表單
      ============================== -->
 <!-- 導覽列 -->
-<nav class="nav-1">
+<nav class="nav-1" style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background-color:#fff; font-weight:bold;">
   <div>
-    <h1>看診資訊</h1>
+    <h1 style="margin:0;">看診資訊</h1>
   </div>
 
   <div style="display:flex; align-items:center;">
@@ -368,6 +368,7 @@
     </h1>
   </div>
 </nav>
+
 
 <div class="input-container"> 
 <h1 class="title"> 輸入內容</h1>
