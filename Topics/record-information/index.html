@@ -120,7 +120,7 @@
        響應式設定（手機介面）
        ============================== */
     @media (max-width: 768px) {
-      h1 { font-size: 1.8em; }
+    
       form { width: 95%; }
       /* 在手機上移除強制最小寬度 讓表格可縮放並出現橫向滾動 */
       table { min-width: 0; width:100%; }
@@ -201,15 +201,6 @@
       transition:transform 0.3s ease;
     }
     #editModal.show > div { transform:translateY(0); }
-
-    /* 手機優化：減少外邊距、增加內距、圓角調整 */
-    @media (max-width: 480px) {
-     
-      /* 讓按鈕區靠近可視底部（但仍在可滾動內容內） */
-      #editModal > div button {
-        touch-action: manipulation;
-      }
-    }
 
     /* ==============================
        編輯視窗按鈕樣式
@@ -305,7 +296,7 @@
     /* 導覽列 */
   .nav-1{
     display: flex;                 /* 水平排列內容 */
-    font-weight: bold;
+   /* font-weight: 500;*/
     align-items: center;           /* 垂直置中 */
     justify-content: space-between;/* 兩端對齊：左/右 */
     padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
