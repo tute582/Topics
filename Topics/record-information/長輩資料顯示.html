@@ -79,63 +79,73 @@
   </style>
 </head>
 <body>
-  <!-- 導覽列 -->
-<nav class="nav-1">
-  <div>
-    <h1>長輩個人資料</h1>
-  </div>
+<!-- 導覽列 -->
+  <nav class="nav-1">
+    <div>
+      <h1>長輩個人資料</h1>
+    </div>
 
-  <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3; ">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
-      </span>
-    </h1>
-  </div>
-</nav>
+    <div style="display:flex; align-items:center;">
+      <h1 style="margin:0; text-align:right;">
+        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
+        </span>
+      </h1>
+    </div>
+  </nav>
+
   <div class="card">
-    
     <img id="avatar" class="avatar" src="default-avatar.png" alt="使用者頭像">
     <div id="content"></div>
     <a class="back" href="註冊頁面.html">回到填寫頁</a>
   </div>
 
   <script>
+    // ===== 志工登入資訊顯示 =====
+    const volunteerAvatar = document.getElementById("volunteerAvatar");
+    const volunteerName = document.getElementById("volunteerName");
+    const volunteerData = localStorage.getItem('volunteer');
+
+    if (volunteerData) {
+      try {
+        const v = JSON.parse(volunteerData);
+        volunteerName.textContent = v.name || '未登入';
+        volunteerAvatar.src = v.avatar && v.avatar.trim() !== "" ? v.avatar : "default-avatar.png";
+      } catch (e) {
+        console.error("志工資料解析錯誤:", e);
+      }
+    }
+
+    // ===== 長輩資料顯示 =====
     const content = document.getElementById('content');
     const avatar = document.getElementById('avatar');
-    const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
-    const volunteerName = document.getElementById("volunteerName");
     const raw = localStorage.getItem('seniors');
 
     if (!raw) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
     } else {
       try {
-        // 取最後一筆（最新填寫的資料）
         const list = JSON.parse(raw);
-        const d = list[list.length - 1];
+        const d = list[list.length - 1]; // 最新一筆
 
-        // 設定名稱
-        if (volunteerName) volunteerName.textContent = d.name || "未登入";
-
-        // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-        const html = [
-          '<dl>',
-            `<dt>姓名</dt><dd>${d.name || ''}</dd>`,
-            `<dt>連絡電話</dt><dd>${d.phone || ''}</dd>`,
-            `<dt>出生年月日</dt><dd>${d.birthday || ''}</dd>`,
-            `<dt>性別</dt><dd>${d.gender || ''}</dd>`,
-            `<dt>地址</dt><dd>${d.address || ''}</dd>`,
-            `<dt>緊急聯絡人</dt><dd>${d.emergencyContact || ''}</dd>`,
-            `<dt>健康狀況備註</dt><dd>${d.healthNote || ''}</dd>`,
-          '</dl>'
-        ].join('');
+
+        const html = `
+          <dl>
+            <dt>姓名</dt><dd>${d.name || ''}</dd>
+            <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
+            <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
+            <dt>性別</dt><dd>${d.gender || ''}</dd>
+            <dt>地址</dt><dd>${d.address || ''}</dd>
+            <dt>緊急聯絡人</dt><dd>${d.emergencyContact || ''}</dd>
+            <dt>健康狀況備註</dt><dd>${d.healthNote || ''}</dd>
+          </dl>
+        `;
         content.innerHTML = html;
 
       } catch (e) {
-        console.error( e);
+        console.error("長輩資料解析錯誤:", e);
         content.innerHTML = '<p class="empty">資料解析錯誤。</p>';
       }
     }
