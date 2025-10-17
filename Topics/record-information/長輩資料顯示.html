@@ -60,24 +60,21 @@
     .empty {
       color: #666;
     }
-     /* 導覽列 */
+    /* 導覽列 */
     .nav-1 {
-    display: flex;                 /* 水平排列內容 */
-    font-weight: bold;
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 1001;                 /* 保證在其他元素之上 */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    left: 0;
-    right: 0;
-    color: black;
-    background-color: white;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1001;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      width: 100%;
+      left: 0;
+      right: 0;
+      box-sizing: border-box; /* 確保padding不會超出寬度 */
     }
   </style>
 </head>
@@ -91,7 +88,7 @@
   <div style="display:flex; align-items:center;">
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
+       <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
                style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
           <span id="volunteerName" style="cursor:pointer;">未登入</span>
         </span>
@@ -105,35 +102,35 @@
     <a class="back" href="用戶資料(第二版).html">回到填寫頁</a>
   </div>
 
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
   <script>
-    const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
     const content = document.getElementById('content');
     const avatar = document.getElementById('avatar');
-    const avatarEl = document.getElementById("volunteerAvatar");
     const raw = localStorage.getItem('seniors');
-
+    const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
+    const avatarEl = document.getElementById("volunteerAvatar");
+    async function initLiffAndLoadAvatar() {
   try {
     // 初始化 LIFF
     await liff.init({ liffId: LIFF_ID });
 
+    // 若未登入 → 自動導向 LINE 登入
+    if (!liff.isLoggedIn()) {
+      liff.login({
+        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+      });
+      return;
+    }
+
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
-    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
-    const displayName = profile?.displayName || "未登入";
 
     // 頁面上的兩個頭像元素
-    const avatar = document.getElementById("avatar");
+    const avatarEl = document.getElementById("avatarPreview");
     const navAvatar = document.getElementById("volunteerAvatar");
 
     // ✅ 設定頭像（導覽列 + 表單上方）
-    
-    navAvatar.src = avatarUrl;
-    avatar.src = avatarUrl;
-    volunteerName.textContent = displayName;
-
+    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
+    avatarEl.src = avatarUrl;
     if (navAvatar) navAvatar.src = avatarUrl;
 
   } catch (err) {
@@ -142,8 +139,8 @@
     const navAvatar = document.getElementById("volunteerAvatar");
     if (navAvatar) navAvatar.src = "default-avatar.png";
   }
+}
 
-// ✅ 顯示長輩資料
 
     if (!raw) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
