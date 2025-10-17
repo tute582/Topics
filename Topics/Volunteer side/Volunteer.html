@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>志工管理介面 Volunteer Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<style>
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #f7f9fb;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #4f8a8b;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 30px;
+}
+
+/* 志工資訊卡 */
+.volunteer-card {
+  background-color: #fff;
+  width: 320px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.volunteer-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  object-fit: cover;
+}
+
+.volunteer-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.badge {
+  display: inline-block;
+  background-color: #ffb84d;
+  color: #fff;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin: 4px;
+}
+
+/* 日曆 */
+.calendar-container {
+  flex-grow: 1;
+  min-width: 400px;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+/* 彈出視窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+.modal h3 { margin-bottom: 15px; }
+
+.modal button {
+  margin: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.confirm {
+  background: #4f8a8b;
+  color: white;
+}
+
+.cancel {
+  background: #ccc;
+}
+
+/* RWD */
+@media screen and (max-width: 768px) {
+  .dashboard { flex-direction: column; align-items: center; }
+  .calendar-container { width: 95%; }
+}
+</style>
+</head>
+<body>
+
+<header>志工管理系統 Volunteer Dashboard</header>
+
+<section class="dashboard">
+  <!-- 志工資訊卡 -->
+  <div class="volunteer-card">
+    <img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" class="volunteer-avatar" alt="志工頭像">
+    <div class="volunteer-name">王小明</div>
+    <div>
+      <span class="badge">✅ 醫療證照</span>
+      <span class="badge">💬 陪伴志工</span>
+    </div>
+    <p style="font-size:14px; color:#777;">可協助病患照護與心理陪伴</p>
+  </div>
+
+  <!-- 日曆 -->
+  <div class="calendar-container">
+    <div id="calendar"></div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    selectable: true,
+    locale: 'zh-tw',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: ''
+    },
+    // 點擊日期 => 選擇時段
+    dateClick: function(info) {
+      showTimeSlotModal(info.dateStr);
+    },
+    // 點擊事件 => 取消確認
+    eventClick: function(info) {
+      if (confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)) {
+        info.event.remove();
+        alert('❌ 已取消該服務時段');
+      }
+    },
+    events: [
+      { title: '可服務 上午', start: '2025-10-10', color: '#4f8a8b' },
+      { title: '可服務 下午', start: '2025-10-15', color: '#74b9ff' }
+    ]
+  });
+  calendar.render();
+
+  // === 彈出時段選擇框 ===
+  function showTimeSlotModal(dateStr) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal">
+        <h3>選擇 ${dateStr} 的可服務時段</h3>
+        <button class="confirm" data-time="上午">上午 (09:00–12:00)</button>
+        <button class="confirm" data-time="下午">下午 (13:00–17:00)</button>
+        <button class="confirm" data-time="晚上">晚上 (18:00–21:00)</button>
+        <br><br>
+        <button class="cancel">取消</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // 點選時間按鈕
+    overlay.querySelectorAll('.confirm').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const time = btn.dataset.time;
+        calendar.addEvent({
+          title: `可服務 ${time}`,
+          start: dateStr,
+          color: time === '上午' ? '#4f8a8b' : time === '下午' ? '#74b9ff' : '#f6b93b'
+        });
+        overlay.remove();
+        alert(`✅ 已新增 ${dateStr} 的 ${time} 可服務時段`);
+      });
+    });
+
+    overlay.querySelector('.cancel').addEventListener('click', () => overlay.remove());
+  }
+});
+</script>
+
+</body>
+</html>
