@@ -115,29 +115,25 @@
     const avatarEl = document.getElementById("volunteerAvatar");
     const raw = localStorage.getItem('seniors');
 
-    async function initLiffAndLoadAvatar() {
   try {
     // 初始化 LIFF
     await liff.init({ liffId: LIFF_ID });
 
-    // 若未登入 → 自動導向 LINE 登入
-    if (!liff.isLoggedIn()) {
-      liff.login({
-        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
-      });
-      return;
-    }
-
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
+    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
+    const displayName = profile?.displayName || "未登入";
 
     // 頁面上的兩個頭像元素
-    const avatarEl = document.getElementById("avatarPreview");
+    const avatar = document.getElementById("avatar");
     const navAvatar = document.getElementById("volunteerAvatar");
 
     // ✅ 設定頭像（導覽列 + 表單上方）
-    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
-    avatarEl.src = avatarUrl;
+    
+    navAvatar.src = avatarUrl;
+    avatar.src = avatarUrl;
+    volunteerName.textContent = displayName;
+
     if (navAvatar) navAvatar.src = avatarUrl;
 
   } catch (err) {
@@ -146,8 +142,8 @@
     const navAvatar = document.getElementById("volunteerAvatar");
     if (navAvatar) navAvatar.src = "default-avatar.png";
   }
-}
 
+// ✅ 顯示長輩資料
 
     if (!raw) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
