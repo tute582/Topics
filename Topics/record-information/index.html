@@ -309,26 +309,25 @@
     }
     #continueEditBtn:hover { background-color:#ffffff; }
     
-    /* 導覽列 */
-  .nav-1{
-    display: flex;                 /* 水平排列內容 */
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 1001;                 /* 保證在其他元素之上 */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    left: 0;
-    right: 0;
-    color: black;
-    background-color: white;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
-    font-weight: 700;
-
-  }
+   /* 導覽列樣式 */
+.nav-1 {
+  display: flex;                      /* 水平排列內容 */
+  justify-content: space-between;    /* 左右兩端對齊 */
+  align-items: center;               /* 垂直置中 */
+  padding: 10px 25px;                /* 內距：左右空間 */
+  position: sticky;                  /* 滾動時吸附上方 */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;                     /* 保證在其他元素之上 */
+  width: 100%;
+  background-color: white;
+  color: black;
+  font-weight: 700;                  /* 整體字體加粗 */
+  box-sizing: border-box;            /* padding不影響寬度 */
+  border-bottom: 1px solid #ddd;     /* 下邊框讓導覽列更明顯 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 淡淡陰影 */
+}
 
   /* volunteer area */
   .volunteer-area { display:flex; align-items:center; gap:8px; }
@@ -353,18 +352,14 @@
      ============================== -->
 <!-- 導覽列 -->
 <nav class="nav-1">
-  <div style="display:flex; align-items:center; gap:12px;">
+  <div>
     <h1 style="margin:0;">看診資訊</h1>
   </div>
 
-  <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
-      </span>
-    </h1>
+  <div class="volunteer-area">
+    <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
+         style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+    <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
   </div>
 </nav>
 
