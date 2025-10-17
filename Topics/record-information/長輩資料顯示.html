@@ -105,6 +105,41 @@
     const content = document.getElementById('content');
     const avatar = document.getElementById('avatar');
     const raw = localStorage.getItem('seniors');
+    const LIFF_ID = "2008228534-R8763A2n"; // 你的 LIFF ID
+    const avatarEl = document.getElementById("volunteerAvatar");
+    async function initLiffAndLoadAvatar() {
+  try {
+    // 初始化 LIFF
+    await liff.init({ liffId: LIFF_ID });
+
+    // 若未登入 → 自動導向 LINE 登入
+    if (!liff.isLoggedIn()) {
+      liff.login({
+        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+      });
+      return;
+    }
+
+    // ✅ 抓取 LINE 使用者資料
+    const profile = await liff.getProfile();
+
+    // 頁面上的兩個頭像元素
+    const avatarEl = document.getElementById("avatarPreview");
+    const navAvatar = document.getElementById("volunteerAvatar");
+
+    // ✅ 設定頭像（導覽列 + 表單上方）
+    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
+    avatarEl.src = avatarUrl;
+    if (navAvatar) navAvatar.src = avatarUrl;
+
+  } catch (err) {
+    console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
+    document.getElementById("avatarPreview").src = "default-avatar.png";
+    const navAvatar = document.getElementById("volunteerAvatar");
+    if (navAvatar) navAvatar.src = "default-avatar.png";
+  }
+}
+
 
     if (!raw) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
