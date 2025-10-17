@@ -88,11 +88,10 @@
   <div style="display:flex; align-items:center;">
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-       <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
-               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-          <span id="volunteerName" style="cursor:pointer;">未登入</span>
-        </span>
-      </h1>
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3; ">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
+      </span>
+    </h1>
   </div>
 </nav>
   <div class="card">
@@ -106,6 +105,7 @@
   const content = document.getElementById('content');
   const avatar = document.getElementById('avatar');
   const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
+  const volunteerName = document.getElementById("volunteerName");
   const raw = localStorage.getItem('seniors');
 
     if (!raw) {
