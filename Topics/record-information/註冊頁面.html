@@ -139,14 +139,14 @@
   </div>
 
   <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-       
-      </span>
-    </h1>
-  </div>
+  <h1 style="margin:0; text-align:right;">
+    <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+      <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+           style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+      <span id="volunteerName" style="font-size:16px; color:#333; font-weight:bold;">未登入</span>
+    </span>
+  </h1>
+</div>
 </nav>
 
   <div class="container">
@@ -218,40 +218,48 @@
   const avatarEl = document.getElementById("avatarPreview");
 
     async function initLiffAndLoadAvatar() {
-    try {
-      // 初始化 LIFF
-      await liff.init({ liffId: LIFF_ID });
+  try {
+    // 初始化 LIFF
+    await liff.init({ liffId: LIFF_ID });
 
-      // 若未登入 → 自動導向 LINE 登入，登入後會回到這頁
-      if (!liff.isLoggedIn()) {
-         liff.login({
-          redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
-        });
-        return;
-      }
-
-      // 綁定事件
-      
-
-      // ✅ 初始化時先載入 LINE 頭像
-      const profile = await liff.getProfile();
-      
-      // 設定頭像與名稱
-      if (profile && profile.pictureUrl) {
-        avatarEl.src = profile.pictureUrl;
-      } else {
-        avatarEl.src = "default-avatar.png";
-      }
-
-      // 可顯示使用者名稱（若你想在頁面中顯示）
-      const nameEl = document.getElementById("volunteerName");
-      if (nameEl) nameEl.textContent = profile.displayName || "志工";
-
-    } catch (err) {
-      console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
-      avatarEl.src = "default-avatar.png";
+    // 若未登入 → 自動導向 LINE 登入
+    if (!liff.isLoggedIn()) {
+      liff.login({
+        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+      });
+      return;
     }
+
+    // ✅ 抓取 LINE 使用者資料
+    const profile = await liff.getProfile();
+
+    // 導覽列與表單的頭像元素
+    const avatarEl = document.getElementById("avatarPreview");
+    const navAvatar = document.getElementById("volunteerAvatar");
+
+    // ✅ 設定頭像（兩個地方同步）
+    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
+    if (avatarEl) avatarEl.src = avatarUrl;
+    if (navAvatar) navAvatar.src = avatarUrl;
+
+    // ✅ 設定使用者名稱（導覽列右側）
+    const nameEl = document.getElementById("volunteerName");
+    if (nameEl) {
+      nameEl.textContent = profile.displayName || "LINE 使用者";
+    }
+
+  } catch (err) {
+    console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
+    const avatarEl = document.getElementById("avatarPreview");
+    const navAvatar = document.getElementById("volunteerAvatar");
+    if (avatarEl) avatarEl.src = "default-avatar.png";
+    if (navAvatar) navAvatar.src = "default-avatar.png";
+
+    const nameEl = document.getElementById("volunteerName");
+    if (nameEl) nameEl.textContent = "未登入";
   }
+}
+
 
   // ✅ 頁面載入後執行
   document.addEventListener("DOMContentLoaded", initLiffAndLoadAvatar);
