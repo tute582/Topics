@@ -832,7 +832,7 @@ async function loadData() {
 
    try {
     // 🔹請改成你的實際 API 網址
-    const response = await fetch("https://example.com/api/records");
+    const response = await fetch("https://supabase-api-six.vercel.app/consultations/{O_UserID}");
     if (!response.ok) throw new Error("伺服器回應錯誤");
     const data = await response.json();
 

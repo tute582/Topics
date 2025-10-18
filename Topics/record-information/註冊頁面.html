@@ -7,7 +7,7 @@
   <title>申請資料填寫</title>
   <style>
     body {
-      font-family: "Microsoft JhengHei", sans-serif;
+      font-family: "Arial", sans-serif;
       background-color: #f4f6f8;
       margin: 0;
       padding: 0;
@@ -158,7 +158,35 @@
       background-color: white; /* 主表單預設白底 */
       color: #222;
     }
-  
+   /* ===== Modal 樣式 ===== */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 999; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-content {
+    background-color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    min-width: 250px;
+  }
+  .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+  }
   </style>
 </head>
 <body>
@@ -182,7 +210,14 @@
   <div class="container">
     <img id="avatarPreview" src="default-avatar.png" alt="頭像預覽" >
     
-  
+    <!-- ===== Modal 提示框 ===== -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <p>最多只能選 6 個特質</p>
+      </div>
+    </div>
+
   <!-- ✅ 這裡應該在 container 裡 -->
     <label for="role" class="required">申請身分</label>
     <select id="role" name="role" onchange="toggleForm()" required>
@@ -224,7 +259,7 @@
   <label>簡介：</label>
   <textarea id="vDesc" rows="3"></textarea>
 
-  <label>服務特質（可多選）：</label>
+  <label>服務特質（可多選，最多6個）</label>
   <div class="tags" id="volunteerTags">
     <div class="tag">熱心助人</div>
     <div class="tag">有耐心</div>
@@ -232,10 +267,15 @@
     <div class="tag">責任感強</div>
     <div class="tag">樂觀開朗</div>
     <div class="tag">細心謹慎</div>
-    <div class="tag">團隊合作</div>
+    <div class="tag">尊重他人</div>
     <div class="tag">富有同理心</div>
     <div class="tag">親切友善</div>
     <div class="tag">善於溝通</div>
+    <div class="tag">守時負責</div>
+    <div class="tag">尊重他人</div>
+    <div class="tag">注重細節</div>
+    <div class="tag">樂於服務</div>
+    <div class="tag">願意傾聽意見</div>
   </div>
 
   <div class="button-group">
@@ -273,7 +313,7 @@
   <label>健康狀況備註</label>
   <textarea name="healthNote" rows="3"></textarea>
 
-  <label>個性特質（可多選）：</label>
+  <label>個性特質（可多選，最多6個）</label>
   <div class="tags" id="seniorTags">
     <div class="tag">樂觀開朗</div>
     <div class="tag">溫和親切</div>
@@ -396,6 +436,7 @@
   document.getElementById("seniorForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const form = e.target;
+    
     // 取得已選取的服務特質
     const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
     .map(tag => tag.textContent.trim());
@@ -416,14 +457,44 @@
     localStorage.setItem("seniors", JSON.stringify(seniors));
     window.location.href = encodeURI("長輩資料顯示.html");
   });
-  // 點擊切換「選中」狀態
-    document.querySelectorAll('.tags').forEach(group => {
-      group.addEventListener('click', e => {
-        if (e.target.classList.contains('tag')) {
-          e.target.classList.toggle('selected');
-        }
-      });
-    });
+    // ===== 點擊切換「選中」狀態，限制最多 6 個 =====
+  const maxSelect = 6;
+  const modal = document.getElementById('modal');
+  const closeModal = document.getElementById('closeModal');
+
+  // 封裝一個函式，讓任何 tags 容器都可用
+function setupTags(tagContainerId) {
+  const container = document.getElementById(tagContainerId);
+  container.addEventListener('click', e => {
+    if (e.target.classList.contains('tag')) {
+      const selectedCount = container.querySelectorAll('.tag.selected').length;
+      if (e.target.classList.contains('selected')) {
+        e.target.classList.remove('selected');
+      } else if (selectedCount < maxSelect) {
+        e.target.classList.add('selected');
+      } else {
+        // 顯示 Modal 提示
+        modal.style.display = 'flex';
+      }
+    }
+  });
+}
+
+// 設定志工與長輩標籤
+setupTags('volunteerTags');
+setupTags('seniorTags');
+
+// 關閉 Modal
+closeModal.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+// 點擊 Modal 外層也關閉
+window.addEventListener('click', e => {
+  if(e.target === modal){
+    modal.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
