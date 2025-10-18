@@ -103,8 +103,8 @@
 
   <script>
     const content = document.getElementById('content');
-    const avatar = document.getElementById('avatar');
-    const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
+    const avatar = document.getElementById('avatar');// 導覽列頭像
+    const volunteerAvatar = document.getElementById('volunteerAvatar'); // 卡片頭像
     const raw = localStorage.getItem('seniors');
 
     if (!raw) {
@@ -116,8 +116,9 @@
         const d = list[list.length - 1];
 
         // 如果沒有頭像，就顯示預設圖
-        avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-        volunteerAvatar.src = user.pictureUrl || "default-avatar.png";
+        const photo = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+        avatar.src = photo;
+        volunteerAvatar.src = photo;
         volunteerName.textContent = d.name || "未登入";
 
         const html = [
