@@ -117,6 +117,7 @@
 
         // 如果沒有頭像，就顯示預設圖
         avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+        volunteerAvatar.src = user.pictureUrl || "default-avatar.png";
         volunteerName.textContent = d.name || "未登入";
 
         const html = [
