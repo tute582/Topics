@@ -438,35 +438,37 @@
       cancel.addEventListener('click', cancelHandler);
     }
 
-    fetch(Url)
-      .then(response => {
-        if (!response.ok) throw new Error("網路請求失敗");
-        return response.json();
-      })
-      .then(result => {
-        const container = document.getElementById("volunteers");
+    let volunteers = []; // 全域儲存志工資料
 
-        // 判斷 API 是否成功
-        if (!result.success || !result.data || result.data.length === 0) {
-          container.innerHTML = "<p>❌ 無法取得長者資料。</p>";
+    window.addEventListener("DOMContentLoaded", async () => {
+      const apiUrl = "https://supabase-api-six.vercel.app/volunteers";
+      try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error("網路錯誤");
+        const result = await res.json();
+
+        if (!result.success || !Array.isArray(result.data)) {
+          console.error("❌ API 格式錯誤或無資料");
           return;
         }
 
-        // 將資料轉成 HTML
-        container.innerHTML = result.data.map(elder => `
-          <div class="elder-card">
-            <p><strong>姓名：</strong> ${elder.elder_name}</p>
-            <p><strong>性別：</strong> ${elder.gender || "未填寫"}</p>
-            <p><strong>年齡：</strong> ${elder.age || "未提供"}</p>
-            <p><strong>偏好標籤：</strong> ${elder.preference_tags || "無"}</p>
-            <p><strong>建立時間：</strong> ${new Date(elder.created_at).toLocaleString()}</p>
-          </div>
-        `).join("");
-      })
-      .catch(error => {
-        console.error("發生錯誤：", error);
-        document.getElementById("elders-container").innerHTML = "<p>⚠️ 無法取得資料，請稍後再試。</p>";
-      });
+        // 將 API 資料轉成可用的 volunteers 陣列格式
+        volunteers = result.data.map((v, i) => ({
+          name: v.volunteer_name || "未命名",
+          gender: v.gender || "未填寫",
+          age: v.age || "未提供",
+          tags: Array.isArray(v.personality) ? v.personality : [],
+          desc: v.partner_expeienceence || "尚無經驗說明",
+          cover: `https://picsum.photos/300/120?random=${i}`, // 暫用隨機封面
+          avatar: v.image_url,
+          available_time: v.available_time || "未提供",
+        }));
+
+        console.log("✅ 志工資料載入完成", volunteers);
+      } catch (err) {
+        console.error("⚠️ 志工資料載入失敗：", err);
+      }
+    });
 
       // const volunteers = [
       //   { name: "王曉明", tags: ["陽光型", "健談", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?1", avatar: "https://picsum.photos/100/100?11" },
