@@ -93,6 +93,19 @@
       box-sizing: border-box;
       border-bottom: 1px solid #ddd;      /* 下邊界線 */
     }
+
+    .tag-display {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #bbdefb;
+      border-radius: 12px;
+      padding: 4px 10px;
+      margin: 4px 6px 0 0;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
   </style>
 </head>
 
@@ -161,18 +174,23 @@
         volunteerName.textContent = d.name || "未登入";
 
         // 建立要顯示的個人資料 HTML 結構
-        const html = [
-          '<dl>',
-            `<dt>姓名</dt><dd>${d.name || ''}</dd>`,
-            `<dt>連絡電話</dt><dd>${d.phone || ''}</dd>`,
-            `<dt>出生年月日</dt><dd>${d.birthday || ''}</dd>`,
-            `<dt>性別</dt><dd>${d.gender || ''}</dd>`,
-            `<dt>地址</dt><dd>${d.address || ''}</dd>`,
-            `<dt>緊急聯絡人</dt><dd>${d.emergencyContact || ''}</dd>`,
-            `<dt>健康狀況備註</dt><dd>${d.healthNote || ''}</dd>`,
-            `<dt>興趣標籤</dt><dd>${d.hobbies || ''}</dd>`,
-          '</dl>'
-        ].join('');
+        const html = `
+      <dl>
+        <dt>姓名</dt><dd>${d.name || ''}</dd>
+        <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
+        <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
+        <dt>性別</dt><dd>${d.gender || ''}</dd>
+        <dt>地址</dt><dd>${d.address || ''}</dd>
+        <dt>緊急聯絡人</dt><dd>${d.emergencyContact || ''}</dd>
+        <dt>健康狀況備註</dt><dd>${d.healthNote || ''}</dd>
+        <dt>個性特質</dt>
+        <dd>${
+          Array.isArray(d.tags)
+            ? d.tags.map(tag => `<span class="tag-display">${tag}</span>`).join('')
+            : (d.tags || '')
+        }</dd>
+      </dl>
+    `;
 
         // 插入網頁中顯示
         content.innerHTML = html;

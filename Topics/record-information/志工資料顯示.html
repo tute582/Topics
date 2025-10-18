@@ -74,6 +74,19 @@
       color: #666;
     }
 
+    .tag-display {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    border-radius: 12px;
+    padding: 4px 10px;
+    margin: 4px 6px 0 0;
+    font-size: 14px;
+    white-space: nowrap;
+    }
+
+
     /* ======== 導覽列樣式 ======== */
     .nav-1 {
       display: flex;                 /* 水平排列內容 */
@@ -165,8 +178,15 @@
             <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
             <dt>性別</dt><dd>${d.gender || ''}</dd>
             <dt>地址</dt><dd>${d.address || ''}</dd>
-            <dt>專長或可服務項目</dt><dd>${d.skills || ''}</dd>
-            <dt>個性標籤</dt><dd>${d.vTagsList || ''}</dd>
+            <dt>簡介</dt><dd>${d.desc || ''}</dd>
+            <dt>服務特質</dt>
+            <dd>
+              ${
+                Array.isArray(d.tags)
+                  ? d.tags.map(tag => `<span class="tag-display">${tag}</span>`).join('')
+                  : (d.tags || '')
+              }
+            </dd>
             <dt>簡介</dt><dd>${(d.desc || '').replace(/\n/g,'<br>')}</dd>
           </dl>
         `;
