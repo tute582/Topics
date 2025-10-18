@@ -7,6 +7,8 @@
   <style>
 body {
   font-family: "Arial", sans-serif;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -17,7 +19,7 @@ h1 {
 h2 {
   margin-top: 5px;
   margin-bottom: 5px;
-  font-size: 30px;
+  font-size: 24px;
   display: inline-block;
 }
 h3{
@@ -45,12 +47,13 @@ input[type="date"],
 input[type="time"],
 #editModal input {
   width: 92%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #888;
-      font-size: 18px;
-     margin: 15px auto;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #888;
+  font-size: 18px;
+  margin: 5px auto;
+  margin-bottom: 15px;
 }
 
 input[type="text"],
@@ -244,39 +247,26 @@ tbody tr:nth-child(odd) {
   position: sticky;              /* 滾動時吸附上方 */
   top: 0;                        /* 吸附頂部 */
   z-index: 1001;                 /* 保證在其他元素之上 */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  /*box-shadow: 0 2px 6px rgba(0,0,0,0.1);*/
   width: 100%;
   left: 0;
   right: 0;
   color: black;
   background-color: white;
   box-sizing: border-box; /* 確保padding不會超出寬度 */
-  border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+ border-bottom: 1px solid #ddd;  /*建議加這行讓導覽列更明顯 */
 }
-#navRight {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+ .record-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
 
-#userProfile {
-  display: none;
-  align-items: center;
-  gap: 8px;
-}
-
-#userAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-#userName {
-  font-size: 16px;
-  font-weight: 600;
-}
-
+    .no-record {
+      text-align: center;
+      color: #888;
+      font-size: 18px;
+      margin: 20px 0;
+    }
 
 /* 統一 Modal 樣式 */
 #historyModal {
@@ -379,6 +369,21 @@ tbody tr:nth-child(odd) {
 #historyModal table {
   display: table !important;
 }
+/* volunteer area */
+  .volunteer-area { display:flex; align-items:center; gap:8px; }
+  .volunteer-area .avatar {
+    width:36px; height:36px; border-radius:50%; object-fit:cover;
+    border:1px solid #ddd; display:none;
+  }
+  /* 可點擊的登入區域樣式 */
+  .volunteer-area #volunteerName {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: transparent;
+  }
+  .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
+
   </style>
 </head>
 <body>
@@ -386,17 +391,18 @@ tbody tr:nth-child(odd) {
     <div> 
   <h1 style="margin:0; font-size: 28px;">行事曆</h1>
     </div>
-    <div id="navRight">
-      <button id="loginBtn" class="btn" type="button">LINE 登入</button>
-      <button id="logoutBtn" class="btn" type="button" style="display:none;">登出</button>
-      <div id="userProfile">
-        <img id="userAvatar" src="default-avatar.png" alt="avatar">
-        <span id="userName"></span>
-      </div>
-    </div>
+    <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+      </span>
+    </h1>
+  </div>
   </nav>
   <div class="div-b">
-    <h2>輸入</h2>
+    <h2>輸入內容</h2>
     <form id="dataForm" onsubmit="return false;">
       <label>日期</label>
       <input type="date" id="date" placeholder="例如(例：2025-10-02)" />
@@ -464,47 +470,53 @@ tbody tr:nth-child(odd) {
     document.addEventListener("DOMContentLoaded", async () => {
       // ---- LIFF 初始化 ----
       const liffId = '2008228534-vAzlOYLb';
-      const loginBtn = document.getElementById("loginBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const userProfile = document.getElementById("userProfile");
-      const userNameEl = document.getElementById("userName");
-      const userAvatar = document.getElementById("userAvatar");
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
 
-      // 預設顯示
-      loginBtn.style.display = "block";
-      userProfile.style.display = "none";
-      logoutBtn.style.display = "none";
+      async function initLiffAndSetProfile() {
+        try {
+          await liff.init({ liffId: liffId });
 
-      try {
-        await liff.init({ liffId });
-        console.log("✅ LIFF 初始化成功");
-
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          userNameEl.textContent = profile.displayName;
-          userAvatar.src = profile.pictureUrl || "default-avatar.png";
-          userProfile.style.display = "flex";
-          loginBtn.style.display = "none";
-          logoutBtn.style.display = "block";
-        } else {
-          userProfile.style.display = "none";
-          loginBtn.style.display = "block";
-          logoutBtn.style.display = "none";
-        }
-
-        loginBtn.addEventListener("click", () => {
-          if (!liff.isLoggedIn()) liff.login();
-        });
-        logoutBtn.addEventListener("click", () => {
-          if (liff.isLoggedIn()) {
-            liff.logout();
-            window.location.reload();
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
           }
-        });
-      } catch (err) {
-        console.error("❌ LIFF 初始化失敗:", err);
-        loginBtn.style.display = "block";
+
+          const profile = await liff.getProfile();
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+        } catch (err) {
+          console.error("LIFF init error:", err);
+        }
       }
+
+      avatarEl.addEventListener("click", () => {
+        if (liff.isLoggedIn()) {
+          window.location.href = "註冊頁面.html";
+        } else {
+          liff.login({
+            redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+          });
+        }
+      });
+
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({
+            redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+          });
+        } else {
+          alert("已登入：" + (nameEl.innerText || "志工"));
+        }
+      });
+
+      initLiffAndSetProfile();
 
       // ---- 行事曆功能 ----
       let records = JSON.parse(localStorage.getItem('calendarRecords') || '[]');
