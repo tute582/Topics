@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>行事曆</title>
+  <title>行事曆 (修正版)</title>
   <style>
 body {
   font-family: "Arial", sans-serif;
@@ -27,7 +27,6 @@ h3{
 }
 
 form {
-  
   margin: 10px auto;
   padding: 20px;
   border: 1px solid #ccc;
@@ -221,8 +220,6 @@ tbody tr:nth-child(odd) {
   cursor: pointer;
   background-color: #61aaf3;
   color: white;
-  
-
 }
 
 /* Modal */
@@ -256,6 +253,30 @@ tbody tr:nth-child(odd) {
   box-sizing: border-box; /* 確保padding不會超出寬度 */
   border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
 }
+#navRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#userProfile {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+#userAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#userName {
+  font-size: 16px;
+  font-weight: 600;
+}
+
 
 /* 統一 Modal 樣式 */
 #historyModal {
@@ -366,8 +387,8 @@ tbody tr:nth-child(odd) {
   <h1 style="margin:0; font-size: 28px;">行事曆</h1>
     </div>
     <div id="navRight">
-      <button id="loginBtn" class="btn">LINE 登入</button>
-      <button id="logoutBtn" class="btn" style="display:none;">登出</button>
+      <button id="loginBtn" class="btn" type="button">LINE 登入</button>
+      <button id="logoutBtn" class="btn" type="button" style="display:none;">登出</button>
       <div id="userProfile">
         <img id="userAvatar" src="default-avatar.png" alt="avatar">
         <span id="userName"></span>
@@ -376,7 +397,7 @@ tbody tr:nth-child(odd) {
   </nav>
   <div class="div-b">
     <h2>輸入</h2>
-    <form id="dataForm">
+    <form id="dataForm" onsubmit="return false;">
       <label>日期</label>
       <input type="date" id="date" placeholder="例如(例：2025-10-02)" />
       <label>時間</label>
@@ -410,10 +431,10 @@ tbody tr:nth-child(odd) {
   <!-- 編輯用 Modal -->
   <div id="editModal">
     <div>
-      <button id="closeEditModalBtn" class="close-btn">&times;</button>
+      <button id="closeEditModalBtn" class="close-btn" type="button">&times;</button>
 
       <h3>編輯行程</h3>
-      <form id="editForm">
+      <form id="editForm" onsubmit="return false;">
         <label>日期</label>
         <input type="date" id="editDate" /><br />
         <label>時間</label>
@@ -431,157 +452,149 @@ tbody tr:nth-child(odd) {
   <!-- 過往紀錄 Modal -->
   <div id="historyModal" style="display:none;">
     <div>
-      <button id="closeHistoryModalBtn" class="close-btn">&times;</button>
+      <button id="closeHistoryModalBtn" class="close-btn" type="button">&times;</button>
       <h3>過往紀錄</h3>
       <div id="historyContent"></div>
     </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<!-- <script src="./liff.js"></script> -->
   <script>
+    // 把所有初始化放在一個 DOMContentLoaded 裡，並增加每筆資料的唯一 id，避免透過物件參考找 index 的問題
     document.addEventListener("DOMContentLoaded", async () => {
-  // LIFF 初始化
-    const liffId = '2008228534-vAzlOYLb';
-     const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const userProfile = document.getElementById("userProfile");
-    const userNameEl = document.getElementById("userName");
-    const userAvatar = document.getElementById("userAvatar");
+      // ---- LIFF 初始化 ----
+      const liffId = '2008228534-vAzlOYLb';
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userProfile = document.getElementById("userProfile");
+      const userNameEl = document.getElementById("userName");
+      const userAvatar = document.getElementById("userAvatar");
 
-    try {
-      await liff.init({ liffId });
+      // 預設顯示
+      loginBtn.style.display = "block";
+      userProfile.style.display = "none";
+      logoutBtn.style.display = "none";
 
-      // 已登入
-      if (liff.isLoggedIn()) {
-        const profile = await liff.getProfile();
-        userNameEl.textContent = profile.displayName;
-        userAvatar.src = profile.pictureUrl || "default-avatar.png";
+      try {
+        await liff.init({ liffId });
+        console.log("✅ LIFF 初始化成功");
 
-        userProfile.style.display = "flex";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "block";
-      } else {
-        // 未登入
-        loginBtn.style.display = "block";
-        logoutBtn.style.display = "none";
-        userProfile.style.display = "none";
-      }
-
-      // 登入按鈕
-      loginBtn.addEventListener("click", () => {
-        if (!liff.isLoggedIn()) liff.login();
-      });
-
-      // 登出按鈕
-      logoutBtn.addEventListener("click", () => {
         if (liff.isLoggedIn()) {
-          liff.logout();
-          window.location.reload();
+          const profile = await liff.getProfile();
+          userNameEl.textContent = profile.displayName;
+          userAvatar.src = profile.pictureUrl || "default-avatar.png";
+          userProfile.style.display = "flex";
+          loginBtn.style.display = "none";
+          logoutBtn.style.display = "block";
+        } else {
+          userProfile.style.display = "none";
+          loginBtn.style.display = "block";
+          logoutBtn.style.display = "none";
         }
-      });
 
-    } catch (error) {
-      console.error("LIFF 初始化失敗：", error);
-      alert("LINE 登入初始化失敗，請稍後再試。");
-    }
-  });
-
-    // 行事曆主要功能
-
-  let records = JSON.parse(localStorage.getItem('calendarRecords') || '[]');
-  let currentEditIndex = null;
-
-      // 工具函數
-      function getNowDateTime() {
-        return new Date();
+        loginBtn.addEventListener("click", () => {
+          if (!liff.isLoggedIn()) liff.login();
+        });
+        logoutBtn.addEventListener("click", () => {
+          if (liff.isLoggedIn()) {
+            liff.logout();
+            window.location.reload();
+          }
+        });
+      } catch (err) {
+        console.error("❌ LIFF 初始化失敗:", err);
+        loginBtn.style.display = "block";
       }
+
+      // ---- 行事曆功能 ----
+      let records = JSON.parse(localStorage.getItem('calendarRecords') || '[]');
+      // records 每筆格式: { id: <number>, date: 'YYYY-MM-DD', time: 'HH:MM', event: '...', note: '...' }
+      let currentEditId = null;
+
+      function nowDate() { return new Date(); }
       function parseDateTime(dateStr, timeStr) {
-        return new Date(`${dateStr}T${timeStr}`);
+        // 加上秒以避免某些瀏覽器解析差異
+        return new Date(`${dateStr}T${timeStr}:00`);
       }
-      function saveToLocalStorage() {
-        localStorage.setItem('calendarRecords', JSON.stringify(records));
-      }
+      function saveToLocalStorage() { localStorage.setItem('calendarRecords', JSON.stringify(records)); }
 
-      // 新增資料按鈕
+      // 新增
       document.getElementById("addBtn").addEventListener("click", () => {
         const date = document.getElementById("date").value;
         const time = document.getElementById("time").value;
         const event = document.getElementById("event").value.trim();
         const note = document.getElementById("note").value.trim();
 
-        if (!date || !time || !event) {
-          alert("請輸入完整資料！");
-          return;
-        }
+        if (!date || !time || !event) { alert("請輸入完整資料！"); return; }
 
-        records.push({ date, time, event, note });
+        const id = Date.now() + Math.floor(Math.random() * 1000);
+        records.push({ id, date, time, event, note });
         saveToLocalStorage();
         renderAllTable();
-
         document.getElementById("dataForm").reset();
-       
       });
-       // 關閉
-        document.getElementById("closeEditModalBtn").addEventListener("click", () => {
+
+      // 關閉編輯彈窗
+      document.getElementById("closeEditModalBtn").addEventListener("click", () => {
         document.getElementById("editModal").style.display = "none";
-        });
+      });
 
-
-      // 渲染主表格（未來行程）
+      // 渲染未來行程
       function renderAllTable() {
         const tbody = document.querySelector("#allTable tbody");
         tbody.innerHTML = "";
-
-        const now = getNowDateTime();
+        const now = nowDate();
 
         const upcomingRecords = records
-          .filter(record => parseDateTime(record.date, record.time) >= now)
+          .filter(r => parseDateTime(r.date, r.time) >= now)
           .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
 
-        if (upcomingRecords.length > 0) {
-          document.getElementById("allTable").style.display = "table";
-        } else {
-          document.getElementById("allTable").style.display = "none";
-        }
+        if (upcomingRecords.length > 0) document.getElementById("allTable").style.display = "table";
+        else document.getElementById("allTable").style.display = "none";
 
         upcomingRecords.forEach(record => {
-          const index = records.indexOf(record);
           const row = tbody.insertRow();
           row.innerHTML = `
             <td>${record.date}</td>
             <td>${record.time}</td>
-            <td>${record.event}</td>
-            <td>${record.note}</td>
-            <td><button  onclick="editRecord(${index})" class="but-ans">編輯</button></td>
+            <td>${escapeHtml(record.event)}</td>
+            <td>${escapeHtml(record.note)}</td>
+            <td><button data-id="${record.id}" class="but-ans edit-btn">編輯</button></td>
           `;
+        });
+
+        // 為新產生的按鈕綁定事件（避免使用內聯 onclick）
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = Number(btn.getAttribute('data-id'));
+            openEditModalById(id);
+          });
         });
       }
 
-      // 編輯功能
-      window.editRecord = function(index) {
-        currentEditIndex = index;
-        const record = records[index];
-
+      // 打開編輯 modal（透過 id）
+      function openEditModalById(id) {
+        currentEditId = id;
+        const idx = records.findIndex(r => r.id === id);
+        if (idx === -1) return alert('找不到該筆資料');
+        const record = records[idx];
         document.getElementById("editDate").value = record.date;
         document.getElementById("editTime").value = record.time;
         document.getElementById("editEvent").value = record.event;
         document.getElementById("editNote").value = record.note;
-
         document.getElementById("editModal").style.display = "block";
-      };
+      }
 
-      // 刪除編輯
+      // 刪除
       document.getElementById("deleteEditBtn").addEventListener("click", () => {
-  if (confirm("確定要刪除這筆行程嗎？")) {
-    records.splice(currentEditIndex, 1);  // 刪除該筆資料
-    saveToLocalStorage();                 // 更新 localStorage
-    document.getElementById("editModal").style.display = "none";
-    renderAllTable();                     // 重繪表格
-  }
-});
-
-      
+        if (!confirm("確定要刪除這筆行程嗎？")) return;
+        const idx = records.findIndex(r => r.id === currentEditId);
+        if (idx === -1) { alert('找不到該筆資料'); return; }
+        records.splice(idx, 1);
+        saveToLocalStorage();
+        document.getElementById("editModal").style.display = "none";
+        renderAllTable();
+      });
 
       // 儲存編輯
       document.getElementById("saveEditBtn").addEventListener("click", () => {
@@ -591,88 +604,85 @@ tbody tr:nth-child(odd) {
           event: document.getElementById("editEvent").value.trim(),
           note: document.getElementById("editNote").value.trim()
         };
-
-        if (!updated.date || !updated.time || !updated.event) {
-          alert("請輸入完整資料！");
-          return;
-        }
-
-        records[currentEditIndex] = updated;
+        if (!updated.date || !updated.time || !updated.event) { alert("請輸入完整資料！"); return; }
+        const idx = records.findIndex(r => r.id === currentEditId);
+        if (idx === -1) { alert('找不到該筆資料'); return; }
+        // 保留 id
+        records[idx] = Object.assign({ id: currentEditId }, updated);
         saveToLocalStorage();
-
         document.getElementById("editModal").style.display = "none";
         renderAllTable();
       });
 
-      // 關閉編輯 Modal
-    document.getElementById("closeEditModalBtn").addEventListener("click", () => {
-      document.getElementById("editModal").style.display = "none";
-    });
+      // 關閉過往紀錄
+      document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
+        document.getElementById("historyModal").style.display = "none";
+        renderAllTable();
+      });
 
-    // 關閉過往紀錄 Modal
-    document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
-      document.getElementById("historyModal").style.display = "none";
-      renderAllTable(); // 關閉彈窗時恢復主表格
-    });
+      // 檢視過往紀錄（Modal）
+      document.getElementById("historyBtn").addEventListener("click", () => {
+        const now = new Date();
+        const pastRecords = records
+          .filter(record => parseDateTime(record.date, record.time) < now)
+          .sort((a, b) => parseDateTime(b.date, b.time) - parseDateTime(a.date, a.time));
 
-    // 檢視過往紀錄（改為 Modal 彈窗）
-    document.getElementById("historyBtn").addEventListener("click", () => {
-      const now = new Date();
+        const historyContent = document.getElementById("historyContent");
+        historyContent.innerHTML = '';
 
-  const pastRecords = records
-    .filter(record => new Date(`${record.date}T${record.time}`) < now)
-    .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+        if (pastRecords.length === 0) {
+          historyContent.innerHTML = '<p style="text-align:center;">目前沒有過往紀錄</p>';
+        } else {
+          const tableContainer = document.createElement('div');
+          tableContainer.className = 'table-container';
+          tableContainer.style.maxWidth = '360px';
+          tableContainer.style.margin = '0 auto';
 
-  if (pastRecords.length === 0) {
-    alert("目前沒有過往紀錄！");
-    return;
-  }
+          const table = document.createElement('table');
+          const thead = document.createElement('thead');
+          thead.innerHTML = `
+            <tr>
+              <th>日期</th>
+              <th>時間</th>
+              <th>行程提醒</th>
+              <th>備註</th>
+            </tr>
+          `;
+          table.appendChild(thead);
 
-  // 建立 table 元素
-  const tableContainer = document.createElement('div');
-  tableContainer.className = 'table-container';
-  tableContainer.style.maxWidth = '360px';
-  tableContainer.style.margin = '0 auto';
+          const tbody = document.createElement('tbody');
+          pastRecords.forEach(record => {
+            const tr = document.createElement('tr');
+            [record.date, record.time, record.event, record.note].forEach(text => {
+              const td = document.createElement('td');
+              td.textContent = text;
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          tableContainer.appendChild(table);
+          historyContent.appendChild(tableContainer);
+        }
 
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-    <tr>
-      <th>日期</th>
-      <th>時間</th>
-      <th>行程提醒</th>
-      <th>備註</th>
-    </tr>
-  `;
-  table.appendChild(thead);
+        document.getElementById("historyModal").style.display = "block";
+        document.getElementById("allTable").style.display = "none"; // 隱藏主表格
+      });
 
-  const tbody = document.createElement('tbody');
-  pastRecords.forEach(record => {
-    const tr = document.createElement('tr');
-    [record.date, record.time, record.event, record.note].forEach(text => {
-      const td = document.createElement('td');
-      td.textContent = text;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-  tableContainer.appendChild(table);
-
-  // 插入到 historyContent
-  const historyContent = document.getElementById("historyContent");
-  historyContent.innerHTML = '';
-  historyContent.appendChild(tableContainer);
-
-  document.getElementById("historyModal").style.display = "block";
-  document.getElementById("allTable").style.display = "none"; // 隱藏主表格
-});
-
-      // 初始化頁面
+      // 初始化
       renderAllTable();
 
+      // 小工具：簡單的 escape，避免插入 html
+      function escapeHtml(unsafe) {
+        return String(unsafe)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+    });
   </script>
 </body>
-
-
 </html>
