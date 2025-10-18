@@ -218,7 +218,7 @@
       font-size:20px;
       position:absolute;
       top:10px;
-      left:10px;
+      right:12px;
       cursor:pointer;
       border-radius:5px;
       padding:5px 10px;
@@ -420,8 +420,8 @@
 <!-- 查詢標題 -->
 
 <h1 class="title" style="font-size: 24px;">查詢</h1>
-  <!-- 顯示提示或結果 -->
-  <div id="message"></div>
+  <!-- 顯示提示或結果
+  <div id="message"></div> -->
 
 <!-- ==============================
      資料表格區域
@@ -442,9 +442,7 @@
     </thead>
     <tbody></tbody>
   </table>
-  <p id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin-top:10px;">
-  目前尚未有紀錄
-</p>
+  
 </div>
 </div>
 
@@ -819,44 +817,6 @@ function addEditButtonsToRows() {
   });
 }
 
-// ==============================
-async function loadData() {
-  const message = document.getElementById("message");
-  const table = document.getElementById("dataTable");
-  const tbody = table.querySelector("tbody");
-
-  // 清空舊內容
-  message.textContent = "";
-  tbody.innerHTML = "";
-  table.style.display = "none"; // 預設隱藏表格
-
-   try {
-    // 🔹請改成你的實際 API 網址
-    const response = await fetch("https://supabase-api-six.vercel.app/consultations/{O_UserID}");
-    if (!response.ok) throw new Error("伺服器回應錯誤");
-    const data = await response.json();
-
-    // 🔹判斷資料是否存在
-    if (!data || data.length === 0) {
-      message.textContent = "目前尚未紀錄";
-    } else {
-      message.textContent = ""; // 清空提示
-      table.style.display = "table"; // 顯示表格
-      data.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.id || "-"}</td>
-          <td>${item.name || "未提供"}</td>
-          <td>${item.date || "-"}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error("查詢錯誤：", error);
-    message.textContent = "查詢失敗，請稍後再試。";
-  }
-}
 
 // 🔹頁面載入時自動執行
 window.addEventListener("DOMContentLoaded", loadData);

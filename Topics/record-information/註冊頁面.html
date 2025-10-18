@@ -170,6 +170,8 @@
     background-color: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
+    opacity: 0;
+    transition: transform 0.3s ease; /* 平滑動畫 */
   }
   .modal-content {
     background-color: white;
@@ -179,14 +181,36 @@
     position: relative;
     min-width: 250px;
   }
-  .close {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-  }
+  .modal.show {
+  opacity: 1;
+}
+  /* Modal 關閉按鈕 (X) */
+  #closeModal {
+  background-color: white;       /* 原本白色 */
+  border: none;        /* 邊框 */
+  color: #555;                   /* 字體灰色 */
+  font-size: 20px;
+  position: absolute;
+  top: 10px;
+  right: 12px;                   /* 右上角 */
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: all 0.3s ease;
+  font-weight: 700;
+  z-index: 1000;
+}
+
+/* 懸停或觸控時變紅色 */
+  #closeModal:hover,
+  #closeModal:active {
+  background-color: #e74c3c;     /* 紅色背景 */
+  border-color: #c0392b;         /* 深紅邊框 */
+  color: white;                  /* 字體白色 */
+  transform: scale(1.1);          /* 輕微放大 */
+}
+
+
   </style>
 </head>
 <body>
@@ -213,7 +237,7 @@
     <!-- ===== Modal 提示框 ===== -->
     <div id="modal" class="modal">
       <div class="modal-content">
-        <span id="closeModal" class="close">&times;</span>
+        <span id="closeModal" class="close" title="按 Esc 或點我關閉">&times;</span>
         <p>最多只能選 6 個特質</p>
       </div>
     </div>
@@ -457,12 +481,40 @@
     localStorage.setItem("seniors", JSON.stringify(seniors));
     window.location.href = encodeURI("長輩資料顯示.html");
   });
-    // ===== 點擊切換「選中」狀態，限制最多 6 個 =====
-  const maxSelect = 6;
-  const modal = document.getElementById('modal');
-  const closeModal = document.getElementById('closeModal');
+  // 取得 Modal 與關閉按鈕
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
 
-  // 封裝一個函式，讓任何 tags 容器都可用
+// 顯示 Modal（例如當超過 6 個標籤時）
+function showModal() {
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('show'), 10); // 觸發 CSS 過渡
+}
+
+// 關閉 Modal
+function hideModal() {
+  modal.classList.remove('show'); // 移除淡入效果
+  setTimeout(() => modal.style.display = 'none', 300); // 等動畫完成再隱藏
+}
+
+// 點擊 ✖ 關閉
+closeModal.addEventListener('click', hideModal);
+
+// 點擊 Modal 外層關閉
+window.addEventListener('click', e => {
+  if (e.target === modal) hideModal();
+});
+
+// 按 Esc 鍵關閉
+window.addEventListener('keydown', e => {
+  if (e.key === "Escape" && modal.style.display === 'flex') {
+    hideModal();
+  }
+});
+
+// ===== 點擊切換「選中」狀態，限制最多 6 個 =====
+const maxSelect = 6;
+
 function setupTags(tagContainerId) {
   const container = document.getElementById(tagContainerId);
   container.addEventListener('click', e => {
@@ -474,27 +526,15 @@ function setupTags(tagContainerId) {
         e.target.classList.add('selected');
       } else {
         // 顯示 Modal 提示
-        modal.style.display = 'flex';
+        showModal();
       }
     }
   });
 }
 
-// 設定志工與長輩標籤
 setupTags('volunteerTags');
 setupTags('seniorTags');
 
-// 關閉 Modal
-closeModal.addEventListener('click', () => {
-  modal.style.display = 'none';
-});
-
-// 點擊 Modal 外層也關閉
-window.addEventListener('click', e => {
-  if(e.target === modal){
-    modal.style.display = 'none';
-  }
-});
 </script>
 </body>
 </html>
