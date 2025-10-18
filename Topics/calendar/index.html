@@ -6,7 +6,7 @@
   <title>行事曆</title>
   <style>
 body {
-  font-family: "Microsoft JhengHei", sans-serif;
+  font-family: "Arial", sans-serif;
 }
 
 h1 {
@@ -116,6 +116,7 @@ th, td {
   padding: 10px;
   text-align: center;
   font-size: 14px;
+  border: 1px solid #ddd;
 }
  /*表頭 */
  th {  
@@ -238,15 +239,22 @@ tbody tr:nth-child(odd) {
 
 /* 瀏覽列 */
 .nav-1{
-  display: flex;  /* 水平排列內容 */
-  align-items: center; /* 垂直置中 */
-  padding: 0;                        /* 內距 */
-  position: sticky;                          /* 滾動時吸附上方 */
-  top: 0;                                     /* 吸附頂部 */
-  z-index: 500;                             /* 保證在其他元素之上 */
-  background-color: #f9f9f9;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  font-size: 18px;
+  display: flex;                 /* 水平排列內容 */
+  /* font-weight: 500;*/
+  align-items: center;           /* 垂直置中 */
+  justify-content: space-between;/* 兩端對齊：左/右 */
+  padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+  position: sticky;              /* 滾動時吸附上方 */
+  top: 0;                        /* 吸附頂部 */
+  z-index: 1001;                 /* 保證在其他元素之上 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 100%;
+  left: 0;
+  right: 0;
+  color: black;
+  background-color: white;
+  box-sizing: border-box; /* 確保padding不會超出寬度 */
+  border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
 }
 
 /* 統一 Modal 樣式 */
@@ -306,7 +314,7 @@ tbody tr:nth-child(odd) {
   font-size: 28px;
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 12px;
   cursor: pointer;
   border-radius: 50%;
   padding: 6px 12px;
@@ -354,7 +362,17 @@ tbody tr:nth-child(odd) {
 </head>
 <body>
   <nav class="nav-1">
-  <h1 >行事曆</h1>
+    <div> 
+  <h1 style="margin:0; font-size: 28px;">行事曆</h1>
+    </div>
+    <div id="navRight">
+      <button id="loginBtn" class="btn">LINE 登入</button>
+      <button id="logoutBtn" class="btn" style="display:none;">登出</button>
+      <div id="userProfile">
+        <img id="userAvatar" src="default-avatar.png" alt="avatar">
+        <span id="userName"></span>
+      </div>
+    </div>
   </nav>
   <div class="div-b">
     <h2>輸入</h2>
@@ -422,20 +440,54 @@ tbody tr:nth-child(odd) {
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <!-- <script src="./liff.js"></script> -->
   <script>
-
     document.addEventListener("DOMContentLoaded", async () => {
   // LIFF 初始化
-  const liffId = '2008228534-vAzlOYLb';
-  try {
-    await liff.init({ liffId });
-    if (liff.isLoggedIn()) {
-      console.log('已登入 LIFF');
-    } else {
-      liff.login();
+    const liffId = '2008228534-vAzlOYLb';
+     const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userProfile = document.getElementById("userProfile");
+    const userNameEl = document.getElementById("userName");
+    const userAvatar = document.getElementById("userAvatar");
+
+    try {
+      await liff.init({ liffId });
+
+      // 已登入
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        userNameEl.textContent = profile.displayName;
+        userAvatar.src = profile.pictureUrl || "default-avatar.png";
+
+        userProfile.style.display = "flex";
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+      } else {
+        // 未登入
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
+        userProfile.style.display = "none";
+      }
+
+      // 登入按鈕
+      loginBtn.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) liff.login();
+      });
+
+      // 登出按鈕
+      logoutBtn.addEventListener("click", () => {
+        if (liff.isLoggedIn()) {
+          liff.logout();
+          window.location.reload();
+        }
+      });
+
+    } catch (error) {
+      console.error("LIFF 初始化失敗：", error);
+      alert("LINE 登入初始化失敗，請稍後再試。");
     }
-  } catch (error) {
-    console.error('LIFF 初始化失敗:', error);
-  }
+  });
+
+    // 行事曆主要功能
 
   let records = JSON.parse(localStorage.getItem('calendarRecords') || '[]');
   let currentEditIndex = null;
@@ -618,14 +670,9 @@ tbody tr:nth-child(odd) {
 
       // 初始化頁面
       renderAllTable();
-});
+
   </script>
 </body>
 
-<!-- 
-
-
-
--->
 
 </html>
