@@ -438,14 +438,44 @@
       cancel.addEventListener('click', cancelHandler);
     }
 
-    const volunteers = [
-      { name: "王曉明", tags: ["陽光型", "健談", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?1", avatar: "https://picsum.photos/100/100?11" },
-      { name:"李志明",tags: ["溫柔", "健談", "有責任感"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?4", avatar: "https://picsum.photos/100/100?14" },
-      { name: "顧北辰", tags: ["冷靜", "細心", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?5", avatar: "https://picsum.photos/100/100?15" },
-      { name: "李小美", tags: ["溫柔", "細心", "貼心"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?2", avatar: "https://picsum.photos/100/100?12" },
-       { name: "柳如煙", tags: ["熱情", "健談", "有責任感"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?6", avatar: "https://picsum.photos/100/100?16" },
-      { name: "陳大華", tags: ["冷靜", "可靠", "有責任感"], desc: "醫院志工，經驗豐富", gender: "男性", cover: "https://picsum.photos/300/120?3", avatar: "https://picsum.photos/100/100?13" }
-    ];
+    fetch(Url)
+      .then(response => {
+        if (!response.ok) throw new Error("網路請求失敗");
+        return response.json();
+      })
+      .then(result => {
+        const container = document.getElementById("volunteers");
+
+        // 判斷 API 是否成功
+        if (!result.success || !result.data || result.data.length === 0) {
+          container.innerHTML = "<p>❌ 無法取得長者資料。</p>";
+          return;
+        }
+
+        // 將資料轉成 HTML
+        container.innerHTML = result.data.map(elder => `
+          <div class="elder-card">
+            <p><strong>姓名：</strong> ${elder.elder_name}</p>
+            <p><strong>性別：</strong> ${elder.gender || "未填寫"}</p>
+            <p><strong>年齡：</strong> ${elder.age || "未提供"}</p>
+            <p><strong>偏好標籤：</strong> ${elder.preference_tags || "無"}</p>
+            <p><strong>建立時間：</strong> ${new Date(elder.created_at).toLocaleString()}</p>
+          </div>
+        `).join("");
+      })
+      .catch(error => {
+        console.error("發生錯誤：", error);
+        document.getElementById("elders-container").innerHTML = "<p>⚠️ 無法取得資料，請稍後再試。</p>";
+      });
+
+      // const volunteers = [
+      //   { name: "王曉明", tags: ["陽光型", "健談", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?1", avatar: "https://picsum.photos/100/100?11" },
+      //   { name:"李志明",tags: ["溫柔", "健談", "有責任感"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?4", avatar: "https://picsum.photos/100/100?14" },
+      //   { name: "顧北辰", tags: ["冷靜", "細心", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?5", avatar: "https://picsum.photos/100/100?15" },
+      //   { name: "李小美", tags: ["溫柔", "細心", "貼心"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?2", avatar: "https://picsum.photos/100/100?12" },
+      //   { name: "柳如煙", tags: ["熱情", "健談", "有責任感"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?6", avatar: "https://picsum.photos/100/100?16" },
+      //   { name: "陳大華", tags: ["冷靜", "可靠", "有責任感"], desc: "醫院志工，經驗豐富", gender: "男性", cover: "https://picsum.photos/300/120?3", avatar: "https://picsum.photos/100/100?13" }
+      // ];
 
 // 小工具：Fisher-Yates 隨機洗牌
 function shuffleArray(arr) {
@@ -687,6 +717,7 @@ function showBookings() {
 
 // === LIFF Integration ===
 let liffProfile = null;
+const userId = liffProfile.userId;
 async function initLiff() {
   try {
     // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
