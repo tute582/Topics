@@ -13,7 +13,7 @@
       padding: 0;
     }
      /* 瀏覽列 */
-      .nav-1{
+    .nav-1{
     display: flex;                 /* 水平排列內容 */
     align-items: center;           /* 垂直置中 */
     justify-content: space-between;/* 兩端對齊：左/右 */
@@ -133,7 +133,7 @@
 <!-- 導覽列 -->
 <nav class="nav-1">
   <div style="display:flex; align-items:center; gap:12px;">
-    <h1 style="margin:0;">申請資料填寫</h1>
+    <h1 style="margin:0; font-size: 28px;">申請資料填寫</h1>
   </div>
 
   <div style="display:flex; align-items:center;">
@@ -163,10 +163,15 @@
     <form id="volunteerForm" class="form-section">
       <h3>志工資料填寫</h3>
       <label class="required">志工代碼</label><input type="text" name="volunteerId" required />
+      
       <label class="required">姓名</label><input type="text" name="name" required />
+      
       <label class="required">電子郵件Email</label><input type="email" name="email" required />
+      
       <label class="required">連絡電話</label><input type="tel" name="phone" required />
+      
       <label class="required">出生年月日</label><input type="date" name="birthday" required />
+      
       <label class="required">性別</label>
       <select name="gender" required>
         <option value="">請選擇</option>
@@ -174,10 +179,36 @@
         <option value="female">女性</option>
         <option value="other">其他</option>
       </select>
+      
       <label class="required">地址</label><input type="text" name="address" required />
+      
       <label>專長或可服務項目</label><input type="text" name="skills" />
+      
       <label>個性標籤（以逗號分隔）：</label>
-      <input type="text" id="vTags" placeholder="例如：熱心, 有耐心, 擅長溝通" />
+      <input type="text" id="vTags" list="vTagsList" placeholder="請輸入或選擇" />
+      <datalist id="vTagsList">
+      <option value="熱心助人"></option>
+      <option value="有耐心"></option>
+      <option value="善於傾聽"></option>
+      <option value="責任感強"></option>
+      <option value="樂觀開朗"></option>
+      <option value="細心謹慎"></option>
+      <option value="積極主動"></option>
+      <option value="團隊合作"></option>
+      <option value="富有同理心"></option>
+      <option value="守時守信"></option>
+      <option value="願意學習"></option>
+      <option value="有創意"></option>
+      <option value="冷靜沉著"></option>
+      <option value="喜歡與人互動"></option>
+      <option value="樂於分享"></option>
+      <option value="親切友善"></option>
+      <option value="善於溝通"></option>
+      <option value="適應力強"></option>
+      <option value="謙虛踏實"></option>
+      <option value="有領導能力"></option>
+      </datalist>
+
       <label>簡介：</label>
       <textarea id="vDesc" rows="3"></textarea>
       <div class="button-group">
@@ -201,6 +232,30 @@
       <label class="required">地址</label><input type="text" name="address" required />
       <label>緊急聯絡人</label><input type="text" name="emergencyContact" />
       <label>健康狀況備註</label><input type="text" name="healthNote" />
+      <label>興趣標籤（以逗號分隔）：</label>
+      <input type="text" id="vTags" list="hobbiesList" placeholder="請選擇" />
+      <select id="hobbiesList">
+        <option value="樂觀開朗"></option>
+        <option value="溫和親切"></option>
+        <option value="幽默風趣"></option>
+        <option value="熱愛生活"></option>
+        <option value="惜物感恩"></option>
+        <option value="勤儉持家"></option>
+        <option value="關心家人"></option>
+        <option value="樂於助人"></option>
+        <option value="喜歡聊天"></option>
+        <option value="愛運動"></option>
+        <option value="愛種花草"></option>
+        <option value="喜歡唱歌"></option>
+        <option value="重視健康"></option>
+        <option value="生活規律"></option>
+        <option value="心思細膩"></option>
+        <option value="懷舊感強"></option>
+        <option value="安靜內向"></option>
+        <option value="樂於學習新事物"></option>
+        <option value="喜歡小孩"></option>
+        <option value="有信仰生活"></option>
+      </select>
 
       <div class="button-group">
         <button type="submit" class="submit-btn">送出</button>
