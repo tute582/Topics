@@ -9,14 +9,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     body {
-      font-family: "Noto Sans TC", sans-serif;
+      font-family: "Arial", sans-serif;
       background: #f4f6f8;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin-top: 0;
+      margin:0;
     }
-    h1 { color: #333; }
+    h1 { color: #333; 
+      margin-top: 5px;
+      margin-bottom: 5px;
+      }
+    /* 讓頁面中的特定標題靠左對齊並與表單/表格寬度一致 */
+    .title {
+      /* 與導覽列內標題左對齊（nav padding:25px）*/
+      align-self: flex-start;
+      margin: 8px 0 8px 25px;
+       text-align: left;
+       font-size: 24px;
+       box-sizing: border-box;
+     }
     /* 導覽列樣式（從 record-information 複製） */
     .nav-1{
       display: flex;
@@ -55,6 +68,7 @@
       border-radius: 12px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       margin-bottom: 20px;
+      margin: 5px;
     }
     /* form row: label + input aligned */
     .form-row {
@@ -163,7 +177,7 @@
       </h1>
     </div>
   </nav>
-
+<h1 class="title">輸入內容</h1>
   <form id="bpForm">
     <div class="form-row">
       <label for="date">日期：</label>
@@ -181,7 +195,7 @@
       <button type="submit" class="primary-btn">新增紀錄</button>
     </div>
   </form>
-
+    
   <table>
     <thead>
       <tr>
