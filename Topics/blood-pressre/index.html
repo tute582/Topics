@@ -20,6 +20,36 @@
       margin-top: 30px;
     }
     h1 { color: #333; }
+    /* 導覽列樣式（從 record-information 複製） */
+    .nav-1{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 25px;
+      position: sticky;
+      top: 0;
+      z-index: 1001;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 100%;
+      left: 0;
+      right: 0;
+      color: black;
+      background-color: white;
+      box-sizing: border-box;
+      border-bottom: 1px solid #ddd;
+    }
+    .volunteer-area { display:flex; align-items:center; gap:8px; }
+    .volunteer-area .avatar {
+      width:36px; height:36px; border-radius:50%; object-fit:cover;
+      border:1px solid #ddd; display:none;
+    }
+    .volunteer-area #volunteerName {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: transparent;
+    }
+    .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
     form {
       width: 80%;
       background: #fff;
@@ -141,7 +171,26 @@
   </style>
 </head>
 <body>
-  <h1>血壓紀錄系統</h1>
+  <!-- 導覽列（與看診資訊相同樣式） -->
+  <nav class="nav-1" >
+    <div>
+      <h1 style="margin:0; font-size: 28px;">血壓紀錄系統</h1>
+    </div>
+
+    <div style="display:flex; align-items:center;">
+      <h1 style="margin:0; text-align:right;">
+        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+          <!-- 使用與看診資訊相同的預設頭像與字級 -->
+          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+        </span>
+      </h1>
+    </div>
+  </nav>
+
+  <!-- 原本頁首保留，但已移下，避免重複顯示 -->
+  <!-- <h1>血壓紀錄系統</h1> -->
 
   <!-- 當未登入時顯示，要求使用者登入 LINE -->
   <div id="authOverlay">
@@ -221,7 +270,8 @@
         console.error('LIFF init error', e);
       }
     }
-
+    
+    // 同步顯示到導覽列（volunteerAvatar / volunteerName）
     function showLiffInfo(profile) {
       if (!profile) return;
       const pic = document.getElementById('liffPic');
@@ -229,11 +279,36 @@
       if (profile.pictureUrl && pic) { pic.src = profile.pictureUrl; pic.style.display = 'inline-block'; }
       name.innerText = profile.displayName || '';
       document.getElementById('liffInfo').style.display = 'flex';
+      
+      // 同步到導覽列顯示
+      const vAvatar = document.getElementById('volunteerAvatar');
+      const vName = document.getElementById('volunteerName');
+      if (vAvatar) {
+        if (profile.pictureUrl) { vAvatar.src = profile.pictureUrl; vAvatar.style.display = 'inline-block'; }
+        else vAvatar.style.display = 'none';
+      }
+      if (vName) vName.innerText = profile.displayName || '志工';
     }
 
     function hideLiffInfo() {
       document.getElementById('liffInfo').style.display = 'none';
     }
+
+    // 導覽列姓名點擊 -> LIFF 登入或顯示已登入
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'volunteerName') {
+        if (window.liff && liff.isLoggedIn && liff.isLoggedIn()) {
+          alert('已登入：' + (document.getElementById('volunteerName').innerText || '志工'));
+        } else {
+          if (window.liff) liff.login();
+        }
+      }
+      // overlay 登入按鈕
+      if (e.target && e.target.id === 'overlayLoginBtn') {
+        if (window.liff) liff.login();
+      }
+    });
+
     // initialize LIFF asynchronously
     if (window.liff) {
       initLiffBP();
