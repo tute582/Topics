@@ -761,12 +761,15 @@ tbody tr:nth-child(odd) {
         if (pastRecords.length === 0) {
           historyContent.innerHTML = '<p style="text-align:center;">目前沒有過往紀錄</p>';
         } else {
-          const tableContainer = document.createElement('div');
-          tableContainer.className = 'table-container';
-          tableContainer.style.maxWidth = '360px';
-          tableContainer.style.margin = '0 auto';
+          // 使用與主表格相同的外層容器與 table 結構，套用相同樣式
+          const tableWrapper = document.createElement('div');
+          tableWrapper.className = 'allTable-div';
+          tableWrapper.style.margin = '10px auto'; // 可微調間距
 
           const table = document.createElement('table');
+          table.id = 'historyTable';
+
+          // 使用與主表格相同的欄位（包含操作欄位，過往紀錄可視需求保留空欄或顯示備註）
           const thead = document.createElement('thead');
           thead.innerHTML = `
             <tr>
@@ -774,6 +777,7 @@ tbody tr:nth-child(odd) {
               <th>時間</th>
               <th>行程提醒</th>
               <th>備註</th>
+              <th>操作</th>
             </tr>
           `;
           table.appendChild(thead);
@@ -781,16 +785,34 @@ tbody tr:nth-child(odd) {
           const tbody = document.createElement('tbody');
           pastRecords.forEach(record => {
             const tr = document.createElement('tr');
-            [record.date, record.time, record.event, record.note].forEach(text => {
-              const td = document.createElement('td');
-              td.textContent = text;
-              tr.appendChild(td);
-            });
+
+            const tdDate = document.createElement('td');
+            tdDate.textContent = record.date;
+            tr.appendChild(tdDate);
+
+            const tdTime = document.createElement('td');
+            tdTime.textContent = record.time;
+            tr.appendChild(tdTime);
+
+            const tdEvent = document.createElement('td');
+            tdEvent.innerHTML = escapeHtml(record.event);
+            tr.appendChild(tdEvent);
+
+            const tdNote = document.createElement('td');
+            tdNote.innerHTML = escapeHtml(record.note);
+            tr.appendChild(tdNote);
+
+            const tdAction = document.createElement('td');
+            // 過往紀錄通常不需編輯，這裡保留空白或顯示不可用按鈕（可按需求修改）
+            tdAction.innerHTML = '<span style="color:#888;">-</span>';
+            tr.appendChild(tdAction);
+
             tbody.appendChild(tr);
           });
+
           table.appendChild(tbody);
-          tableContainer.appendChild(table);
-          historyContent.appendChild(tableContainer);
+          tableWrapper.appendChild(table);
+          historyContent.appendChild(tableWrapper);
         }
 
         document.getElementById("historyModal").style.display = "block";
