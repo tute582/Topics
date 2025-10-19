@@ -498,10 +498,11 @@ tbody tr:nth-child(odd) {
 
       avatarEl.addEventListener("click", () => {
         if (liff.isLoggedIn()) {
-          window.location.href = "註冊頁面.html";
+          // 從 calendar 資料夾跳到 record-information 資料夾的註冊頁
+          window.location.href = "../record-information/註冊頁面.html";
         } else {
           liff.login({
-            redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+            redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
           });
         }
       });
@@ -509,7 +510,7 @@ tbody tr:nth-child(odd) {
       nameEl.addEventListener("click", () => {
         if (!liff.isLoggedIn()) {
           liff.login({
-            redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+            redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
           });
         } else {
           alert("已登入：" + (nameEl.innerText || "志工"));
