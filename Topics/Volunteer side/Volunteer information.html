@@ -8,11 +8,15 @@
     font-family: "Microsoft JhengHei", sans-serif;
     background: #ffffff;
     margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    padding: 0px;
+    
   }
-
+/* 新增一個主要區塊包容容器，用來置中 */
+.main-content {
+  display: flex;
+  justify-content: center;
+  padding: 30px 20px; /* 讓內容與導覽列間有間距 */
+}
   .container {
     max-width: 450px;
     width: 100%;
@@ -225,6 +229,26 @@ input[type="file"]::file-selector-button:hover {
   background-color: #1e40af;
 }
 
+   /* 導覽列 */
+  .nav-1{
+    display: flex;                 /* 水平排列內容 */
+   /* font-weight: 500;*/
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 1001;                 /* 保證在其他元素之上 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    left: 0;
+    right: 0;
+    color: black;
+    background-color: white;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+  }
+
   @media (max-width: 500px) {
     body { padding: 10px; }
     .container { padding: 15px; box-shadow: none; }
@@ -233,8 +257,27 @@ input[type="file"]::file-selector-button:hover {
 </style>
 </head>
 <body>
+
+<!-- 導覽列 -->
+<nav class="nav-1" >
+  <div>
+    <h1 style="margin:0; font-size: 28px;">志工管理介面</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+      </span>
+    </h1>
+  </div>
+</nav>
+ <!-- 新增 main-content 包起容器 -->
+  <div class="main-content">
   <div class="container">
-    <h1>志工端管理介面</h1>
+    <h1>志工管理介面</h1>
 
     <div class="editor">
       <label>頭像圖片：</label>
@@ -287,7 +330,7 @@ input[type="file"]::file-selector-button:hover {
       </div>
     </div>
   </div>
-
+ </div>
 <script>
   // 頭像預覽
   function previewImage(event) {
@@ -339,6 +382,82 @@ input[type="file"]::file-selector-button:hover {
 
     document.getElementById("cardDesc").textContent = document.getElementById("vDesc").value;
   }
+
+  /* ==============================
+   ✅ LIFF 初始化
+   ============================== */
+const LIFF_ID = "2008228534-R8763A2n";
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+
+async function initLiffAndSetProfile() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      nameEl.innerText = "未登入";
+      avatarEl.style.display = "none";
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    nameEl.innerText = profile.displayName || "志工";
+    if (profile.pictureUrl) {
+      avatarEl.src = profile.pictureUrl;
+      avatarEl.style.display = "inline-block";
+    } else {
+      avatarEl.style.display = "none";
+    }
+  } catch (err) {
+    console.error("LIFF init error:", err);
+  }
+}
+
+avatarEl.addEventListener("click", () => {
+  if (liff.isLoggedIn()) {
+    window.location.href = "註冊頁面.html";
+  } else {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  }
+});
+
+nameEl.addEventListener("click", () => {
+  if (!liff.isLoggedIn()) {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  } else {
+    alert("已登入：" + (nameEl.innerText || "志工"));
+  }
+});
+
+initLiffAndSetProfile();
+
+/* ==============================
+   ✅ 初始化表格按鈕
+   ============================== */
+function addEditButtonsToRows() {
+  const tbody = document.getElementById("dataTable").querySelector("tbody");
+  Array.from(tbody.rows).forEach(row => {
+    if (row.cells.length < 8) {
+      const actionCell = row.insertCell(7);
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.innerText = "編輯";
+      editBtn.style.padding = "6px 10px";
+      editBtn.onclick = () => openEditModal(row);
+      actionCell.appendChild(editBtn);
+    }
+  });
+}
+
+
+// 🔹頁面載入時自動執行
+window.addEventListener("DOMContentLoaded", loadData);
+</script>
+
 </script>
 </body>
 </html>
