@@ -162,34 +162,45 @@
       color: #e63946;
     }
 
-    /* === 分頁與箭頭 === */
-    .arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 2rem;
-      background: rgba(255,255,255,0.8);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px 12px;
-    }
-  .arrow.left { left: 16px; }
-  .arrow.right { right: 16px; }
+   /* === 分頁與箭頭 === */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 6px 12px;
+  color: #fff; /* 讓箭頭圖示顏色為白色 */
+  background: #5B9EFF; /* 藍色背景（原本的#C2DFFF太淡會不明顯） */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
 
-    /* 更顯眼的左右按鈕（行動友善） */
-    .arrow {
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-      z-index: 50;
-      background: #fff;
-      opacity: 0.95;
-    }
+/* 左右位置 */
+.arrow.left {
+  left: 16px;
+}
+.arrow.right {
+  right: 16px;
+}
+
+/* 滑過時變更顏色或亮度 */
+.arrow:hover {
+  background: #3B82F6; /* hover 時略深藍 */
+  opacity: 1;
+  transform: translateY(-50%) scale(1.08);
+}
+
+
  /* 導覽列 */
   .nav-1{
     display: flex;                 /* 水平排列內容 */
@@ -209,8 +220,7 @@
     box-sizing: border-box; /* 確保padding不會超出寬度 */
     border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
   }
-    .arrow.left, .arrow.right { top: 45%; }
-
+    
     /* 手機更大按鈕與更寬的點擊區 */
     @media (max-width: 600px) {
       .arrow { width: 72px; height: 72px; font-size: 28px; }
