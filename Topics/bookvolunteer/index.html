@@ -162,37 +162,65 @@
       color: #e63946;
     }
 
-    /* === 分頁與箭頭 === */
-    .arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 2rem;
-      background: rgba(255,255,255,0.8);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px 12px;
-    }
-  .arrow.left { left: 16px; }
-  .arrow.right { right: 16px; }
+   /* === 分頁與箭頭 === */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 6px 12px;
+  color: #fff; /* 讓箭頭圖示顏色為白色 */
+  background: #5B9EFF; /* 藍色背景（原本的#C2DFFF太淡會不明顯） */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
 
-    /* 更顯眼的左右按鈕（行動友善） */
-    .arrow {
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-      z-index: 50;
-      background: #fff;
-      opacity: 0.95;
-    }
+/* 左右位置 */
+.arrow.left {
+  left: 16px;
+}
+.arrow.right {
+  right: 16px;
+}
 
-    .arrow.left, .arrow.right { top: 45%; }
+/* 滑過時變更顏色或亮度 */
+.arrow:hover {
+  background: #3B82F6; /* hover 時略深藍 */
+  opacity: 1;
+  transform: translateY(-50%) scale(1.08);
+}
 
+
+ /* 導覽列 */
+  .nav-1{
+    display: flex;                 /* 水平排列內容 */
+   /* font-weight: 500;*/
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 1001;                 /* 保證在其他元素之上 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    left: 0;
+    right: 0;
+    color: black;
+    background-color: white;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+  }
+    
     /* 手機更大按鈕與更寬的點擊區 */
     @media (max-width: 600px) {
       .arrow { width: 72px; height: 72px; font-size: 28px; }
@@ -322,6 +350,24 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+
+  <!-- 導覽列 -->
+<nav class="nav-1" >
+  <div>
+    <h1 style="margin:0; font-size: 28px;">志工管理介面</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="liffAvatarImg" class="avatar" src="default-avatar.png" 
+     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+    <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
+
+      </span>
+    </h1>
+  </div>
+</nav>
 
   <!-- LIFF avatar (右上角) -->
   <div id="liffAvatar" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;">
@@ -459,7 +505,7 @@
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
           desc: v.partner_expeienceence || "尚無經驗說明",
-          cover: `https://picsum.photos/300/120?random=${i}`, // 暫用隨機封面
+          cover: "linear-gradient(#C2DFFF, #C2DFFF)", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
         }));
