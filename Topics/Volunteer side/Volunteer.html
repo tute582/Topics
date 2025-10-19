@@ -17,13 +17,6 @@
     padding: 0;
   }
 
-  header {
-    background-color: #4f8a8b;
-    color: white;
-    text-align: center;
-    padding: 18px;
-    font-size: 22px;
-  }
 
   .dashboard {
     display: flex;
@@ -139,6 +132,26 @@
   .modal .confirm { background: #4a90e2; color: white; }
   .modal .cancel { background: #aaa; color: white; }
 
+  /* 導覽列 */
+  .nav-1{
+    display: flex;                 /* 水平排列內容 */
+   /* font-weight: 500;*/
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 1001;                 /* 保證在其他元素之上 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    left: 0;
+    right: 0;
+    color: black;
+    background-color: white;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+  }
+
   @media screen and (max-width: 768px) {
     .dashboard { flex-direction: column; align-items: center; }
     .calendar-container { width: 95%; }
@@ -146,8 +159,22 @@
 </style>
 </head>
 <body>
+<!-- 導覽列 -->
+<nav class="nav-1" >
+  <div>
+    <h1 style="margin:0; font-size: 28px;">志工管理系統</h1>
+  </div>
 
-<header>志工管理系統 Volunteer Dashboard</header>
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+      </span>
+    </h1>
+  </div>
+</nav>
 
 <section class="dashboard">
   <!-- 志工資訊卡 -->
@@ -379,6 +406,57 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+ /* ==============================
+   ✅ LIFF 初始化
+   ============================== */
+const LIFF_ID = "2008228534-R8763A2n";
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+
+async function initLiffAndSetProfile() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      nameEl.innerText = "未登入";
+      avatarEl.style.display = "none";
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    nameEl.innerText = profile.displayName || "志工";
+    if (profile.pictureUrl) {
+      avatarEl.src = profile.pictureUrl;
+      avatarEl.style.display = "inline-block";
+    } else {
+      avatarEl.style.display = "none";
+    }
+  } catch (err) {
+    console.error("LIFF init error:", err);
+  }
+}
+
+avatarEl.addEventListener("click", () => {
+  if (liff.isLoggedIn()) {
+    window.location.href = "註冊頁面.html";
+  } else {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  }
+});
+
+nameEl.addEventListener("click", () => {
+  if (!liff.isLoggedIn()) {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
+    });
+  } else {
+    alert("已登入：" + (nameEl.innerText || "志工"));
+  }
+});
+
+initLiffAndSetProfile();
 </script>
 
 </body>

@@ -435,27 +435,7 @@ nameEl.addEventListener("click", () => {
 
 initLiffAndSetProfile();
 
-/* ==============================
-   ✅ 初始化表格按鈕
-   ============================== */
-function addEditButtonsToRows() {
-  const tbody = document.getElementById("dataTable").querySelector("tbody");
-  Array.from(tbody.rows).forEach(row => {
-    if (row.cells.length < 8) {
-      const actionCell = row.insertCell(7);
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.innerText = "編輯";
-      editBtn.style.padding = "6px 10px";
-      editBtn.onclick = () => openEditModal(row);
-      actionCell.appendChild(editBtn);
-    }
-  });
-}
 
-
-// 🔹頁面載入時自動執行
-window.addEventListener("DOMContentLoaded", loadData);
 </script>
 
 </script>
