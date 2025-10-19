@@ -448,7 +448,8 @@
       birthday: form.elements["birthday"].value,
       gender: form.elements["gender"].value,
       address: form.elements["address"].value.trim(),
-      skills: form.elements["skills"].value.trim(),
+      // 若表單沒有 skills 欄位，安全回傳空字串
+      skills: form.elements["skills"] ? form.elements["skills"].value.trim() : "",
       tags: selectedTags,  // ← 這一行要有！
       desc: document.getElementById("vDesc")?.value.trim() || ""
     };
