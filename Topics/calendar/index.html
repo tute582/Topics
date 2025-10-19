@@ -427,7 +427,7 @@ tbody tr:nth-child(odd) {
   border-radius: 20px;
   background-color: white;
   display: block; /* 改為顯示容器（table 仍由 JS 控制顯示/隱藏） */
-  overflow: hidden;
+  overflow-x: auto; /* 允許橫向捲動 */
   box-sizing: border-box;
   padding: 0; /* 確保表格緊貼容器邊緣 */
 }
@@ -795,11 +795,11 @@ tbody tr:nth-child(odd) {
             tr.appendChild(tdTime);
 
             const tdEvent = document.createElement('td');
-            tdEvent.innerHTML = escapeHtml(record.event);
+            tdEvent.textContent = record.event;
             tr.appendChild(tdEvent);
 
             const tdNote = document.createElement('td');
-            tdNote.innerHTML = escapeHtml(record.note);
+            tdNote.textContent = record.note;
             tr.appendChild(tdNote);
 
             const tdAction = document.createElement('td');
