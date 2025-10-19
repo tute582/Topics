@@ -607,13 +607,12 @@ tbody tr:nth-child(odd) {
       }
 
       avatarEl.addEventListener("click", () => {
+        // 直接前往註冊頁（不經由看診資訊頁面）
+        const target = "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html";
         if (liff.isLoggedIn()) {
-          // 從 calendar 資料夾跳到 record-information 資料夾的註冊頁
-          window.location.href = "../record-information/註冊頁面.html";
+          window.location.href = target;
         } else {
-          liff.login({
-            redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
-          });
+          liff.login({ redirectUri: target });
         }
       });
 
