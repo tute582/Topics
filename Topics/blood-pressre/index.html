@@ -11,23 +11,51 @@
     body {
       font-family: "Arial", sans-serif;
       background: #f4f6f8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 0;
+     box-sizing: border-box;
       margin:0;
+      padding: 0;
     }
-    h1 { color: #333; 
+
+ * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+/* 若輸入欄位為 readonly，也保持白底（覆蓋瀏覽器預設灰底） */
+    input[readonly], textarea[readonly], input[readonly]:not([type="checkbox"]) {
+      background-color: white;
+      cursor: default;
+    }
+.input-container {
+      margin-top: 15px;
+    }
+
+ .search-container {
+      margin-bottom: 30px;
+    }
+
+
+    h1 { 
       margin-top: 5px;
       margin-bottom: 5px;
       }
+       /* 表單外框樣式 */
+    .input-container > form {
+      width:100%; 
+      margin: 10px 0;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      box-sizing: border-box;
+    }
+
     /* 讓頁面中的特定標題靠左對齊並與表單/表格寬度一致 */
     .title {
       /* 與導覽列內標題左對齊（nav padding:25px）*/
       align-self: flex-start;
-      margin: 8px 0 8px 25px;
+      margin: 5px 0;
        text-align: left;
-       font-size: 24px;
+       font-size: 26px;
        box-sizing: border-box;
      }
     /* 導覽列樣式（從 record-information 複製） */
@@ -70,23 +98,29 @@
       margin-bottom: 20px;
       margin: 5px;
     }
-    /* form row: label + input aligned */
+    /* form row: label above input (stacked) to match mobile-friendly design */
     .form-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      display: block;
+      margin-bottom: 16px;
     }
     .form-row label {
-      width: 140px;
-      min-width: 100px;
+      display: block;
+      margin-bottom: 8px;
       text-align: left;
-      font-weight: 600;
+      font-weight: 700;
+      color: #111;
+      font-size: 16px;
     }
-    .form-row input {
-      flex: 1 1 auto;
-      min-width: 0; /* ensure flex children can shrink */
-      padding: 8px;
+    .form-row input,
+    .form-row textarea,
+    .form-row select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #d0d4d8;
+      background: #fff;
+      font-size: 16px;
+      box-sizing: border-box;
     }
     .primary-btn {
       width: 160px;
@@ -107,18 +141,37 @@
       cursor: pointer;
     }
     button:hover { background-color: #4a90e2; }
+ /* ==============================
+       表格容器樣式
+       ============================== */
+    .table-container {
+      width: 100%;
+      margin: 5px ;
+      /* 允許水平滾動，必要時顯示水平滾軸 */
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* 行動裝置平滑滾動 */
+      /* 若希望在內容超出時總是顯示水平滾軸（某些系統會隱藏），可改用 overflow: auto; */
+      /* max-height: 200px;  限制高度，超過出現滾輪 */
+      border: 1px solid #aaa;
+      border-radius: 20px;
+      background-color: white;
+    }
 
-  table {
-    width: 80%;
-    border-collapse: separate;
-    border-spacing: 0;
-    box-sizing: border-box;
-    overflow: hidden;
-    border-radius: 20px;
-    border: 1px solid #aaa;
-  }
+  /* 表格基本樣式 */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      /* 設定比容器寬，當容器較窄會出現橫向滾動 */
+      min-width: 800px; 
+      box-sizing: border-box;
+    }
     th {
-      background-color: #f2f2f2;
+      background-color:#f9f9f9; 
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
     tbody tr:nth-child(even) {
       background-color: #f9f9f9;
@@ -127,12 +180,16 @@
       background-color: #ffffff;
     }
 
-    th, td {
-      border: none;
-      padding: 10px;
-      text-align: center;
+    th, td { 
+      padding:10px; 
+      text-align:center; 
+      border: 1px solid #ddd;
+      white-space: nowrap; /* 防止換行，配合橫向滾動 */
     }
-
+ /* 行動裝置上仍可觸發橫向捲動（若想在窄螢幕降低 min-width 可用下面的設定） */
+    @media (max-width: 600px) {
+      table { min-width: 700px; }
+    }
     .delete-btn {
       background-color: #e74c3c;
       border: none;
@@ -191,6 +248,8 @@
       </h1>
     </div>
   </nav>
+
+  <div class="input-container">
 <h1 class="title">輸入內容</h1>
   <form id="bpForm">
     <div class="form-row">
@@ -210,7 +269,7 @@
     </div>
   </form>
     
-  <table id="bpTable">
+  <table>
     <thead>
       <tr>
         <th>日期</th>
@@ -222,11 +281,6 @@
     </thead>
     <tbody id="recordTable"></tbody>
   </table>
-
-  <!-- 新增：無資料提示 -->
-  <div id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin:18px 0;">
-    目前尚未有紀錄
-  </div>
 
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
@@ -248,15 +302,7 @@
     const SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5Z2F3YXFza3ZpamdhY2lpbnpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTU2OTEsImV4cCI6MjA3NDk5MTY5MX0.6NKKuzDkHd0Pkxm9uYoODmkpEVw6wHYuf_SFV9M9af4';
     let sb = null;
-    try {
-      if (!SUPABASE_URL.includes('your-project')) {
-        sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.debug('Supabase client ready');
-      } else {
-        console.debug('Supabase not configured; using localStorage only');
-      }
-    } catch (e) { console.warn('supabase init failed', e); sb = null; }
-
+    
     // 優先從 Supabase 讀取，失敗則 fallback 到 localStorage
     (async function loadRecords() {
       if (sb) {
