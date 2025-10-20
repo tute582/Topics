@@ -63,6 +63,19 @@
 /* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
 select { width: 100% !important; }
 
+/* 調整 select 樣式（與 record-information 表單欄位一致） */
+select, select.form-select {
+  width: 100% !important;
+  padding: 8px 10px;
+  font-size: 16px; /* 如果要與頁面中其他欄位完全一致可改為14或16 */
+  border-radius: 10px;
+  border: 1px solid #888;
+  background-color: #ffffff;
+  color: #222;
+  box-sizing: border-box;
+  margin: 5px 0; /* 與 input 欄位一致的間距 */
+}
+
 /* 小螢幕微調保持一致 */
 @media (max-width: 600px) {
   input[type="text"],
@@ -76,6 +89,7 @@ select { width: 100% !important; }
     border-radius: 10px;
     margin-bottom: 8px;
   }
+  select, select.form-select { font-size:16px; padding:10px; }
 }
 
     button {
@@ -425,7 +439,7 @@ select { width: 100% !important; }
     <input type="time" id="time">
 
     <label>門診科別</label>
-    <select id="department" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
+    <select id="department" class="form-select">
       <option value="" disabled selected>請選擇科別</option>
       <optgroup label="內科">
         <option value="一般內科">一般內科</option>
@@ -456,7 +470,7 @@ select { width: 100% !important; }
     </select>
 
     <label>志工性別</label>
-    <select id="gender" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
+    <select id="gender" class="form-select">
       
       <option value="" disabled selected>請選擇性別</option>
       <option value="皆可">皆可</option>
@@ -545,7 +559,8 @@ select { width: 100% !important; }
           gender: v.gender || "未填寫",
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
-          desc: v.partner_expeienceence || "尚無經驗說明",
+          // 修正欄位名稱 typo（若 API 欄位不同請調整回正確欄位）
+          desc: v.partner_experience || v.partner_expeienceence || "尚無經驗說明",
           cover: "c2dfff.jpg", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
