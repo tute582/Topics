@@ -6,7 +6,7 @@
 <style>
     body {
       margin: 0;
-      font-family: "Arial", sans-serif;
+      font-family: "Noto Sans TC", sans-serif;
       background-color: #eef2f3;
       color: #222;
     }
@@ -33,7 +33,7 @@
     }
 
     input[type="text"], input[type="date"], input[type="time"], select {
-      width: 95%;
+      width: 90%;
       padding: 10px;
       font-size: 16px;
       border-radius: 8px;
@@ -162,65 +162,37 @@
       color: #e63946;
     }
 
-   /* === 分頁與箭頭 === */
-.arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 2rem;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 6px 12px;
-  color: #fff; /* 讓箭頭圖示顏色為白色 */
-  background: #5B9EFF; /* 藍色背景（原本的#C2DFFF太淡會不明顯） */
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  transition: all 0.2s ease;
-  z-index: 50;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.95;
-}
+    /* === 分頁與箭頭 === */
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      background: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 6px 12px;
+    }
+  .arrow.left { left: 16px; }
+  .arrow.right { right: 16px; }
 
-/* 左右位置 */
-.arrow.left {
-  left: 16px;
-}
-.arrow.right {
-  right: 16px;
-}
+    /* 更顯眼的左右按鈕（行動友善） */
+    .arrow {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      z-index: 50;
+      background: #fff;
+      opacity: 0.95;
+    }
 
-/* 滑過時變更顏色或亮度 */
-.arrow:hover {
-  background: #3B82F6; /* hover 時略深藍 */
-  opacity: 1;
-  transform: translateY(-50%) scale(1.08);
-}
+    .arrow.left, .arrow.right { top: 45%; }
 
-
- /* 導覽列 */
-  .nav-1{
-    display: flex;                 /* 水平排列內容 */
-   /* font-weight: 500;*/
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 1001;                 /* 保證在其他元素之上 */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    left: 0;
-    right: 0;
-    color: black;
-    background-color: white;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
-  }
-    
     /* 手機更大按鈕與更寬的點擊區 */
     @media (max-width: 600px) {
       .arrow { width: 72px; height: 72px; font-size: 28px; }
@@ -344,27 +316,17 @@
       .modal-table th, .modal-table td { font-size: 13px; padding: 8px; }
     }
   </style>
-  
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
-  <!-- 導覽列 -->
-<nav class="nav-1" >
-  <div>
-    <h1 style="margin:0; font-size: 28px;">志工管理介面</h1>
+  <!-- LIFF avatar (右上角) -->
+  <div id="liffAvatar" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;">
+    <img id="liffAvatarImg" src="" alt="avatar" style="width:48px;height:48px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
   </div>
-
-  <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="liffAvatarImg" class="avatar" src="default-avatar.png" 
-     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-    <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
-
-      </span>
-    </h1>
-  </div>
-</nav>
 
   <h1 style="text-align:center;">預約志工</h1>
 
@@ -439,28 +401,7 @@
     </div>
   </div>
 
-  <!-- LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- Supabase JS client -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> -->
   <script>
-    // helper: 設定 avatar 並在載入失敗時 fallback
-    function applyAvatar(imgEl, url, fallback) {
-      if (!imgEl) return;
-      const safeFallback = fallback ? encodeURI(fallback) : '';
-      imgEl.onerror = function () {
-        // 設定後清除 handler，避免無限 loop
-        imgEl.onerror = null;
-        if (safeFallback) imgEl.src = safeFallback;
-      };
-      try {
-        // 若 url 是空或 undefined，直接用 fallback
-        imgEl.src = url && url !== '' ? url : safeFallback;
-      } catch (e) {
-        if (safeFallback) imgEl.src = safeFallback;
-      }
-    }
-
     // custom alert/confirm helpers
     function showAlert(message, cb) {
       const modal = document.getElementById('customModal');
@@ -497,47 +438,14 @@
       cancel.addEventListener('click', cancelHandler);
     }
 
-    let volunteers = []; // 全域儲存志工資料
-
-    window.addEventListener("DOMContentLoaded", async () => {
-      const apiUrl = "https://supabase-api-six.vercel.app/volunteers";
-      try {
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error("網路錯誤");
-        const result = await res.json();
-
-        if (!result.success || !Array.isArray(result.data)) {
-          console.error("❌ API 格式錯誤或無資料");
-          return;
-        }
-
-        // 將 API 資料轉成可用的 volunteers 陣列格式
-        volunteers = result.data.map((v, i) => ({
-          name: v.volunteer_name || "未命名",
-          gender: v.gender || "未填寫",
-          age: v.age || "未提供",
-          tags: Array.isArray(v.personality) ? v.personality : [],
-          // 修正欄位名稱 typo，並加入常見備援欄位名稱
-          desc: v.partner_experience || v.partner_experienceence || v.partner_expeienceence || v.experience || "尚無經驗說明",
-          cover: "c2dfff.jpg", // 暫用隨機封面
-          avatar: v.image_url,
-          available_time: v.available_time || "未提供",
-        }));
-
-        console.log("✅ 志工資料載入完成", volunteers);
-      } catch (err) {
-        console.error("⚠️ 志工資料載入失敗：", err);
-      }
-    });
-
-      // const volunteers = [
-      //   { name: "王曉明", tags: ["陽光型", "健談", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?1", avatar: "https://picsum.photos/100/100?11" },
-      //   { name:"李志明",tags: ["溫柔", "健談", "有責任感"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?4", avatar: "https://picsum.photos/100/100?14" },
-      //   { name: "顧北辰", tags: ["冷靜", "細心", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?5", avatar: "https://picsum.photos/100/100?15" },
-      //   { name: "李小美", tags: ["溫柔", "細心", "貼心"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?2", avatar: "https://picsum.photos/100/100?12" },
-      //   { name: "柳如煙", tags: ["熱情", "健談", "有責任感"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?6", avatar: "https://picsum.photos/100/100?16" },
-      //   { name: "陳大華", tags: ["冷靜", "可靠", "有責任感"], desc: "醫院志工，經驗豐富", gender: "男性", cover: "https://picsum.photos/300/120?3", avatar: "https://picsum.photos/100/100?13" }
-      // ];
+    const volunteers = [
+      { name: "王曉明", tags: ["陽光型", "健談", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?1", avatar: "https://picsum.photos/100/100?11" },
+      { name:"李志明",tags: ["溫柔", "健談", "有責任感"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?4", avatar: "https://picsum.photos/100/100?14" },
+      { name: "顧北辰", tags: ["冷靜", "細心", "樂觀"], desc: "熱心助人，喜歡運動", gender: "男性", cover: "https://picsum.photos/300/120?5", avatar: "https://picsum.photos/100/100?15" },
+      { name: "李小美", tags: ["溫柔", "細心", "貼心"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?2", avatar: "https://picsum.photos/100/100?12" },
+       { name: "柳如煙", tags: ["熱情", "健談", "有責任感"], desc: "樂於傾聽，善於陪伴", gender: "女性", cover: "https://picsum.photos/300/120?6", avatar: "https://picsum.photos/100/100?16" },
+      { name: "陳大華", tags: ["冷靜", "可靠", "有責任感"], desc: "醫院志工，經驗豐富", gender: "男性", cover: "https://picsum.photos/300/120?3", avatar: "https://picsum.photos/100/100?13" }
+    ];
 
 // 小工具：Fisher-Yates 隨機洗牌
 function shuffleArray(arr) {
@@ -778,67 +686,42 @@ function showBookings() {
 }
 
 // === LIFF Integration ===
-// 保留全域 profile 以供其他功能使用（例如預約時顯示 user 名稱）
 let liffProfile = null;
-
 async function initLiff() {
-  // 取得 DOM 元素在此才抓，避免載入順序問題
-  const avatarEl = document.getElementById("liffAvatarImg");
-  const nameEl = document.getElementById("liffName");
-
-  // 預設 UI（先顯示 fallback）
-  if (avatarEl) { avatarEl.src = 'default-avatar.png'; avatarEl.style.display = 'inline-block'; }
-  if (nameEl && !nameEl.innerText) nameEl.innerText = '載入中';
-
-  // 若 SDK 尚未載入，等一個短暫時間再檢查一次（容錯）
-  if (!window.liff) {
-    console.warn("LIFF SDK 尚未載入，稍候再試一次...");
-    setTimeout(() => {
-      if (window.liff) initLiff();
-      else {
-        if (nameEl) nameEl.innerText = '未登入';
-        if (avatarEl) avatarEl.src = 'default-avatar.png';
-      }
-    }, 500);
-    return;
-  }
-
-  const liffId = '2008228534-V08oRPlW';
   try {
+    // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
+    const liffId = '2008228534-V08oRPlW';
     await liff.init({ liffId });
-  } catch (err) {
-    console.error("liff.init 失敗：", err);
-    if (nameEl) nameEl.innerText = '未登入';
-    if (avatarEl) avatarEl.src = 'default-avatar.png';
-    return;
-  }
-
-  const canGetProfile = liff.isLoggedIn() || liff.isInClient();
-
-  if (!canGetProfile) {
-    if (nameEl) {
-      nameEl.innerText = '未登入';
-      nameEl.style.cursor = 'pointer';
-      nameEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
-    }
-    if (avatarEl) {
-      avatarEl.style.cursor = 'pointer';
-      avatarEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
-    }
-  } else {
+    // 如果在 LINE 的 LIFF WebView 中，加入 class 以套用放大樣式
     try {
-      liffProfile = await liff.getProfile();
-      if (liffProfile) {
-        if (avatarEl && liffProfile.pictureUrl) {
-          avatarEl.src = liffProfile.pictureUrl;
-        }
-        if (nameEl && liffProfile.displayName) {
-          nameEl.innerText = liffProfile.displayName;
-        }
+      let inClient = false;
+      if (typeof liff.isInClient === 'function') {
+        inClient = liff.isInClient();
+      } else {
+        // fallback: 判斷 userAgent 是否為 LINE WebView
+        const ua = navigator.userAgent || '';
+        inClient = /Line/i.test(ua) || /Line	s/i.test(ua);
       }
+      console.debug('LIFF inClient:', inClient);
+      if (inClient) document.documentElement.classList.add('in-liff');
     } catch (e) {
-      console.error('取得 profile 失敗', e);
+      console.debug('LIFF in-client detection failed', e);
     }
+    if (liff.isLoggedIn()) {
+      try {
+        liffProfile = await liff.getProfile();
+        // 顯示右上角頭像（如果有）
+        if (liffProfile && liffProfile.pictureUrl) {
+          const img = document.getElementById('liffAvatarImg');
+          img.src = liffProfile.pictureUrl;
+          document.getElementById('liffAvatar').style.display = 'block';
+        }
+      } catch (e) {
+        console.error('取得 profile 失敗', e);
+      }
+    }
+  } catch (e) {
+    console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
 }
 
@@ -855,14 +738,13 @@ function liffLogout() {
   if (liff.isLoggedIn()) liff.logout();
   liffProfile = null;
   // 隱藏頭像
-  const avatarEl = document.getElementById('liffAvatarImg');
-  if (avatarEl) avatarEl.style.display = 'none';
+  document.getElementById('liffAvatar').style.display = 'none';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
 window.addEventListener('load', () => {
   initLiff();
-}
+});
 
 /* ----------------- Supabase integration -----------------
    To enable, replace the placeholders below with your project's
@@ -871,200 +753,145 @@ window.addEventListener('load', () => {
    table with appropriate columns in Supabase).
    Columns used: id (bigint/text), volunteer, user, datetime, department
 ---------------------------------------------------------*/
-// const SUPABASE_URL = '';
-//const SUPABASE_ANON_KEY = '';
-//let supabaseClient = null;
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-public-anon-key';
+let supabaseClient = null;
+try {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('your-project')) {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.debug('Supabase client initialized');
+  } else {
+    console.debug('Supabase not configured - using localStorage only');
+  }
+} catch (e) {
+  console.warn('Supabase client init failed', e);
+  supabaseClient = null;
+}
 
-//(function initSupabase() {
- // try {
-    // 檢查 supabase SDK 是否已載入
-   // if (typeof supabase === 'undefined') {
-    //  console.debug('Supabase SDK 未載入，將改用 localStorage。');
-    //  return;
-    //}
+async function saveBookingToSupabase(booking) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from('bookings').insert([booking]).select();
+    if (error) throw error;
+    return data && data[0];
+  } catch (e) {
+    console.warn('Supabase insert failed', e);
+    return null;
+  }
+}
 
-    // 基本的佔位字串/格式檢查（避免意外把 placeholder 當真 key 使用）
-   // const isPlaceholder =
-     // !SUPABASE_URL ||
-    //  !SUPABASE_ANON_KEY ||
-    //  SUPABASE_URL.includes('your-project') ||
-    //  SUPABASE_ANON_KEY.toLowerCase().includes('your-');
+async function fetchBookingsFromSupabase() {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.warn('Supabase fetch failed', e);
+    return null;
+  }
+}
 
-   // if (isPlaceholder) {
-   //   console.debug('Supabase 尚未配置（使用 placeholder），將以 localStorage 為主。');
-    //  return;
-   // }
-
-    // 簡單 URL 格式驗證
-  //  if (!/^https?:\/\/.+$/.test(SUPABASE_URL)) {
-    //  console.warn('Supabase URL 格式不正確，跳過 Supabase 初始化。');
-    //  return;
-   // }
-
-    // 嘗試建立 client
-  //  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  //  console.debug('Supabase client initialized');
- // } catch (e) {
- //   console.warn('Supabase client init failed', e);
- //   supabaseClient = null;
- // }
-//})();
-
-//async function saveBookingToSupabase(booking) {
-  //if (!supabaseClient) return null;
- // try {
-  //  const { data, error } = await supabaseClient.from('bookings').insert([booking]).select();
-   // if (error) throw error;
- //   return data && data[0];
- // } catch (e) {
- //   console.warn('Supabase insert failed', e);
- //   return null;
- // }
-//}
-
-//async function fetchBookingsFromSupabase() {
-  //if (!supabaseClient) return null;
- // try {
-  //  const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: true });
- //   if (error) throw error;
- //   return data || [];
- // } catch (e) {
- //   console.warn('Supabase fetch failed', e);
- //   return null;
- // }
-//}
-
-//async function deleteBookingFromSupabase(id) {
- // if (!supabaseClient) return null;
- // try {
- //   const { data, error } = await supabaseClient.from('bookings').delete().eq('id', id);
- //   if (error) throw error;
-  //  return data;
-  //} catch (e) {
-  //  console.warn('Supabase delete failed', e);
- //   return null;
- // }
-//}
+async function deleteBookingFromSupabase(id) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from('bookings').delete().eq('id', id);
+    if (error) throw error;
+    return data;
+  } catch (e) {
+    console.warn('Supabase delete failed', e);
+    return null;
+  }
+}
 
 // 保險機制：在 load 時再綁定一次預約查詢按鈕，並在 console log 點擊事件（方便除錯）
-//window.addEventListener('load', () => {
-//  try {
-  //  const sb = document.getElementById('showBookingsBtn');
-   // if (sb) {
-   //   sb.addEventListener('click', (e) => {
-    //    console.debug('showBookingsBtn clicked (bound listener)');
+window.addEventListener('load', () => {
+  try {
+    const sb = document.getElementById('showBookingsBtn');
+    if (sb) {
+      sb.addEventListener('click', (e) => {
+        console.debug('showBookingsBtn clicked (bound listener)');
         // 呼叫主函式（保險）
-   //     if (typeof showBookings === 'function') showBookings();
-  //    });
-  //  } else {
-  //    console.debug('showBookingsBtn not found on load');
-   // }
-//  } catch (err) {
- //   console.error('綁定 showBookingsBtn 事件失敗', err);
-//  }
-//});
+        if (typeof showBookings === 'function') showBookings();
+      });
+    } else {
+      console.debug('showBookingsBtn not found on load');
+    }
+  } catch (err) {
+    console.error('綁定 showBookingsBtn 事件失敗', err);
+  }
+});
 
 
-    //志工資訊
-    //function setupSlider(count) {
-    //  const container = document.getElementById("cardContainer");
-    //  const pagination = document.getElementById("pagination");
-    //  const prevBtn = document.getElementById("prevBtn");
-     // const nextBtn = document.getElementById("nextBtn");
-     // if (!container || !pagination) return;
 
-      // reset
-    //  pagination.innerHTML = "";
-    //  currentIndex = 0;
-    //  container.style.transition = "transform 0.5s ease";
-    //  container.style.transform = "translateX(0%)";
+    function setupSlider(count) {
+      const container = document.getElementById("cardContainer");
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+      currentIndex = 0;
+      container.style.transform = "translateX(0%)";
 
-      // 如果沒有卡片，隱藏左右按鈕並結束
-    //  if (!Number.isInteger(count) || count <= 0) {
-    //    if (prevBtn) prevBtn.style.display = "none";
-    //    if (nextBtn) nextBtn.style.display = "none";
-    //    return;
-    //  }
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement("span");
+        dot.classList.add("dot");
+        if (i === 0) dot.classList.add("active");
+        dot.addEventListener("click", () => goToSlide(i, count));
+        pagination.appendChild(dot);
+      }
 
-      // 顯示或隱藏左右按鈕（單一卡片時可隱藏）
-    //  if (prevBtn) {
-   //     prevBtn.style.display = (count > 1) ? "" : "none";
-   //     prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
-    //  }
-    //  if (nextBtn) {
-    //    nextBtn.style.display = (count > 1) ? "" : "none";
-    //    nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
-   //   }
-
-      // 建立分頁點
-   //   for (let i = 0; i < count; i++) {
-    //    const dot = document.createElement("span");
-    //    dot.classList.add("dot");
-    //    if (i === 0) dot.classList.add("active");
-    //    dot.addEventListener("click", () => goToSlide(i, count));
-    //    pagination.appendChild(dot);
-    //  }
-
+      document.getElementById("prevBtn").onclick = () => goToSlide(currentIndex - 1, count);
+      document.getElementById("nextBtn").onclick = () => goToSlide(currentIndex + 1, count);
       // 註冊觸控手勢（手機可滑動切換）
-    //  registerSwipe(container, count);
-   // }
+      registerSwipe(container, count);
+    }
 
-   // function goToSlide(index, count) {
-   //   const container = document.getElementById("cardContainer");
-   //   const pagination = document.getElementById("pagination");
-   //   if (!container || !pagination) return;
-      //if (!Number.isInteger(count) || count <= 0) return;
-//
-     // const dots = pagination.querySelectorAll(".dot");
-     // // 迴圈處理索引
-     // if (index < 0) index = count - 1;
-     // if (index >= count) index = 0;
-    //  currentIndex = index;
-
-     // container.style.transition = "transform 0.5s ease";
-     // container.style.transform = `translateX(-${index * 100}%)`;
-
-     // dots.forEach(d => d.classList.remove("active"));
-     // if (dots[index]) dots[index].classList.add("active");
-    //}
+    function goToSlide(index, count) {
+      const container = document.getElementById("cardContainer");
+      const dots = document.querySelectorAll(".dot");
+      if (index < 0) index = count - 1;
+      if (index >= count) index = 0;
+      currentIndex = index;
+      container.style.transform = `translateX(-${index * 100}%)`;
+      dots.forEach(dot => dot.classList.remove("active"));
+      dots[index].classList.add("active");
+    }
 
     // touch swipe 支援
-    //function registerSwipe(container, count) {
-    //  let startX = 0;
-    //  let deltaX = 0;
-    //  let isMoving = false;
+    function registerSwipe(container, count) {
+      let startX = 0;
+      let deltaX = 0;
+      let isMoving = false;
 
-   //   container.addEventListener('touchstart', (e) => {
-   //     if (!e.touches || e.touches.length === 0) return;
-   //     startX = e.touches[0].clientX;
-   //     isMoving = true;
-   //   }, { passive: true });
+      container.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        startX = e.touches[0].clientX;
+        isMoving = true;
+      }, { passive: true });
 
-   //   container.addEventListener('touchmove', (e) => {
-   //     if (!isMoving || !e.touches || e.touches.length === 0) return;
-   //     deltaX = e.touches[0].clientX - startX;
-         // 可視性回饋（輕微位移）
-    //    container.style.transition = 'none';
-    //    container.style.transform = `translateX(${ -currentIndex * 100 + (deltaX / container.clientWidth) * 100 }%)`;
-   //   }, { passive: true });
+      container.addEventListener('touchmove', (e) => {
+        if (!isMoving || !e.touches || e.touches.length === 0) return;
+        deltaX = e.touches[0].clientX - startX;
+        // 可視性回饋（輕微位移）
+        container.style.transition = 'none';
+        container.style.transform = `translateX(${ -currentIndex * 100 + (deltaX / container.clientWidth) * 100 }%)`;
+      }, { passive: true });
 
-   //   container.addEventListener('touchend', (e) => {
-    //    isMoving = false;
-     //   container.style.transition = 'transform 0.5s ease';
-      //  if (Math.abs(deltaX) > 40) {
-       //   if (deltaX < 0) {
-       //     goToSlide(currentIndex + 1, count);
-        //  } else {
-       //     goToSlide(currentIndex - 1, count);
-      //    }
-     //   } else {
+      container.addEventListener('touchend', (e) => {
+        isMoving = false;
+        container.style.transition = 'transform 0.5s ease';
+        if (Math.abs(deltaX) > 40) {
+          if (deltaX < 0) {
+            goToSlide(currentIndex + 1, count);
+          } else {
+            goToSlide(currentIndex - 1, count);
+          }
+        } else {
           // 還原位置
-    //      container.style.transform = `translateX(-${currentIndex * 100}%)`;
-     //   }
-    //    deltaX = 0;
-    //  }, { passive: true });
-   );
-
+          container.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+        deltaX = 0;
+      }, { passive: true });
+    }
   </script>
 </body>
 </html>
