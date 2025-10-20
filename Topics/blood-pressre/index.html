@@ -269,7 +269,7 @@
     </div>
   </form>
     
-  <table>
+  <table id="bpTable">
     <thead>
       <tr>
         <th>日期</th>
@@ -281,6 +281,11 @@
     </thead>
     <tbody id="recordTable"></tbody>
   </table>
+
+  <!-- 新增：無資料提示 -->
+  <div id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin:18px 0;">
+    目前尚未有紀錄
+  </div>
 
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
