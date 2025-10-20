@@ -812,13 +812,11 @@ async function initLiff() {
     return;
   }
 
-  // 若在 LINE Client 中，通常可以直接取得 profile（即使未呼叫 login）
   const canGetProfile = liff.isLoggedIn() || liff.isInClient();
 
   if (!canGetProfile) {
-    if (nameEl) nameEl.innerText = '未登入';
-    // 綁定點擊進行登入（在非 LINE client 中會導到 LINE 登入）
     if (nameEl) {
+      nameEl.innerText = '未登入';
       nameEl.style.cursor = 'pointer';
       nameEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
     }
@@ -826,21 +824,20 @@ async function initLiff() {
       avatarEl.style.cursor = 'pointer';
       avatarEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
     }
-    if (liff.isLoggedIn()) {
-      try {
-        liffProfile = await liff.getProfile();
-        // 顯示右上角頭像（如果有）
-        if (liffProfile && liffProfile.pictureUrl) {
-          const img = document.getElementById('liffAvatarImg');
-          img.src = liffProfile.pictureUrl;
-          document.getElementById('liffAvatar').style.display = 'block';
+  } else {
+    try {
+      liffProfile = await liff.getProfile();
+      if (liffProfile) {
+        if (avatarEl && liffProfile.pictureUrl) {
+          avatarEl.src = liffProfile.pictureUrl;
         }
-      } catch (e) {
-        console.error('取得 profile 失敗', e);
+        if (nameEl && liffProfile.displayName) {
+          nameEl.innerText = liffProfile.displayName;
+        }
       }
+    } catch (e) {
+      console.error('取得 profile 失敗', e);
     }
-  } catch (e) {
-    console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
 }
 
@@ -857,7 +854,8 @@ function liffLogout() {
   if (liff.isLoggedIn()) liff.logout();
   liffProfile = null;
   // 隱藏頭像
-  document.getElementById('liffAvatar').style.display = 'none';
+  const avatarEl = document.getElementById('liffAvatarImg');
+  if (avatarEl) avatarEl.style.display = 'none';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
