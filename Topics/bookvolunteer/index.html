@@ -6,7 +6,7 @@
 <style>
     body {
       margin: 0;
-      font-family: "Noto Sans TC", sans-serif;
+      font-family: "Arial", sans-serif;
       background-color: #eef2f3;
       color: #222;
     }
@@ -344,10 +344,7 @@
       .modal-table th, .modal-table td { font-size: 13px; padding: 8px; }
     }
   </style>
-  <!-- LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- Supabase JS client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  
 </head>
 <body>
 
@@ -361,18 +358,13 @@
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
         <img id="liffAvatarImg" class="avatar" src="default-avatar.png" 
-     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-    <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
-
-      </span>
-    </h1>
-  </div>
+     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;display:inline-block;">
+     <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
+ 
+       </span>
+     </h1>
+   </div>
 </nav>
-
-  <!-- LIFF avatar (右上角) -->
-  <div id="liffAvatar" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;">
-    <img id="liffAvatarImg" src="" alt="avatar" style="width:48px;height:48px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-  </div>
 
   <h1 style="text-align:center;">預約志工</h1>
 
@@ -447,6 +439,10 @@
     </div>
   </div>
 
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // custom alert/confirm helpers
     function showAlert(message, cb) {
@@ -764,66 +760,97 @@ function showBookings() {
 }
 
 // === LIFF Integration ===
+// 保留全域 profile 以供其他功能使用（例如預約時顯示 user 名稱）
 let liffProfile = null;
-const userId = liffProfile.userId;
-async function initLiff() {
-  try {
-    // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
-    const liffId = '2008228534-V08oRPlW';
-    await liff.init({ liffId });
-    // 如果在 LINE 的 LIFF WebView 中，加入 class 以套用放大樣式
-    try {
-      let inClient = false;
-      if (typeof liff.isInClient === 'function') {
-        inClient = liff.isInClient();
-      } else {
-        // fallback: 判斷 userAgent 是否為 LINE WebView
-        const ua = navigator.userAgent || '';
-        inClient = /Line/i.test(ua) || /Line	s/i.test(ua);
-      }
-      console.debug('LIFF inClient:', inClient);
-      if (inClient) document.documentElement.classList.add('in-liff');
-    } catch (e) {
-      console.debug('LIFF in-client detection failed', e);
-    }
-    if (liff.isLoggedIn()) {
-      try {
-        liffProfile = await liff.getProfile();
-        // 顯示右上角頭像（如果有）
-        if (liffProfile && liffProfile.pictureUrl) {
-          const img = document.getElementById('liffAvatarImg');
-          img.src = liffProfile.pictureUrl;
-          document.getElementById('liffAvatar').style.display = 'block';
-        }
-      } catch (e) {
-        console.error('取得 profile 失敗', e);
-      }
-    }
-  } catch (e) {
-    console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
-  }
-}
 
-function liffLogin() {
+async function initLiff() {
+  // 取得 DOM 元素在此才抓，避免載入順序問題
+  const avatarEl = document.getElementById("liffAvatarImg");
+  const nameEl = document.getElementById("liffName");
+
+  // 預設 UI（先顯示 fallback）
+  if (avatarEl) { avatarEl.src = 'default-avatar.png'; avatarEl.style.display = 'inline-block'; }
+  if (nameEl && !nameEl.innerText) nameEl.innerText = '載入中';
+
+  // 若 SDK 尚未載入，等一個短暫時間再檢查一次（容錯）
   if (!window.liff) {
-    alert('LIFF SDK 未載入');
+    console.warn("LIFF SDK 尚未載入，稍候再試一次...");
+    setTimeout(() => {
+      if (window.liff) initLiff();
+      else {
+        if (nameEl) nameEl.innerText = '未登入';
+        if (avatarEl) avatarEl.src = 'default-avatar.png';
+      }
+    }, 500);
     return;
   }
-  if (!liff.isLoggedIn()) liff.login();
+
+  const liffId = '2008228534-V08oRPlW';
+  try {
+    await liff.init({ liffId });
+  } catch (err) {
+    console.error("liff.init 失敗：", err);
+    if (nameEl) nameEl.innerText = '未登入';
+    if (avatarEl) avatarEl.src = 'default-avatar.png';
+    return;
+  }
+
+  // 若在 LINE Client 中，通常可以直接取得 profile（即使未呼叫 login）
+  const canGetProfile = liff.isLoggedIn() || liff.isInClient();
+
+  if (!canGetProfile) {
+    if (nameEl) nameEl.innerText = '未登入';
+    // 綁定點擊進行登入（在非 LINE client 中會導到 LINE 登入）
+    if (nameEl) {
+      nameEl.style.cursor = 'pointer';
+      nameEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
+    }
+    if (avatarEl) {
+      avatarEl.style.cursor = 'pointer';
+      avatarEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
+    }
+    return;
+  }
+
+  // 嘗試取得 profile
+  try {
+    liffProfile = await liff.getProfile();
+    if (liffProfile) {
+      if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
+      if (avatarEl) {
+        avatarEl.src = liffProfile.pictureUrl || 'default-avatar.png';
+        avatarEl.style.display = 'inline-block';
+      }
+    }
+  } catch (err) {
+    console.error("取得 profile 失敗：", err);
+    if (nameEl) nameEl.innerText = '未登入';
+    if (avatarEl) avatarEl.src = 'default-avatar.png';
+  }
+
+  // 綁定點擊：未登入時導向 login，已登入則顯示簡短提示或導頁
+  if (nameEl) {
+    nameEl.style.cursor = 'pointer';
+    nameEl.addEventListener('click', () => {
+      if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href });
+      else alert('已登入：' + (nameEl.innerText || '志工'));
+    });
+  }
+  if (avatarEl) {
+    avatarEl.style.cursor = 'pointer';
+    avatarEl.addEventListener('click', () => {
+      if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href });
+      else window.location.href = '註冊頁面.html';
+    });
+  }
 }
 
-function liffLogout() {
-  if (!window.liff) return;
-  if (liff.isLoggedIn()) liff.logout();
-  liffProfile = null;
-  // 隱藏頭像
-  document.getElementById('liffAvatar').style.display = 'none';
-}
-
-// 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
-window.addEventListener('load', () => {
+// 以 DOMContentLoaded 啟動 init（較快且穩定）
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLiff);
+} else {
   initLiff();
-});
+}
 
 /* ----------------- Supabase integration -----------------
    To enable, replace the placeholders below with your project's
@@ -913,7 +940,7 @@ window.addEventListener('load', () => {
       for (let i = 0; i < count; i++) {
         const dot = document.createElement("span");
         dot.classList.add("dot");
-        if (i === 0) dot.classList.add("active");
+        if i === 0) dot.classList.add("active");
         dot.addEventListener("click", () => goToSlide(i, count));
         pagination.appendChild(dot);
       }
