@@ -5,21 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>血壓紀錄系統</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     body {
-      
-      font-family: "Noto Sans TC", sans-serif;
+      font-family: "Arial", sans-serif;
       background: #f4f6f8;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 30px;
+      margin-top: 0;
+      margin:0;
     }
-    h1 { color: #333; }
+    h1 { color: #333; 
+      margin-top: 5px;
+      margin-bottom: 5px;
+      }
+    /* 讓頁面中的特定標題靠左對齊並與表單/表格寬度一致 */
+    .title {
+      /* 與導覽列內標題左對齊（nav padding:25px）*/
+      align-self: flex-start;
+      margin: 8px 0 8px 25px;
+       text-align: left;
+       font-size: 24px;
+       box-sizing: border-box;
+     }
     /* 導覽列樣式（從 record-information 複製） */
     .nav-1{
       display: flex;
@@ -41,13 +51,14 @@
     .volunteer-area { display:flex; align-items:center; gap:8px; }
     .volunteer-area .avatar {
       width:36px; height:36px; border-radius:50%; object-fit:cover;
-      border:1px solid #ddd; display:none;
+      border:1px solid #ddd; display:inline-block;
     }
     .volunteer-area #volunteerName {
-      cursor: pointer;
+      cursor: default;
       padding: 4px 8px;
       border-radius: 6px;
       background: transparent;
+      font-size: 20px;
     }
     .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
     form {
@@ -57,6 +68,7 @@
       border-radius: 12px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       margin-bottom: 20px;
+      margin: 5px;
     }
     /* form row: label + input aligned */
     .form-row {
@@ -97,22 +109,17 @@
     button:hover { background-color: #4a90e2; }
 
   table {
-  width: 80%;
-    /* margin: 20px auto; */
-    border-collapse: separate; /*  圓角設定 */
+    width: 80%;
+    border-collapse: separate;
     border-spacing: 0;
-    
-    /*display: none; /*按鈕控制顯示 */
     box-sizing: border-box;
     overflow: hidden;
     border-radius: 20px;
     border: 1px solid #aaa;
-    }
-    th {  
+  }
+    th {
       background-color: #f2f2f2;
     }
-    /*奇偶列背景色 */
-
     tbody tr:nth-child(even) {
       background-color: #f9f9f9;
     }
@@ -150,28 +157,11 @@
       width: 100% !important;
       height: 50% !important;
     }
-    /* 登入鎖定遮罩 */
-    #authOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    #authOverlay .box {
-      background: #fff;
-      padding: 18px 20px;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 320px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-    }
+
   </style>
 </head>
 <body>
-  <!-- 導覽列（與看診資訊相同樣式） -->
+  <!-- 導覽列 -->
   <nav class="nav-1" >
     <div>
       <h1 style="margin:0; font-size: 28px;">血壓紀錄系統</h1>
@@ -179,34 +169,15 @@
 
     <div style="display:flex; align-items:center;">
       <h1 style="margin:0; text-align:right;">
-        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-          <!-- 使用與看診資訊相同的預設頭像與字級 -->
-          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
-        </span>
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
+      </span>
       </h1>
     </div>
   </nav>
-
-  <!-- 原本頁首保留，但已移下，避免重複顯示 -->
-  <!-- <h1>血壓紀錄系統</h1> -->
-
-  <!-- 當未登入時顯示，要求使用者登入 LINE -->
-  <div id="authOverlay">
-    <div class="box">
-      <p style="margin:0 0 12px; font-size:16px;">請先使用 LINE 登入才能使用本功能</p>
-      <button id="overlayLoginBtn" style="background:#0984e3;color:#fff;border:none;padding:8px 12px;border-radius:6px;">以 LINE 登入</button>
-    </div>
-  </div>
-
-  <!-- LIFF 使用者名稱與登入（右上角），含頭像 -->
-  <div id="liffInfo" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;align-items:center;gap:8px;">
-    <img id="liffPic" src="" alt="avatar" style="width:44px;height:44px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:none;">
-    <span id="liffName" style="color:#333;margin-right:8px;font-weight:600;"></span>
-    <button id="liffLoginBtn" style="background:#0984e3;color:#fff;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;">LINE 登入</button>
-  </div>
-
+<h1 class="title">輸入內容</h1>
   <form id="bpForm">
     <div class="form-row">
       <label for="date">日期：</label>
@@ -224,7 +195,7 @@
       <button type="submit" class="primary-btn">新增紀錄</button>
     </div>
   </form>
-
+    
   <table>
     <thead>
       <tr>
@@ -241,107 +212,10 @@
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
-
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    // ---- LIFF integration ----
-    let liffProfile = null;
-    async function initLiffBP() {
-      try {
-        const liffId = '2008228534-ke2nMaoZ'; // <-- 換成你的 LIFF ID
-        await liff.init({ liffId });
-        // 若在 LIFF client 中，且已登入，取得 profile
-        if (liff.isLoggedIn && liff.isLoggedIn()) {
-          try {
-            liffProfile = await liff.getProfile();
-            showLiffInfo(liffProfile);
-          } catch (e) { console.error('取得 LIFF profile 失敗', e); }
-          document.getElementById('liffLoginBtn').style.display = 'none';
-          requireLoginUI(true);
-        } else {
-          // 顯示登入按鈕
-          document.getElementById('liffLoginBtn').style.display = 'inline-block';
-          requireLoginUI(false);
-        }
-        // 如果不是在 LIFF client，也提供登入（會跳轉至 LINE 登入頁）
-        document.getElementById('liffLoginBtn').addEventListener('click', () => {
-          if (window.liff) liff.login();
-        });
-      } catch (e) {
-        console.error('LIFF init error', e);
-      }
-    }
-    
-    // 同步顯示到導覽列（volunteerAvatar / volunteerName）
-    function showLiffInfo(profile) {
-      if (!profile) return;
-      const pic = document.getElementById('liffPic');
-      const name = document.getElementById('liffName');
-      if (profile.pictureUrl && pic) { pic.src = profile.pictureUrl; pic.style.display = 'inline-block'; }
-      name.innerText = profile.displayName || '';
-      document.getElementById('liffInfo').style.display = 'flex';
-      
-      // 同步到導覽列顯示
-      const vAvatar = document.getElementById('volunteerAvatar');
-      const vName = document.getElementById('volunteerName');
-      if (vAvatar) {
-        if (profile.pictureUrl) { vAvatar.src = profile.pictureUrl; vAvatar.style.display = 'inline-block'; }
-        else vAvatar.style.display = 'none';
-      }
-      if (vName) vName.innerText = profile.displayName || '志工';
-    }
-
-    function hideLiffInfo() {
-      document.getElementById('liffInfo').style.display = 'none';
-    }
-
-    // 導覽列姓名點擊 -> LIFF 登入或顯示已登入
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'volunteerName') {
-        if (window.liff && liff.isLoggedIn && liff.isLoggedIn()) {
-          alert('已登入：' + (document.getElementById('volunteerName').innerText || '志工'));
-        } else {
-          if (window.liff) liff.login();
-        }
-      }
-      // overlay 登入按鈕
-      if (e.target && e.target.id === 'overlayLoginBtn') {
-        if (window.liff) liff.login();
-      }
-    });
-
-    // initialize LIFF asynchronously
-    if (window.liff) {
-      initLiffBP();
-    } else {
-      // in case SDK loads slightly later
-      window.addEventListener('load', () => { if (window.liff) initLiffBP(); });
-    }
-    
-    // Require LINE login before using page: show overlay & disable form/table when not logged in
-    function requireLoginUI(isLoggedIn) {
-      const overlay = document.getElementById('authOverlay');
-      const formEl = document.getElementById('bpForm');
-      const deleteButtons = document.querySelectorAll('.delete-btn');
-      if (!isLoggedIn) {
-        overlay.style.display = 'flex';
-        // disable form inputs & buttons
-        formEl.querySelectorAll('input, button').forEach(el => el.disabled = true);
-        deleteButtons.forEach(b => b.disabled = true);
-      } else {
-        overlay.style.display = 'none';
-        formEl.querySelectorAll('input, button').forEach(el => el.disabled = false);
-        deleteButtons.forEach(b => b.disabled = false);
-      }
-    }
-
-    // overlay 登入按鈕
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'overlayLoginBtn') {
-        if (window.liff) liff.login();
-      }
-    });
-    // ---- end LIFF integration ----
-
+    // LIFF 全部移除 — 改用本機/預設使用者資訊
+    let liffProfile = null; // 保留變數名稱供兼容（不使用 LIFF）
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
     const ctx = document.getElementById("bpChart").getContext("2d");
@@ -369,7 +243,6 @@
         try {
           const { data, error } = await sb.from('blood_pressure_records').select('*').order('recorded_time', { ascending: true });
           if (!error && data) {
-            // map supabase rows to local record shape
             records = data.map(r => ({
               uuid: r.uuid,
               elder_user_id: r.elder_user_id,
@@ -409,10 +282,11 @@
       const status = getStatus(systolic, diastolic);
       const recorded_time = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
 
-      // build payload for supabase
+      // 使用本機預設使用者資訊 (已移除 LINE)
+      const volunteerNameEl = document.getElementById('volunteerName');
       const payload = {
-        elder_user_id: (liffProfile && liffProfile.userId) ? liffProfile.userId : 'local-user',
-        elder_name: (liffProfile && liffProfile.displayName) ? liffProfile.displayName : null,
+        elder_user_id: 'local-user',
+        elder_name: volunteerNameEl ? volunteerNameEl.innerText : null,
         systolic: systolic,
         diastolic: diastolic,
         pulse: null,
@@ -435,7 +309,6 @@
           const { data, error } = await sb.from('blood_pressure_records').insert([payload]).select();
           if (error) throw error;
           if (data && data[0]) {
-            // replace last temp entry with saved record (include uuid)
             const saved = data[0];
             records[records.length - 1] = {
               uuid: saved.uuid,
@@ -484,7 +357,6 @@
     // 刪除紀錄
     async function deleteRecord(index) {
       const rec = records[index];
-      // try delete from supabase first if uuid exists
       if (sb && rec && rec.uuid) {
         try {
           const { data, error } = await sb.from('blood_pressure_records').delete().eq('uuid', rec.uuid);
@@ -504,9 +376,8 @@
       const systolicData = records.map(r => Number(r.systolic) || 0);
       const diastolicData = records.map(r => Number(r.diastolic) || 0);
 
-      if (chart) chart.destroy(); // 避免重複繪製
+      if (chart) chart.destroy();
 
-      // 建立範圍帶資料（每個 label 一樣長）
       const bandSystolicLower = labels.map(() => 90);
       const bandSystolicUpper = labels.map(() => 140);
       const bandDiastolicLower = labels.map(() => 60);
@@ -517,7 +388,6 @@
         data: {
           labels: labels,
           datasets: [
-            // 收縮壓正常範圍（填充 90-140）
             {
               label: '收縮壓正常下限',
               data: bandSystolicLower,
@@ -531,9 +401,8 @@
               borderWidth: 0,
               pointRadius: 0,
               backgroundColor: 'rgba(255,99,132,0.06)',
-              fill: '-1' // 填充到前一個 dataset
+              fill: '-1'
             },
-            // 舒張壓正常範圍（填充 60-90）
             {
               label: '舒張壓正常下限',
               data: bandDiastolicLower,
@@ -549,7 +418,6 @@
               backgroundColor: 'rgba(54,162,235,0.06)',
               fill: '-1'
             },
-            // 真正的壓力線圖放在上層
             {
               label: "收縮壓 (高壓)",
               data: systolicData,
@@ -588,6 +456,57 @@
         }
       });
     }
+    /* ==============================
+   ✅ LIFF 初始化
+   ============================== */
+    const LIFF_ID = "2008228534-ke2nMaoZ";
+    const avatarEl = document.getElementById("volunteerAvatar");
+    const nameEl = document.getElementById("volunteerName");
+
+    async function initLiffAndSetProfile() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+
+        if (!liff.isLoggedIn()) {
+          nameEl.innerText = "載入中";
+          avatarEl.style.display = "none";
+          return;
+        }
+
+        const profile = await liff.getProfile();
+        nameEl.innerText = profile.displayName || "志工";
+        if (profile.pictureUrl) {
+          avatarEl.src = profile.pictureUrl;
+          avatarEl.style.display = "inline-block";
+        } else {
+          avatarEl.style.display = "none";
+        }
+      } catch (err) {
+        console.error("LIFF init error:", err);
+      }
+    }
+
+    avatarEl.addEventListener("click", () => {
+      if (liff.isLoggedIn()) {
+        window.location.href = "註冊頁面.html";
+      } else {
+        liff.login({
+          redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
+        });
+      }
+    });
+
+    nameEl.addEventListener("click", () => {
+      if (!liff.isLoggedIn()) {
+        liff.login({
+          redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
+        });
+      } else {
+        alert("已登入：" + (nameEl.innerText || "志工"));
+      }
+    });
+
+    initLiffAndSetProfile();
   </script>
 </body>
 </html>
