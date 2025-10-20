@@ -168,30 +168,32 @@
       top: 50%;
       transform: translateY(-50%);
       font-size: 2rem;
-      background: rgba(255,255,255,0.8);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px 12px;
-    }
-  .arrow.left { left: 16px; }
-  .arrow.right { right: 16px; }
-
-    /* 更顯眼的左右按鈕（行動友善） */
-    .arrow {
       width: 56px;
       height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 999px;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 6px 12px;
+      border: 2px solid #2a61be; /* 深藍邊框 */
+      color: #ffffff; /* 箭頭為白色 */
+      background: #2a61be; /* 藍色圓形底 */
       box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      transition: all 0.12s ease;
       z-index: 50;
-      background: #fff;
-      opacity: 0.95;
+      opacity: 1;
     }
+  .arrow.left { left: 16px; }
+  .arrow.right { right: 16px; }
 
     .arrow.left, .arrow.right { top: 45%; }
+
+    .arrow:hover {
+      background: #054ab3; /* hover 時變更為更深藍 */
+      color: #ffffff; /* 箭頭仍為白色 */
+      transform: translateY(-50%) scale(1.06);
+    }
 
     /* 手機更大按鈕與更寬的點擊區 */
     @media (max-width: 600px) {
