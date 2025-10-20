@@ -298,6 +298,8 @@
     const table = document.getElementById("recordTable");
     const bpTable = document.getElementById("bpTable");
     const noRecordMsg = document.getElementById("no-record-msg");
+    const canvas = document.getElementById("bpChart");
+    const ctx = canvas ? canvas.getContext("2d") : null;
     
     // 載入紀錄
     let records = [];
@@ -424,14 +426,23 @@
         table.innerHTML += row;
       });
 
-      // 顯示 / 隱藏「目前尚未有紀錄」
+      // 顯示 / 隱藏「目前尚未有紀錄」與圖表
+      const chartContainer = document.querySelector('.chart-container');
       if (!bpTable) return;
       if (records.length === 0) {
         bpTable.style.display = "none";
         if (noRecordMsg) noRecordMsg.style.display = "block";
+        if (chartContainer) chartContainer.style.display = "none";
+        if (chart) {
+          try { chart.destroy(); } catch (e) { /* ignore */ }
+          chart = null;
+        }
       } else {
         bpTable.style.display = "table";
         if (noRecordMsg) noRecordMsg.style.display = "none";
+        if (chartContainer) chartContainer.style.display = "block";
+        // 確保有最新資料的圖表
+        renderChart();
       }
     }
 
@@ -453,6 +464,15 @@
 
     // 繪製圖表
     function renderChart() {
+      // 如果沒有 canvas/ctx 或沒有資料則銷毀舊圖表並跳出
+      if (!ctx || !canvas || records.length === 0) {
+        if (chart) {
+          try { chart.destroy(); } catch (e) { /* ignore */ }
+          chart = null;
+        }
+        return;
+      }
+
       const labels = records.map(r => r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : '');
       const systolicData = records.map(r => Number(r.systolic) || 0);
       const diastolicData = records.map(r => Number(r.diastolic) || 0);
