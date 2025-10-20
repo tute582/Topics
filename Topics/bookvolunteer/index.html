@@ -874,17 +874,41 @@ window.addEventListener('load', () => {
 const SUPABASE_URL = 'https://your-project.supabase.co';
 const SUPABASE_ANON_KEY = 'your-public-anon-key';
 let supabaseClient = null;
-try {
-  if (SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('your-project')) {
+
+(function initSupabase() {
+  try {
+    // 檢查 supabase SDK 是否已載入
+    if (typeof supabase === 'undefined') {
+      console.debug('Supabase SDK 未載入，將改用 localStorage。');
+      return;
+    }
+
+    // 基本的佔位字串/格式檢查（避免意外把 placeholder 當真 key 使用）
+    const isPlaceholder =
+      !SUPABASE_URL ||
+      !SUPABASE_ANON_KEY ||
+      SUPABASE_URL.includes('your-project') ||
+      SUPABASE_ANON_KEY.toLowerCase().includes('your-');
+
+    if (isPlaceholder) {
+      console.debug('Supabase 尚未配置（使用 placeholder），將以 localStorage 為主。');
+      return;
+    }
+
+    // 簡單 URL 格式驗證
+    if (!/^https?:\/\/.+$/.test(SUPABASE_URL)) {
+      console.warn('Supabase URL 格式不正確，跳過 Supabase 初始化。');
+      return;
+    }
+
+    // 嘗試建立 client
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.debug('Supabase client initialized');
-  } else {
-    console.debug('Supabase not configured - using localStorage only');
+  } catch (e) {
+    console.warn('Supabase client init failed', e);
+    supabaseClient = null;
   }
-} catch (e) {
-  console.warn('Supabase client init failed', e);
-  supabaseClient = null;
-}
+})();
 
 async function saveBookingToSupabase(booking) {
   if (!supabaseClient) return null;
@@ -945,33 +969,63 @@ window.addEventListener('load', () => {
     function setupSlider(count) {
       const container = document.getElementById("cardContainer");
       const pagination = document.getElementById("pagination");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      if (!container || !pagination) return;
+
+      // reset
       pagination.innerHTML = "";
       currentIndex = 0;
+      container.style.transition = "transform 0.5s ease";
       container.style.transform = "translateX(0%)";
 
+      // 如果沒有卡片，隱藏左右按鈕並結束
+      if (!Number.isInteger(count) || count <= 0) {
+        if (prevBtn) prevBtn.style.display = "none";
+        if (nextBtn) nextBtn.style.display = "none";
+        return;
+      }
+
+      // 顯示或隱藏左右按鈕（單一卡片時可隱藏）
+      if (prevBtn) {
+        prevBtn.style.display = (count > 1) ? "" : "none";
+        prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
+      }
+      if (nextBtn) {
+        nextBtn.style.display = (count > 1) ? "" : "none";
+        nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
+      }
+
+      // 建立分頁點
       for (let i = 0; i < count; i++) {
         const dot = document.createElement("span");
         dot.classList.add("dot");
-        if i === 0) dot.classList.add("active");
+        if (i === 0) dot.classList.add("active");
         dot.addEventListener("click", () => goToSlide(i, count));
         pagination.appendChild(dot);
       }
 
-      document.getElementById("prevBtn").onclick = () => goToSlide(currentIndex - 1, count);
-      document.getElementById("nextBtn").onclick = () => goToSlide(currentIndex + 1, count);
       // 註冊觸控手勢（手機可滑動切換）
       registerSwipe(container, count);
     }
 
     function goToSlide(index, count) {
       const container = document.getElementById("cardContainer");
-      const dots = document.querySelectorAll(".dot");
+      const pagination = document.getElementById("pagination");
+      if (!container || !pagination) return;
+      if (!Number.isInteger(count) || count <= 0) return;
+
+      const dots = pagination.querySelectorAll(".dot");
+      // 迴圈處理索引
       if (index < 0) index = count - 1;
       if (index >= count) index = 0;
       currentIndex = index;
+
+      container.style.transition = "transform 0.5s ease";
       container.style.transform = `translateX(-${index * 100}%)`;
-      dots.forEach(dot => dot.classList.remove("active"));
-      dots[index].classList.add("active");
+
+      dots.forEach(d => d.classList.remove("active"));
+      if (dots[index]) dots[index].classList.add("active");
     }
 
     // touch swipe 支援
