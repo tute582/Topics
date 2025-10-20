@@ -25,6 +25,14 @@
       border-radius: 12px;
       border: 1px solid #ccc;
     }
+      .title {
+      /* 與導覽列內標題左對齊（nav padding:25px）*/
+      align-self: flex-start;
+      margin: 8px 0 8px 25px;
+       text-align: left;
+       font-size: 24px;
+       box-sizing: border-box;
+     }
 
     label {
       display: block;
@@ -34,23 +42,23 @@
     }
 
     /* 表單欄位樣式：與 record-information 一致 */
-input[type="text"],
-input[type="date"],
-input[type="time"],
-textarea,
-select,
-#editModal input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 10px;
-  border: 1px solid #888;
-  font-size: 14px;
-  margin: 5px 0;
-  box-sizing: border-box;
-  background-color: #ffffff;
-  color: #222;
-}
+      input[type="text"],
+      input[type="date"],
+      input[type="time"],
+      textarea,
+      select,
+      #editModal input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 10px;
+      border: 1px solid #888;
+      font-size: 14px;
+      margin: 5px 0;
+      box-sizing: border-box;
+      background-color: #ffffff;
+      color: #222;
+    }
 
 /* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
 select { width: 100% !important; }
@@ -400,16 +408,15 @@ select { width: 100% !important; }
     </div>
     <div style="display:flex; align-items:center;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-         <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
+        <img id="volunteerAvatar" class="avatar" src="" alt="avatar">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:26px; color:#222;">訪客</span>
       </span>
     </div>
   </nav>
 
   <!-- 先前中央標題（已由導覽列取代） -->
   <!-- <h1 style="text-align:center;">預約志工</h1> -->
-
+<h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
   <form id="dataForm">
     <label>日期</label>
     <input type="date" id="date">
@@ -840,7 +847,7 @@ async function initLiff() {
       // 未登入時，保持預設顯示
       const nameEl = document.getElementById('volunteerName');
       const avatarEl = document.getElementById('volunteerAvatar');
-      if (nameEl) nameEl.innerText = '未登入';
+      if (nameEl) nameEl.innerText = '訪客';
       if (avatarEl) avatarEl.style.display = 'none';
     }
   } catch (e) {
