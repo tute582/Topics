@@ -329,6 +329,16 @@
       margin-left: auto;
       margin-right: auto;
     }
+  .volunteer-card {
+    background: 
+      linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)), /* 透明白淡化層 */
+      url("https://raw.githubusercontent.com/tute582/Topics/main/Topics/bookvolunteer/c2dfff.png");
+    background-color: #c2dfff;
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+  }
+
 
     /* === 手機調整 === */
     @media (max-width: 500px) {
@@ -516,16 +526,17 @@
         }
 
         // 將 API 資料轉成可用的 volunteers 陣列格式
-        volunteers = result.data.map((v, i) => ({
-          name: v.volunteer_name || "未命名",
-          gender: v.gender || "未填寫",
-          age: v.age || "未提供",
-          tags: Array.isArray(v.personality) ? v.personality : [],
-          desc: v.partner_expeienceence || "尚無經驗說明",
-          cover: "c2dfff.jpg", // 暫用隨機封面
-          avatar: v.image_url,
-          available_time: v.available_time || "未提供",
-        }));
+        volunteers = result.data.map((v) => ({
+        name: v.volunteer_name || "未命名",
+        gender: v.gender || "未填寫",
+        age: v.age || "未提供",
+        tags: Array.isArray(v.personality) ? v.personality : [],
+        desc: v.partner_expeienceence || "尚無經驗說明",
+        cover: "#c2dfff", // ✅ 原始圖片
+        avatar: v.image_url,
+        available_time: v.available_time || "未提供",
+      }));
+
 
         console.log("✅ 志工資料載入完成", volunteers);
       } catch (err) {
