@@ -360,8 +360,8 @@
   <div style="display:flex; align-items:center;">
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="liffAvatarImg" class="avatar" src="default-avatar.png" 
-     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+      <img id="navAvatarImg" class="avatar" src="../Volunteer side/default-avatar.png" 
+       style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
     <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
 
       </span>
@@ -448,6 +448,23 @@
   </div>
 
   <script>
+    // helper: 設定 avatar 並在載入失敗時 fallback
+    function applyAvatar(imgEl, url, fallback) {
+      if (!imgEl) return;
+      const safeFallback = fallback ? encodeURI(fallback) : '';
+      imgEl.onerror = function () {
+        // 設定後清除 handler，避免無限 loop
+        imgEl.onerror = null;
+        if (safeFallback) imgEl.src = safeFallback;
+      };
+      try {
+        // 若 url 是空或 undefined，直接用 fallback
+        imgEl.src = url && url !== '' ? url : safeFallback;
+      } catch (e) {
+        if (safeFallback) imgEl.src = safeFallback;
+      }
+    }
+
     // custom alert/confirm helpers
     function showAlert(message, cb) {
       const modal = document.getElementById('customModal');
@@ -505,7 +522,7 @@
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
           desc: v.partner_expeienceence || "尚無經驗說明",
-          cover: "linear-gradient(#C2DFFF, #C2DFFF)", // 暫用隨機封面
+          cover: "c2dfff.jpg", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
         }));
@@ -789,11 +806,21 @@ async function initLiff() {
     if (liff.isLoggedIn()) {
       try {
         liffProfile = await liff.getProfile();
-        // 顯示右上角頭像（如果有）
-        if (liffProfile && liffProfile.pictureUrl) {
-          const img = document.getElementById('liffAvatarImg');
-          img.src = liffProfile.pictureUrl;
+        // 顯示右上角頭像（如果有），同時更新導覽列的 avatar
+        const navImg = document.getElementById('navAvatarImg');
+        const topImg = document.getElementById('liffAvatarImg');
+        const nameEl = document.getElementById('liffName');
+        const defaultPath = '../Volunteer side/default-avatar.png';
+        if (liffProfile) {
+          const pic = liffProfile.pictureUrl || '';
+          applyAvatar(navImg, pic, defaultPath);
+          applyAvatar(topImg, pic, defaultPath);
+          // 顯示名稱（若有），並維持右上 avatar 可見
+          if (liffProfile.displayName && nameEl) nameEl.textContent = liffProfile.displayName;
           document.getElementById('liffAvatar').style.display = 'block';
+        } else {
+          applyAvatar(navImg, '', defaultPath);
+          applyAvatar(topImg, '', defaultPath);
         }
       } catch (e) {
         console.error('取得 profile 失敗', e);
@@ -818,6 +845,11 @@ function liffLogout() {
   liffProfile = null;
   // 隱藏頭像
   document.getElementById('liffAvatar').style.display = 'none';
+  // 還原導覽列為未登入狀態與預設圖
+  const navImg = document.getElementById('navAvatarImg');
+  const nameEl = document.getElementById('liffName');
+  if (navImg) navImg.src = '../Volunteer side/default-avatar.png';
+  if (nameEl) nameEl.textContent = '未登入';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
