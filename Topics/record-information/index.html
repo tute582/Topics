@@ -419,8 +419,9 @@
 <!-- 查詢標題 -->
 
 <h1 class="title" style="font-size: 24px;">查詢</h1>
-  <!-- 顯示提示或結果
-  <div id="message"></div> -->
+
+<!-- 新增：無資料時顯示的訊息 -->
+<div id="no-record-msg" class="no-record">目前尚未有紀錄</div>
 
 <!-- ==============================
      資料表格區域
@@ -594,6 +595,8 @@ function addRow() {
   addEditButtonsToRows();
   clearInputs();
   updateNoRecordMessage(); // ✅ 新增後立即更新提示
+
+  saveData(); // ✅ 新增後儲存
 }
 
 /* ==============================
@@ -679,6 +682,7 @@ document.getElementById("saveEditBtn").onclick = () => {
   sortTableByDateTime("dataTable");
   altRows("dataTable");
   alert("資料已更新 ✅");
+  saveData(); // ✅ 儲存變更
   closeModal();
 };
 
@@ -689,6 +693,7 @@ document.getElementById("deleteEditBtn").onclick = () => {
     altRows("dataTable");
     alert("資料已刪除 ✅");
     updateNoRecordMessage(); // ✅ 刪除後檢查
+    saveData(); // ✅ 刪除後儲存
     closeModal();
   }
 };
@@ -818,7 +823,10 @@ function addEditButtonsToRows() {
 
 
 // 🔹頁面載入時自動執行
-window.addEventListener("DOMContentLoaded", loadData);
+window.addEventListener("DOMContentLoaded", () => {
+  loadData();
+  updateNoRecordMessage();
+});
 </script>
 
 </body>

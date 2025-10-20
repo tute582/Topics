@@ -210,7 +210,7 @@
     </div>
   </form>
     
-  <table>
+  <table id="bpTable">
     <thead>
       <tr>
         <th>日期</th>
@@ -223,6 +223,11 @@
     <tbody id="recordTable"></tbody>
   </table>
 
+  <!-- 新增：無資料提示 -->
+  <div id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin:18px 0;">
+    目前尚未有紀錄
+  </div>
+
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
@@ -232,8 +237,9 @@
     let liffProfile = null; // 保留變數名稱供兼容（不使用 LIFF）
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
-    const ctx = document.getElementById("bpChart").getContext("2d");
-
+    const bpTable = document.getElementById("bpTable");
+    const noRecordMsg = document.getElementById("no-record-msg");
+    
     // 載入紀錄
     let records = [];
     let chart;
@@ -366,6 +372,16 @@
           </tr>`;
         table.innerHTML += row;
       });
+
+      // 顯示 / 隱藏「目前尚未有紀錄」
+      if (!bpTable) return;
+      if (records.length === 0) {
+        bpTable.style.display = "none";
+        if (noRecordMsg) noRecordMsg.style.display = "block";
+      } else {
+        bpTable.style.display = "table";
+        if (noRecordMsg) noRecordMsg.style.display = "none";
+      }
     }
 
     // 刪除紀錄
