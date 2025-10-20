@@ -517,7 +517,8 @@
           gender: v.gender || "未填寫",
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
-          desc: v.partner_expeienceence || "尚無經驗說明",
+          // 修正欄位名稱 typo，並加入常見備援欄位名稱
+          desc: v.partner_experience || v.partner_experienceence || v.partner_expeienceence || v.experience || "尚無經驗說明",
           cover: "c2dfff.jpg", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
