@@ -33,36 +33,42 @@
       font-size: 20px;
     }
 
-    /* 原先的 input/select 樣式（已替換為行事曆一致樣式） */
-    input[type="text"],
-    input[type="date"],
-    input[type="time"],
-    select,
-    #editModal input {
-      width: 92%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 15px;
-      border: 1px solid #888;
-      font-size: 18px;
-      margin: 5px auto;
-      margin-bottom: 5px;
-      box-sizing: border-box;
-    }
+    /* 表單欄位樣式：與 record-information 一致 */
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea,
+select,
+#editModal input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 10px;
+  border: 1px solid #888;
+  font-size: 14px;
+  margin: 5px 0;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #222;
+}
 
-    /* 若需對手機或窄螢幕微調，可保留這段 */
-    @media (max-width: 600px) {
-      input[type="text"],
-      input[type="date"],
-      input[type="time"],
-      select {
-        width: 94%;
-        font-size: 18px;
-        padding: 10px;
-        border-radius: 15px;
-        margin-bottom: 5px;
-      }
-    }
+/* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
+select { width: 100% !important; }
+
+/* 小螢幕微調保持一致 */
+@media (max-width: 600px) {
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+}
 
     button {
       display: inline-block;
