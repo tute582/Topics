@@ -442,7 +442,7 @@
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <!-- Supabase JS client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> -->
   <script>
     // helper: 設定 avatar 並在載入失敗時 fallback
     function applyAvatar(imgEl, url, fallback) {
@@ -871,199 +871,200 @@ window.addEventListener('load', () => {
    table with appropriate columns in Supabase).
    Columns used: id (bigint/text), volunteer, user, datetime, department
 ---------------------------------------------------------*/
-const SUPABASE_URL = 'https://xyzabcde.supabase.co';
-const SUPABASE_ANON_KEY = 'your-public-anon-key';
-let supabaseClient = null;
+// const SUPABASE_URL = '';
+//const SUPABASE_ANON_KEY = '';
+//let supabaseClient = null;
 
-(function initSupabase() {
-  try {
+//(function initSupabase() {
+ // try {
     // 檢查 supabase SDK 是否已載入
-    if (typeof supabase === 'undefined') {
-      console.debug('Supabase SDK 未載入，將改用 localStorage。');
-      return;
-    }
+   // if (typeof supabase === 'undefined') {
+    //  console.debug('Supabase SDK 未載入，將改用 localStorage。');
+    //  return;
+    //}
 
     // 基本的佔位字串/格式檢查（避免意外把 placeholder 當真 key 使用）
-    const isPlaceholder =
-      !SUPABASE_URL ||
-      !SUPABASE_ANON_KEY ||
-      SUPABASE_URL.includes('your-project') ||
-      SUPABASE_ANON_KEY.toLowerCase().includes('your-');
+   // const isPlaceholder =
+     // !SUPABASE_URL ||
+    //  !SUPABASE_ANON_KEY ||
+    //  SUPABASE_URL.includes('your-project') ||
+    //  SUPABASE_ANON_KEY.toLowerCase().includes('your-');
 
-    if (isPlaceholder) {
-      console.debug('Supabase 尚未配置（使用 placeholder），將以 localStorage 為主。');
-      return;
-    }
+   // if (isPlaceholder) {
+   //   console.debug('Supabase 尚未配置（使用 placeholder），將以 localStorage 為主。');
+    //  return;
+   // }
 
     // 簡單 URL 格式驗證
-    if (!/^https?:\/\/.+$/.test(SUPABASE_URL)) {
-      console.warn('Supabase URL 格式不正確，跳過 Supabase 初始化。');
-      return;
-    }
+  //  if (!/^https?:\/\/.+$/.test(SUPABASE_URL)) {
+    //  console.warn('Supabase URL 格式不正確，跳過 Supabase 初始化。');
+    //  return;
+   // }
 
     // 嘗試建立 client
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.debug('Supabase client initialized');
-  } catch (e) {
-    console.warn('Supabase client init failed', e);
-    supabaseClient = null;
-  }
-})();
+  //  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  //  console.debug('Supabase client initialized');
+ // } catch (e) {
+ //   console.warn('Supabase client init failed', e);
+ //   supabaseClient = null;
+ // }
+//})();
 
-async function saveBookingToSupabase(booking) {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').insert([booking]).select();
-    if (error) throw error;
-    return data && data[0];
-  } catch (e) {
-    console.warn('Supabase insert failed', e);
-    return null;
-  }
-}
+//async function saveBookingToSupabase(booking) {
+  //if (!supabaseClient) return null;
+ // try {
+  //  const { data, error } = await supabaseClient.from('bookings').insert([booking]).select();
+   // if (error) throw error;
+ //   return data && data[0];
+ // } catch (e) {
+ //   console.warn('Supabase insert failed', e);
+ //   return null;
+ // }
+//}
 
-async function fetchBookingsFromSupabase() {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: true });
-    if (error) throw error;
-    return data || [];
-  } catch (e) {
-    console.warn('Supabase fetch failed', e);
-    return null;
-  }
-}
+//async function fetchBookingsFromSupabase() {
+  //if (!supabaseClient) return null;
+ // try {
+  //  const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: true });
+ //   if (error) throw error;
+ //   return data || [];
+ // } catch (e) {
+ //   console.warn('Supabase fetch failed', e);
+ //   return null;
+ // }
+//}
 
-async function deleteBookingFromSupabase(id) {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').delete().eq('id', id);
-    if (error) throw error;
-    return data;
-  } catch (e) {
-    console.warn('Supabase delete failed', e);
-    return null;
-  }
-}
+//async function deleteBookingFromSupabase(id) {
+ // if (!supabaseClient) return null;
+ // try {
+ //   const { data, error } = await supabaseClient.from('bookings').delete().eq('id', id);
+ //   if (error) throw error;
+  //  return data;
+  //} catch (e) {
+  //  console.warn('Supabase delete failed', e);
+ //   return null;
+ // }
+//}
 
 // 保險機制：在 load 時再綁定一次預約查詢按鈕，並在 console log 點擊事件（方便除錯）
-window.addEventListener('load', () => {
-  try {
-    const sb = document.getElementById('showBookingsBtn');
-    if (sb) {
-      sb.addEventListener('click', (e) => {
-        console.debug('showBookingsBtn clicked (bound listener)');
+//window.addEventListener('load', () => {
+//  try {
+  //  const sb = document.getElementById('showBookingsBtn');
+   // if (sb) {
+   //   sb.addEventListener('click', (e) => {
+    //    console.debug('showBookingsBtn clicked (bound listener)');
         // 呼叫主函式（保險）
-        if (typeof showBookings === 'function') showBookings();
-      });
-    } else {
-      console.debug('showBookingsBtn not found on load');
-    }
-  } catch (err) {
-    console.error('綁定 showBookingsBtn 事件失敗', err);
-  }
-});
+   //     if (typeof showBookings === 'function') showBookings();
+  //    });
+  //  } else {
+  //    console.debug('showBookingsBtn not found on load');
+   // }
+//  } catch (err) {
+ //   console.error('綁定 showBookingsBtn 事件失敗', err);
+//  }
+//});
 
 
     //志工資訊
-    function setupSlider(count) {
-      const container = document.getElementById("cardContainer");
-      const pagination = document.getElementById("pagination");
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      if (!container || !pagination) return;
+    //function setupSlider(count) {
+    //  const container = document.getElementById("cardContainer");
+    //  const pagination = document.getElementById("pagination");
+    //  const prevBtn = document.getElementById("prevBtn");
+     // const nextBtn = document.getElementById("nextBtn");
+     // if (!container || !pagination) return;
 
       // reset
-      pagination.innerHTML = "";
-      currentIndex = 0;
-      container.style.transition = "transform 0.5s ease";
-      container.style.transform = "translateX(0%)";
+    //  pagination.innerHTML = "";
+    //  currentIndex = 0;
+    //  container.style.transition = "transform 0.5s ease";
+    //  container.style.transform = "translateX(0%)";
 
       // 如果沒有卡片，隱藏左右按鈕並結束
-      if (!Number.isInteger(count) || count <= 0) {
-        if (prevBtn) prevBtn.style.display = "none";
-        if (nextBtn) nextBtn.style.display = "none";
-        return;
-      }
+    //  if (!Number.isInteger(count) || count <= 0) {
+    //    if (prevBtn) prevBtn.style.display = "none";
+    //    if (nextBtn) nextBtn.style.display = "none";
+    //    return;
+    //  }
 
       // 顯示或隱藏左右按鈕（單一卡片時可隱藏）
-      if (prevBtn) {
-        prevBtn.style.display = (count > 1) ? "" : "none";
-        prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
-      }
-      if (nextBtn) {
-        nextBtn.style.display = (count > 1) ? "" : "none";
-        nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
-      }
+    //  if (prevBtn) {
+   //     prevBtn.style.display = (count > 1) ? "" : "none";
+   //     prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
+    //  }
+    //  if (nextBtn) {
+    //    nextBtn.style.display = (count > 1) ? "" : "none";
+    //    nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
+   //   }
 
       // 建立分頁點
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement("span");
-        dot.classList.add("dot");
-        if (i === 0) dot.classList.add("active");
-        dot.addEventListener("click", () => goToSlide(i, count));
-        pagination.appendChild(dot);
-      }
+   //   for (let i = 0; i < count; i++) {
+    //    const dot = document.createElement("span");
+    //    dot.classList.add("dot");
+    //    if (i === 0) dot.classList.add("active");
+    //    dot.addEventListener("click", () => goToSlide(i, count));
+    //    pagination.appendChild(dot);
+    //  }
 
       // 註冊觸控手勢（手機可滑動切換）
-      registerSwipe(container, count);
-    }
+    //  registerSwipe(container, count);
+   // }
 
-    function goToSlide(index, count) {
-      const container = document.getElementById("cardContainer");
-      const pagination = document.getElementById("pagination");
-      if (!container || !pagination) return;
-      if (!Number.isInteger(count) || count <= 0) return;
+   // function goToSlide(index, count) {
+   //   const container = document.getElementById("cardContainer");
+   //   const pagination = document.getElementById("pagination");
+   //   if (!container || !pagination) return;
+      //if (!Number.isInteger(count) || count <= 0) return;
+//
+     // const dots = pagination.querySelectorAll(".dot");
+     // // 迴圈處理索引
+     // if (index < 0) index = count - 1;
+     // if (index >= count) index = 0;
+    //  currentIndex = index;
 
-      const dots = pagination.querySelectorAll(".dot");
-      // 迴圈處理索引
-      if (index < 0) index = count - 1;
-      if (index >= count) index = 0;
-      currentIndex = index;
+     // container.style.transition = "transform 0.5s ease";
+     // container.style.transform = `translateX(-${index * 100}%)`;
 
-      container.style.transition = "transform 0.5s ease";
-      container.style.transform = `translateX(-${index * 100}%)`;
-
-      dots.forEach(d => d.classList.remove("active"));
-      if (dots[index]) dots[index].classList.add("active");
-    }
+     // dots.forEach(d => d.classList.remove("active"));
+     // if (dots[index]) dots[index].classList.add("active");
+    //}
 
     // touch swipe 支援
-    function registerSwipe(container, count) {
-      let startX = 0;
-      let deltaX = 0;
-      let isMoving = false;
+    //function registerSwipe(container, count) {
+    //  let startX = 0;
+    //  let deltaX = 0;
+    //  let isMoving = false;
 
-      container.addEventListener('touchstart', (e) => {
-        if (!e.touches || e.touches.length === 0) return;
-        startX = e.touches[0].clientX;
-        isMoving = true;
-      }, { passive: true });
+   //   container.addEventListener('touchstart', (e) => {
+   //     if (!e.touches || e.touches.length === 0) return;
+   //     startX = e.touches[0].clientX;
+   //     isMoving = true;
+   //   }, { passive: true });
 
-      container.addEventListener('touchmove', (e) => {
-        if (!isMoving || !e.touches || e.touches.length === 0) return;
-        deltaX = e.touches[0].clientX - startX;
-        // 可視性回饋（輕微位移）
-        container.style.transition = 'none';
-        container.style.transform = `translateX(${ -currentIndex * 100 + (deltaX / container.clientWidth) * 100 }%)`;
-      }, { passive: true });
+   //   container.addEventListener('touchmove', (e) => {
+   //     if (!isMoving || !e.touches || e.touches.length === 0) return;
+   //     deltaX = e.touches[0].clientX - startX;
+         // 可視性回饋（輕微位移）
+    //    container.style.transition = 'none';
+    //    container.style.transform = `translateX(${ -currentIndex * 100 + (deltaX / container.clientWidth) * 100 }%)`;
+   //   }, { passive: true });
 
-      container.addEventListener('touchend', (e) => {
-        isMoving = false;
-        container.style.transition = 'transform 0.5s ease';
-        if (Math.abs(deltaX) > 40) {
-          if (deltaX < 0) {
-            goToSlide(currentIndex + 1, count);
-          } else {
-            goToSlide(currentIndex - 1, count);
-          }
-        } else {
+   //   container.addEventListener('touchend', (e) => {
+    //    isMoving = false;
+     //   container.style.transition = 'transform 0.5s ease';
+      //  if (Math.abs(deltaX) > 40) {
+       //   if (deltaX < 0) {
+       //     goToSlide(currentIndex + 1, count);
+        //  } else {
+       //     goToSlide(currentIndex - 1, count);
+      //    }
+     //   } else {
           // 還原位置
-          container.style.transform = `translateX(-${currentIndex * 100}%)`;
-        }
-        deltaX = 0;
-      }, { passive: true });
-    }
+    //      container.style.transform = `translateX(-${currentIndex * 100}%)`;
+     //   }
+    //    deltaX = 0;
+    //  }, { passive: true });
+   );
+
   </script>
 </body>
 </html>
