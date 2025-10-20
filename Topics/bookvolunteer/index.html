@@ -162,8 +162,7 @@ select, select.form-select {
     border-top-right-radius: 20px;  /* 與 card-inner 圓角對齊 */
     z-index: 0;
     }  
-    
-   .card-avatar {
+    .card-avatar {
     width: 100px;
     height: 100px;
     border-radius: 50%;
@@ -451,6 +450,53 @@ select, select.form-select {
 @media (max-width: 768px) {
   .allTable-div table { min-width: 0; width: 100%; }
 }
+
+/* --- 新增：與行事曆一致的導覽列樣式 --- */
+.nav-1{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 22px;
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+  width: 100%;
+  left: 0;
+  right: 0;
+  color: black;
+  background-color: white;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ddd;
+}
+
+/* volunteer area（右側）與行事曆一致的外觀 */
+.volunteer-area { display:flex; align-items:center; gap:8px; }
+.volunteer-area .avatar {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #0984e3;
+  display:inline-block;
+  flex: 0 0 40px;
+}
+.volunteer-area #volunteerName {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 18px;
+  color: #222;
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 確保 nav 內標題不會造成高度跳動 */
+.nav-1 h1 { margin: 0; font-size: 20px; line-height: 1; }
   </style>
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -459,16 +505,19 @@ select, select.form-select {
 </head>
 <body>
 
-  <!-- 導覽列：右側顯示頭像與名稱（樣式與行事曆一致） -->
+  <!-- 導覽列已移除 -->
   <nav class="nav-1">
     <div>
-      <h1 style="margin:0; font-size:28px;">預約志工</h1>
+      <h1 style="margin: 0; font-size: 20px;">預約志工</h1>
     </div>
     <div style="display:flex; align-items:center;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="" alt="avatar">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:26px; color:#222;">訪客</span>
-      </span>
+      <h1 style="margin:0; text-align:right;">
+        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
+               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;display:none;">
+          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:18px;">載入中</span>
+        </span>
+      </h1>
     </div>
   </nav>
 
@@ -872,15 +921,15 @@ async function initLiff() {
     // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
     const liffId = '2008228534-V08oRPlW';
     await liff.init({ liffId });
-    // 如果在 LINE 的 LIFF WebView 中，加入 class 以套用放大樣式
+
+    // LIFF in-client 偵測（保持原有行為）
     try {
       let inClient = false;
       if (typeof liff.isInClient === 'function') {
         inClient = liff.isInClient();
       } else {
-        // fallback: 判斷 userAgent 是否為 LINE WebView
         const ua = navigator.userAgent || '';
-        inClient = /Line/i.test(ua) || /Line	s/i.test(ua);
+        inClient = /Line/i.test(ua) || /Line\s/i.test(ua);
       }
       console.debug('LIFF inClient:', inClient);
       if (inClient) document.documentElement.classList.add('in-liff');
@@ -888,52 +937,57 @@ async function initLiff() {
       console.debug('LIFF in-client detection failed', e);
     }
 
+    // 導覽列元素
+    const avatarEl = document.getElementById('volunteerAvatar');
+    const nameEl = document.getElementById('volunteerName');
+    const target = "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html";
+
     if (liff.isLoggedIn()) {
       try {
         liffProfile = await liff.getProfile();
-        // 新增：將名稱與頭像顯示在導覽列右側
-        const nameEl = document.getElementById('volunteerName');
-        const avatarEl = document.getElementById('volunteerAvatar');
-        if (liffProfile) {
-          if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
-          if (avatarEl && liffProfile.pictureUrl) {
+        if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
+        if (avatarEl) {
+          if (liffProfile.pictureUrl) {
             avatarEl.src = liffProfile.pictureUrl;
             avatarEl.style.display = 'inline-block';
+          } else {
+            avatarEl.style.display = 'none';
           }
         }
       } catch (e) {
         console.error('取得 profile 失敗', e);
       }
     } else {
-      // 未登入時，保持預設顯示
-      const nameEl = document.getElementById('volunteerName');
-      const avatarEl = document.getElementById('volunteerAvatar');
-      if (nameEl) nameEl.innerText = '訪客';
+      if (nameEl) nameEl.innerText = '未登入';
       if (avatarEl) avatarEl.style.display = 'none';
+      liffProfile = null;
     }
+
+    // 點擊頭像或名稱的行為（與行事曆一致）
+    if (avatarEl) {
+      avatarEl.addEventListener('click', () => {
+        if (liff.isLoggedIn()) {
+          window.location.href = target;
+        } else {
+          liff.login({ redirectUri: target });
+        }
+      });
+    }
+    if (nameEl) {
+      nameEl.addEventListener('click', () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: target });
+        } else {
+          alert('已登入：' + (nameEl.innerText || '志工'));
+        }
+      });
+    }
+
   } catch (e) {
     console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
 
-  // 點擊名稱 / 頭像的快速登入或顯示提示
-  try {
-    const nameEl = document.getElementById('volunteerName');
-    const avatarEl = document.getElementById('volunteerAvatar');
-    if (nameEl) {
-      nameEl.addEventListener('click', () => {
-        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
-        if (!liff.isLoggedIn()) liff.login();
-        else alert('已登入：' + (nameEl.innerText || '志工'));
-      });
-    }
-    if (avatarEl) {
-      avatarEl.addEventListener('click', () => {
-        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
-        if (!liff.isLoggedIn()) liff.login();
-        else alert('已登入：' + (nameEl.innerText || '志工'));
-      });
-    }
-  } catch (e) { /* silent */ }
+  // 已移除點擊名稱 / 頭像的快速登入 UI 綁定（導覽列已刪除）
 }
 
 function liffLogin() {
@@ -944,15 +998,11 @@ function liffLogin() {
   if (!liff.isLoggedIn()) liff.login();
 }
 
+// 移除 liffLogout 中對導覽列 DOM 的操作（導覽列已刪除）
 function liffLogout() {
   if (!window.liff) return;
   if (liff.isLoggedIn()) liff.logout();
   liffProfile = null;
-  // 隱藏導覽列頭像並重設名稱
-  const avatarEl = document.getElementById('volunteerAvatar');
-  const nameEl = document.getElementById('volunteerName');
-  if (avatarEl) avatarEl.style.display = 'none';
-  if (nameEl) nameEl.innerText = '訪客';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
@@ -1019,23 +1069,22 @@ async function deleteBookingFromSupabase(id) {
 }
 
 // 保險機制：在 load 時再綁定一次預約查詢按鈕，並在 console log 點擊事件（方便除錯）
-window.addEventListener('load', () => {
-  try {
-    const sb = document.getElementById('showBookingsBtn');
-    if (sb) {
-      sb.addEventListener('click', (e) => {
-        console.debug('showBookingsBtn clicked (bound listener)');
-        // 呼叫主函式（保險）
-        if (typeof showBookings === 'function') showBookings();
-      });
-    } else {
-      console.debug('showBookingsBtn not found on load');
-    }
-  } catch (err) {
-    console.error('綁定 showBookingsBtn 事件失敗', err);
-  }
-});
-
+// window.addEventListener('load', () => {
+//   try {
+//     const sb = document.getElementById('showBookingsBtn');
+//     if (sb) {
+//       sb.addEventListener('click', (e) => {
+//         console.debug('showBookingsBtn clicked (bound listener)');
+//         // 呼叫主函式（保險）
+//         if (typeof showBookings === 'function') showBookings();
+//       });
+//     } else {
+//       console.debug('showBookingsBtn not found on load');
+//     }
+//   } catch (err) {
+//     console.error('綁定 showBookingsBtn 事件失敗', err);
+//   }
+// });
 
 
     function setupSlider(count) {
