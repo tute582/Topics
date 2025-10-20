@@ -158,6 +158,20 @@
       height: 50% !important;
     }
 
+ /* ==============================
+       響應式設定（手機介面）
+       ============================== */
+    @media (max-width: 768px) {
+    
+      form { width: 95%; }
+      /* 在手機上移除強制最小寬度 讓表格可縮放並出現橫向滾動 */
+      table { min-width: 0; width:100%; }
+      /* 調整輸入欄位字級與按鈕更適合手機 */
+      input[type="text"], input[type="date"], input[type="time"], textarea { font-size:16px; padding:10px; }
+      button { padding:12px 18px; font-size:16px; }
+    }
+
+
   </style>
 </head>
 <body>
