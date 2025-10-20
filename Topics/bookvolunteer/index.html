@@ -32,14 +32,33 @@
       font-weight: 600;
     }
 
-    input[type="text"], input[type="date"], input[type="time"], select {
-      width: 90%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #aaa;
+    /* 原先的 input/select 樣式（已替換為行事曆一致樣式） */
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    #editModal input {
+      width: 92%;
+      padding: 8px;
       margin-top: 5px;
+      border-radius: 15px;
+      border: 1px solid #888;
+      font-size: 18px;
+      margin: 5px auto;
+      margin-bottom: 15px;
       box-sizing: border-box;
+    }
+
+    /* 若需對手機或窄螢幕微調，可保留這段 */
+    @media (max-width: 600px) {
+      input[type="text"],
+      input[type="date"],
+      input[type="time"],
+      select {
+        width: 94%;
+        font-size: 18px;
+        padding: 10px;
+      }
     }
 
     button {
@@ -168,32 +187,30 @@
       top: 50%;
       transform: translateY(-50%);
       font-size: 2rem;
+      background: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 6px 12px;
+    }
+  .arrow.left { left: 16px; }
+  .arrow.right { right: 16px; }
+
+    /* 更顯眼的左右按鈕（行動友善） */
+    .arrow {
       width: 56px;
       height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px 12px;
-      border: 2px solid #2a61be; /* 深藍邊框 */
-      color: #ffffff; /* 箭頭為白色 */
-      background: #2a61be; /* 藍色圓形底 */
+      border-radius: 999px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-      transition: all 0.12s ease;
       z-index: 50;
-      opacity: 1;
+      background: #fff;
+      opacity: 0.95;
     }
-  .arrow.left { left: 16px; }
-  .arrow.right { right: 16px; }
 
     .arrow.left, .arrow.right { top: 45%; }
-
-    .arrow:hover {
-      background: #054ab3; /* hover 時變更為更深藍 */
-      color: #ffffff; /* 箭頭仍為白色 */
-      transform: translateY(-50%) scale(1.06);
-    }
 
     /* 手機更大按鈕與更寬的點擊區 */
     @media (max-width: 600px) {
@@ -370,7 +387,7 @@
   <!-- 導覽列：右側顯示頭像與名稱（樣式與行事曆一致） -->
   <nav class="nav-1">
     <div>
-      <h1 style="margin:0; font-size:20px;">預約志工</h1>
+      <h1 style="margin:0; font-size:28px;">預約志工</h1>
     </div>
     <div style="display:flex; align-items:center;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
@@ -384,13 +401,13 @@
   <!-- <h1 style="text-align:center;">預約志工</h1> -->
 
   <form id="dataForm">
-    <label>日期：</label>
+    <label>日期</label>
     <input type="date" id="date">
 
-    <label>時間：</label>
+    <label>時間</label>
     <input type="time" id="time">
 
-    <label>門診科別：</label>
+    <label>門診科別</label>
     <select id="department" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
       <option value="" disabled selected>請選擇科別</option>
       <optgroup label="內科">
@@ -421,7 +438,7 @@
       </optgroup>
     </select>
 
-    <label>志工性別：</label>
+    <label>志工性別</label>
     <select id="gender" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
       
       <option value="" disabled selected>請選擇性別</option>
