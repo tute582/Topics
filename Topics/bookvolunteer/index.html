@@ -325,6 +325,38 @@
       button { width: 100%; font-size: 18px; margin: 10px 0; }
       .modal-table th, .modal-table td { font-size: 13px; padding: 8px; }
     }
+
+    /* -------- 導覽列（來自 record-information 的 nav-1） -------- */
+    .nav-1{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1001;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 100%;
+      left: 0;
+      right: 0;
+      color: black;
+      background-color: white;
+      box-sizing: border-box;
+      border-bottom: 1px solid #ddd;
+    }
+    .volunteer-area {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .volunteer-area .avatar {
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      object-fit:cover;
+      border:2px solid #fff;
+      display:none;
+    }
   </style>
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -333,12 +365,21 @@
 </head>
 <body>
 
-  <!-- LIFF avatar (右上角) -->
-  <div id="liffAvatar" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;">
-    <img id="liffAvatarImg" src="" alt="avatar" style="width:48px;height:48px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-  </div>
+  <!-- 導覽列：右側顯示頭像與名稱（樣式與行事曆一致） -->
+  <nav class="nav-1">
+    <div>
+      <h1 style="margin:0; font-size:20px;">預約志工</h1>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="" alt="avatar">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:16px; color:#222;">訪客</span>
+      </span>
+    </div>
+  </nav>
 
-  <h1 style="text-align:center;">預約志工</h1>
+  <!-- 先前中央標題（已由導覽列取代） -->
+  <!-- <h1 style="text-align:center;">預約志工</h1> -->
 
   <form id="dataForm">
     <label>日期：</label>
@@ -749,22 +790,53 @@ async function initLiff() {
     } catch (e) {
       console.debug('LIFF in-client detection failed', e);
     }
+
     if (liff.isLoggedIn()) {
       try {
         liffProfile = await liff.getProfile();
-        // 顯示右上角頭像（如果有）
-        if (liffProfile && liffProfile.pictureUrl) {
-          const img = document.getElementById('liffAvatarImg');
-          img.src = liffProfile.pictureUrl;
-          document.getElementById('liffAvatar').style.display = 'block';
+        // 新增：將名稱與頭像顯示在導覽列右側
+        const nameEl = document.getElementById('volunteerName');
+        const avatarEl = document.getElementById('volunteerAvatar');
+        if (liffProfile) {
+          if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
+          if (avatarEl && liffProfile.pictureUrl) {
+            avatarEl.src = liffProfile.pictureUrl;
+            avatarEl.style.display = 'inline-block';
+          }
         }
       } catch (e) {
         console.error('取得 profile 失敗', e);
       }
+    } else {
+      // 未登入時，保持預設顯示
+      const nameEl = document.getElementById('volunteerName');
+      const avatarEl = document.getElementById('volunteerAvatar');
+      if (nameEl) nameEl.innerText = '訪客';
+      if (avatarEl) avatarEl.style.display = 'none';
     }
   } catch (e) {
     console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
+
+  // 點擊名稱 / 頭像的快速登入或顯示提示
+  try {
+    const nameEl = document.getElementById('volunteerName');
+    const avatarEl = document.getElementById('volunteerAvatar');
+    if (nameEl) {
+      nameEl.addEventListener('click', () => {
+        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
+        if (!liff.isLoggedIn()) liff.login();
+        else alert('已登入：' + (nameEl.innerText || '志工'));
+      });
+    }
+    if (avatarEl) {
+      avatarEl.addEventListener('click', () => {
+        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
+        if (!liff.isLoggedIn()) liff.login();
+        else alert('已登入：' + (nameEl.innerText || '志工'));
+      });
+    }
+  } catch (e) { /* silent */ }
 }
 
 function liffLogin() {
@@ -779,8 +851,11 @@ function liffLogout() {
   if (!window.liff) return;
   if (liff.isLoggedIn()) liff.logout();
   liffProfile = null;
-  // 隱藏頭像
-  document.getElementById('liffAvatar').style.display = 'none';
+  // 隱藏導覽列頭像並重設名稱
+  const avatarEl = document.getElementById('volunteerAvatar');
+  const nameEl = document.getElementById('volunteerName');
+  if (avatarEl) avatarEl.style.display = 'none';
+  if (nameEl) nameEl.innerText = '訪客';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
