@@ -358,12 +358,12 @@
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
         <img id="liffAvatarImg" class="avatar" src="default-avatar.png" 
-     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;display:inline-block;">
-     <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
- 
-       </span>
-     </h1>
-   </div>
+     style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+    <span id="liffName" style="cursor:pointer; font-size: 26px;">未登入</span>
+
+      </span>
+    </h1>
+  </div>
 </nav>
 
   <h1 style="text-align:center;">預約志工</h1>
@@ -444,6 +444,23 @@
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
+    // helper: 設定 avatar 並在載入失敗時 fallback
+    function applyAvatar(imgEl, url, fallback) {
+      if (!imgEl) return;
+      const safeFallback = fallback ? encodeURI(fallback) : '';
+      imgEl.onerror = function () {
+        // 設定後清除 handler，避免無限 loop
+        imgEl.onerror = null;
+        if (safeFallback) imgEl.src = safeFallback;
+      };
+      try {
+        // 若 url 是空或 undefined，直接用 fallback
+        imgEl.src = url && url !== '' ? url : safeFallback;
+      } catch (e) {
+        if (safeFallback) imgEl.src = safeFallback;
+      }
+    }
+
     // custom alert/confirm helpers
     function showAlert(message, cb) {
       const modal = document.getElementById('customModal');
@@ -501,7 +518,7 @@
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
           desc: v.partner_expeienceence || "尚無經驗說明",
-          cover: "linear-gradient(#C2DFFF, #C2DFFF)", // 暫用隨機封面
+          cover: "c2dfff.jpg", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
         }));
@@ -809,46 +826,42 @@ async function initLiff() {
       avatarEl.style.cursor = 'pointer';
       avatarEl.addEventListener('click', () => { if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href }); });
     }
-    return;
-  }
-
-  // 嘗試取得 profile
-  try {
-    liffProfile = await liff.getProfile();
-    if (liffProfile) {
-      if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
-      if (avatarEl) {
-        avatarEl.src = liffProfile.pictureUrl || 'default-avatar.png';
-        avatarEl.style.display = 'inline-block';
+    if (liff.isLoggedIn()) {
+      try {
+        liffProfile = await liff.getProfile();
+        // 顯示右上角頭像（如果有）
+        if (liffProfile && liffProfile.pictureUrl) {
+          const img = document.getElementById('liffAvatarImg');
+          img.src = liffProfile.pictureUrl;
+          document.getElementById('liffAvatar').style.display = 'block';
+        }
+      } catch (e) {
+        console.error('取得 profile 失敗', e);
       }
     }
-  } catch (err) {
-    console.error("取得 profile 失敗：", err);
-    if (nameEl) nameEl.innerText = '未登入';
-    if (avatarEl) avatarEl.src = 'default-avatar.png';
-  }
-
-  // 綁定點擊：未登入時導向 login，已登入則顯示簡短提示或導頁
-  if (nameEl) {
-    nameEl.style.cursor = 'pointer';
-    nameEl.addEventListener('click', () => {
-      if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href });
-      else alert('已登入：' + (nameEl.innerText || '志工'));
-    });
-  }
-  if (avatarEl) {
-    avatarEl.style.cursor = 'pointer';
-    avatarEl.addEventListener('click', () => {
-      if (!liff.isLoggedIn()) liff.login({ redirectUri: location.href });
-      else window.location.href = '註冊頁面.html';
-    });
+  } catch (e) {
+    console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
 }
 
-// 以 DOMContentLoaded 啟動 init（較快且穩定）
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLiff);
-} else {
+function liffLogin() {
+  if (!window.liff) {
+    alert('LIFF SDK 未載入');
+    return;
+  }
+  if (!liff.isLoggedIn()) liff.login();
+}
+
+function liffLogout() {
+  if (!window.liff) return;
+  if (liff.isLoggedIn()) liff.logout();
+  liffProfile = null;
+  // 隱藏頭像
+  document.getElementById('liffAvatar').style.display = 'none';
+}
+
+// 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
+window.addEventListener('load', () => {
   initLiff();
 }
 
