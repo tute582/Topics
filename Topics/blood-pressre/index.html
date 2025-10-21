@@ -51,14 +51,11 @@
 
     /* 讓頁面中的特定標題靠左對齊並與表單/表格寬度一致 */
     .title {
-      /* 與導覽列內標題左對齊（nav padding:25px）*/
-      align-self: flex-start;
       margin: 5px 0;
-       text-align: left;
-       font-size: 26px;
-       box-sizing: border-box;
-       padding: 0 25px;
-     }
+      font-size: 26px;
+      box-sizing: border-box;
+      /* 預設靠左，無需 align-self/text-align */
+    }
     /* 導覽列樣式（從 record-information 複製） */
     .nav-1{
       display: flex;
@@ -110,9 +107,7 @@
       width: 140px;
       min-width: 100px;
       text-align: left;
-      font-weight: 700;
-      color: #111;
-      font-size: 16px;
+      font-weight: 600;
     }
     .form-row input {
       flex: 1 1 auto;
@@ -141,51 +136,65 @@
  /* ==============================
        表格容器樣式
        ============================== */
-    .table-container {
+
+    /* === calendar 風格表格 === */
+    .allTable-div {
       width: 100%;
-      margin: 5px ;
-      /* 允許水平滾動，必要時顯示水平滾軸 */
-      overflow-x: auto;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch; /* 行動裝置平滑滾動 */
-      /* 若希望在內容超出時總是顯示水平滾軸（某些系統會隱藏），可改用 overflow: auto; */
-      /* max-height: 200px;  限制高度，超過出現滾輪 */
+      margin: 5px 0;
+      -webkit-overflow-scrolling: touch;
       border: 1px solid #aaa;
       border-radius: 20px;
       background-color: white;
-    }
-
-  /* 表格基本樣式 */
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      /* 設定比容器寬，當容器較窄會出現橫向滾動 */
-      min-width: 800px; 
+      display: block;
+      overflow-x: auto;
       box-sizing: border-box;
+      padding: 0;
     }
-    th {
-      background-color:#f9f9f9; 
+    .allTable-div table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      min-width: 800px;
+      box-sizing: border-box;
+      background: transparent;
+      margin: 0;
+      border: none;
+    }
+    .allTable-div th,
+    .allTable-div td {
+      padding: 12px 10px;
+      text-align: center;
+      border: 1px solid #e6e6e6;
+      white-space: nowrap;
+      font-size: 14px;
+      background: transparent;
+    }
+    .allTable-div th {
+      background-color: #f9f9f9;
+      border-top: none;
       position: sticky;
       top: 0;
       z-index: 2;
     }
-    tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
+    .allTable-div thead tr th:first-child {
+      border-top-left-radius: 18px;
     }
-    tbody tr:nth-child(odd) {
-      background-color: #ffffff;
+    .allTable-div thead tr th:last-child {
+      border-top-right-radius: 18px;
     }
-
-    th, td { 
-      padding:10px; 
-      text-align:center; 
-      border: 1px solid #ddd;
-      white-space: nowrap; /* 防止換行，配合橫向滾動 */
+    .allTable-div tbody tr:last-child td:first-child {
+      border-bottom-left-radius: 18px;
     }
- /* 行動裝置上仍可觸發橫向捲動（若想在窄螢幕降低 min-width 可用下面的設定） */
+    .allTable-div tbody tr:last-child td:last-child {
+      border-bottom-right-radius: 18px;
+    }
+    .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
+    .allTable-div tbody tr:nth-child(odd)  { background-color: #ffffff; }
     @media (max-width: 600px) {
-      table { min-width: 700px; }
+      .allTable-div table { min-width: 700px; }
+    }
+    @media (max-width: 768px) {
+      .allTable-div table { min-width: 0; width: 100%; }
     }
     .delete-btn {
       background-color: #e74c3c;
@@ -210,6 +219,14 @@
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       width: 100% !important;
       height: 50% !important;
+    }
+     /* calendar 風格置中容器 */
+    .div-b {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    padding: 0 25px;
     }
 
  /* ==============================
@@ -246,44 +263,42 @@
     </div>
   </nav>
 
-  <div class="input-container">
-<h1 class="title">輸入內容</h1>
-  <form id="bpForm">
-    <div class="form-row">
-      <label for="date">日期：</label>
-      <input type="date" id="date" required>
-    </div>
-    <div class="form-row">
-      <label for="systolic">收縮壓（高壓）：</label>
-      <input type="number" id="systolic" required>
-    </div>
-    <div class="form-row">
-      <label for="diastolic">舒張壓（低壓）：</label>
-      <input type="number" id="diastolic" required>
-    </div>
-    <div style="display:flex;justify-content:flex-start;">
-      <button type="submit" class="primary-btn">新增紀錄</button>
-    </div>
-  </form>
-    
-  <table id="bpTable">
-    <thead>
-      <tr>
-        <th>日期</th>
-        <th>收縮壓</th>
-        <th>舒張壓</th>
-        <th>狀態</th>
-        <th>刪除</th>
-      </tr>
-    </thead>
-    <tbody id="recordTable"></tbody>
-  </table>
+  <div class="div-b">
+    <h1 class="title">輸入內容</h1>
+    <form id="bpForm">
+      <div class="form-row">
+        <label for="date">日期：</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="form-row">
+        <label for="systolic">收縮壓（高壓）：</label>
+        <input type="number" id="systolic" required>
+      </div>
+      <div class="form-row">
+        <label for="diastolic">舒張壓（低壓）：</label>
+        <input type="number" id="diastolic" required>
+      </div>
+      <div style="display:flex;justify-content:flex-start;">
+        <button type="submit" class="primary-btn">新增紀錄</button>
+      </div>
+    </form>
 
-  <!-- 新增：無資料提示 -->
-  <div id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin:18px 0;">
-    目前尚未有紀錄
+    <div class="allTable-div">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>收縮壓</th>
+            <th>舒張壓</th>
+            <th>狀態</th>
+            <th>刪除</th>
+          </tr>
+        </thead>
+        <tbody id="recordTable"></tbody>
+      </table>
+    </div>
   </div>
-
+   
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
@@ -293,11 +308,8 @@
     let liffProfile = null; // 保留變數名稱供兼容（不使用 LIFF）
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
-    const bpTable = document.getElementById("bpTable");
-    const noRecordMsg = document.getElementById("no-record-msg");
-    const canvas = document.getElementById("bpChart");
-    const ctx = canvas ? canvas.getContext("2d") : null;
-    
+    const ctx = document.getElementById("bpChart").getContext("2d");
+
     // 載入紀錄
     let records = [];
     let chart;
@@ -430,25 +442,6 @@
           </tr>`;
         table.innerHTML += row;
       });
-
-      // 顯示 / 隱藏「目前尚未有紀錄」與圖表
-      const chartContainer = document.querySelector('.chart-container');
-      if (!bpTable) return;
-      if (records.length === 0) {
-        bpTable.style.display = "none";
-        if (noRecordMsg) noRecordMsg.style.display = "block";
-        if (chartContainer) chartContainer.style.display = "none";
-        if (chart) {
-          try { chart.destroy(); } catch (e) { /* ignore */ }
-          chart = null;
-        }
-      } else {
-        bpTable.style.display = "table";
-        if (noRecordMsg) noRecordMsg.style.display = "none";
-        if (chartContainer) chartContainer.style.display = "block";
-        // 確保有最新資料的圖表
-        renderChart();
-      }
     }
 
     // 刪除紀錄
@@ -469,15 +462,6 @@
 
     // 繪製圖表
     function renderChart() {
-      // 如果沒有 canvas/ctx 或沒有資料則銷毀舊圖表並跳出
-      if (!ctx || !canvas || records.length === 0) {
-        if (chart) {
-          try { chart.destroy(); } catch (e) { /* ignore */ }
-          chart = null;
-        }
-        return;
-      }
-
       const labels = records.map(r => r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : '');
       const systolicData = records.map(r => Number(r.systolic) || 0);
       const diastolicData = records.map(r => Number(r.diastolic) || 0);
