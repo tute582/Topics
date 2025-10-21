@@ -25,72 +25,22 @@
       border-radius: 12px;
       border: 1px solid #ccc;
     }
-      .title {
-      /* 與導覽列內標題左對齊（nav padding:25px）*/
-      align-self: flex-start;
-      margin: 8px 0 8px 25px;
-       text-align: left;
-       font-size: 24px;
-       box-sizing: border-box;
-     }
 
     label {
       display: block;
       margin-top: 10px;
       font-weight: 600;
-      font-size: 20px;
     }
 
-    /* 表單欄位樣式：與 record-information 一致 */
-      input[type="text"],
-      input[type="date"],
-      input[type="time"],
-      textarea,
-      select,
-      #editModal input {
-      width: 100%;
-      padding: 8px;
+    input[type="text"], input[type="date"], input[type="time"], select {
+      width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #aaa;
       margin-top: 5px;
-      border-radius: 10px;
-      border: 1px solid #888;
-      font-size: 14px;
-      margin: 5px 0;
       box-sizing: border-box;
-      background-color: #ffffff;
-      color: #222;
     }
-
-/* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
-select { width: 100% !important; }
-
-/* 調整 select 樣式（與 record-information 表單欄位一致） */
-select, select.form-select {
-  width: 100% !important;
-  padding: 8px 10px;
-  font-size: 16px; /* 如果要與頁面中其他欄位完全一致可改為14或16 */
-  border-radius: 10px;
-  border: 1px solid #888;
-  background-color: #ffffff;
-  color: #222;
-  box-sizing: border-box;
-  margin: 5px 0; /* 與 input 欄位一致的間距 */
-}
-
-/* 小螢幕微調保持一致 */
-@media (max-width: 600px) {
-  input[type="text"],
-  input[type="date"],
-  input[type="time"],
-  select,
-  textarea {
-    width: 100%;
-    font-size: 16px;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-  }
-  select, select.form-select { font-size:16px; padding:10px; }
-}
 
     button {
       display: inline-block;
@@ -213,17 +163,28 @@ select, select.form-select {
     }
 
     /* === 分頁與箭頭 === */
-    .arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 2rem;
-      background: rgba(255,255,255,0.8);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px 12px;
-    }
+      .arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 2rem;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        padding: 6px 12px;
+        color: #fff !important; /* 箭頭符號永遠白色 */
+        background: #357abd !important; /* 藍色背景永遠顯眼 */
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        transition: all 0.2s ease;
+        z-index: 50;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.98;
+        border: 2px solid #5B9EFF;
+      }
   .arrow.left { left: 16px; }
   .arrow.right { right: 16px; }
 
@@ -311,31 +272,8 @@ select, select.form-select {
       padding: 18px;
       box-shadow: 0 6px 28px rgba(0,0,0,0.18);
       color: #222;
-      position: relative; /* 新增：讓 .close-btn 的 absolute 定位生效 */
     }
 
-    /* 與看診資訊一致的右上角叉叉關閉按鈕 */
-    .modal-inner .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: transparent;
-      border: none;
-      font-size: 30px;
-      color: #888;
-      cursor: pointer;
-      border-radius: 5px;
-      padding: 5px 10px;
-      transition: all 0.18s ease;
-      z-index: 30;
-      margin: 0;
-    }
-    .modal-inner .close-btn:hover {
-      background-color: #e74c3c;
-      color: white;
-      transform: scale(1.06);
-    }
-    
     /* 讓表格包在圓角的容器內，並有輕微藍色邊框與白底 */
     .modal-table-wrap {
       background: #fff;
@@ -384,73 +322,20 @@ select, select.form-select {
     border-radius: 20px;
   }
 
-/* ---------- 新增：與行事曆一致的表格容器樣式（allTable-div） ---------- */
-.allTable-div {
-  width: 100%;
-  margin: 5px 0;
-  -webkit-overflow-scrolling: touch;
-  border: 1px solid #aaa;
-  border-radius: 20px;
-  background-color: white;
-  display: block;
-  overflow-x: auto;
-  box-sizing: border-box;
-  padding: 0;
-}
 
-/* 內部 table 使用相同設計 */
-.allTable-div table {
-  width: 100%;
-  border-collapse: collapse;
-  border-spacing: 0;
-  min-width: 800px;
-  box-sizing: border-box;
-  background: transparent;
-  margin: 0;
-  border: none;
-}
-
-.allTable-div th,
-.allTable-div td {
-  padding: 12px 10px;
-  text-align: center;
-  border: 1px solid #e6e6e6;
-  white-space: nowrap;
-  font-size: 14px;
-  background: transparent;
-}
-
-.allTable-div th {
-  background-color: #f9f9f9;
-  border-top: none;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-.allTable-div thead tr th:first-child {
-  border-top-left-radius: 18px;
-}
-.allTable-div thead tr th:last-child {
-  border-top-right-radius: 18px;
-}
-.allTable-div tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 18px;
-}
-.allTable-div tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 18px;
-}
-
-.allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
-.allTable-div tbody tr:nth-child(odd)  { background-color: #ffffff; }
-
-/* 行動裝置微調 */
-@media (max-width: 600px) {
-  .allTable-div table { min-width: 700px; }
-}
-@media (max-width: 768px) {
-  .allTable-div table { min-width: 0; width: 100%; }
-}
+    /* === 手機調整 === */
+    @media (max-width: 500px) {
+      form {
+        padding: 14px;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .card-inner { max-width: 90%; }
+      .card-avatar { width: 80px; height: 80px; }
+      .card-title { font-size: 18px; }
+      button { width: 100%; font-size: 18px; margin: 10px 0; }
+      .modal-table th, .modal-table td { font-size: 13px; padding: 8px; }
+    }
   </style>
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -459,31 +344,22 @@ select, select.form-select {
 </head>
 <body>
 
-  <!-- 導覽列：右側顯示頭像與名稱（樣式與行事曆一致） -->
-  <nav class="nav-1">
-    <div>
-      <h1 style="margin:0; font-size:28px;">預約志工</h1>
-    </div>
-    <div style="display:flex; align-items:center;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="" alt="avatar">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:26px; color:#222;">訪客</span>
-      </span>
-    </div>
-  </nav>
+  <!-- LIFF avatar (右上角) -->
+  <div id="liffAvatar" style="position:fixed;top:12px;right:12px;z-index:9999;display:none;">
+    <img id="liffAvatarImg" src="" alt="avatar" style="width:48px;height:48px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+  </div>
 
-  <!-- 先前中央標題（已由導覽列取代） -->
-  <!-- <h1 style="text-align:center;">預約志工</h1> -->
-<h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
+  <h1 style="text-align:center;">預約志工</h1>
+
   <form id="dataForm">
-    <label>日期</label>
+    <label>日期：</label>
     <input type="date" id="date">
 
-    <label>時間</label>
+    <label>時間：</label>
     <input type="time" id="time">
 
-    <label>門診科別</label>
-    <select id="department" class="form-select">
+    <label>門診科別：</label>
+    <select id="department" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
       <option value="" disabled selected>請選擇科別</option>
       <optgroup label="內科">
         <option value="一般內科">一般內科</option>
@@ -513,8 +389,8 @@ select, select.form-select {
       </optgroup>
     </select>
 
-    <label>志工性別</label>
-    <select id="gender" class="form-select">
+    <label>志工性別：</label>
+    <select id="gender" style="font-size: 18px; width: 94%;margin: 15px auto; border-radius: 5px;">
       
       <option value="" disabled selected>請選擇性別</option>
       <option value="皆可">皆可</option>
@@ -603,8 +479,7 @@ select, select.form-select {
           gender: v.gender || "未填寫",
           age: v.age || "未提供",
           tags: Array.isArray(v.personality) ? v.personality : [],
-          // 修正欄位名稱 typo（若 API 欄位不同請調整回正確欄位）
-          desc: v.partner_experience || v.partner_expeienceence || "尚無經驗說明",
+          desc: v.partner_expeienceence || "尚無經驗說明",
           cover: "c2dfff.jpg", // 暫用隨機封面
           avatar: v.image_url,
           available_time: v.available_time || "未提供",
@@ -742,128 +617,126 @@ function toggleCard() {
 
 // 顯示預約紀錄（從 localStorage 讀取最新資料）
 function showBookings() {
-        // 重新讀取 persisted 資料
-        try {
-          const raw = localStorage.getItem('bookedList');
-          bookedList = raw ? JSON.parse(raw) : [];
-        } catch (e) {
-          console.error('localStorage 讀取解析錯誤', e);
-          bookedList = [];
-        }
-
-        if (bookedList.length === 0) {
-          showAlert('目前尚無預約紀錄！');
-          return;
-        }
-
-        // 建立 overlay 與白色彈窗盒子，表格放在圓角容器內
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-
-        const box = document.createElement('div');
-        box.className = 'modal-box';
-
-        const inner = document.createElement('div');
-        inner.className = 'modal-inner';
-
-        // header + table
-        const title = document.createElement('h3');
-        title.style.textAlign = 'center';
-        title.style.marginTop = '4px';
-        title.innerText = '📋 預約紀錄';
-
-        // 新增右上角叉叉按鈕（與看診資訊風格一致）
-        const topCloseBtn = document.createElement('button');
-        topCloseBtn.className = 'close-btn';
-        topCloseBtn.type = 'button';
-        topCloseBtn.innerHTML = '&times;';
-        topCloseBtn.title = '關閉';
-        inner.appendChild(topCloseBtn);
-        topCloseBtn.addEventListener('click', () => overlay.remove());
-
-
-        // 使用與行事曆相同的外層容器（allTable-div）包裹 table
-        const tableWrap = document.createElement('div');
-        tableWrap.className = 'modal-table-wrap allTable-div';
-
-        const table = document.createElement('table');
-        table.className = 'modal-table';
-        table.style.width = '100%';
-        table.style.borderCollapse = 'separate';
-        table.style.textAlign = 'center';
-        table.style.fontSize = '14px';
-
-        const thead = document.createElement('thead');
-        thead.innerHTML = `<tr style="background:#74b9ff;color:white;"><th>志工姓名</th><th>預約人</th><th>日期時間</th><th>門診科別</th><th>操作</th></tr>`;
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        bookedList.forEach((b, i) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${b.volunteer}</td>
-            <td>${b.user}</td>
-            <td>${b.datetime || ''}</td>
-            <td>${b.department || ''}</td>
-            <td><button class="cancel-btn" data-index="${i}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        tableWrap.appendChild(table);
-
-        // debug pre (hidden)
-        const pre = document.createElement('pre');
-        pre.id = 'debugBookedList';
-        pre.style.display = 'none';
-        pre.style.whiteSpace = 'pre-wrap';
-        pre.style.marginTop = '12px';
-        pre.style.maxHeight = '200px';
-        pre.style.overflow = 'auto';
-        pre.style.background = '#f4f6f8';
-        pre.style.padding = '10px';
-        pre.style.borderRadius = '6px';
-        pre.style.border = '1px solid #e1e6ea';
-        pre.textContent = JSON.stringify(bookedList, null, 2);
-
-        inner.appendChild(title);
-        inner.appendChild(tableWrap);
-        inner.appendChild(pre);
-
-        box.appendChild(inner);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
-
-    // close (右上叉叉已綁定) — 若要額外支援 Esc 關閉：
-    document.addEventListener('keydown', function escHandler(e) {
-      if (e.key === 'Escape') {
-        overlay.remove();
-        document.removeEventListener('keydown', escHandler);
-      }
-    });
- 
-     // 綁定取消功能
-     overlay.querySelectorAll('.cancel-btn').forEach(btn => {
-       btn.onclick = () => {
-         const idx = Number(btn.dataset.index);
-         if (isNaN(idx)) return;
-         showConfirm(`確定要取消預約 ${bookedList[idx].volunteer} 嗎？`, () => {
-           const bookingToDelete = bookedList[idx];
-           bookedList.splice(idx, 1);
-           try { localStorage.setItem('bookedList', JSON.stringify(bookedList)); } catch (e) { console.error(e); }
-           // 非同步刪除 supabase 上的紀錄（若有）
-           (async () => {
-             if (bookingToDelete && bookingToDelete.id) {
-               const res = await deleteBookingFromSupabase(bookingToDelete.id);
-               if (res) console.debug('supabase delete result', res);
-             }
-           })();
-           overlay.remove();
-           showBookings();
-         });
-       };
-     });
+  // 重新讀取 persisted 資料
+  try {
+    const raw = localStorage.getItem('bookedList');
+    bookedList = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('localStorage 讀取解析錯誤', e);
+    bookedList = [];
   }
+
+  if (bookedList.length === 0) {
+    showAlert('目前尚無預約紀錄！');
+    return;
+  }
+
+  // 建立 overlay 與白色彈窗盒子，表格放在圓角容器內
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+
+  const inner = document.createElement('div');
+  inner.className = 'modal-inner';
+
+  // header + table
+  const title = document.createElement('h3');
+  title.style.textAlign = 'center';
+  title.style.marginTop = '4px';
+  title.innerText = '📋 預約紀錄';
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'modal-table-wrap';
+
+  const table = document.createElement('table');
+  table.className = 'modal-table';
+  table.style.width = '100%';
+  table.style.borderCollapse = 'separate';
+  table.style.textAlign = 'center';
+  table.style.fontSize = '14px';
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr style="background:#74b9ff;color:white;"><th>志工姓名</th><th>預約人</th><th>日期時間</th><th>門診科別</th><th>操作</th></tr>`;
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  bookedList.forEach((b, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${b.volunteer}</td>
+      <td>${b.user}</td>
+      <td>${b.datetime || ''}</td>
+      <td>${b.department || ''}</td>
+      <td><button class="cancel-btn" data-index="${i}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+
+  // 關閉按鈕
+  // footer: 關閉按鈕置中
+  const footer = document.createElement('div');
+  footer.style.marginTop = '14px';
+  footer.style.textAlign = 'center';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.id = 'closeModalBtn';
+  closeBtn.innerText = '關閉';
+  // 主要樣式交由 CSS #closeModalBtn 控制
+  footer.appendChild(closeBtn);
+
+  // debug pre (hidden)
+  const pre = document.createElement('pre');
+  pre.id = 'debugBookedList';
+  pre.style.display = 'none';
+  pre.style.whiteSpace = 'pre-wrap';
+  pre.style.marginTop = '12px';
+  pre.style.maxHeight = '200px';
+  pre.style.overflow = 'auto';
+  pre.style.background = '#f4f6f8';
+  pre.style.padding = '10px';
+  pre.style.borderRadius = '6px';
+  pre.style.border = '1px solid #e1e6ea';
+  pre.textContent = JSON.stringify(bookedList, null, 2);
+
+  inner.appendChild(title);
+  inner.appendChild(tableWrap);
+  // 把 footer（關閉按鈕容器）加回到內部，放在表格下方、debug pre 之前
+  inner.appendChild(footer);
+  inner.appendChild(pre);
+
+  box.appendChild(inner);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // close
+  closeBtn.addEventListener('click', () => overlay.remove());
+
+  // 綁定取消功能
+  overlay.querySelectorAll('.cancel-btn').forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.index);
+      if (isNaN(idx)) return;
+      showConfirm(`確定要取消預約 ${bookedList[idx].volunteer} 嗎？`, () => {
+        const bookingToDelete = bookedList[idx];
+        bookedList.splice(idx, 1);
+        try { localStorage.setItem('bookedList', JSON.stringify(bookedList)); } catch (e) { console.error(e); }
+        // 非同步刪除 supabase 上的紀錄（若有）
+        (async () => {
+          if (bookingToDelete && bookingToDelete.id) {
+            const res = await deleteBookingFromSupabase(bookingToDelete.id);
+            if (res) console.debug('supabase delete result', res);
+          }
+        })();
+        overlay.remove();
+        showBookings();
+      });
+    };
+  });
+}
 
 // === LIFF Integration ===
 let liffProfile = null;
@@ -887,53 +760,22 @@ async function initLiff() {
     } catch (e) {
       console.debug('LIFF in-client detection failed', e);
     }
-
     if (liff.isLoggedIn()) {
       try {
         liffProfile = await liff.getProfile();
-        // 新增：將名稱與頭像顯示在導覽列右側
-        const nameEl = document.getElementById('volunteerName');
-        const avatarEl = document.getElementById('volunteerAvatar');
-        if (liffProfile) {
-          if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
-          if (avatarEl && liffProfile.pictureUrl) {
-            avatarEl.src = liffProfile.pictureUrl;
-            avatarEl.style.display = 'inline-block';
-          }
+        // 顯示右上角頭像（如果有）
+        if (liffProfile && liffProfile.pictureUrl) {
+          const img = document.getElementById('liffAvatarImg');
+          img.src = liffProfile.pictureUrl;
+          document.getElementById('liffAvatar').style.display = 'block';
         }
       } catch (e) {
         console.error('取得 profile 失敗', e);
       }
-    } else {
-      // 未登入時，保持預設顯示
-      const nameEl = document.getElementById('volunteerName');
-      const avatarEl = document.getElementById('volunteerAvatar');
-      if (nameEl) nameEl.innerText = '訪客';
-      if (avatarEl) avatarEl.style.display = 'none';
     }
   } catch (e) {
     console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
-
-  // 點擊名稱 / 頭像的快速登入或顯示提示
-  try {
-    const nameEl = document.getElementById('volunteerName');
-    const avatarEl = document.getElementById('volunteerAvatar');
-    if (nameEl) {
-      nameEl.addEventListener('click', () => {
-        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
-        if (!liff.isLoggedIn()) liff.login();
-        else alert('已登入：' + (nameEl.innerText || '志工'));
-      });
-    }
-    if (avatarEl) {
-      avatarEl.addEventListener('click', () => {
-        if (!window.liff) { alert('LIFF SDK 未載入'); return; }
-        if (!liff.isLoggedIn()) liff.login();
-        else alert('已登入：' + (nameEl.innerText || '志工'));
-      });
-    }
-  } catch (e) { /* silent */ }
 }
 
 function liffLogin() {
@@ -948,11 +790,8 @@ function liffLogout() {
   if (!window.liff) return;
   if (liff.isLoggedIn()) liff.logout();
   liffProfile = null;
-  // 隱藏導覽列頭像並重設名稱
-  const avatarEl = document.getElementById('volunteerAvatar');
-  const nameEl = document.getElementById('volunteerName');
-  if (avatarEl) avatarEl.style.display = 'none';
-  if (nameEl) nameEl.innerText = '訪客';
+  // 隱藏頭像
+  document.getElementById('liffAvatar').style.display = 'none';
 }
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）

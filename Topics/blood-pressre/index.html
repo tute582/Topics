@@ -98,29 +98,23 @@
       margin-bottom: 20px;
       margin: 5px;
     }
-    /* form row: label above input (stacked) to match mobile-friendly design */
+    /* form row: label + input aligned */
     .form-row {
-      display: block;
-      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
     }
     .form-row label {
-      display: block;
-      margin-bottom: 8px;
+      width: 140px;
+      min-width: 100px;
       text-align: left;
-      font-weight: 700;
-      color: #111;
-      font-size: 16px;
+      font-weight: 600;
     }
-    .form-row input,
-    .form-row textarea,
-    .form-row select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid #d0d4d8;
-      background: #fff;
-      font-size: 16px;
-      box-sizing: border-box;
+    .form-row input {
+      flex: 1 1 auto;
+      min-width: 0; /* ensure flex children can shrink */
+      padding: 8px;
     }
     .primary-btn {
       width: 160px;
@@ -303,7 +297,15 @@
     const SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5Z2F3YXFza3ZpamdhY2lpbnpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTU2OTEsImV4cCI6MjA3NDk5MTY5MX0.6NKKuzDkHd0Pkxm9uYoODmkpEVw6wHYuf_SFV9M9af4';
     let sb = null;
-    
+    try {
+      if (!SUPABASE_URL.includes('your-project')) {
+        sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.debug('Supabase client ready');
+      } else {
+        console.debug('Supabase not configured; using localStorage only');
+      }
+    } catch (e) { console.warn('supabase init failed', e); sb = null; }
+
     // 優先從 Supabase 讀取，失敗則 fallback 到 localStorage
     (async function loadRecords() {
       if (sb) {
