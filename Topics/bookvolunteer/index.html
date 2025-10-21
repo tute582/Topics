@@ -660,6 +660,18 @@ select, select.form-select {
         }));
 
         console.log("✅ 志工資料載入完成", volunteers);
+       // 綁定「預約查詢」按鈕
+       const showBookingsBtn = document.getElementById('showBookingsBtn');
+       if (showBookingsBtn) {
+         showBookingsBtn.addEventListener('click', (e) => {
+           e.preventDefault();
+           if (typeof showBookings === 'function') {
+             showBookings();
+           } else {
+             console.warn('showBookings 函式不存在');
+           }
+         });
+       }
       } catch (err) {
         console.error("⚠️ 志工資料載入失敗：", err);
       }
