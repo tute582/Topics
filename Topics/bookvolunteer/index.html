@@ -153,14 +153,16 @@ select, select.form-select {
   .card-cover {
     width: 100%;
     height: 150px;
+     background: #c2dfff;
     object-fit: cover;
-    filter: brightness(70%);
+    filter: none;
     position: absolute;
     top: 0;
     left: 0;
     border-top-left-radius: 20px;   /* 與 card-inner 圓角對齊 */
     border-top-right-radius: 20px;  /* 與 card-inner 圓角對齊 */
     z-index: 0;
+     display: block;
     }  
     .card-avatar {
     width: 100px;
@@ -740,7 +742,7 @@ function toggleCard() {
     card.className = "card";
     card.innerHTML = `
       <div class="card-inner">
-        <img src="${v.cover}" class="card-cover">
+         <div class="card-cover"></div>
         <img src="${v.avatar}" class="card-avatar">
         <div class="card-content">
           <h2 class="card-title">${v.name}</h2>
