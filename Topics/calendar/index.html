@@ -524,6 +524,10 @@ tbody tr:nth-child(odd) {
     </form>
   
     <h2>即將到來的行程</h2>
+
+    <!-- 新增：無資料時顯示的訊息 -->
+    <div id="no-record-msg" class="no-record" style="display:none;">目前尚未有紀錄</div>
+
     <!-- 所有資料的表格 -->
     <div class="allTable-div">
       <table id="allTable">
@@ -667,13 +671,19 @@ tbody tr:nth-child(odd) {
         const tbody = document.querySelector("#allTable tbody");
         tbody.innerHTML = "";
         const now = nowDate();
+        const noRecordEl = document.getElementById("no-record-msg");
 
         const upcomingRecords = records
           .filter(r => parseDateTime(r.date, r.time) >= now)
           .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
 
-        if (upcomingRecords.length > 0) document.getElementById("allTable").style.display = "table";
-        else document.getElementById("allTable").style.display = "none";
+        if (upcomingRecords.length > 0) {
+          document.getElementById("allTable").style.display = "table";
+          if (noRecordEl) noRecordEl.style.display = "none";
+        } else {
+          document.getElementById("allTable").style.display = "none";
+          if (noRecordEl) noRecordEl.style.display = "block";
+        }
 
         upcomingRecords.forEach(record => {
           const row = tbody.insertRow();

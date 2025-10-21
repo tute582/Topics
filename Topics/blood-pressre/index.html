@@ -57,6 +57,7 @@
        text-align: left;
        font-size: 26px;
        box-sizing: border-box;
+       padding: 0 25px;
      }
     /* 導覽列樣式（從 record-information 複製） */
     .nav-1{
@@ -109,7 +110,9 @@
       width: 140px;
       min-width: 100px;
       text-align: left;
-      font-weight: 600;
+      font-weight: 700;
+      color: #111;
+      font-size: 16px;
     }
     .form-row input {
       flex: 1 1 auto;
@@ -262,10 +265,8 @@
       <button type="submit" class="primary-btn">新增紀錄</button>
     </div>
   </form>
-    </div>
-
-    <div class="table-container">
-  <table>
+    
+  <table id="bpTable">
     <thead>
       <tr>
         <th>日期</th>
@@ -277,7 +278,12 @@
     </thead>
     <tbody id="recordTable"></tbody>
   </table>
-</div>
+
+  <!-- 新增：無資料提示 -->
+  <div id="no-record-msg" style="display:none; text-align:center; color:#888; font-size:18px; margin:18px 0;">
+    目前尚未有紀錄
+  </div>
+
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
@@ -287,8 +293,11 @@
     let liffProfile = null; // 保留變數名稱供兼容（不使用 LIFF）
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
-    const ctx = document.getElementById("bpChart").getContext("2d");
-
+    const bpTable = document.getElementById("bpTable");
+    const noRecordMsg = document.getElementById("no-record-msg");
+    const canvas = document.getElementById("bpChart");
+    const ctx = canvas ? canvas.getContext("2d") : null;
+    
     // 載入紀錄
     let records = [];
     let chart;
@@ -421,6 +430,25 @@
           </tr>`;
         table.innerHTML += row;
       });
+
+      // 顯示 / 隱藏「目前尚未有紀錄」與圖表
+      const chartContainer = document.querySelector('.chart-container');
+      if (!bpTable) return;
+      if (records.length === 0) {
+        bpTable.style.display = "none";
+        if (noRecordMsg) noRecordMsg.style.display = "block";
+        if (chartContainer) chartContainer.style.display = "none";
+        if (chart) {
+          try { chart.destroy(); } catch (e) { /* ignore */ }
+          chart = null;
+        }
+      } else {
+        bpTable.style.display = "table";
+        if (noRecordMsg) noRecordMsg.style.display = "none";
+        if (chartContainer) chartContainer.style.display = "block";
+        // 確保有最新資料的圖表
+        renderChart();
+      }
     }
 
     // 刪除紀錄
@@ -441,6 +469,15 @@
 
     // 繪製圖表
     function renderChart() {
+      // 如果沒有 canvas/ctx 或沒有資料則銷毀舊圖表並跳出
+      if (!ctx || !canvas || records.length === 0) {
+        if (chart) {
+          try { chart.destroy(); } catch (e) { /* ignore */ }
+          chart = null;
+        }
+        return;
+      }
+
       const labels = records.map(r => r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : '');
       const systolicData = records.map(r => Number(r.systolic) || 0);
       const diastolicData = records.map(r => Number(r.diastolic) || 0);
