@@ -5,545 +5,117 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>行事曆</title>
   <style>
-body {
-  font-family: "Arial", sans-serif;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-h1 {
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-h2 {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  font-size: 24px;
-  display: inline-block;
-}
-h3{
-  margin-top:0; 
-  text-align:center; 
-  font-size: 25px;
-}
-
-form {
-  margin: 10px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  box-sizing: border-box;
-}
-
-label {
-  display: block;
-  margin-top: 5px;
-  font-size: 20px;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="time"],
-#editModal input {
-  width: 92%;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 5px;
-  border: 1px solid #888;
-  font-size: 18px;
-  margin: 5px auto;
-  margin-bottom: 15px;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="time"] {
-  border-radius: 15px;
-  font-size: 18px;
-}
-
-.btn {
-  margin-top: 15px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 15px;
-  color: white;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-#addBtn {
-  background-color: #4a90e2;
-}
-#addBtn:hover {
-  background-color: #357abd;
-}
-
-#historyBtn {
-  background-color: #f39c12;
-  margin-left: 10px;
-}
-#historyBtn:hover {
-  background-color: #d35400;
-}
-
-table {
-  width: 100%;
-  margin: 20px auto;
-  border-collapse: collapse; /*  圓角設定 */
-  /* border-spacing: 0; */
-  display: none; /*按鈕控制顯示 */
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: 20px;
-  border: 1px solid #aaa;
-}
-
-
-/* 表格卷軸 */
-.allTable-div{ 
-max-width: 100%;
-overflow-x: auto;
-white-space: nowrap;
-
-}
-
-.div-historyBtn{
-min-width: 30%;
-overflow-x: auto;
-white-space: nowrap;
-}
-
-th, td {
-  padding: 10px;
-  text-align: center;
-  font-size: 14px;
-  border: 1px solid #ddd;
-}
- /*表頭 */
- th {  
-  background-color: #f2f2f2;
-}
-/*奇偶列背景色 */
-
-tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-tbody tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-
-
-/* 大框架div定位 */
-.div-b{
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  padding: 0 20px; /* 可選，讓左右有點空白 */
-}
-
-/* Modal */
-#editModal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-}
-
-#editModal > div {
-  background: #fff;
-  width: 420px;
-  max-width: calc(100% - 40px); /* 確保在小螢幕上有邊距 */
-  margin: 100px auto;
-  padding: 20px;
-  border-radius: 10px;
-  position: relative;
-  box-sizing: border-box;
-}
-
-#editModal button {
-  margin-top: 10px;
-  font-size: 16px;
-  padding: 8px 15px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-/* 新增：將編輯按鈕群置中 */
-#editModal form .edit-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px; /* 按鈕間距 */
-  margin-top: 10px;
-}
-
-/* 新增：恢復按鈕顏色與動畫（改為與 record-information 相同風格） */
-#editModal .edit-actions button {
-  margin-top: 10px;
-  font-size: 16px;
-  padding: 8px 15px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: inline-block;
-  min-width: 120px;
-}
-
-/* 儲存按鈕（與看診資訊一致） */
-#saveEditBtn {
-  background-color: #4a90e2;
-  color: #fff;
-}
-#saveEditBtn:hover {
-  background-color: #357abd;
-}
-
-/* 刪除按鈕（與看診資訊一致） */
-#deleteEditBtn {
-  background-color: #f37a7a;
-  color: #fff;
-}
-#deleteEditBtn:hover {
-  background-color: #d94a4a;
-}
-
-/* 保留 focus 樣式但不要外框跳動 */
-#editModal .edit-actions button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74,144,226,0.12);
-}
-
-/* 取消按鈕 */
- #closeEditModalBtn {
-      background:none;
-      border:none;
-      color:#555;
-      font-size:30px !important;
-      position:absolute;
-      top:10px;
-      right:10px;
-      left:auto;
-      cursor:pointer;
-      border-radius:50%;
-      padding:6px 12px;
-      transition: all 0.3s ease;
-    }
-    #closeEditModalBtn:hover {
-      background-color:#e74c3c; /* 紅色背景 */
-      color:white;
-      transform: scale(1.1);
-    }
-
-/* 表格按鈕 */
-.but-ans{
-   margin-top: 10px;
-  font-size: 16px;
-  padding: 8px 15px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  background-color: #61aaf3;
-  color: white;
-}
-
-/* Modal */
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 30px;
-  color: #888;
-  cursor: pointer;
-}
-
-/* 瀏覽列 */
-.nav-1{
-  display: flex;                 /* 水平排列內容 */
-  /* font-weight: 500;*/
-  align-items: center;           /* 垂直置中 */
-  justify-content: space-between;/* 兩端對齊：左/右 */
-  padding: 10px 22px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-  position: sticky;              /* 滾動時吸附上方 */
-  top: 0;                        /* 吸附頂部 */
-  z-index: 1001;                 /* 保證在其他元素之上 */
-  /*box-shadow: 0 2px 6px rgba(0,0,0,0.1);*/
-  width: 100%;
-  left: 0;
-  right: 0;
-  color: black;
-  background-color: white;
-  box-sizing: border-box; /* 確保padding不會超出寬度 */
- border-bottom: 1px solid #ddd;  /*建議加這行讓導覽列更明顯 */
-}
- .record-item {
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
-    }
-
-    .no-record {
-      text-align: center;
-      color: #888;
-      font-size: 18px;
-      margin: 20px 0;
-    }
-
-/* 統一 Modal 樣式 */
-#historyModal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-}
-
-/* 新增：過去時間提示 Modal 樣式（與 historyModal 類似） */
-#pastModal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 1002;
-}
-#pastModal > div {
-  width: 95vw;
-  max-width: 420px;
-  margin: 100px auto;
-  padding: 18px;
-  border-radius: 12px;
-  background: #fff;
-  position: relative;
-  box-sizing: border-box;
-}
-
-/* 新增：讓 pastModal 的叉叉按鈕樣式與其他 Modal 相同 */
-#closePastModalBtn {
-  background: none;
-  border: none;
-  color: #555;
-  font-size: 30px;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: all 0.3s ease;
-}
-#closePastModalBtn:hover {
-  background-color: #e74c3c;
-  color: white;
-  transform: scale(1.1);
-}
-
-/* 表格橫向可捲動 */
-#historyModal .table-container {
-  overflow-x: auto;
-  width: 100%;
-}
-
-/* 表格寬度自適應 */
-#historyModal .table-container table {
-  min-width: 320px;
-  width: 100%;
-  font-size: 15px;
-  border: 1px solid #aaa;
-}
-
-#historyModal > div {
-  background: #fff;
-  width: 420px;
-  max-width: calc(100% - 40px); /* 確保在小螢幕上有邊距 */
-  margin: 100px auto;
-  padding: 20px;
-  border-radius: 10px;
-  position: relative;
-  box-sizing: border-box;
-}
-
-#closeHistoryModalBtn {
-  background:none;
-  border:none;
-  color:#555;
-  font-size:30px;
-  position:absolute;
-  top:10px;
-  right:10px;
-  cursor:pointer;
-  border-radius:5px;
-  padding:5px 10px;
-  transition: all 0.3s ease;
-}
-#closeHistoryModalBtn:hover {
-  background-color: #e74c3c;
-  color: white;
-  transform: scale(1.1);
-}
-
-#historyModal h3 {
-  margin-top: 0;
-  text-align: center;
-  font-size: 25px;
-  margin-bottom: 15px;
-}
-
-/* 只針對彈窗內表格 */
-#historyModal .table-container table {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: 15px;
-  border: 1px solid #aaa;
-  font-size: 16px;
-  overflow: hidden;
-}
-#historyModal th, #historyModal td {
-  padding: 10px;
-  text-align: center;
-}
-#historyModal th {
-  background-color: #f2f2f2;
-}
-#historyModal tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-#historyModal tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-#historyModal table {
-  display: table !important;
-}
-/* volunteer area */
-  .volunteer-area { display:flex; align-items:center; gap:8px; }
-  .volunteer-area .avatar {
-    width:36px; height:36px; border-radius:50%; object-fit:cover;
-    border:1px solid #ddd; display:none;
+  /* 全域設定 */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Arial", sans-serif;
+    padding: 0;
+    background: #f6f7fb;
+    color: #222;
   }
-  /* 可點擊的登入區域樣式 */
-  .volunteer-area #volunteerName {
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: transparent;
+
+  /* 導覽列 */
+  .nav-1{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 20px; position:sticky; top:0; z-index:1001;
+    width:100%; background:#fff; border-bottom:1px solid #ddd;
   }
-  .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
 
-  /* 當有 modal 開啟時隱藏導覽列 */
-  .modal-open .nav-1 { display: none !important; }
+  h1{ margin:0; font-size:28px; }
+  h2{ margin:8px 0; font-size:20px; display:inline-block; }
+  h3{ margin:0; text-align:center; font-size:20px; }
 
-  /* 使用與 record-information 相同的表格樣式與捲動容器 */
-.allTable-div {
-  width: 100%;
-  margin: 5px 0;
-  -webkit-overflow-scrolling: touch;
-  border: 1px solid #aaa;
-  border-radius: 20px;
-  background-color: white;
-  display: block; /* 改為顯示容器（table 仍由 JS 控制顯示/隱藏） */
-  overflow-x: auto; /* 允許橫向捲動 */
-  box-sizing: border-box;
-  padding: 0; /* 確保表格緊貼容器邊緣 */
-}
-
-.allTable-div table {
-  width: 100%;
-  border-collapse: collapse; /* 讓格線接合 */
-  border-spacing: 0;
-  min-width: 800px;
-  box-sizing: border-box;
-  background: transparent;
-  margin: 0; /* 消除 table 預設外距 */
-  border: none; /* 讓外框由外層容器處理 */
-}
-
-.allTable-div th,
-.allTable-div td {
-  padding: 12px 10px;
-  text-align: center;
-  border: 1px solid #e6e6e6; /* 較淺的格線色，與外框區隔清楚 */
-  white-space: nowrap;
-  font-size: 14px;
-  background: transparent;
-}
-
-/* 表頭樣式：背景色並移除頂部格線（由外層圓角處理） */
-.allTable-div th {
-  background-color: #f9f9f9;
-  border-top: none;        /* 取消表頭頂部格線 */
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* 讓表頭與底部第一/最後欄位有圓角，配合外層 overflow:hidden */
-.allTable-div thead tr th:first-child {
-  border-top-left-radius: 18px;
-}
-.allTable-div thead tr th:last-child {
-  border-top-right-radius: 18px;
-}
-.allTable-div tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 18px;
-}
-.allTable-div tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 18px;
-}
-
-/* 如需更強的「表格頂部與容器無縫」效果，可把表頭的上方陰影或邊線移除 
-.allTable-div thead tr th + th,
-.allTable-div thead tr th + td {}*/
-
-/* 行動裝置微調（與看診資訊一致） */
-@media (max-width: 768px) {
-  .div-b { padding: 0 12px; max-width: 100%; }
-  form { width: 100%; padding: 16px; }
-  input[type="text"],
-  input[type="date"],
-  input[type="time"],
-  textarea {
-    width: 100%;
-    font-size: 16px;
-    padding: 10px;
-    border-radius: 10px;
-    box-sizing: border-box;
+  .div-b {
+    width:100%; max-width:800px; margin: 12px auto; padding: 12px;
   }
-  .allTable-div table {
-    min-width: 0;
-    width: 100%;
-  }
-  button, .btn {
-    padding: 12px 16px;
-    font-size: 16px;
-  }
-}
 
-/* 更窄螢幕微調 */
-@media (max-width: 600px) {
-  h2 { font-size: 18px; }
+  form {
+    margin: 10px 0; padding: 18px; border-radius:16px; background:#fff;
+    border:1px solid #e3e3e3;
+  }
+
+  label { display:block; margin-top:8px; font-size:16px; }
+  input[type="text"], input[type="date"], input[type="time"], textarea,
+  #editModal input, #editModal textarea {
+    width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #ccc;
+    font-size:16px; background:#fff;
+  }
+
   .btn {
-    font-size: 14px;
-    padding: 8px 12px;
+    margin-top:12px; padding:10px 18px; border:none; border-radius:12px; color:#fff; cursor:pointer;
+    font-size:16px;
   }
-  .allTable-div table {
-    min-width: 0;
-    width: 100%;
+  #addBtn{ background:#4a90e2; } #historyBtn{ background:#f39c12; margin-left:8px; }
+
+  /* 表格容器：可橫向滾動，並在無資料時隱藏（JS 控制顯示） */
+  .allTable-div, .table-container {
+    width:100%; margin:10px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid #aaa; border-radius:16px; background:#fff;
+    display:block;
   }
-}
+
+  .allTable-div table, table {
+    width:100%; border-collapse:collapse; min-width:800px; font-size:14px;
+    background:transparent;
+  }
+
+  th, td {
+    padding:10px; text-align:center; border:1px solid #e6e6e6; white-space:nowrap;
+  }
+  th { background:#f9f9f9; position:sticky; top:0; z-index:2; }
+
+  tbody tr:nth-child(even){ background:#f9f9f9; }
+  tbody tr:nth-child(odd){ background:#fff; }
+
+  /* 表格圓角處理由外層容器負責 */
+  .allTable-div thead tr th:first-child { border-top-left-radius:14px; }
+  .allTable-div thead tr th:last-child { border-top-right-radius:14px; }
+  .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius:14px; }
+  .allTable-div tbody tr:last-child td:last-child { border-bottom-right-radius:14px; }
+
+  /* Modal 共用樣式 */
+  #editModal, #historyModal, #pastModal {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.5); z-index:1000;
+  }
+  #editModal > div, #historyModal > div, #pastModal > div {
+    background:#fff; width:420px; max-width:calc(100% - 40px);
+    margin:80px auto; padding:18px; border-radius:12px; position:relative;
+    box-sizing:border-box; max-height:calc(100vh - 120px); overflow-y:auto;
+  }
+  .close-btn { position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:26px; cursor:pointer; color:#666; }
+  .close-btn:hover{ color:#000; }
+
+  /* 按鈕樣式（Modal） */
+  #saveEditBtn { background:#4a90e2; color:#fff; padding:8px 14px; border-radius:8px; border:none; }
+  #deleteEditBtn { background:#f37a7a; color:#fff; padding:8px 14px; border-radius:8px; border:none; }
+
+  .but-ans { padding:6px 10px; border-radius:8px; border:none; cursor:pointer; background:#61aaf3; color:#fff; }
+
+  /* volunteer area */
+  .volunteer-area { display:flex; align-items:center; gap:8px; }
+  .volunteer-area .avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #ddd; display:none; }
+  .volunteer-area #volunteerName { cursor:pointer; padding:4px 8px; border-radius:6px; font-size:18px; }
+
+  /* 小螢幕響應式 */
+  @media (max-width: 768px) {
+    .div-b { padding: 10px; max-width:100%; }
+    form { padding:14px; }
+    input[type="text"], input[type="date"], input[type="time"], textarea { font-size:15px; padding:10px; border-radius:10px; }
+    .allTable-div table { min-width:0; width:100%; }
+    th, td { padding:10px 8px; font-size:14px; white-space:normal; }
+    .btn, button { padding:10px 14px; font-size:15px; }
+    h1 { font-size:22px; } h2 { font-size:18px; }
+    .volunteer-area #volunteerName { font-size:20px; }
+  }
+
+  /* 更窄螢幕微調 */
+  @media (max-width: 600px) {
+    h2 { font-size:16px; }
+    .btn { font-size:14px; padding:8px 12px; }
+    #editModal > div, #historyModal > div, #pastModal > div { margin:60px auto; padding:12px; }
+    .volunteer-area .avatar { width:32px; height:32px; }
+  }
   </style>
 </head>
 <body>
