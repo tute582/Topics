@@ -310,18 +310,46 @@ tbody tr:nth-child(odd) {
   z-index: 1000;
 }
 
-/* Modal 彈窗內容自適應手機 */
-#historyModal > div {
+/* 新增：過去時間提示 Modal 樣式（與 historyModal 類似） */
+#pastModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1002;
+}
+#pastModal > div {
   width: 95vw;
   max-width: 420px;
-  margin: 40px auto;
-  padding: 20px 8px;
-  border-radius: 15px;
+  margin: 100px auto;
+  padding: 18px;
+  border-radius: 12px;
+  background: #fff;
   position: relative;
   box-sizing: border-box;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  max-height: 80vh;
+}
+
+/* 新增：讓 pastModal 的叉叉按鈕樣式與其他 Modal 相同 */
+#closePastModalBtn {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 30px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: all 0.3s ease;
+}
+#closePastModalBtn:hover {
+  background-color: #e74c3c;
+  color: white;
+  transform: scale(1.1);
 }
 
 /* 表格橫向可捲動 */
@@ -602,6 +630,18 @@ tbody tr:nth-child(odd) {
     </div>
   </div>
 
+  <!-- 新增：過去時間提示 Modal -->
+  <div id="pastModal" style="display:none;">
+    <div>
+      <button id="closePastModalBtn" class="close-btn" type="button">&times;</button>
+      <h3>注意 — 過去的時間</h3>
+      <p id="pastModalMessage" style="text-align:center; font-size:16px; margin-top:8px;"></p>
+      <div style="text-align:center; margin-top:12px;">
+        <button id="openHistoryFromPast" class="btn" style="background:#f39c12; color:#fff;">前往檢視過往紀錄</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     // 把所有初始化放在一個 DOMContentLoaded 裡，並增加每筆資料的唯一 id，避免透過物件參考找 index 的問題
@@ -679,9 +719,29 @@ tbody tr:nth-child(odd) {
         if (!date || !time || !event) { alert("請輸入完整資料！"); return; }
 
         const id = Date.now() + Math.floor(Math.random() * 1000);
-        records.push({ id, date, time, event, note });
+        const record = { id, date, time, event, note };
+
+        // 如果是過去時間，存進 records 並彈出提示 modal，提示會引導使用者前往「檢視過往紀錄」
+        const dt = parseDateTime(date, time);
+        const now = nowDate();
+
+        records.push(record);
         saveToLocalStorage();
-        renderAllTable();
+
+        if (dt < now) {
+          // 顯示過去時間提示
+          const msgEl = document.getElementById("pastModalMessage");
+          msgEl.textContent = `您輸入的資料 (${date} ${time} - ${event}) 為過去的時間，已放到「檢視過往紀錄」。`;
+          document.getElementById("pastModal").style.display = "block";
+          bodyEl.classList.add('modal-open');
+          // 隱藏主表格（維持行為一致）
+          document.getElementById("allTable").style.display = "none";
+          document.getElementById("no-record-msg").style.display = "block";
+        } else {
+          // 未來時間：正常在上方列表顯示
+          renderAllTable();
+        }
+
         document.getElementById("dataForm").reset();
       });
 
@@ -852,6 +912,21 @@ tbody tr:nth-child(odd) {
         document.getElementById("historyModal").style.display = "block";
         bodyEl.classList.add('modal-open');
         document.getElementById("allTable").style.display = "none"; // 隱藏主表格
+      });
+
+      // 過去時間提示 Modal 的按鈕處理
+      document.getElementById("openHistoryFromPast").addEventListener("click", () => {
+        // 關閉提示 Modal，開啟過往紀錄 Modal（重用現有 handler）
+        document.getElementById("pastModal").style.display = "none";
+        bodyEl.classList.remove('modal-open');
+        document.getElementById("historyBtn").click();
+      });
+
+      // 新增：過去時間提示 Modal 的叉叉關閉按鈕
+      document.getElementById("closePastModalBtn").addEventListener("click", () => {
+        document.getElementById("pastModal").style.display = "none";
+        bodyEl.classList.remove('modal-open');
+        renderAllTable();
       });
 
       // 初始化
