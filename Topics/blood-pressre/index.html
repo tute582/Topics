@@ -210,25 +210,32 @@
       .volunteer-area #volunteerName { font-size: 16px; }
     }
 
+    /* 調整：與看診資訊一致的響應式規則 */
     @media (max-width: 768px) {
       form { width: 95%; padding: 16px; }
       .form-row { gap: 8px; }
-      .form-row label { width: 110px; font-size: 14px; }
+      .form-row label { width: 110px; font-size: 20px; }
       .primary-btn { width: 140px; }
-      .allTable-div table { min-width: 0; width: 100%; } /* 手機上移除強制最小寬度 */
-      .allTable-div th, .allTable-div td { padding: 10px; font-size: 13px; white-space: normal; }
+      /* 手機上移除表格強制最小寬度，允許寬度收縮並顯示橫向捲動 */
+      .allTable-div table { min-width: 0; width: 100%; }
+      .allTable-div th, .allTable-div td { padding: 10px; font-size: 16px; white-space: normal; }
       .volunteer-area .avatar { width:30px; height:30px; }
       .volunteer-area #volunteerName { font-size: 14px; }
-      canvas { height: 220px !important; } /* 避免圖表過高 */
+      /* 圖表高度限制，避免過高 */
+      canvas { height: 220px !important; max-height: 320px; }
+      input, button { font-size: 16px; padding: 10px; }
     }
 
     @media (max-width: 420px) {
       .form-row label { width: 100%; }
       .form-row { flex-direction: column; align-items: stretch; }
       .primary-btn { width: 100%; }
-      .volunteer-area .avatar { display: none; } /* 極小螢幕隱藏頭像以節省空間 */
+      .volunteer-area .avatar { display: none; } /* 極小螢幕隱藏頭像 */
       .volunteer-area #volunteerName { font-size: 13px; }
-      canvas { height: 200px !important; }
+      canvas { height: 200px !important; max-height: 280px; }
+      .allTable-div table { min-width: 0; width: 100%; }
+      .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
+      input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
     }
   </style>
 </head>
@@ -244,7 +251,7 @@
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
         <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
              style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
       </span>
       </h1>
     </div>
@@ -577,7 +584,7 @@
         await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
-          nameEl.innerText = "載入中";
+          nameEl.innerText = "未登入";
           avatarEl.style.display = "none";
           return;
         }
