@@ -309,6 +309,7 @@
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
     const ctx = document.getElementById("bpChart").getContext("2d");
+    const chartContainer = document.querySelector('.chart-container');
 
     // 載入紀錄
     let records = [];
@@ -429,6 +430,15 @@
     // 表格顯示
     function renderTable() {
       table.innerHTML = "";
+      if (!records || records.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" style="padding:20px; text-align:center;">目前尚未有紀錄</td></tr>`;
+        // 隱藏圖表
+        if (chart) { chart.destroy(); chart = null; }
+        if (chartContainer) chartContainer.style.display = 'none';
+        return;
+      }
+      // 有資料時顯示表格與圖表
+      if (chartContainer) chartContainer.style.display = '';
       records.forEach((r, i) => {
         const dateStr = r.recorded_time ? (new Date(r.recorded_time)).toLocaleDateString() : '';
         const idAttr = r.uuid ? `data-uuid="${r.uuid}"` : `data-idx="${i}"`;
@@ -462,6 +472,13 @@
 
     // 繪製圖表
     function renderChart() {
+      if (!records || records.length === 0) {
+        if (chart) { chart.destroy(); chart = null; }
+        if (chartContainer) chartContainer.style.display = 'none';
+        return;
+      }
+      if (chartContainer) chartContainer.style.display = '';
+
       const labels = records.map(r => r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : '');
       const systolicData = records.map(r => Number(r.systolic) || 0);
       const diastolicData = records.map(r => Number(r.diastolic) || 0);
