@@ -9,13 +9,19 @@
       font-family: "Noto Sans TC", sans-serif;
       background-color: #eef2f3;
       color: #222;
+      box-sizing: border-box;
+      background-color: #ffffff; /* 改為與看診資訊一致的白色背景 */
     }
 
-    h1, h2 {
+    h1 {
       text-align: center;
       margin: 10px 0;
     }
 
+    h2 {
+      text-align: left;
+      margin: 20px 0;
+    }
     form {
       width: 90%;
       max-width: 800px;
@@ -23,7 +29,7 @@
       padding: 16px;
       background: white;
       border-radius: 12px;
-      border: 1px solid #ccc;
+      border: 1px solid #aaa;
     }
       .title {
       /* 與導覽列內標題左對齊（nav padding:25px）*/
@@ -148,6 +154,7 @@ select, select.form-select {
     text-align: center;
     overflow: hidden;
     position: relative; /* <- 讓絕對定位背景參考此父元素 */
+    border:  1px solid #aaa;
   }
 
   .card-cover {
@@ -584,7 +591,7 @@ select, select.form-select {
   <button id="showBookingsBtn" type="button">預約查詢</button>
   </form>
 
-  <h2 style="text-align:center;">志工資訊</h2>
+  <h2 class="title" style="font-size: 24px;">志工資訊</h2>
 
   <div class="slider-container">
     <div class="card-container" id="cardContainer"></div>
@@ -735,7 +742,30 @@ function toggleCard() {
   // 支援 "皆可"（顯示所有志工）並隨機排序結果
   const filtered = volunteers.filter(v => !gender || gender === '皆可' || v.gender === gender);
   const shuffled = shuffleArray(filtered);
-  slider.style.display = filtered.length ? "block" : "none";
+  // 顯示或隱藏 slider 與箭頭，若無資料顯示提示訊息
+  slider.style.display = "block";
+  const prevBtnEl = document.getElementById('prevBtn');
+  const nextBtnEl = document.getElementById('nextBtn');
+
+  if (!shuffled.length) {
+    // 隱藏箭頭
+    if (prevBtnEl) prevBtnEl.style.display = 'none';
+    if (nextBtnEl) nextBtnEl.style.display = 'none';
+    // 顯示無紀錄提示（置中且樣式簡潔）
+    container.innerHTML = `
+      <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
+        <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;box-shadow:0 6px 18px rgba(0,0,0,0.05);font-size:18px;color:#333;max-width:480px;width:100%;text-align:center;">
+          目前尚未有紀錄
+        </div>
+      </div>
+    `;
+    pagination.innerHTML = "";
+    return;
+  } else {
+    // 顯示箭頭
+    if (prevBtnEl) prevBtnEl.style.display = '';
+    if (nextBtnEl) nextBtnEl.style.display = '';
+  }
 
   shuffled.forEach(v => {
     const card = document.createElement("div");
@@ -759,8 +789,8 @@ function toggleCard() {
     container.appendChild(card);
   });
   
-  setupSlider(filtered.length);
-
+  setupSlider(shuffled.length);
+  
   // 綁定預約按鈕行為（點選後存入 localStorage）
   document.querySelectorAll('.book-btn').forEach(btn => {
     btn.onclick = () => {
