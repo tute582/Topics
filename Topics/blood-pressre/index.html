@@ -560,16 +560,34 @@
         options: {
           responsive: true,
           maintainAspectRatio: false, /* 允許 container 控制高度 */
+          layout: {
+            // 調整圖表四周內邊距以增加間距感
+            padding: { left: 14, right: 14, top: 12, bottom: 12 }
+          },
           plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "血壓變化圖" }
+            legend: { position: "top", labels: { padding: 12 } },
+            title: { display: true, text: "血壓變化圖", padding: { top: 6, bottom: 6 } }
           },
           scales: {
-            y: { beginAtZero: false, title: { display: true, text: "mmHg" } },
-            x: { title: { display: true, text: "日期" } }
+            y: {
+              beginAtZero: false,
+              title: { display: true, text: "mmHg" },
+              ticks: { padding: 8 }, // y 軸刻度與軸線增加間距
+              grid: { drawOnChartArea: true, tickLength: 6 }
+            },
+            x: {
+              title: { display: true, text: "日期" },
+              ticks: {
+                padding: 8,       // x 軸刻度與圖表保持間距
+                maxRotation: 45,
+                autoSkip: true,
+                maxTicksLimit: 10
+              },
+              grid: { drawOnChartArea: false } // 讓 x 軸格線不干擾資料區域
+            }
           },
           interaction: { mode: 'index', intersect: false },
-          elements: { point: { radius: 3 } }
+          elements: { point: { radius: 4 }, line: { tension: 0.2 } }
         }
       });
     }
