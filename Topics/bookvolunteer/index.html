@@ -46,6 +46,41 @@
       font-weight: 600;
       font-size: 20px;
     }
+    /* 單選框外框樣式：讓見面地點區塊有卡片感 */
+    .meeting-box {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #e3e8ef;
+      background: #fbfdff;
+      padding: 8px;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+    .radio-group { display:flex; gap:12px; align-items:center; }
+    .radio-group label {
+      display: flex;            /* 改為 flex 以便伸展 */
+      flex: 1 1 0;              /* 平均分配寬度，填滿整行 */
+      justify-content: center;  /* 內文置中 */
+      align-items: center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .12s, border-color .12s, transform .08s;
+      border: 1px solid transparent;
+      background: transparent;
+      font-weight: 500;
+      min-width: 0;            /* 避免內文過長時破壞 layout */
+    }
+    .radio-group label span { display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .radio-group input[type="radio"] { margin-right:6px; }
+    /* 當被選取時強調標籤外觀（支援現代瀏覽器） */
+    .radio-group label:has(input:checked) {
+      background: linear-gradient(90deg, rgba(9,132,227,0.06), rgba(9,132,227,0.03));
+      border-color: rgba(9,132,227,0.18);
+      box-shadow: 0 4px 10px rgba(9,132,227,0.04);
+      transform: translateY(-1px);
+    }
 
     /* 表單欄位樣式：與 record-information 一致 */
       input[type="text"],
@@ -587,6 +622,25 @@ select, select.form-select {
       <option value="女性">女性</option>
     </select>
 
+    <label>見面地點</label>
+    <div class="meeting-box">
+      <div class="radio-group" aria-label="見面地點">
+        <label><input type="radio" name="meetingPlace" value="家門口" checked><span>家門口</span></label>
+        <label><input type="radio" name="meetingPlace" value="醫院入口"><span>醫院/診所入口</span></label>
+        <label><input type="radio" name="meetingPlace" value="其他"><span>其他</span></label>
+      </div>
+    </div>
+
+  <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
+  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
+    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+      <option value="" selected disabled>請選擇縣市</option>
+    </select>
+    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+      <option value="" selected disabled>請先選縣市</option>
+    </select>
+  </div>
+
   <button type="button" onclick="toggleCard()">配對</button>
   <button id="showBookingsBtn" type="button">預約查詢</button>
   </form>
@@ -799,12 +853,17 @@ function toggleCard() {
       const dtDate = document.getElementById('date').value;
       const dtTime = document.getElementById('time').value;
       const departmentVal = document.getElementById('department').value;
+      // 取得見面地點、縣市與行政區
+      const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
+      const meetingPlaceVal = meetingEl ? meetingEl.value : '';
+      const cityVal = (document.getElementById('citySelect') || {}).value || '';
+      const districtVal = (document.getElementById('districtSelect') || {}).value || '';
       if (!dtDate || !dtTime) {
         showAlert('請選擇日期與時間');
         return;
       }
       const datetime = dtDate + ' ' + dtTime;
-
+ 
       // 重新同步 localStorage（避免記憶體與 persisted 不一致）
       try {
         const raw = localStorage.getItem('bookedList');
@@ -812,16 +871,27 @@ function toggleCard() {
       } catch (e) {
         console.error('localStorage 讀取失敗', e);
       }
-
+ 
+      // 若同一志工、同一時間已被預約則視為重複
       if (bookedList.some(b => b.volunteer === name && b.datetime === datetime)) {
         showAlert(`⚠️ ${name} 已於 ${datetime} 預約過！`);
         return;
       }
-
+ 
       const bookUser = (liffProfile && liffProfile.displayName) ? liffProfile.displayName : user;
       // 產生唯一 id
       const id = Date.now().toString();
-      const newBooking = { id, volunteer: name, user: bookUser, datetime, department: departmentVal };
+      // 新增 meetingPlace、city、district 欄位
+      const newBooking = {
+        id,
+        volunteer: name,
+        user: bookUser,
+        datetime,
+        department: departmentVal,
+        meetingPlace: meetingPlaceVal,
+        city: cityVal,
+        district: districtVal
+      };
       bookedList.push(newBooking);
       try {
         localStorage.setItem('bookedList', JSON.stringify(bookedList));
@@ -833,7 +903,7 @@ function toggleCard() {
         const res = await saveBookingToSupabase(newBooking);
         if (res) console.debug('booking saved to supabase', res);
       })();
-
+ 
       showAlert(`✅ 已成功預約 ${name} 的志工服務！`);
     };
   });
@@ -894,17 +964,30 @@ function showBookings() {
         table.style.fontSize = '14px';
 
         const thead = document.createElement('thead');
-        thead.innerHTML = `<tr style="background:#74b9ff;color:white;"><th>志工姓名</th><th>預約人</th><th>日期時間</th><th>門診科別</th><th>操作</th></tr>`;
-        table.appendChild(thead);
-
+        // 將「縣市 / 行政區」合併成同一欄
+        thead.innerHTML = `<tr style="background:#74b9ff;color:white;">
+          <th>志工姓名</th>
+          <th>預約人</th>
+          <th>日期時間</th>
+          <th>門診科別</th>
+          <th>見面地點</th>
+          <th>縣市 / 行政區</th>
+          <th>操作</th>
+        </tr>`;
+         table.appendChild(thead);
+ 
         const tbody = document.createElement('tbody');
         bookedList.forEach((b, i) => {
           const tr = document.createElement('tr');
+          // 將縣市與行政區合併顯示在同一儲存格（中間以 " / " 分隔，若其中一項為空則不加分隔符）
+          const cityDistrict = (b.city || '') + ((b.city && b.district) ? ' / ' : '') + (b.district || '');
           tr.innerHTML = `
             <td>${b.volunteer}</td>
             <td>${b.user}</td>
             <td>${b.datetime || ''}</td>
             <td>${b.department || ''}</td>
+            <td>${b.meetingPlace || ''}</td>
+            <td>${cityDistrict}</td>
             <td><button class="cancel-btn" data-index="${i}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
           `;
           tbody.appendChild(tr);
@@ -1206,6 +1289,74 @@ async function deleteBookingFromSupabase(id) {
         deltaX = 0;
       }, { passive: true });
     }
+
+    // 縣市與行政區選單初始化
+  (function() {
+    const cities = {
+      "台北市": ["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
+      "新北市": ["板橋區","新莊區","中和區","永和區","三重區","蘆洲區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","泰山區","林口區","八里區","平溪區","貢寮區","雙溪區","深坑區","石碇區","坪林區","三芝區","石門區","萬里區","金山區","烏來區"],
+      "基隆市": ["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"],
+      "桃園市": ["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","龍潭區","龜山區","大溪區","大園區","觀音區","新屋區","復興區"],
+      "新竹市": ["東區","北區","香山區"],
+      "新竹縣": ["竹北市","湖口鄉","新豐鄉","新埔鎮","關西鎮","芎林鄉","寶山鄉","竹東鎮","五峰鄉","橫山鄉","尖石鄉","峨眉鄉","北埔鄉"],
+      "苗栗縣": ["苗栗市","頭份市","竹南鎮","後龍鎮","通霄鎮","苑裡鎮","造橋鄉","西湖鄉","頭屋鄉","公館鄉","銅鑼鄉","三義鄉","卓蘭鎮","南庄鄉","三灣鄉","獅潭鄉","苑裡鄉"],
+      "台中市": ["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","新社區","神岡區","大雅區","潭子區","大肚區","沙鹿區","梧棲區","清水區","外埔區","大安區"],
+      "彰化縣": ["彰化市","員林市","和美鎮","鹿港鎮","溪湖鎮","二林鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","大村鄉","埔心鄉","埔鹽鄉","永靖鄉","社頭鄉","二水鄉","田中鎮","北斗鎮"],
+      "南投縣": ["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","國姓鄉","仁愛鄉","魚池鄉","水里鄉","信義鄉","玄奘鄉"],
+      "雲林縣": ["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","莿桐鄉","林內鄉","古坑鄉","二崙鄉","元長鄉","四湖鄉","口湖鄉","臺西鄉","崙背鄉","麥寮鄉","褒忠鄉"],
+      "嘉義市": ["東區","西區"],
+      "嘉義縣": ["太保市","朴子市","布袋鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","大埔鄉","竹崎鄉","梅山鄉","番路鄉","阿里山鄉"],
+      "台南市": ["中西區","東區","南區","北區","安平區","安南區","永康區","歸仁區","新化區","左鎮區","玉井區","楠西區","南化區","仁德區","關廟區","龍崎區","官田區","麻豆區","佳里區","西港區","七股區","將軍區","學甲區","北門區","新營區","後壁區","白河區","東山區","六甲區","下營區","柳營區","鹽水區","善化區","大內區","山上區","新市區","安定區"],
+      "高雄市": ["新興區","前金區","苓雅區","鹽埕區","鼓山區","左營區","楠梓區","三民區","前鎮區","旗津區","小港區","鳳山區","大寮區","林園區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區"],
+      "屏東縣": ["屏東市","東港鎮","潮州鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新園鄉","枋寮鄉","枋山鄉","春日鄉","獅子鄉","車城鄉","牡丹鄉","滿州鄉"],
+      "花蓮縣": ["花蓮市","吉安鄉","鳳林鎮","玉里鎮","新城鄉","壽豐鄉","光復鄉","富里鄉","秀林鄉","卓溪鄉","秀林鄉"],
+      "台東縣": ["台東市","關山鎮","成功鎮","長濱鄉","池上鄉","東河鄉","鹿野鄉","卑南鄉","大武鄉","太麻里鄉","綠島鄉","蘭嶼鄉","延平鄉","海端鄉"],
+      "宜蘭縣": ["宜蘭市","頭城鎮","礁溪鄉","壯圍鄉","羅東鎮","五結鄉","冬山鄉","蘇澳鎮","南澳鄉","大同鄉","員山鄉"],
+      "澎湖縣": ["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"],
+      "金門縣": ["金沙鎮","金城鎮","金寧鄉","金湖鎮","烈嶼鄉"],
+      "連江縣": ["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
+    };
+
+    const citySelect = document.getElementById('citySelect');
+    const districtSelect = document.getElementById('districtSelect');
+    if (!citySelect || !districtSelect) return;
+
+    // 建立縣市選項
+    Object.keys(cities).forEach(city => {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = city;
+      citySelect.appendChild(opt);
+    });
+
+    // 當縣市改變時填入行政區
+    citySelect.addEventListener('change', function() {
+      const selected = this.value;
+      districtSelect.innerHTML = '';
+      if (!selected || !cities[selected]) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.disabled = true;
+        opt.selected = true;
+        opt.textContent = '請先選縣市';
+        districtSelect.appendChild(opt);
+        return;
+      }
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.disabled = true;
+      defaultOpt.selected = true;
+      defaultOpt.textContent = '請選擇行政區';
+      districtSelect.appendChild(defaultOpt);
+
+      cities[selected].forEach(d => {
+        const o = document.createElement('option');
+        o.value = d;
+        o.textContent = d;
+        districtSelect.appendChild(o);
+      });
+    });
+  })();
   </script>
 </body>
 </html>
