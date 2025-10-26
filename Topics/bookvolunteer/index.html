@@ -549,6 +549,41 @@ select, select.form-select {
 
 /* 確保 nav 內標題不會造成高度跳動 */
 .nav-1 h1 { margin: 0; font-size: 20px; line-height: 1; }
+
+/* 單選框響應式調整（補到現有 <style> 的末尾） */
+@media (max-width: 600px) {
+  .radio-group {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .radio-group label {
+    justify-content: flex-start; /* 文字靠左，選項更易閱讀 */
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 12px;
+    min-height: 48px;            /* 增加觸控面積 */
+    box-sizing: border-box;
+  }
+  .radio-group input[type="radio"] {
+    margin-right: 12px;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+  }
+  /* :has 支援的瀏覽器強調選取項 */
+  .radio-group label:has(input:checked) {
+    background: linear-gradient(90deg, rgba(9,132,227,0.06), rgba(9,132,227,0.03));
+    border-color: rgba(9,132,227,0.18);
+    box-shadow: 0 6px 18px rgba(9,132,227,0.05);
+    transform: none; /* 手機上不做上移，避免造成排版跳動 */
+  }
+  /* fallback：若瀏覽器不支援 :has()，將勾選的 input 文字做些微樣式調整 */
+  .radio-group input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: #0b66c3;
+  }
+}
   </style>
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
