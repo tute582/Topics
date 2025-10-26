@@ -233,7 +233,14 @@
       .primary-btn { width: 100%; }
       .volunteer-area .avatar { display: none; } /* 極小螢幕隱藏頭像 */
       .volunteer-area #volunteerName { font-size: 13px; }
-      canvas { height: 200px !important; max-height: 280px; }
+      /* 手機版：增加 canvas 內邊距與較高高度，讓圖例/座標不被擠壓 */
+      .chart-container { padding: 8px 14px; }
+      canvas {
+        height: 240px !important;
+        max-height: 360px;
+        padding: 16px !important;
+        margin-top: 18px;
+      }
       .allTable-div table { min-width: 0; width: 100%; }
       .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
@@ -591,38 +598,44 @@
         }
       });
 
-      // 新增：根據視窗大小調整圖表選項（響應式）
+      // 將響應式選項抽成全域函式（renderChart 與 resize 共用）
       function applyResponsiveChartOptions(ch) {
         if (!ch) return;
         const w = window.innerWidth;
-        // 小螢幕：降低點半徑、移動圖例到底部、隱藏標題、減少 padding
+        // 手機極小：保留圖例但調整 box 與 padding，提升 canvas 高度
         if (w <= 420) {
-          ch.options.plugins.legend.position = 'bottom';
-          ch.options.plugins.title.display = false;
+          ch.options.plugins.legend.position = 'top';
+          ch.options.plugins.legend.align = 'start';
+          ch.options.plugins.legend.labels.boxWidth = 12;
+          ch.options.plugins.title.display = true;
+          ch.options.plugins.title.padding = { top: 4, bottom: 4 };
           ch.options.elements.point.radius = 2;
-          ch.options.layout.padding = { left: 6, right: 6, top: 6, bottom: 6 };
-          ch.options.scales.x.ticks.maxRotation = 30;
-          ctx.canvas.style.height = '200px';
+          ch.options.layout.padding = { left: 12, right: 12, top: 10, bottom: 12 };
+          ch.options.scales.x.ticks.maxRotation = 25;
+          ctx.canvas.style.height = '240px';
         }
-        // 中等螢幕：適中設定
+        // 平板/中等：中等間距
         else if (w <= 768) {
           ch.options.plugins.legend.position = 'top';
+          ch.options.plugins.legend.align = 'center';
+          ch.options.plugins.legend.labels.boxWidth = 14;
           ch.options.plugins.title.display = true;
           ch.options.elements.point.radius = 3;
-          ch.options.layout.padding = { left: 10, right: 10, top: 8, bottom: 8 };
-          ch.options.scales.x.ticks.maxRotation = 45;
-          ctx.canvas.style.height = '260px';
+          ch.options.layout.padding = { left: 14, right: 14, top: 10, bottom: 12 };
+          ch.options.scales.x.ticks.maxRotation = 35;
+          ctx.canvas.style.height = '280px';
         }
-        // 大螢幕：較大間距與點
+        // 桌機：較大間距
         else {
           ch.options.plugins.legend.position = 'top';
+          ch.options.plugins.legend.align = 'center';
+          ch.options.plugins.legend.labels.boxWidth = 16;
           ch.options.plugins.title.display = true;
           ch.options.elements.point.radius = 4;
-          ch.options.layout.padding = { left: 14, right: 14, top: 12, bottom: 12 };
+          ch.options.layout.padding = { left: 18, right: 18, top: 14, bottom: 14 };
           ch.options.scales.x.ticks.maxRotation = 45;
           ctx.canvas.style.height = '320px';
         }
-        // 最後強制更新
         try { ch.update(); } catch (e) { /* ignore */ }
       }
 
