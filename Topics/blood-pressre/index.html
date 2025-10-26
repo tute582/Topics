@@ -590,6 +590,44 @@
           elements: { point: { radius: 4 }, line: { tension: 0.2 } }
         }
       });
+
+      // 新增：根據視窗大小調整圖表選項（響應式）
+      function applyResponsiveChartOptions(ch) {
+        if (!ch) return;
+        const w = window.innerWidth;
+        // 小螢幕：降低點半徑、移動圖例到底部、隱藏標題、減少 padding
+        if (w <= 420) {
+          ch.options.plugins.legend.position = 'bottom';
+          ch.options.plugins.title.display = false;
+          ch.options.elements.point.radius = 2;
+          ch.options.layout.padding = { left: 6, right: 6, top: 6, bottom: 6 };
+          ch.options.scales.x.ticks.maxRotation = 30;
+          ctx.canvas.style.height = '200px';
+        }
+        // 中等螢幕：適中設定
+        else if (w <= 768) {
+          ch.options.plugins.legend.position = 'top';
+          ch.options.plugins.title.display = true;
+          ch.options.elements.point.radius = 3;
+          ch.options.layout.padding = { left: 10, right: 10, top: 8, bottom: 8 };
+          ch.options.scales.x.ticks.maxRotation = 45;
+          ctx.canvas.style.height = '260px';
+        }
+        // 大螢幕：較大間距與點
+        else {
+          ch.options.plugins.legend.position = 'top';
+          ch.options.plugins.title.display = true;
+          ch.options.elements.point.radius = 4;
+          ch.options.layout.padding = { left: 14, right: 14, top: 12, bottom: 12 };
+          ch.options.scales.x.ticks.maxRotation = 45;
+          ctx.canvas.style.height = '320px';
+        }
+        // 最後強制更新
+        try { ch.update(); } catch (e) { /* ignore */ }
+      }
+
+      // 立即應用並在 resize 時更新（debounce 已在外層處理）
+      applyResponsiveChartOptions(chart);
     }
     /* ==============================
    ✅ LIFF 初始化
@@ -657,7 +695,13 @@
     const onResize = debounce(() => {
       // 若有 chart 則請 Chart.js 重新調整
       if (chart) {
-        try { chart.resize(); } catch (e) { /* ignore */ }
+        try { 
+          // 重新套用響應式選項並調整大小
+          if (typeof applyResponsiveChartOptions === 'function') {
+            applyResponsiveChartOptions(chart);
+          }
+          chart.resize(); 
+        } catch (e) { /* ignore */ }
       }
     }, 150);
 
