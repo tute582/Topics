@@ -83,10 +83,8 @@
       transform: translateY(-1px);
     }
 
-    /* 表單欄位樣式：與 record-information 一致 */
+    /* 表單欄位樣式：與 record-information 一致 — 不含 date/time，讓它們保留原生外觀 */
       input[type="text"],
-      input[type="date"],
-      input[type="time"],
       textarea,
       select,
       #editModal input {
@@ -102,6 +100,22 @@
       color: #222;
     }
 
+/* 保持 date/time 原生樣式以避免各瀏覽器跑版 */
+input[type="date"],
+input[type="time"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #888;
+  background-color: #ffffff;
+  color: #222;
+  box-sizing: border-box;
+  font-size: 14px;
+}
 /* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
 select { width: 100% !important; }
 
