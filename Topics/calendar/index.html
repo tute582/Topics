@@ -325,7 +325,7 @@
 
       avatarEl.addEventListener("click", () => {
         // 直接前往註冊頁（不經由看診資訊頁面）
-        const target = "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html";
+        const target = "https://tute582.github.io/Topics/Topics/Login-or-register/註冊頁面.html";
         if (liff.isLoggedIn()) {
           window.location.href = target;
         } else {
@@ -336,7 +336,7 @@
       nameEl.addEventListener("click", () => {
         if (!liff.isLoggedIn()) {
           liff.login({
-            redirectUri: "https://tute582.github.io/Topics/Topics/record-information/註冊頁面.html"
+            redirectUri: "https://tute582.github.io/Topics/Topics/Login-or-register/註冊頁面.html"
           });
         } else {
           alert("已登入：" + (nameEl.innerText || "志工"));
