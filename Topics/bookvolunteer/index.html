@@ -100,57 +100,21 @@
       color: #222;
     }
 
-/* 調整 date/time 外觀，與其他 input/select 保持一致（iOS Safari-friendly） */
+/* 保持 date/time 原生樣式以避免各瀏覽器跑版 */
 input[type="date"],
 input[type="time"] {
-  /* 以 textfield 外觀呈現，但仍保有原生 picker */
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
-
-  display: block;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
   width: 100%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  height: 44px;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #222;
-
-  border: 1px solid #888;
+  max-width: 100%;
+  padding: 8px;
   border-radius: 10px;
+  border: 1px solid #888;
   background-color: #ffffff;
-  background-clip: padding-box; /* 避免內部陰影溢出圓角 */
-}
-
-/* 調整 picker 圖示位置與樣式，避免橢圓或超大按鈕 */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  position: relative;
-  right: 6px;
-  padding: 0 6px;
-  color: #444;
-  opacity: 0.9;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-/* 避免 iOS 自帶內部 padding 導致內容跑版 */
-input[type="date"]::-webkit-datetime-edit,
-input[type="time"]::-webkit-datetime-edit {
-  padding: 0;
-  margin: 0;
-}
-
-/* 手機小螢幕微調 */
-@media (max-width: 600px) {
-  input[type="date"],
-  input[type="time"] {
-    padding: 12px;
-    font-size: 16px;
-    height: 48px;
-  }
+  color: #222;
+  box-sizing: border-box;
+  font-size: 14px;
 }
 /* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
 select { width: 100% !important; }
