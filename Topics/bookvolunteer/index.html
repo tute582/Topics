@@ -107,15 +107,31 @@ input[type="time"] {
   -webkit-appearance: auto;
   -moz-appearance: auto;
   width: 100%;
-  max-width: 100%;
-  padding: 8px;
+  padding: 8px 10px;          /* 與 select 一致的內距 */
+  height: 44px;               /* 與其他欄位一致的高度 */
+  min-height: 44px;
+  line-height: 20px;
   border-radius: 10px;
   border: 1px solid #888;
   background-color: #ffffff;
   color: #222;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 16px;            /* 與 select 欄位字級一致 */
+  -webkit-text-size-adjust: none;
 }
+
+/* 微調 WebKit 內部欄位的 padding / 字級，修正 iOS Safari 顯示跑版 */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="time"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field {
+  padding: 0 4px;
+  font-size: 16px;
+}
+
 /* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
 select { width: 100% !important; }
 
