@@ -100,69 +100,77 @@
       color: #222;
     }
 
-/* 保持 date/time 原生樣式以避免各瀏覽器跑版 */
+/* ===== 調整：讓 date / time 與 select 外觀完全一致（修正 iOS Safari 跑版） ===== */
 input[type="date"],
 input[type="time"] {
-  appearance: auto;
-  -webkit-appearance: auto;
-  -moz-appearance: auto;
+  /* 使用 textfield 讓內部顯示可由我們控制，但仍保留系統 picker */
+  -webkit-appearance: textfield;
+  appearance: textfield;
   width: 100%;
-  padding: 8px 10px;          /* 與 select 一致的內距 */
-  height: 44px;               /* 與其他欄位一致的高度 */
+  padding: 10px;           /* 與 select 保持一致的內距 */
+  height: 44px;            /* 與 select 相同高度 */
   min-height: 44px;
+  font-size: 16px;         /* 與 select 字級一致 */
   line-height: 20px;
   border-radius: 10px;
   border: 1px solid #888;
   background-color: #ffffff;
   color: #222;
   box-sizing: border-box;
-  font-size: 16px;            /* 與 select 欄位字級一致 */
-  -webkit-text-size-adjust: none;
+  /* 避免 iOS 自動放大字級 */
+  -webkit-text-size-adjust: 100%;
 }
 
-/* 微調 WebKit 內部欄位的 padding / 字級，修正 iOS Safari 顯示跑版 */
+/* 調整 WebKit 內部 editable field 的內距/字級，避免被預設樣式撐開 */
 input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 input[type="date"]::-webkit-datetime-edit-year-field,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="time"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit-hour-field,
 input[type="time"]::-webkit-datetime-edit-minute-field {
-  padding: 0 4px;
+  padding: 0 2px;
   font-size: 16px;
-}
-
-/* 若頁面中有 inline style 設定寬度，強制以 CSS 為準 */
-select { width: 100% !important; }
-
-/* 調整 select 樣式（與 record-information 表單欄位一致） */
-select, select.form-select {
-  width: 100% !important;
-  padding: 8px 10px;
-  font-size: 16px; /* 如果要與頁面中其他欄位完全一致可改為14或16 */
-  border-radius: 10px;
-  border: 1px solid #888;
-  background-color: #ffffff;
-  color: #222;
+  height: 100%;
   box-sizing: border-box;
-  margin: 5px 0; /* 與 input 欄位一致的間距 */
+  line-height: 20px;
 }
 
-/* 小螢幕微調保持一致 */
+/* 調整右側 picker icon（calendar / clock）位置與大小，不會把欄位內容撐開 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  opacity: 0.9;
+  cursor: pointer;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+/* 確保容器為相對定位，讓上面絕對定位的 indicator 生效（form 已是 block，但保險處理） */
+#dataForm { position: relative; }
+
+/* 若裝置或其他樣式強制改變寬度，覆寫為 100% */
+input[type="date"], input[type="time"], select { width: 100% !important; }
+
+/* 小螢幕微調（覆蓋先前 media rules） */
 @media (max-width: 600px) {
-  input[type="text"],
   input[type="date"],
   input[type="time"],
-  select,
-  textarea {
-    width: 100%;
+  select {
     font-size: 16px;
     padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+    height: 44px;
   }
-  select, select.form-select { font-size:16px; padding:10px; }
 }
+/* ===== end ===== */
 
     button {
       display: inline-block;
