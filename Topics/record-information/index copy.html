@@ -363,7 +363,8 @@
   <div style="display:flex; align-items:center;">
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
+             onerror="this.style.display='none';" 
              style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
         <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
       </span>
@@ -516,7 +517,71 @@
      JavaScript 程式區
      ============================== -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<!-- 刪除或註解掉原本這行 UMD 載入（不要同時保留）-->
+<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> -->
+
+<!-- 新增：以 module 動態 import ESM 版並建立 init Promise -->
+<script type="module">
+  // 使用 ESM 版本，避免 UMD 的 eval 被 CSP 擋掉
+  // 注意：請先在檔案上方確認已經有 SUPABASE_URL / SUPABASE_ANON_KEY / CLINIC_TABLE 常數定義
+  // 例如已在你的檔案中： const SUPABASE_URL = 'https://...'; const SUPABASE_ANON_KEY = '...';
+  // 這段會設定全域 supabaseClient 並回傳 promise 供頁面等候
+  window.initSupabasePromise = (async () => {
+    try {
+      if (typeof SUPABASE_URL === 'string' && typeof SUPABASE_ANON_KEY === 'string'
+          && !SUPABASE_URL.includes('your-clinic-project')) {
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+        // supabaseClient 為檔案內同名變數（請勿重覆宣告）
+        window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // 如果你的檔案內用的是局部 let supabaseClient = null;，請改用 window.supabaseClient 或移除重覆宣告
+        console.debug('Supabase (ESM) client initialized');
+        return window.supabaseClient;
+      } else {
+        console.debug('Supabase not configured - using local fallback');
+        return null;
+      }
+    } catch (err) {
+      console.warn('Supabase init failed', err);
+      return null;
+    }
+  })();
+
+  // 確保 addRow 在全域可呼叫（放在 addRow 函式定義之後）
+  window.addRow = window.addRow || addRow;
+</script>
+
+<!-- 並且需要讓 window.onload 等待 initSupabasePromise（替換原本的 window.onload） -->
 <script>
+  // filepath: c:\Users\nctdr\OneDrive\桌面\前端網頁\1016\Topics\Topics\record-information\index copy.html
+  // ...existing code...
+  // 把原本的 window.onload = function () { loadData(); updateNoRecordMessage(); } 換成下面
+  window.onload = async function () {
+    try {
+      // 等待 Supabase 初始化（若有設定）
+      if (window.initSupabasePromise) {
+        await window.initSupabasePromise;
+        // 若 init 成功，將 module script 裡的 client 指向檔案內使用的變數名
+        if (window.supabaseClient) {
+          // 若你檔案內宣告 let supabaseClient = null;，請同步指回去：
+          try { supabaseClient = window.supabaseClient; } catch(e) {}
+        }
+      }
+    } catch(e) {
+      console.warn('initSupabasePromise error', e);
+    }
+    // 最後再載入資料（會自動用 supabaseClient 或 localStorage）
+    try {
+      await loadData();
+      updateNoRecordMessage();
+      console.debug('page loaded');
+    } catch (err) {
+      console.error('loadData error', err);
+    }
+  };
+</script>
+
+<script>
+/* ====== 原本頁面程式 (已保留、但下方會覆寫部分函式) ====== */
 let editRowIndex = null;
 let isEditing = false;
 let originalData = {};
@@ -553,7 +618,7 @@ window.onload = function () {
   updateNoRecordMessage(); // 初次檢查
 };
 
-function addRow() {
+async function addRow() {
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
   const time = document.getElementById("time").value.trim();
@@ -567,10 +632,32 @@ function addRow() {
   const record = document.getElementById("record").value.trim();
   const note = document.getElementById("note").value.trim();
 
+  const rowObj = {
+    elder_name: elderName,
+    date: date,
+    time: time,
+    doctor_name: name,
+    department: department,
+    record: record,
+    note: note
+  };
+
+  if (supabaseClient) {
+    // 若已設定 Supabase，新增後重新 fetch 顯示
+    const inserted = await insertToSupabase(rowObj);
+    if (inserted) {
+      await fetchFromSupabase();
+      clearInputs();
+      alert('已新增並同步到 Supabase ✅');
+      return;
+    } else {
+      alert('新增到 Supabase 失敗，改為儲存在本機');
+    }
+  }
+
+  // fallback：原本 local 操作
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
-
-  // 新增一列資料
   const newRow = tbody.insertRow(-1);
   newRow.insertCell(0).innerText = elderName;
   newRow.insertCell(1).innerText = date;
@@ -579,8 +666,6 @@ function addRow() {
   newRow.insertCell(4).innerText = department;
   newRow.insertCell(5).innerText = record;
   newRow.insertCell(6).innerText = note;
-
-  // 操作欄
   const actionCell = newRow.insertCell(7);
   const editBtn = document.createElement("button");
   editBtn.type = "button";
@@ -589,14 +674,12 @@ function addRow() {
   editBtn.onclick = () => openEditModal(newRow);
   actionCell.appendChild(editBtn);
 
-  // 更新表格狀態
   sortTableByDateTime("dataTable");
   altRows("dataTable");
   addEditButtonsToRows();
   clearInputs();
-  updateNoRecordMessage(); // ✅ 新增後立即更新提示
-
-  saveData(); // ✅ 新增後儲存
+  updateNoRecordMessage();
+  saveData();
 }
 
 /* ==============================
@@ -624,208 +707,262 @@ function saveData() {
   localStorage.setItem("clinicData", document.getElementById("dataTable").innerHTML);
 }
 
-function loadData() {
+async function loadData() {
+  if (supabaseClient) {
+    await fetchFromSupabase();
+    return;
+  }
   const saved = localStorage.getItem("clinicData");
   if (saved) {
     document.getElementById("dataTable").innerHTML = saved;
     addEditButtonsToRows();
   }
-  updateNoRecordMessage(); // ✅ 載入後檢查
+  updateNoRecordMessage();
 }
 
-window.onload = loadData;
-
-function altRows(id) {
-  const table = document.getElementById(id);
-  const rows = table.getElementsByTagName("tr");
-  for (let i = 1; i < rows.length; i++)
-    rows[i].className = (i % 2 === 0) ? "evenrowcolor" : "oddrowcolor";
-}
-
+/* 修改 openEditModal 以記錄目前編輯的 row id（若有） */
 function openEditModal(row) {
   editRowIndex = row.rowIndex;
-  const modal = document.getElementById("editModal");
+  // 從 dataset 讀 id（可能為空，代表本機資料）
+  const rowId = row.dataset.id || '';
+  // 把 id 存到隱藏欄位（或全域變數）
+  window.currentEditRowId = rowId;
+
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     const val = row.cells[i].innerText;
     document.getElementById("edit" + f).value = val;
     originalData[f] = val;
   });
   setReadOnly(false);
+  const modal = document.getElementById("editModal");
   modal.style.display = "block";
   setTimeout(() => modal.classList.add("show"), 10);
   document.querySelector(".nav-1").style.display = "none";
 }
 
-function setReadOnly(readOnly) {
-  document.querySelectorAll("#editModal input, #editModal textarea").forEach(el => {
-    el.readOnly = readOnly;
-    if (el.type === "date" || el.type === "time") {
-      el.style.backgroundColor = "white";
-    } else {
-      el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
-    }
-  });
-  document.getElementById("saveEditBtn").style.display = readOnly ? "none" : "inline-block";
-  document.getElementById("deleteEditBtn").style.display = readOnly ? "none" : "inline-block";
-  document.getElementById("enterEditBtn").style.display = readOnly ? "inline-block" : "none";
-  isEditing = !readOnly;
-}
-
-document.getElementById("enterEditBtn").onclick = () => setReadOnly(false);
-
-document.getElementById("saveEditBtn").onclick = () => {
+/* 修改儲存按鈕事件：若有 Supabase 就更新後重新 fetch */
+document.getElementById("saveEditBtn").onclick = async () => {
   const row = document.getElementById("dataTable").rows[editRowIndex];
+  const updated = {
+    elder_name: document.getElementById("editElderName").value.trim(),
+    date: document.getElementById("editDate").value.trim(),
+    time: document.getElementById("editTime").value.trim(),
+    doctor_name: document.getElementById("editDoctorName").value.trim(),
+    department: document.getElementById("editDepartment").value.trim(),
+    record: document.getElementById("editRecord").value.trim(),
+    note: document.getElementById("editNote").value.trim()
+  };
+
+  if (supabaseClient && window.currentEditRowId) {
+    const res = await updateSupabase(window.currentEditRowId, updated);
+    if (res) {
+      await fetchFromSupabase();
+      alert("資料已更新並同步到 Supabase ✅");
+      closeModal();
+      return;
+    } else {
+      alert("更新 Supabase 失敗，請稍後再試。");
+    }
+  }
+
+  // fallback local update
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     row.cells[i].innerText = document.getElementById("edit" + f).value;
   });
-
   sortTableByDateTime("dataTable");
   altRows("dataTable");
   alert("資料已更新 ✅");
-  saveData(); // ✅ 儲存變更
+  saveData();
   closeModal();
 };
 
-document.getElementById("deleteEditBtn").onclick = () => {
-  if (confirm("確定刪除此筆資料？")) {
-    document.getElementById("dataTable").deleteRow(editRowIndex);
-    sortTableByDateTime("dataTable");
-    altRows("dataTable");
-    alert("資料已刪除 ✅");
-    updateNoRecordMessage(); // ✅ 刪除後檢查
-    saveData(); // ✅ 刪除後儲存
+document.getElementById("deleteEditBtn").onclick = async () => {
+  if (!confirm("確定刪除此筆資料？")) return;
+  const row = document.getElementById("dataTable").rows[editRowIndex];
+  const id = window.currentEditRowId || row.dataset.id;
+  if (supabaseClient && id) {
+    await deleteFromSupabase(id);
+    await fetchFromSupabase();
+    alert("已從 Supabase 刪除");
     closeModal();
+    return;
   }
-};
 
-function hasChanges() {
-  return ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].some(
-    f => document.getElementById("edit" + f).value !== originalData[f]
-  );
-}
-
-function tryCloseModal() {
-  if (isEditing && hasChanges()) {
-    showSaveConfirmModal();
-  } else {
-    closeModal();
-  }
-}
-
-function closeModal() {
-  const modal = document.getElementById("editModal");
-  modal.classList.remove("show");
-  setTimeout(() => (modal.style.display = "none"), 300);
-  setReadOnly(true);
-  document.querySelector(".nav-1").style.display = "flex";
-}
-
-document.getElementById("cancelEditBtn").onclick = () => tryCloseModal();
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") tryCloseModal();
-});
-
-function showSaveConfirmModal() {
-  const modal = document.getElementById("saveConfirmModal");
-  modal.style.display = "block";
-  setTimeout(() => modal.classList.add("show"), 10);
-}
-
-function closeSaveConfirmModal() {
-  const modal = document.getElementById("saveConfirmModal");
-  modal.classList.remove("show");
-  setTimeout(() => (modal.style.display = "none"), 300);
-}
-
-document.getElementById("confirmSaveBtn").onclick = () => {
-  document.getElementById("saveEditBtn").click();
-  closeSaveConfirmModal();
-};
-
-document.getElementById("confirmDiscardBtn").onclick = () => {
-  closeSaveConfirmModal();
-  closeModal();
-};
-
-document.getElementById("continueEditBtn").onclick = () => {
-  closeSaveConfirmModal();
-};
-
-/* ==============================
-   ✅ LIFF 初始化
-   ============================== */
-const LIFF_ID = "2008228534-R8763A2n";
-const avatarEl = document.getElementById("volunteerAvatar");
-const nameEl = document.getElementById("volunteerName");
-
-async function initLiffAndSetProfile() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-
-    if (!liff.isLoggedIn()) {
-      nameEl.innerText = "未登入";
-      avatarEl.style.display = "none";
-      return;
-    }
-
-    const profile = await liff.getProfile();
-    nameEl.innerText = profile.displayName || "志工";
-    if (profile.pictureUrl) {
-      avatarEl.src = profile.pictureUrl;
-      avatarEl.style.display = "inline-block";
-    } else {
-      avatarEl.style.display = "none";
-    }
-  } catch (err) {
-    console.error("LIFF init error:", err);
-  }
-}
-
-avatarEl.addEventListener("click", () => {
-  if (liff.isLoggedIn()) {
-    // 已登入則進入註冊頁面（可改為需要的頁面路徑）
-    window.location.href = "註冊頁面.html";
-  } else {
-    // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
-    liff.login({ redirectUri: window.location.href });
-  }
-});
-
-nameEl.addEventListener("click", () => {
-  if (!liff.isLoggedIn()) {
-    liff.login({ redirectUri: window.location.href });
-  } else {
-    alert("已登入：" + (nameEl.innerText || "志工"));
-  }
-});
-
-initLiffAndSetProfile();
-
-/* ==============================
-   ✅ 初始化表格按鈕
-   ============================== */
-function addEditButtonsToRows() {
-  const tbody = document.getElementById("dataTable").querySelector("tbody");
-  Array.from(tbody.rows).forEach(row => {
-    if (row.cells.length < 8) {
-      const actionCell = row.insertCell(7);
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.innerText = "編輯";
-      editBtn.style.padding = "6px 10px";
-      editBtn.onclick = () => openEditModal(row);
-      actionCell.appendChild(editBtn);
-    }
-  });
-}
-
-
-// 🔹頁面載入時自動執行
-window.addEventListener("DOMContentLoaded", () => {
-  loadData();
+  // fallback local delete
+  document.getElementById("dataTable").deleteRow(editRowIndex);
+  sortTableByDateTime("dataTable");
+  altRows("dataTable");
+  alert("資料已刪除 ✅");
   updateNoRecordMessage();
-});
-</script>
+  saveData();
+  closeModal();
+};
 
-</body>
-</html>
+/* ==============================
+   在這裡開始覆寫部分函式以支援 Supabase
+   ============================== */
+
+/* 在這裡放置 Supabase 設定（請修改下面兩個常數為你的看診資訊資料庫） */
+const SUPABASE_URL = 'https://your-clinic-project.supabase.co'; // ← TODO: 替換成「看診資訊」Supabase URL（你要放入的地方）
+const SUPABASE_ANON_KEY = 'your-anon-public-key';               // ← TODO: 替換成對應的 anon/public key
+const CLINIC_TABLE = 'consultations';                          // ← TODO: 替換成你在 Supabase 中的 table 名稱（例如：consultations 或 clinic_records）
+
+let supabaseClient = null;
+let PRIMARY_KEY = 'id'; // 會在 fetch 時自動偵測是否為 uuid
+
+(async function initSupabase() {
+  try {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('your-clinic-project')) {
+      // 使用 ESM 版（+esm）動態 import，避免 UMD 裡的 eval 被 CSP 擋掉
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.debug('Supabase (ESM) client initialized for 看診資訊');
+    } else {
+      console.debug('Supabase not configured - will use localStorage fallback');
+    }
+  } catch (e) {
+    console.warn('Supabase init failed', e);
+    supabaseClient = null;
+  }
+})();
+
+/* 小工具：避免 XSS 的簡單 escape */
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ====== 用 Supabase 抓資料並以迴圈顯示（fetch + forEach） ====== */
+async function fetchFromSupabase() {
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from(CLINIC_TABLE)
+      .select('*')
+      .order('visit_time', { ascending: true }) // 若你用 date + time 欄位請改成相對應排序欄
+      ;
+
+    if (error) throw error;
+
+    // 若第一筆有 uuid 欄位，將 PRIMARY_KEY 設成 uuid（你提供的 schema 有 uuid）
+    if (Array.isArray(data) && data.length > 0) {
+      PRIMARY_KEY = data[0].uuid ? 'uuid' : (data[0].id ? 'id' : PRIMARY_KEY);
+    }
+
+    const tbody = document.querySelector('#dataTable tbody');
+    tbody.innerHTML = '';
+
+    // 用迴圈把每筆資料建立成表格列（對應你提供的欄位名稱）
+    data.forEach((r) => {
+      const tr = document.createElement('tr');
+
+      const elder = escapeHtml(r.elder_name || r.elderName || '');
+      // 有些資料表可能把時間分成 date/time 或 single datetime (visit_time)
+      const date = escapeHtml(r.date || (r.visit_time ? r.visit_time.split('T')[0] : ''));
+      const time = escapeHtml(r.time || (r.visit_time ? (new Date(r.visit_time)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''));
+      const doctor = escapeHtml(r.doctor_name || r.doctorName || '');
+      const dept = escapeHtml(r.department || '');
+      const record = escapeHtml(r.visit_details || r.record || '');
+      const note = escapeHtml(r.remarks || r.note || '');
+
+      tr.dataset.id = r[PRIMARY_KEY] || '';
+
+      tr.innerHTML = `
+        <td>${elder}</td>
+        <td>${date}</td>
+        <td>${time}</td>
+        <td>${doctor}</td>
+        <td>${dept}</td>
+        <td>${record}</td>
+        <td>${note}</td>
+        <td>
+          <button type="button" class="edit-row-btn" style="padding:6px 10px">編輯</button>
+          <button type="button" class="delete-row-btn" style="padding:6px 10px;margin-left:6px;background:#f37a7a;color:white;">刪除</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // 綁定按鈕
+    document.querySelectorAll('.edit-row-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        openEditModal(row);
+      });
+    });
+    document.querySelectorAll('.delete-row-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const row = e.target.closest('tr');
+        const id = row.dataset.id;
+        if (!id) {
+          row.remove();
+          saveData();
+          updateNoRecordMessage();
+          return;
+        }
+        if (confirm('確定刪除此筆資料（資料庫）？')) {
+          await deleteFromSupabase(id);
+          await fetchFromSupabase();
+        }
+      });
+    });
+
+    altRows('dataTable');
+    updateNoRecordMessage();
+
+  } catch (err) {
+    console.error('fetchFromSupabase error', err);
+  }
+}
+
+/* 新增：將資料存到 Supabase（Insert） */
+async function insertToSupabase(rowObj) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from(CLINIC_TABLE).insert([rowObj]).select();
+    if (error) throw error;
+    return data && data[0];
+  } catch (e) {
+    console.warn('insertToSupabase failed', e);
+    return null;
+  }
+}
+
+/* 更新 Supabase（Update） */
+async function updateSupabase(id, rowObj) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from(CLINIC_TABLE).update(rowObj).eq(PRIMARY_KEY, id).select();
+    if (error) throw error;
+    return data && data[0];
+  } catch (e) {
+    console.warn('updateSupabase failed', e);
+    return null;
+  }
+}
+
+/* 刪除 Supabase（Delete） */
+async function deleteFromSupabase(id) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient.from(CLINIC_TABLE).delete().eq(PRIMARY_KEY, id);
+    if (error) throw error;
+    return data;
+  } catch (e) {
+    console.warn('deleteFromSupabase failed', e);
+    return null;
+  }
+}
+
+/* --------- 移除原本會造成 ReferenceError 的簡單 onload（把下面這段刪除或註解） --------- */
+/*
+window.onload = function () {
+  loadData();
+  updateNoRecordMessage(); // 初次檢查
+};
+*/
