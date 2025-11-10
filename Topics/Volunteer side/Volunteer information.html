@@ -293,8 +293,15 @@ input[type="file"]::file-selector-button:hover {
         <option value="醫護證照">醫護證照</option>
         <option value="心理輔導證照">心理輔導證照</option>
       </select>
-    <label>地址：</label>
-      <textarea id="address" rows="3" placeholder="請輸入地址" required></textarea>
+     <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
+  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
+    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+      <option value="" selected disabled>請選擇縣市</option>
+    </select>
+    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+      <option value="" selected disabled>請先選縣市</option>
+    </select>
+  </div>
 
       <!-- 標籤區 -->
       <div class="tag-section">
