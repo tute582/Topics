@@ -622,6 +622,14 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     color: #0b66c3;
   }
 }
+
+
+@keyframes spin { 
+  from { transform: rotate(0deg); } 
+  to { transform: rotate(360deg); } 
+}
+</style>
+
   </style>
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -650,11 +658,12 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
   <!-- <h1 style="text-align:center;">預約志工</h1> -->
 <h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
   <form id="dataForm">
-    <label>日期</label>
-    <input type="date" id="date">
+        <label>日期</label>
+    <input type="date" id="date" class="form-control">
 
     <label>時間</label>
-    <input type="time" id="time">
+    <input type="time" id="time" class="form-control">
+
 
     <label>門診科別</label>
     <select id="department" class="form-select">
@@ -716,6 +725,16 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
   </form>
 
   <h2 class="title" style="font-size: 24px;">志工資訊</h2>
+<!-- 提示文字 -->
+<p id="matchHint" style="text-align:center;margin-top:16px;color:#555;font-size:16px;">
+  💡 輸入資料即可出現配對志工
+</p>
+  <!-- 新增：配對提示文字 -->
+  <div id="matchHint" 
+      style="text-align:center;margin-top:10px;font-size:15px;color:#666;display:none;">
+    🌀 輸入資料即可出現配對志工...
+  </div>
+
 
   <div class="slider-container">
     <div class="card-container" id="cardContainer"></div>
@@ -842,7 +861,7 @@ try {
   const raw = localStorage.getItem("bookedList");
   if (raw) bookedList = JSON.parse(raw);
 } catch (e) {
-  console.error('localStorage 讀取失敗', e);
+  console.error("localStorage 讀取失敗", e);
   bookedList = [];
 }
 
@@ -854,67 +873,103 @@ function toggleCard() {
   const container = document.getElementById("cardContainer");
   const pagination = document.getElementById("pagination");
   const slider = document.querySelector(".slider-container");
+  const hint = document.getElementById("matchHint");
 
+  // ✅ 先檢查輸入欄位
   if (!date || !time || !department || !gender) {
     showAlert("請完整輸入欄位（日期、時間、科別、性別）！");
+     hint.style.display = "block";
+    hint.innerText = "💡 輸入資料即可出現配對志工";
     return;
   }
 
+  // 清空上一次結果
   container.innerHTML = "";
   pagination.innerHTML = "";
+  slider.style.display = "none";
 
-  // 支援 "皆可"（顯示所有志工）並隨機排序結果
-  const filtered = volunteers.filter(v => !gender || gender === '皆可' || v.gender === gender);
-  const shuffled = shuffleArray(filtered);
-  // 顯示或隱藏 slider 與箭頭，若無資料顯示提示訊息
-  slider.style.display = "block";
-  const prevBtnEl = document.getElementById('prevBtn');
-  const nextBtnEl = document.getElementById('nextBtn');
+  // 顯示 loading 提示
+  hint.style.display = "block";
+  hint.innerHTML = `
+    <span class="loader" style="
+      display:inline-block;
+      width:14px;
+      height:14px;
+      border:2px solid #ccc;
+      border-top-color:#0984e3;
+      border-radius:50%;
+      animation:spin 0.8s linear infinite;
+      vertical-align:middle;
+      margin-right:6px;"></span>
+    正在為您尋找配對志工...
+  `;
 
-  if (!shuffled.length) {
-    // 隱藏箭頭
-    if (prevBtnEl) prevBtnEl.style.display = 'none';
-    if (nextBtnEl) nextBtnEl.style.display = 'none';
-    // 顯示無紀錄提示（置中且樣式簡潔）
-    container.innerHTML = `
-      <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
-        <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;box-shadow:0 6px 18px rgba(0,0,0,0.05);font-size:18px;color:#333;max-width:480px;width:100%;text-align:center;">
-          目前尚未有紀錄
-        </div>
-      </div>
-    `;
-    pagination.innerHTML = "";
-    return;
-  } else {
-    // 顯示箭頭
-    if (prevBtnEl) prevBtnEl.style.display = '';
-    if (nextBtnEl) nextBtnEl.style.display = '';
-  }
+  // 模擬載入時間（2 秒）
+  setTimeout(() => {
+    hint.innerHTML = "✅ 已找到合適志工！";
 
-  shuffled.forEach(v => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="card-inner">
-         <div class="card-cover"></div>
-        <img src="${v.avatar}" class="card-avatar">
-        <div class="card-content">
-          <h2 class="card-title">${v.name}</h2>
-          <div class="tag-list">${v.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-          <p class="card-text">${v.desc}</p>
-          <div class="ratings">
-            <div class="full_heart" style="width:${v.rating || 80}%">❤❤❤❤❤</div>
+    // === 以下為原本的配對與顯示志工邏輯 ===
+    const filtered = volunteers.filter(
+      (v) => !gender || gender === "皆可" || v.gender === gender
+    );
+    const shuffled = shuffleArray(filtered);
+
+    slider.style.display = "block";
+    const prevBtnEl = document.getElementById("prevBtn");
+    const nextBtnEl = document.getElementById("nextBtn");
+
+    if (!shuffled.length) {
+      if (prevBtnEl) prevBtnEl.style.display = "none";
+      if (nextBtnEl) nextBtnEl.style.display = "none";
+      container.innerHTML = `
+        <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
+          <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;box-shadow:0 6px 18px rgba(0,0,0,0.05);font-size:18px;color:#333;max-width:480px;width:100%;text-align:center;">
+            目前尚未有紀錄
           </div>
-          <br>
-              <button class="book-btn" data-name="${v.name}">預約志工</button>
         </div>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-  
-  setupSlider(shuffled.length);
-  
+      `;
+      pagination.innerHTML = "";
+      return;
+    } else {
+      if (prevBtnEl) prevBtnEl.style.display = "";
+      if (nextBtnEl) nextBtnEl.style.display = "";
+    }
+
+    shuffled.forEach((v) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-cover"></div>
+          <img src="${v.avatar}" class="card-avatar">
+          <div class="card-content">
+            <h2 class="card-title">${v.name}</h2>
+            <div class="tag-list">${v.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+            <p class="card-text">${v.desc}</p>
+            <div class="ratings">
+              <div class="full_heart" style="width:${v.rating || 80}%">❤❤❤❤❤</div>
+            </div>
+            <br>
+            <button class="book-btn" data-name="${v.name}">預約志工</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    setupSlider(shuffled.length);
+  }, 2000); // 2 秒模擬配對時間
+}
+
+// 轉圈動畫
+const style = document.createElement("style");
+style.innerHTML = `
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}`;
+document.head.appendChild(style);
+
   // 綁定預約按鈕行為（點選後存入 localStorage）
   document.querySelectorAll('.book-btn').forEach(btn => {
     btn.onclick = () => {
@@ -978,7 +1033,7 @@ function toggleCard() {
     };
   });
 
-}
+
 
 // 顯示預約紀錄（從 localStorage 讀取最新資料）
 function showBookings() {
