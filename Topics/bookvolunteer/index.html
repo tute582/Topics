@@ -1207,7 +1207,7 @@ let liffProfile = null;
 async function initLiff() {
   try {
     // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
-    const liffId = '2008228534-V08oRPlW';
+    const liffId = '2008228534-R8763A2n';
     await liff.init({ liffId });
 
     // LIFF in-client 偵測（保持原有行為）
@@ -1228,7 +1228,6 @@ async function initLiff() {
     // 導覽列元素
     const avatarEl = document.getElementById('volunteerAvatar');
     const nameEl = document.getElementById('volunteerName');
-    const target = "../../Login-or-register/註冊頁面.html";
 
     if (liff.isLoggedIn()) {
       try {
@@ -1275,7 +1274,7 @@ async function initLiff() {
     avatarEl.addEventListener("click", () => {
       if (liff.isLoggedIn()) {
         // 已登入則前往註冊頁面（可改為需要的頁面路徑）
-        window.location.href = target;
+        window.location.href = "../../Login-or-register/註冊頁面.html";
       } else {
         // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
         liff.login({ redirectUri: window.location.href });
