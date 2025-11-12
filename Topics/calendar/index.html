@@ -311,6 +311,7 @@
       const liffId = '2008228534-vAzlOYLb';
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
+      const userId = "";
 
       async function initLiffAndSetProfile() {
         try {
@@ -323,6 +324,8 @@
           }
 
           const profile = await liff.getProfile();
+          userId = profile.userId;
+          console.log("取得的userId：",userId);
           nameEl.innerText = profile.displayName || "志工";
           if (profile.pictureUrl) {
             avatarEl.src = profile.pictureUrl;
@@ -338,7 +341,7 @@
       avatarEl.addEventListener("click", () => {
         if (liff.isLoggedIn()) {
           // 已登入則前往註冊頁面（可改為需要的頁面路徑）
-          window.location.href = "https://tute582.github.io/Topics/Topics/Login-or-register/註冊頁面.html";
+          window.location.href = "../../Login-or-register/註冊頁面.html";
         } else {
           // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
           liff.login({ redirectUri: window.location.href });
