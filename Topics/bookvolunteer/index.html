@@ -894,18 +894,21 @@ function toggleCard() {
   const time = document.getElementById("time").value.trim();
   const department = document.getElementById("department").value.trim();
   const gender = document.getElementById("gender").value.trim();
+  const city = document.getElementById("citySelect")?.value.trim() || '';
+  const district = document.getElementById("districtSelect")?.value.trim() || '';
   const container = document.getElementById("cardContainer");
   const pagination = document.getElementById("pagination");
   const slider = document.querySelector(".slider-container");
   const hint = document.getElementById("matchHint");
 
   // ✅ 先檢查輸入欄位
-  if (!date || !time || !department || !gender) {
-    showAlert("請完整輸入欄位（日期、時間、科別、性別）！");
-     hint.style.display = "block";
+  if (!date || !time || !department || !gender || !citySelect || !districtSelect) {
+    showAlert("請完整輸入欄位（日期、時間、科別、性別、縣市、行政區）！");
+    hint.style.display = "block";
     hint.innerText = "💡 輸入資料即可出現配對志工";
     return;
   }
+
 
   // 清空上一次結果
   container.innerHTML = "";
