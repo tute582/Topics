@@ -711,6 +711,7 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     </div>
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
+   <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入縣市和行政區</label>
   <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
     <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
       <option value="" selected disabled>請選擇縣市</option>
@@ -718,6 +719,29 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
       <option value="" selected disabled>請先選縣市</option>
     </select>
+  </div>
+
+  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓/室（已移除「使用說明」按鈕） -->
+  <div class="address-section" style="margin-top:10px;">
+    <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入道路或街名或村里名稱</label>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="streetType" style="width:120px;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+        <option value="road">道路</option>
+        <option value="street">街</option>
+        <option value="village">村里</option>
+      </select>
+      <input id="streetName" type="text" placeholder="請輸入中文路/街/村里名稱" 
+             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="room" type="text" placeholder="室" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+    </div>
   </div>
 
   <button type="button" onclick="toggleCard()">配對</button>
@@ -870,18 +894,21 @@ function toggleCard() {
   const time = document.getElementById("time").value.trim();
   const department = document.getElementById("department").value.trim();
   const gender = document.getElementById("gender").value.trim();
+  const city = document.getElementById("citySelect")?.value.trim() || '';
+  const district = document.getElementById("districtSelect")?.value.trim() || '';
   const container = document.getElementById("cardContainer");
   const pagination = document.getElementById("pagination");
   const slider = document.querySelector(".slider-container");
   const hint = document.getElementById("matchHint");
 
   // ✅ 先檢查輸入欄位
-  if (!date || !time || !department || !gender) {
-    showAlert("請完整輸入欄位（日期、時間、科別、性別）！");
-     hint.style.display = "block";
+  if (!date || !time || !department || !gender || !city || !district) {
+    showAlert("請完整輸入欄位（日期、時間、科別、性別、縣市、行政區）！");
+    hint.style.display = "block";
     hint.innerText = "💡 輸入資料即可出現配對志工";
     return;
   }
+
 
   // 清空上一次結果
   container.innerHTML = "";
@@ -1361,7 +1388,7 @@ async function deleteBookingFromSupabase(id) {
       for (let i = 0; i < count; i++) {
         const dot = document.createElement("span");
         dot.classList.add("dot");
-        if (i === 0) dot.classList.add("active");
+        if( i === 0) dot.classList.add("active");
         dot.addEventListener("click", () => goToSlide(i, count));
         pagination.appendChild(dot);
       }

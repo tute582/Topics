@@ -101,16 +101,39 @@
         <option value="其他">其他</option>
       </select>
 
-      <label>地址：</label>
-      <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
+     <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
+   <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入縣市和行政區</label>
+  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
     <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
       <option value="" selected disabled>請選擇縣市</option>
     </select>
     <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請先選縣市</option> 
+      <option value="" selected disabled>請先選縣市</option>
     </select>
-     </div>
-      <textarea id="address" rows="3" placeholder="請輸入地址" required></textarea>
+  </div>
+
+  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓/室（已移除「使用說明」按鈕） -->
+  <div class="address-section" style="margin-top:10px;">
+    <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入道路或街名或村里名稱</label>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="streetType" style="width:120px;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+        <option value="road">道路</option>
+        <option value="street">街</option>
+        <option value="village">村里</option>
+      </select>
+      <input id="streetName" type="text" placeholder="請輸入中文路/街/村里名稱" 
+             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="room" type="text" placeholder="室" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+    </div>
+  </div>
 
       <button type="submit">送出資料</button>
     </form>
@@ -134,9 +157,10 @@
       const phone = document.getElementById("phone").value.trim();
       const birthday = document.getElementById("birthday").value;
       const gender = document.getElementById("gender").value;
-      const address = document.getElementById("address").value.trim();
+       const city = document.getElementById("citySelect")?.value.trim() || '';
+  const district = document.getElementById("districtSelect")?.value.trim() || '';
 
-      if (!name || !email || !phone || !birthday || !gender || !address) {
+      if (!name || !email || !phone || !birthday || !gender || !city || !district) {
         alert("請完整填寫所有欄位！");
         return;
       }
@@ -147,7 +171,7 @@
         <strong>電話：</strong> ${phone}<br>
         <strong>生日：</strong> ${birthday}<br>
         <strong>性別：</strong> ${gender}<br>
-        <strong>地址：</strong> ${address}
+        <strong>地址：</strong> ${city} ${district}<br>
       `;
 
       result.style.display = "block";
