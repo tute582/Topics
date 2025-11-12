@@ -1228,7 +1228,7 @@ async function initLiff() {
     // 導覽列元素
     const avatarEl = document.getElementById('volunteerAvatar');
     const nameEl = document.getElementById('volunteerName');
-    const target = "https://tute582.github.io/Topics/Topics/Login-or-register/註冊頁面.html";
+    const target = "../../Login-or-register/註冊頁面.html";
 
     if (liff.isLoggedIn()) {
       try {
@@ -1252,28 +1252,43 @@ async function initLiff() {
     }
 
     // 點擊頭像或名稱的行為（與行事曆一致）
-    const handleLoginClick = () => {
-      // 若 LIFF SDK 可用且提供 login，直接呼叫 login（可在桌機/平板觸發）
-      if (window.liff && typeof liff.login === 'function') {
-        try {
-          if (typeof liff.isLoggedIn === 'function' ? !liff.isLoggedIn() : true) {
-            liff.login({ redirectUri: target });
-            return;
-          }
-          // 已登入 -> 前往註冊/會員頁
-          window.location.href = target;
-        } catch (e) {
-          console.error('LIFF login 嘗試失敗，改以導向 fallback：', e);
-          window.location.href = target;
-        }
-      } else {
-        // LIFF SDK 尚未載入或不可用：以新分頁導向註冊頁做 fallback
-        window.open(target, '_blank');
-      }
-    };
+    // const handleLoginClick = () => {
+    //   // 若 LIFF SDK 可用且提供 login，直接呼叫 login（可在桌機/平板觸發）
+    //   if (window.liff && typeof liff.login === 'function') {
+    //     try {
+    //       if (typeof liff.isLoggedIn === 'function' ? !liff.isLoggedIn() : true) {
+    //         liff.login({ redirectUri: target });
+    //         return;
+    //       }
+    //       // 已登入 -> 前往註冊/會員頁
+    //       window.location.href = target;
+    //     } catch (e) {
+    //       console.error('LIFF login 嘗試失敗，改以導向 fallback：', e);
+    //       window.location.href = target;
+    //     }
+    //   } else {
+    //     // LIFF SDK 尚未載入或不可用：以新分頁導向註冊頁做 fallback
+    //     window.open(target, '_blank');
+    //   }
+    // };
 
-    if (avatarEl) avatarEl.addEventListener('click', handleLoginClick);
-    if (nameEl) nameEl.addEventListener('click', handleLoginClick);
+    avatarEl.addEventListener("click", () => {
+      if (liff.isLoggedIn()) {
+        // 已登入則前往註冊頁面（可改為需要的頁面路徑）
+        window.location.href = target;
+      } else {
+        // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
+        liff.login({ redirectUri: window.location.href });
+      }
+    });
+
+    nameEl.addEventListener("click", () => {
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: window.location.href });
+      } else {
+        alert("已登入：" + (nameEl.innerText || "志工"));
+      }
+    });
   } catch (e) {
     console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
   }
