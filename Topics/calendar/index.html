@@ -90,7 +90,7 @@
     overflow-x:auto; 
     overflow-y: auto;
     -webkit-overflow-scrolling:touch;
-    border:1px solid #aaa; 
+    border: none; /* ← 改成沒有外框線 */
     border-radius:20px; 
     background:white;
     display:block;
@@ -163,6 +163,18 @@
 
   .but-ans { padding:6px 10px; border-radius:8px; border:none; cursor:pointer; background:#61aaf3; color:#fff; }
 
+    .record-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .no-record {
+      text-align: center;
+      color: #888;
+      font-size: 18px;
+      margin: 20px 0;
+    }
+
   /* volunteer area */
   .volunteer-area { display:flex; align-items:center; gap:8px; }
   .volunteer-area .avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #ddd; display:none; }
@@ -227,7 +239,7 @@
     <h2>即將到來的行程</h2>
 
     <!-- 新增：無資料時顯示的訊息 -->
-    <div id="no-record-msg" class="no-record" style="display:none;">目前尚未有紀錄</div>
+    <div id="no-record-msg" class="no-record" >目前尚未有紀錄</div>
 
     <!-- 所有資料的表格 -->
     <div class="allTable-div">
