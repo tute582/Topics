@@ -322,6 +322,8 @@
         }
 
         const profile = await liff.getProfile();
+        userId = profile.userId;
+        console.log("userID：",userId);
         nameEl.innerText = profile.displayName || "志工";
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
