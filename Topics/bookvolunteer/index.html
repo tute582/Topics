@@ -902,7 +902,7 @@ function toggleCard() {
   const hint = document.getElementById("matchHint");
 
   // ✅ 先檢查輸入欄位
-  if (!date || !time || !department || !gender || !citySelect || !districtSelect) {
+  if (!date || !time || !department || !gender || !city || !district) {
     showAlert("請完整輸入欄位（日期、時間、科別、性別、縣市、行政區）！");
     hint.style.display = "block";
     hint.innerText = "💡 輸入資料即可出現配對志工";
