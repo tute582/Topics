@@ -321,11 +321,22 @@
           avatarEl.style.display = "none";
           return;
         }
-
+        
+        // ✅ 取得 LIFF profile
         const profile = await liff.getProfile();
         userId = profile.userId;
-        userName = profile.displayName; 
-        console.log("userID：", userId, "userName：", userName);
+        userName = profile.displayName;
+        console.log("LIFF Profile userId:", userId, "userName:", userName);
+
+        // ✅ 取得 accessToken（可傳回後端）
+        const accessToken = liff.getAccessToken();
+        console.log("accessToken:", accessToken);
+
+        // ✅ 解析 ID Token（包含 LINE Login userId）
+        const decoded = liff.getDecodedIDToken();
+        console.log("Decoded ID Token:", decoded);
+
+        // ✅ 顯示畫面
         nameEl.innerText = profile.displayName || "志工";
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
