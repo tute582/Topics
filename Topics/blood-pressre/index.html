@@ -289,7 +289,11 @@
     <div id="no-record-msg" class="no-record">目前尚未有紀錄</div>
 
     <!-- 顯示控制：結束日期 與 顯示天數（放在資料顯示上方） -->
-    <div style="max-width:820px;margin:8px auto 4px;padding:0 30px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 30px; display:none; gap:12px; align-items:center; flex-wrap:wrap;">
+     <div class="form-row" style="margin:0; padding:0;">
+       <label for="viewStartDate" style="width:auto; min-width:80px;">顯示開始日：</label>
+       <input type="date" id="viewStartDate" title="顯示範圍的開始日期（自動計算）" readonly>
+     </div>
       <div class="form-row" style="margin:0; padding:0;">
         <label for="viewEndDate" style="width:auto; min-width:80px;">顯示結束日：</label>
         <input type="date" id="viewEndDate" title="選擇顯示範圍的結束日期">
@@ -303,7 +307,10 @@
         </select>
       </div>
     </div>
-    <div style="max-width:820px;margin:0 auto;padding:0 30px 8px;color:#666;font-size:13px;">預設顯示最近 7 天（包含結束日），可自行調整結束日與天數。</div>
+    <!-- 下面這段加上 id 並預設隱藏 -->
+    <div id="viewNote" style="max-width:820px;margin:0 auto;padding:0 30px 8px;color:#666;font-size:13px; display:none;">
+      預設顯示最近 7 天（包含結束日），可自行調整結束日與天數。
+    </div>
 
     <div class="allTable-div">
       <table>
@@ -394,6 +401,9 @@
 
     // 初始化日期與天數控制並 render
     function initViewControlsAndRender() {
+      const viewControlsEl = document.getElementById('viewControls');
+      const viewNoteEl = document.getElementById('viewNote');
+      const viewStartDateEl = document.getElementById('viewStartDate');
       const viewEndDateEl = document.getElementById('viewEndDate');
       const viewDaysEl = document.getElementById('viewDays');
       const today = new Date();
@@ -407,6 +417,8 @@
         viewEndDateStr = viewEndDateEl.value;
         viewEndDateEl.addEventListener('change', () => {
           viewEndDateStr = viewEndDateEl.value || null;
+          // 更新開始日顯示
+          if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
           renderTable();
           renderChart();
         });
@@ -419,13 +431,43 @@
         viewDaysEl.addEventListener('change', () => {
           const v = parseInt(viewDaysEl.value, 10);
           viewDays = isNaN(v) ? 7 : v;
+          // 更新開始日顯示
+          if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
           renderTable();
           renderChart();
         });
       }
 
+      // 初次設定開始日欄位
+      if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
+
+      // 若沒有任何要顯示的紀錄，隱藏整個「顯示控制」區與表格/圖表
+      // 使用 getViewRecords 判斷（會考量結束日與顯示天數）
+      const viewRecords = getViewRecords(viewDays, viewEndDateStr);
+      const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
+      if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
+      if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
+      if (!hasViewRecords) {
+        if (chart) { chart.destroy(); chart = null; }
+        if (chartContainer) chartContainer.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (noRecordMsg) noRecordMsg.style.display = 'block';
+        return;
+      }
+
       renderTable();
       renderChart();
+    }
+
+    // 計算開始日字串 (yyyy-mm-dd) : 給定顯示天數與結束日(yyyy-mm-dd 或 null)
+    function computeStartDateString(days, endDateStrLocal) {
+      const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
+      const start = new Date(end);
+      start.setDate(end.getDate() - (days - 1));
+      const y = start.getFullYear();
+      const m = String(start.getMonth() + 1).padStart(2, '0');
+      const d = String(start.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     }
 
     // 取得要顯示的 view 資料（含原始索引 _allIndex）
@@ -507,16 +549,25 @@
 
     // 表格顯示：只顯示結束日往前 viewDays 的資料
     function renderTable() {
-      table.innerHTML = "";
+      const viewControlsEl = document.getElementById('viewControls');
+      const viewNoteEl = document.getElementById('viewNote');
+
+      // 先取得目前 view（依 viewDays 與 viewEndDateStr），用此判斷是否顯示控制區
       const view = getViewRecords(viewDays, viewEndDateStr);
-      if (!view || view.length === 0) {
+      const hasViewRecords = Array.isArray(view) && view.length > 0;
+      if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
+      if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
+
+      // 若 view 沒資料，隱藏表格與圖表並顯示無資料訊息
+      table.innerHTML = "";
+      if (!hasViewRecords) {
         if (chart) { chart.destroy(); chart = null; }
         if (chartContainer) chartContainer.style.display = 'none';
         if (tableContainer) tableContainer.style.display = 'none';
         if (noRecordMsg) noRecordMsg.style.display = 'block';
         return;
       }
-
+      // 有資料時隱藏「無資料」訊息並顯示表格/圖表（viewNote 已在上方處理）
       if (noRecordMsg) noRecordMsg.style.display = 'none';
       if (tableContainer) tableContainer.style.display = '';
       if (chartContainer) chartContainer.style.display = '';
