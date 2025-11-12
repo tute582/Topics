@@ -32,20 +32,34 @@
     margin-bottom: 15px;
   }
 
+  .editor {
+    /* 表單欄位對齊：每個欄位為 .field，兩欄佈局用 .two-col */
+  }
+  .editor .field {
+    margin-bottom: 12px;
+  }
   .editor label {
     display: block;
-    margin: 8px 0 4px;
-    font-weight: bold;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #222;
+  }
+  .editor input,
+  .editor select,
+  .editor textarea {
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .editor input,
-  .editor textarea,
-  .editor select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-bottom: 10px;
+  /* 兩欄佈局（供縣市/行政區、巷弄號樓那種） */
+  .editor .two-col {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .editor .two-col .col {
+    flex: 1;
+    min-width: 0; /* 讓 flex item 在窄螢幕縮小 */
   }
 
   .editor button {
@@ -192,10 +206,8 @@
     font-size: 13px;
   }
 /* 統一輸入框與下拉選單外觀 */
-input[type="text"],
-input[type="file"],
-select,
-textarea {
+input, input[type="email"], input[type="tel"], input[type="date"], input[type="text"],
+input[type="file"], select, textarea {
   width: 100%;
   padding: 10px 14px;
   border: 1.5px solid #d1d5db; /* 灰色邊框 */
@@ -254,6 +266,12 @@ input[type="file"]::file-selector-button:hover {
     .container { padding: 15px; box-shadow: none; }
     .editor button { font-size: 15px; }
   }
+
+  /* 響應式：小螢幕切換為單欄 */
+  @media (max-width: 560px) {
+    .editor .two-col { flex-direction: column; gap: 10px; }
+    .address-section .controls { flex-direction: column; gap: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -284,9 +302,26 @@ input[type="file"]::file-selector-button:hover {
       <img id="avatarPreview" class="preview-img" src="https://i.pravatar.cc/150?img=32">
       <input type="file" id="avatarInput" accept="image/*" onchange="previewImage(event)">
 
+      
       <label>姓名：</label>
-      <input type="text" id="vName" value="王小明">
+      <input type="text" id="name" placeholder="請輸入姓名" required>
 
+      <label>Email：</label>
+      <input type="email" id="email" placeholder="請輸入電子郵件" required>
+
+      <label>電話：</label>
+      <input type="tel" id="phone" placeholder="請輸入電話號碼" required>
+
+      <label>生日：</label>
+      <input type="date" id="birthday" required>
+
+      <label>性別：</label>
+      <select id="gender" required>
+        <option value="">請選擇性別</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
       <label>擁有證照：</label>
       <select id="vCert">
         <option value="">無</option>
@@ -294,18 +329,39 @@ input[type="file"]::file-selector-button:hover {
         <option value="心理輔導證照">心理輔導證照</option>
       </select>
       
-     <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
-       <label>地址：</label>
-  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
-    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請選擇縣市</option>
-    </select>
-    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請先選縣市</option> 
-    </select>
-     </div>
-      <p>
-    <textarea id="address" rows="3" placeholder="請輸入地址" required></textarea>
+     <!-- 新增：縣市與行政區（改為與其他欄位相同的直列樣式） -->
+   <label>縣市：</label>
+   <select id="citySelect" name="city" aria-label="縣市">
+     <option value="" selected disabled>請選擇縣市</option>
+   </select>
+
+   <label style="margin-top:10px;">行政區：</label>
+   <select id="districtSelect" name="district" aria-label="行政區">
+     <option value="" selected disabled>請先選縣市</option>
+   </select>
+
+  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓/室（已移除「使用說明」按鈕） -->
+  <div class="address-section" style="margin-top:10px;">
+    <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入道路或街名或村里名稱</label>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="streetType" style="width:120px;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+        <option value="road">道路</option>
+        <option value="street">街</option>
+        <option value="village">村里</option>
+      </select>
+      <input id="streetName" type="text" placeholder="請輸入中文路/街/村里名稱" 
+             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="room" type="text" placeholder="室" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+    </div>
+  </div>
 
 
       <!-- 標籤區 -->
@@ -326,6 +382,9 @@ input[type="file"]::file-selector-button:hover {
 
       <button onclick="updateCard()">更新卡片</button>
     </div>
+
+
+   
 
     <!-- 志工卡片 -->
     <div class="card" id="volunteerCard">
@@ -383,6 +442,20 @@ input[type="file"]::file-selector-button:hover {
 
   // 更新卡片內容
   function updateCard() {
+    // 必填驗證：若欄位存在則視為必填（兼容 vName 作為姓名欄位）
+    const name = (document.getElementById("vname") || document.getElementById("vName"))?.value.trim() || "";
+    const email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
+    const phone = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
+    const birthday = document.getElementById("birthday") ? document.getElementById("birthday").value : "";
+    const gender = document.getElementById("gender") ? document.getElementById("gender").value : "";
+    const city = document.getElementById("citySelect") ? document.getElementById("citySelect").value.trim() : "";
+    const district = document.getElementById("districtSelect") ? document.getElementById("districtSelect").value.trim() : "";
+
+    if (!name || !email || !phone || !birthday || !gender || !city || !district) {
+      alert("請完整填寫所有欄位！");
+      return;
+    }
+
     document.getElementById("cardName").textContent = document.getElementById("vName").value;
     const cert = document.getElementById("vCert").value;
     const certLabel = document.getElementById("cardCert");
