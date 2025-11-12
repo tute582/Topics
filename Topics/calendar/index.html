@@ -306,14 +306,14 @@
   <script>
     const bodyEl = document.body;
     // ---- LIFF 初始化 ----
-    const liffId = '2008228534-vAzlOYLb';
+    const LIFF_ID = '2008228534-vAzlOYLb';
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
     const userId = "";
 
     async function initLiffAndSetProfile() {
       try {
-        await liff.init({ liffId: liffId });
+        await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
           nameEl.innerText = "未登入";
@@ -322,8 +322,6 @@
         }
 
         const profile = await liff.getProfile();
-        userId = profile.userId;
-        console.log("取得的userId：",userId);
         nameEl.innerText = profile.displayName || "志工";
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
@@ -338,10 +336,10 @@
 
     avatarEl.addEventListener("click", () => {
       if (liff.isLoggedIn()) {
-        // 已登入則前往註冊頁面（可改為需要的頁面路徑）
+        // 已登入則進入註冊頁面（可改為需要的頁面路徑）
         window.location.href = "../../Login-or-register/註冊頁面.html";
       } else {
-        // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
+        // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
         liff.login({ redirectUri: window.location.href });
       }
     });
