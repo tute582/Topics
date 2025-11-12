@@ -970,72 +970,74 @@ style.innerHTML = `
 }`;
 document.head.appendChild(style);
 
-  // 綁定預約按鈕行為（點選後存入 localStorage）
-  document.querySelectorAll('.book-btn').forEach(btn => {
-    btn.onclick = () => {
-      const name = btn.dataset.name;
-      const user = '系統使用者';
-      const dtDate = document.getElementById('date').value;
-      const dtTime = document.getElementById('time').value;
-      const departmentVal = document.getElementById('department').value;
-      // 取得見面地點、縣市與行政區
-      const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
-      const meetingPlaceVal = meetingEl ? meetingEl.value : '';
-      const cityVal = (document.getElementById('citySelect') || {}).value || '';
-      const districtVal = (document.getElementById('districtSelect') || {}).value || '';
-      if (!dtDate || !dtTime) {
-        showAlert('請選擇日期與時間');
-        return;
-      }
-      const datetime = dtDate + ' ' + dtTime;
- 
-      // 重新同步 localStorage（避免記憶體與 persisted 不一致）
-      try {
-        const raw = localStorage.getItem('bookedList');
-        bookedList = raw ? JSON.parse(raw) : bookedList;
-      } catch (e) {
-        console.error('localStorage 讀取失敗', e);
-      }
- 
-      // 若同一志工、同一時間已被預約則視為重複
-      if (bookedList.some(b => b.volunteer === name && b.datetime === datetime)) {
-        showAlert(`⚠️ ${name} 已於 ${datetime} 預約過！`);
-        return;
-      }
- 
-      const bookUser = (liffProfile && liffProfile.displayName) ? liffProfile.displayName : user;
-      // 產生唯一 id
-      const id = Date.now().toString();
-      // 新增 meetingPlace、city、district 欄位
-      const newBooking = {
-        id,
-        volunteer: name,
-        user: bookUser,
-        datetime,
-        department: departmentVal,
-        meetingPlace: meetingPlaceVal,
-        city: cityVal,
-        district: districtVal
-      };
-      bookedList.push(newBooking);
-      try {
-        localStorage.setItem('bookedList', JSON.stringify(bookedList));
-      } catch (e) {
-        console.error('localStorage 存取失敗', e);
-      }
-      // 非同步嘗試同步到 Supabase（若有設定）
-      (async () => {
-        const res = await saveBookingToSupabase(newBooking);
-        if (res) console.debug('booking saved to supabase', res);
-      })();
- 
-      showAlert(`✅ 已成功預約 ${name} 的志工服務！`);
+  // 移除原本的 document.querySelectorAll('.book-btn')... 全域綁定（如果有的話）
+  // 改為事件代理：對 cardContainer 綁定一次 click，處理所有動態產生的 .book-btn
+  (function bindBookingDelegate() {
+  const container = document.getElementById('cardContainer');
+  if (!container) return;
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.book-btn');
+    if (!btn) return;
+    // 按下「預約志工」
+    const name = btn.dataset.name;
+    const user = '系統使用者';
+    const dtDate = document.getElementById('date').value;
+    const dtTime = document.getElementById('time').value;
+    const departmentVal = document.getElementById('department').value;
+    const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
+    const meetingPlaceVal = meetingEl ? meetingEl.value : '';
+    const cityVal = (document.getElementById('citySelect') || {}).value || '';
+    const districtVal = (document.getElementById('districtSelect') || {}).value || '';
+    if (!dtDate || !dtTime) {
+      showAlert('請選擇日期與時間');
+      return;
+    }
+    const datetime = dtDate + ' ' + dtTime;
+
+    // 重新同步 localStorage（避免記憶體與 persisted 不一致）
+    try {
+      const raw = localStorage.getItem('bookedList');
+      bookedList = raw ? JSON.parse(raw) : bookedList;
+    } catch (e) {
+      console.error('localStorage 讀取失敗', e);
+    }
+
+    // 若同一志工、同一時間已被預約
+    if (bookedList.some(b => b.volunteer === name && b.datetime === datetime)) {
+      showAlert(`⚠️ ${name} 已於 ${datetime} 預約過！`);
+      return;
+    }
+
+    const bookUser = (liffProfile && liffProfile.displayName) ? liffProfile.displayName : user;
+    const id = Date.now().toString();
+    const newBooking = {
+      id,
+      volunteer: name,
+      user: bookUser,
+      datetime,
+      department: departmentVal,
+      meetingPlace: meetingPlaceVal,
+      city: cityVal,
+      district: districtVal
     };
+    bookedList.push(newBooking);
+    try {
+      localStorage.setItem('bookedList', JSON.stringify(bookedList));
+    } catch (e) {
+      console.error('localStorage 存取失敗', e);
+    }
+    // 非同步嘗試同步到 Supabase（若有設定）
+    (async () => {
+      const res = await saveBookingToSupabase(newBooking);
+      if (res) console.debug('booking saved to supabase', res);
+    })();
+
+    showAlert(`✅ 已成功預約 ${name} 的志工服務！`);
   });
+})();
 
 
-
-// 顯示預約紀錄（從 localStorage 讀取最新資料）
+    // 顯示預約紀錄（從 localStorage 讀取最新資料）
 function showBookings() {
         // 重新讀取 persisted 資料
         try {
