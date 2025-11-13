@@ -724,8 +724,8 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     <label style="flex:1;display:block;font-weight:600;margin:0;">請輸入縣市和行政區</label>
     <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
   </div>
-  <!-- 地圖容器 -->
-  <div id="map" style="width:100%; height:400px; margin-top:12px; border-radius:8px;"></div>
+  <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
+  <div id="map" style="display:none; width:100%; height:400px; margin-top:12px; border-radius:8px;"></div>
   <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
     <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
       <option value="" selected disabled>請選擇縣市</option>
@@ -1533,6 +1533,9 @@ async function deleteBookingFromSupabase(id) {
       if (!btn || !streetNameEl || !mapEl) return;
 
       btn.addEventListener('click', () => {
+        // 顯示地圖容器（按鈕按下時一起出現）
+        mapEl.style.display = 'block';
+
         if (!navigator.geolocation) {
           showAlert('此裝置不支援取得位置');
           return;
@@ -1547,7 +1550,7 @@ async function deleteBookingFromSupabase(id) {
             const { latitude, longitude } = pos.coords;
             const userPos = { lat: latitude, lng: longitude };
 
-            // ✅ 建立地圖
+            // ✅ 建立或更新地圖
             if (!map) {
               map = new google.maps.Map(mapEl, {
                 zoom: 15,
@@ -1562,6 +1565,17 @@ async function deleteBookingFromSupabase(id) {
             } else {
               map.setCenter(userPos);
               marker.setPosition(userPos);
+            }
+
+            // 若地圖存在且 Google Maps API 可用，觸發 resize 以確保正確渲染
+            try {
+              if (window.google && google.maps && google.maps.event && map) {
+                google.maps.event.trigger(map, 'resize');
+                // 再次設定中心，避免因 resize 而偏移
+                map.setCenter(userPos);
+              }
+            } catch (e) {
+              console.debug('google.maps.event.trigger failed', e);
             }
 
             // ✅ 呼叫 Google Geocoding API 反查地址
