@@ -721,7 +721,7 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
   <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-    <label style="flex:1;display:block;font-weight:600;margin:0;">請輸入縣市和行政區</label>
+    <label style="flex:1;display:block;font-weight:600;margin:0;">詳細地址</label>
     <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
   </div>
   <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
@@ -735,11 +735,9 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     </select>
   </div>
 
-  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓/室（已移除「使用說明」按鈕） -->
+  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓（已移除「使用說明」按鈕） -->
   <div class="address-section" style="margin-top:10px;">
-    <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入道路或街名或村里名稱</label>
-
-      <input id="streetName" type="text" placeholder="請輸入中文路/街/村里名稱" 
+      <input id="streetName" type="text" placeholder="請輸入道路/街名/村里名稱" 
              style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
     </div>
 
