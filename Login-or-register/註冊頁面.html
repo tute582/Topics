@@ -361,21 +361,13 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
   // ====== LIFF 設定：把 YOUR_LIFF_ID 換成你的 LIFF ID ======
-  const LIFF_ID = "2008228534-R8763A2n";
+  const LIFF_ID = "2008484068-Kp57RrAr";
   const avatarEl = document.getElementById("avatarPreview");
 
-    async function initLiffAndLoadAvatar() {
+  async function initLiffAndLoadAvatar() {
   try {
     // 初始化 LIFF
     await liff.init({ liffId: LIFF_ID });
-
-    // 若未登入 → 自動導向 LINE 登入
-    if (!liff.isLoggedIn()) {
-      liff.login({
-        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
-      });
-      return;
-    }
 
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
@@ -407,6 +399,13 @@
   }
 }
 
+  nameEl.addEventListener("click", () => {
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+    } else {
+      alert("已登入：" + (nameEl.innerText || "志工"));
+    }
+  });
 
   // ✅ 頁面載入後執行
   document.addEventListener("DOMContentLoaded", initLiffAndLoadAvatar);
