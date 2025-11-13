@@ -427,13 +427,13 @@
           remark: note
         };
 
-        const SCHEDULES_API_URL_POST = "https://supabase-api-six.vercel.app/schedules"; // ✅ 換成你的 Supabase REST API URL
-        const res = await fetch(SCHEDULES_API_URL_POST, {
+        const POST_CREATE_API_URL = "https://supabase-api-six.vercel.app/schedules"; // ✅ 換成你的 Supabase REST API URL
+        const res = await fetch(POST_CREATE_API_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": SCHEDULES_API_URL_POST,
-            "Authorization": `Bearer ${SCHEDULES_API_URL_POST}`
+            "apikey": POST_CREATE_API_URL,
+            "Authorization": `Bearer ${POST_CREATE_API_URL}`
           },
           body: JSON.stringify(payload)
         });
