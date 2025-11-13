@@ -1517,7 +1517,7 @@ async function deleteBookingFromSupabase(id) {
     })();
 
       //-- Google Maps script 已在 head 中正確載入，移除此行
-  // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需反查地址請接第三方 API）
+  // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需
   // 顯示提示訊息的簡易函式
   // 顯示提示訊息
     function showAlert(msg) {
@@ -1565,30 +1565,127 @@ async function deleteBookingFromSupabase(id) {
             }
 
             // ✅ 呼叫 Google Geocoding API 反查地址
-            geocoder.geocode({ location: userPos }, (results, status) => {
-              if (status === "OK" && results[0]) {
-                const formattedAddress = results[0].formatted_address;
-                streetNameEl.value = formattedAddress;
-                showAlert('已取得您的地址：' + formattedAddress);
+            geocoder.geocode({ location: userPos, }, (results, status) => {
+              // 預設先清空欄位（若無偵測到就保持空白）
+              const citySelectEl = document.getElementById('citySelect');
+              const districtSelectEl = document.getElementById('districtSelect');
+              const laneEl = document.getElementById('lane');
+              const alleyEl = document.getElementById('alley');
+              const numberEl = document.getElementById('number');
+              const floorEl = document.getElementById('floor');
+              if (citySelectEl) citySelectEl.value = '';
+              if (districtSelectEl) {
+                districtSelectEl.innerHTML = '<option value=\"\" disabled selected>請先選縣市</option>';
+              }
+              if (streetNameEl) streetNameEl.value = '';
+              if (laneEl) laneEl.value = '';
+              if (alleyEl) alleyEl.value = '';
+              if (numberEl) numberEl.value = '';
+              if (floorEl) floorEl.value = '';
+
+              if (status === "OK" && results && results.length) {
+                const r = results[0];
+                const comps = r.address_components || [];
+                let cityCandidate = '';
+                let districtCandidate = '';
+                let route = '';
+                let street_number = '';
+                const formatted = r.formatted_address || '';
+
+                comps.forEach(c => {
+                  const types = c.types || [];
+                  if (types.includes('administrative_area_level_1') || types.includes('locality')) {
+                    if (!cityCandidate) cityCandidate = c.long_name;
+                  }
+                  if (types.includes('administrative_area_level_2') || types.includes('sublocality') || types.includes('sublocality_level_1') || types.includes('administrative_area_level_3')) {
+                    if (!districtCandidate) districtCandidate = c.long_name;
+                  }
+                  if (types.includes('route')) route = c.long_name;
+                  if (types.includes('street_number')) street_number = c.long_name;
+                });
+
+                // helper: 在 select 中尋找最接近的 option（by value 或 text）
+                function findOption(selectEl, name) {
+                  if (!selectEl || !name) return null;
+                  const opts = Array.from(selectEl.options || []);
+                  let found = opts.find(o => (o.value && o.value === name) || (o.text && o.text === name));
+                  if (found) return found;
+                  found = opts.find(o => (o.text && name.indexOf(o.text) !== -1) || (o.text && o.text.indexOf(name) !== -1));
+                  return found || null;
+                }
+
+                // 填入縣市（若 select 有對應 option 則選取，否則新增一個 option）
+                if (cityCandidate && citySelectEl) {
+                  let match = findOption(citySelectEl, cityCandidate);
+                  if (!match) {
+                    const opt = document.createElement('option');
+                    opt.value = cityCandidate;
+                    opt.textContent = cityCandidate;
+                    citySelectEl.appendChild(opt);
+                    match = opt;
+                  }
+                  citySelectEl.value = match.value;
+                  citySelectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // 等 citySelect change 觸發後（若有），再選 district（延遲少量時間）
+                setTimeout(() => {
+                  if (districtCandidate && districtSelectEl) {
+                    let matchD = findOption(districtSelectEl, districtCandidate);
+                    if (!matchD) {
+                      const optD = document.createElement('option');
+                      optD.value = districtCandidate;
+                      optD.textContent = districtCandidate;
+                      districtSelectEl.appendChild(optD);
+                      matchD = optD;
+                    }
+                    districtSelectEl.value = matchD.value;
+                  }
+
+                  // 填入路名（優先 route），若有 street_number 則放到號欄
+                  if (route && streetNameEl) {
+                    streetNameEl.value = route;
+                  } else if (formatted && streetNameEl) {
+                    // 嘗試從格式化字串找路名（fallback）
+                    const routeMatch = formatted.match(/(.+?(路|街|巷|道|街道|大道))/);
+                    streetNameEl.value = routeMatch ? routeMatch[0] : '';
+                  }
+
+                  // 從 formatted 或 street_number 解析 巷/弄/號/樓
+                  const laneMatch = formatted.match(/(\d+)\s*巷/);
+                  const alleyMatch = formatted.match(/(\d+)\s*弄/);
+                  const numberMatch = formatted.match(/(\d+)\s*號/) || (street_number ? street_number.match(/(\d+)/) : null);
+                  const floorMatch = formatted.match(/(\d+)\s*樓/);
+
+                  if (laneEl) laneEl.value = laneMatch ? laneMatch[1] : '';
+                  if (alleyEl) alleyEl.value = alleyMatch ? alleyMatch[1] : '';
+                  if (numberEl) numberEl.value = numberMatch ? numberMatch[1] : (street_number || '');
+                  if (floorEl) floorEl.value = floorMatch ? floorMatch[1] : '';
+
+                  showAlert('已取得位置並填入縣市/行政區/路名等欄位（若未偵測到則為空白）');
+                  // 恢復按鈕狀態
+                  btn.disabled = false;
+                  btn.innerText = prevText;
+                }, 200);
               } else {
-                streetNameEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
-                showAlert('無法取得詳細地址，已顯示座標');
+                // 若無結果，維持所有欄位為空白並顯示座標或訊息
+                if (streetNameEl) streetNameEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
+                showAlert('無法取得詳細地址，已顯示座標，其餘欄位保留空白');
+                btn.disabled = false;
+                btn.innerText = prevText;
               }
             });
-
-            btn.disabled = false;
-            btn.innerText = prevText;
           },
-          (err) => {
-            console.error('geolocation error', err);
-            showAlert('取得位置失敗：' + (err.message || '請確認瀏覽器定位權限'));
-            btn.disabled = false;
-            btn.innerText = prevText;
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
-    })();
+           (err) => {
+             console.error('geolocation error', err);
+             showAlert('取得位置失敗：' + (err.message || '請確認瀏覽器定位權限'));
+             btn.disabled = false;
+             btn.innerText = prevText;
+           },
+           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+         );
+       });
+     })();
   </script>
 </body>
 </html>
