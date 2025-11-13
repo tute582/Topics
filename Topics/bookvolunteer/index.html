@@ -621,6 +621,13 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     font-weight: 600;
     color: #0b66c3;
   }
+  #map {
+      width: 100%;
+      height: 400px;
+      margin-top: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
 }
 
 
@@ -1505,8 +1512,84 @@ async function deleteBookingFromSupabase(id) {
         o.textContent = d;
         districtSelect.appendChild(o);
       });
-    });
-  })();
+      });
+    })();
+
+      //-- 請替換 YOUR_API_KEY 為你自己的 Google Maps API 金鑰 
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVrR-lyE2cD6vbcnryZocfdX-c6fRzuWQ"
+
+  // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需反查地址請接第三方 API）
+  // 顯示提示訊息的簡易函式
+  // 顯示提示訊息
+    function showAlert(msg) {
+      alert(msg);
+    }
+
+    (function() {
+      const btn = document.getElementById('useLocationBtn');
+      const streetNameEl = document.getElementById('streetName');
+      const mapEl = document.getElementById('map');
+      let map, marker, geocoder;
+
+      if (!btn || !streetNameEl || !mapEl) return;
+
+      btn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          showAlert('此裝置不支援取得位置');
+          return;
+        }
+
+        btn.disabled = true;
+        const prevText = btn.innerText;
+        btn.innerText = '定位中...';
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const userPos = { lat: latitude, lng: longitude };
+
+            // ✅ 建立地圖
+            if (!map) {
+              map = new google.maps.Map(mapEl, {
+                zoom: 15,
+                center: userPos,
+              });
+              marker = new google.maps.Marker({
+                position: userPos,
+                map: map,
+                title: "目前位置",
+              });
+              geocoder = new google.maps.Geocoder();
+            } else {
+              map.setCenter(userPos);
+              marker.setPosition(userPos);
+            }
+
+            // ✅ 呼叫 Google Geocoding API 反查地址
+            geocoder.geocode({ location: userPos }, (results, status) => {
+              if (status === "OK" && results[0]) {
+                const formattedAddress = results[0].formatted_address;
+                streetNameEl.value = formattedAddress;
+                showAlert('已取得您的地址：' + formattedAddress);
+              } else {
+                streetNameEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
+                showAlert('無法取得詳細地址，已顯示座標');
+              }
+            });
+
+            btn.disabled = false;
+            btn.innerText = prevText;
+          },
+          (err) => {
+            console.error('geolocation error', err);
+            showAlert('取得位置失敗：' + (err.message || '請確認瀏覽器定位權限'));
+            btn.disabled = false;
+            btn.innerText = prevText;
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    })();
   </script>
 </body>
 </html>
