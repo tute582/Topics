@@ -642,6 +642,8 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Google Maps JS（請替換 YOUR_API_KEY） -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVrR-lyE2cD6vbcnryZocfdX-c6fRzuWQ&libraries=places"></script>
 </head>
 <body>
 
@@ -1514,9 +1516,7 @@ async function deleteBookingFromSupabase(id) {
       });
     })();
 
-      //-- 請替換 YOUR_API_KEY 為你自己的 Google Maps API 金鑰 
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVrR-lyE2cD6vbcnryZocfdX-c6fRzuWQ"
-
+      //-- Google Maps script 已在 head 中正確載入，移除此行
   // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需反查地址請接第三方 API）
   // 顯示提示訊息的簡易函式
   // 顯示提示訊息
