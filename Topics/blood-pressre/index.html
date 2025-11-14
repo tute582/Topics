@@ -319,6 +319,7 @@
           <tr>
             <th>日期</th>
             <th>收縮壓</th>
+            <th>狀態</th>
             <th>舒張壓</th>
             <th>狀態</th>
             <th>刪除</th>
@@ -579,6 +580,7 @@
           <tr data-idx="${r._allIndex}">
             <td>${dateStr}</td>
             <td>${r.systolic}</td>
+            <td>${r.status}</td>
             <td>${r.diastolic}</td>
             <td>${r.status}</td>
             <td><button class="delete-btn" onclick="deleteRecord(${r._allIndex})">刪除</button></td>

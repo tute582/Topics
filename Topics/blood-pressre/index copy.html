@@ -244,7 +244,33 @@
       .allTable-div table { min-width: 0; width: 100%; }
       .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
+      /* 小螢幕：把表格列轉為卡片樣式（更適合閱讀與點擊） */
+      .allTable-div thead { display: none; }
+      .allTable-div tbody tr {
+        display: block;
+        margin: 10px;
+        border-radius: 10px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+        border: 1px solid #e6e6e6;
+        background: #fff;
+        padding: 10px;
+      }
+      .allTable-div tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 6px;
+        border: none;
+      }
+      .allTable-div tbody td:before {
+        content: attr(data-label);
+        color: #666;
+        font-weight: 600;
+        margin-right: 8px;
+      }
+      .delete-btn { padding: 10px 12px; font-size: 15px; }
     }
+    /* 提升一般手機觸控目標 */
+    .primary-btn, .delete-btn, input { touch-action: manipulation; }
   </style>
 </head>
 <body>
@@ -274,11 +300,11 @@
       </div>
       <div class="form-row">
         <label for="systolic">收縮壓（高壓）：</label>
-        <input type="number" id="systolic" required>
+        <input type="number" id="systolic" required inputmode="numeric" pattern="[0-9]*" step="1" placeholder="mmHg">
       </div>
       <div class="form-row">
         <label for="diastolic">舒張壓（低壓）：</label>
-        <input type="number" id="diastolic" required>
+        <input type="number" id="diastolic" required inputmode="numeric" pattern="[0-9]*" step="1" placeholder="mmHg">
       </div>
       <div style="display:flex;justify-content:flex-start;">
         <button type="submit" class="primary-btn">新增紀錄</button>
@@ -319,6 +345,7 @@
           <tr>
             <th>日期</th>
             <th>收縮壓</th>
+            <th>狀態</th>
             <th>舒張壓</th>
             <th>狀態</th>
             <th>刪除</th>
@@ -577,11 +604,12 @@
         const dateStr = r.recorded_time ? (new Date(r.recorded_time)).toLocaleDateString() : '';
         const row = `
           <tr data-idx="${r._allIndex}">
-            <td>${dateStr}</td>
-            <td>${r.systolic}</td>
-            <td>${r.diastolic}</td>
-            <td>${r.status}</td>
-            <td><button class="delete-btn" onclick="deleteRecord(${r._allIndex})">刪除</button></td>
+            <td data-label="日期">${dateStr}</td>
+            <td data-label="收縮壓">${r.systolic}</td>
+            <td data-label="狀態">${r.status}</td>
+            <td data-label="舒張壓">${r.diastolic}</td>
+            <td data-label="狀態">${r.status}</td>
+            <td data-label="刪除"><button class="delete-btn" onclick="confirmAndDelete(${r._allIndex})">刪除</button></td>
           </tr>`;
         table.innerHTML += row;
       });
@@ -601,6 +629,12 @@
       try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
       renderTable();
       renderChart();
+    }
+
+    // 新增一個確認函式，避免誤觸刪除
+    function confirmAndDelete(index) {
+      if (!confirm('確定要刪除此筆血壓紀錄嗎？此動作無法復原。')) return;
+      deleteRecord(index);
     }
 
     // 繪製圖表（只用 view 資料）
@@ -811,6 +845,17 @@
     });
 
     initLiffAndSetProfile();
+
+    // 新增：將日期欄位預設為今天（減少使用者操作）
+    (function setDefaultDate() {
+      const dateEl = document.getElementById('date');
+      if (!dateEl) return;
+      const t = new Date();
+      const y = t.getFullYear();
+      const m = String(t.getMonth() + 1).padStart(2, '0');
+      const d = String(t.getDate()).padStart(2, '0');
+      dateEl.value = `${y}-${m}-${d}`;
+    })();
 
     /* -----------------------------
        視窗大小變化：重新調整圖表與介面
