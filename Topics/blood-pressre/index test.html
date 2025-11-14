@@ -245,7 +245,44 @@
       .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
     }
+
+    /* 日期範圍選擇器快捷按鈕樣式 */
+    /* 使用 grid 兩欄：左側固定 label 寬度 (140px)，右側放 input + 快捷按鈕 */
+    .range-picker-wrap {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      align-items: start;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    /* 右側容器：包含 input 與按鈕列 */
+    .range-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .range-picker-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-left:0; }
+    .range-quick-btn {
+      background: #f6f8fa;
+      border: 1px solid #dfe4e8;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #222;
+      transition: background .12s, color .12s, box-shadow .12s;
+    }
+    /* 預設顯色（由 JS 加上 .active）*/
+    .range-quick-btn.active {
+      background: #4a90e2;
+      color: #fff;
+      border-color: #3a78c6;
+      box-shadow: 0 2px 6px rgba(74,144,226,0.18);
+    }
+    .range-quick-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(74,144,226,0.12); }
+    /* 調整 right-side 元素在小螢幕的換行行為 */
+    .range-controls input#viewRange { flex: 0 0 280px; min-width: 160px; }
+
   </style>
+  <!-- flatpickr 日期範圍選擇器 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <!-- 導覽列 -->
@@ -292,24 +329,19 @@
     <!-- 新增：無資料時顯示的訊息（預設隱藏） -->
     <div id="no-record-msg" class="no-record">目前尚未有紀錄</div>
 
-    <!-- 顯示控制：結束日期 與 顯示天數（放在資料顯示上方） -->
-    <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 30px; display:none; gap:12px; align-items:center; flex-wrap:wrap;">
-     <div class="form-row" style="margin:0; padding:0;">
-       <label for="viewStartDate" style="width:auto; min-width:80px;">顯示開始日：</label>
-       <input type="date" id="viewStartDate" title="顯示範圍的開始日期（自動計算）" readonly>
-     </div>
-      <div class="form-row" style="margin:0; padding:0;">
-        <label for="viewEndDate" style="width:auto; min-width:80px;">顯示結束日：</label>
-        <input type="date" id="viewEndDate" title="選擇顯示範圍的結束日期">
-      </div>
-      <div class="form-row" style="margin:0; padding:0;">
-        <label for="viewDays" style="width:auto; min-width:80px;">顯示天數：</label>
-        <select id="viewDays" style="padding:6px; border-radius:6px;">
-          <option value="7">一週</option>
-          <option value="30">一個月</option>
-          <option value="90">三個月</option>
-          <option value="365">一年</option>
-        </select>
+    <!-- 顯示控制：日期範圍（合併開始/結束）與快捷選項 -->
+    <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 30px; display:none;">
+      <div class="range-picker-wrap">
+        <label for="viewRange" style="display:block; font-weight:600; margin-bottom:6px; font-size: 20px;">日期範圍：</label>
+        <div class="range-controls">
+          <input id="viewRange" type="text" placeholder="選擇日期範圍" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+          <div class="range-picker-actions" aria-hidden="false">
+            <button type="button" class="range-quick-btn" data-range="7">最近 7 天</button>
+            <button type="button" class="range-quick-btn" data-range="30">最近 30 天</button>
+            <button type="button" class="range-quick-btn" data-range="thisMonth">本月</button>
+            <button type="button" class="range-quick-btn" data-range="lastMonth">上個月</button>
+          </div>
+        </div>
       </div>
     </div>
     <!-- 下面這段加上 id 並預設隱藏 -->
@@ -356,7 +388,8 @@
     // 載入紀錄
     let records = []; // 全部紀錄來源
     let viewEndDateStr = null; // yyyy-mm-dd 或 null(表示今天)
-    let viewDays = 7; // 顯示天數（預設 7）
+    // 預設改為 null => 顯示所有資料（不以固定天數過濾）
+    let viewDays = null;
     let chart;
 
     // Supabase config - replace with your values
@@ -405,50 +438,119 @@
       initViewControlsAndRender();
     })();
 
-    // 初始化日期與天數控制並 render
+    // 初始化日期範圍控制（使用 flatpickr range）並 render
     function initViewControlsAndRender() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
-      const viewStartDateEl = document.getElementById('viewStartDate');
-      const viewEndDateEl = document.getElementById('viewEndDate');
-      const viewDaysEl = document.getElementById('viewDays');
+      const viewRangeEl = document.getElementById('viewRange');
+      const quickBtns = document.querySelectorAll('.range-quick-btn');
+
+      // 計算預設結束日（今天）與開始日（最近 viewDays）
       const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      const todayStr = `${yyyy}-${mm}-${dd}`;
+      const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      viewEndDateStr = endStr;
 
-      if (viewEndDateEl) {
-        viewEndDateEl.value = todayStr;
-        viewEndDateStr = viewEndDateEl.value;
-        viewEndDateEl.addEventListener('change', () => {
-          viewEndDateStr = viewEndDateEl.value || null;
-          // 更新開始日顯示
-          if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
-          renderTable();
-          renderChart();
-        });
-      } else {
-        viewEndDateStr = todayStr;
+      // flatpickr 初始化（range 模式）
+      let fp = null;
+      if (viewRangeEl && typeof flatpickr === 'function') {
+        // 如果 viewDays 是數字，使用最近 viewDays 為預設；若 viewDays 為 null => 嘗試使用資料的最小/最大日期作為預設範圍（顯示「所有」）
+        let defaultDateArray = null;
+        if (typeof viewDays === 'number' && viewDays > 0) {
+          const start = new Date();
+          start.setDate(today.getDate() - (viewDays - 1));
+          const startStr = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
+          defaultDateArray = [startStr, endStr];
+        } else { // viewDays === null => 設定為 records 的 min/max（若有資料）
+          if (records && records.length) {
+            const times = records.filter(r => r.recorded_time).map(r => new Date(r.recorded_time));
+            if (times.length) {
+              const minD = new Date(Math.min.apply(null, times));
+              const maxD = new Date(Math.max.apply(null, times));
+              const sStr = `${minD.getFullYear()}-${String(minD.getMonth()+1).padStart(2,'0')}-${String(minD.getDate()).padStart(2,'0')}`;
+              const eStr = `${maxD.getFullYear()}-${String(maxD.getMonth()+1).padStart(2,'0')}-${String(maxD.getDate()).padStart(2,'0')}`;
+              defaultDateArray = [sStr, eStr];
+              // update viewEndDateStr to max date so other parts reflect the full range
+              viewEndDateStr = eStr;
+            }
+          }
+        }
+        const fpOptions = {
+          mode: "range",
+          dateFormat: "Y/m/d",
+          onChange: function(selectedDates, dateStr, instance) {
+            if (!selectedDates || selectedDates.length === 0) return;
+            const s = selectedDates[0];
+            const e = selectedDates[1] || selectedDates[0];
+            const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
+            const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
+            const startIso = `${y1}-${m1}-${d1}`;
+            const endIso = `${y2}-${m2}-${d2}`;
+            viewEndDateStr = endIso;
+            const diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            viewDays = diff;
+            if (document.getElementById('viewStartDate')) document.getElementById('viewStartDate').value = startIso;
+            renderTable();
+            renderChart();
+            quickBtns.forEach(b => b.classList.remove('active'));
+          }
+        };
+        if (defaultDateArray) fpOptions.defaultDate = defaultDateArray;
+        fp = flatpickr(viewRangeEl, fpOptions);
       }
 
-      if (viewDaysEl) {
-        viewDaysEl.value = String(viewDays);
-        viewDaysEl.addEventListener('change', () => {
-          const v = parseInt(viewDaysEl.value, 10);
-          viewDays = isNaN(v) ? 7 : v;
-          // 更新開始日顯示
-          if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
-          renderTable();
-          renderChart();
-        });
+      // 快捷按鈕事件（最近7/30、本月、上個月）
+      function applyQuick(rangeKey) {
+        const t = new Date();
+        let s, e;
+        if (rangeKey === '7' || rangeKey === '30') {
+          const days = parseInt(rangeKey, 10);
+          e = new Date();
+          s = new Date();
+          s.setDate(e.getDate() - (days - 1));
+        } else if (rangeKey === 'thisMonth') {
+          s = new Date(t.getFullYear(), t.getMonth(), 1);
+          e = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+        } else if (rangeKey === 'lastMonth') {
+          s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+          e = new Date(t.getFullYear(), t.getMonth(), 0);
+        } else {
+          // default fallback: 最近 viewDays
+          e = new Date();
+          s = new Date();
+          s.setDate(e.getDate() - (viewDays - 1));
+        }
+        // set flatpickr 選取
+        if (fp) {
+          fp.setDate([s, e], true, "Y-m-d");
+        } else {
+          // fallback: 手動設定全域變數
+          const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
+          const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
+          viewEndDateStr = `${y2}-${m2}-${d2}`;
+          viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+          renderTable(); renderChart();
+        }
       }
 
-      // 初次設定開始日欄位
-      if (viewStartDateEl) viewStartDateEl.value = computeStartDateString(viewDays, viewEndDateStr);
+      quickBtns.forEach(b => {
+        b.addEventListener('click', (ev) => {
+          quickBtns.forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+          const k = b.getAttribute('data-range');
+          applyQuick(k);
+        });
+      });
 
-      // 若沒有任何要顯示的紀錄，隱藏整個「顯示控制」區與表格/圖表
-      // 使用 getViewRecords 判斷（會考量結束日與顯示天數）
+      // 預設不強制套用快捷按鈕：只有當 viewDays 為數字時才 auto-apply（避免覆蓋「顯示所有」）
+      if (typeof viewDays === 'number' && quickBtns && quickBtns.length) {
+        let initialBtn = Array.from(quickBtns).find(b => b.getAttribute('data-range') === String(viewDays));
+        if (!initialBtn) initialBtn = quickBtns[0];
+        quickBtns.forEach(x => x.classList.remove('active'));
+        initialBtn.classList.add('active');
+        applyQuick(initialBtn.getAttribute('data-range'));
+      }
+
+      // 計算初次顯示是否有資料，決定是否顯示控制區塊
       const viewRecords = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
       if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
@@ -460,7 +562,6 @@
         if (noRecordMsg) noRecordMsg.style.display = 'block';
         return;
       }
-
       renderTable();
       renderChart();
     }
@@ -478,6 +579,13 @@
 
     // 取得要顯示的 view 資料（含原始索引 _allIndex）
     function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
+      // 若 days 為 null => 顯示所有資料（不過濾）
+      if (days === null || typeof days === 'undefined') {
+        return records
+          .map((r, idx) => ({ ...r, _allIndex: idx }))
+          .filter(r => r.recorded_time) // 只顯示有時間的紀錄
+          .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
+      }
       const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
       const start = new Date(end);
       start.setDate(end.getDate() - (days - 1));
@@ -577,7 +685,7 @@
       if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
 
-      // 若 view 沒資料，隱藏表格與圖表並顯示無資料訊息
+      // 若 view 没資料，隱藏表格與圖表並顯示無資料訊息
       table.innerHTML = "";
       if (!hasViewRecords) {
         if (chart) { chart.destroy(); chart = null; }
