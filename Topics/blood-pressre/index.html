@@ -250,15 +250,51 @@
     /* 使用 grid 兩欄：左側固定 label 寬度 (140px)，右側放 input + 快捷按鈕 */
     .range-picker-wrap {
       display: grid;
-      grid-template-columns: 140px 1fr;
-      align-items: start;
+      grid-template-columns: 140px 1fr; /* 桌機 / 平板：標籤在左、欄位在右 */
+      align-items: center;
       gap: 12px;
       width: 100%;
       box-sizing: border-box;
     }
     /* 右側容器：包含 input 與按鈕列 */
-    .range-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .range-picker-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-left:0; }
+    .range-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .range-picker-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: 0;
+    }
+    .range-controls input#viewRange {
+      flex: 1 1 auto;
+      min-width: 220px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+    /* 手機/小螢幕：改為上下排列（label 在上，欄位全部撐滿）*/
+    @media (max-width: 600px) {
+      .range-picker-wrap {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+      .range-picker-wrap label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      .range-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+      .range-picker-actions { justify-content: flex-start; }
+      .range-controls input#viewRange { width: 100%; }
+    }
+
     .range-quick-btn {
       background: #f6f8fa;
       border: 1px solid #dfe4e8;
