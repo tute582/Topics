@@ -1575,15 +1575,15 @@ async function deleteBookingFromSupabase(id) {
 
     (function() {
       const btn = document.getElementById('useLocationBtn');
-      const streetNameEl = document.getElementById('streetName');
+      // 使用存在的完整地址欄位 id
+      const addressFullEl = document.getElementById('addressFull');
       const mapWrap = document.getElementById('mapWrap');
       const mapEl = document.getElementById('map');
       const mapSearchInput = document.getElementById('mapSearch');
       let map, marker, geocoder;
 
-      if (!btn || !streetNameEl || !mapWrap || !mapEl) return;
-
-
+      // 若必要元素不存在則不繼續（避免 silent fail）
+      if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
 
       btn.addEventListener('click', () => {
         // 顯示地圖容器（按鈕按下時一起出現）
@@ -1683,7 +1683,7 @@ async function deleteBookingFromSupabase(id) {
                         }
                         districtSelectEl.value = matchD.value;
                       }
-                      if (route && streetNameEl) streetNameEl.value = route;
+                      if (route && addressFullEl) addressFullEl.value = route;
                       if (street_number && document.getElementById('number')) document.getElementById('number').value = street_number;
                     }, 150);
                   });
@@ -1721,7 +1721,7 @@ async function deleteBookingFromSupabase(id) {
               if (districtSelectEl) {
                 districtSelectEl.innerHTML = '<option value=\"\" disabled selected>請先選縣市</option>';
               }
-              if (streetNameEl) streetNameEl.value = '';
+              if (addressFullEl) addressFullEl.value = '';
               if (laneEl) laneEl.value = '';
               if (alleyEl) alleyEl.value = '';
               if (numberEl) numberEl.value = '';
@@ -1734,8 +1734,6 @@ async function deleteBookingFromSupabase(id) {
                 let districtCandidate = '';
                 let route = '';
                 let street_number = '';
-                const formatted = r.formatted_address || '';
-
                 comps.forEach(c => {
                   const types = c.types || [];
                   if (types.includes('administrative_area_level_1') || types.includes('locality')) {
@@ -1758,21 +1756,17 @@ async function deleteBookingFromSupabase(id) {
                   return found || null;
                 }
 
-                // 在解析完 cityCandidate, districtCandidate, route, street_number, laneMatch, alleyMatch, numberMatch, floorMatch 後
+                // 組合並填入完整地址欄（簡單拼接，可依需求調整格式）
+                const parts = [];
                 const cityTxt = cityCandidate || '';
                 const districtTxt = districtCandidate || '';
                 const routeTxt = route || '';
-                const numberTxt = street_number || (numberMatch ? numberMatch[1] : '');
-                const laneTxt = laneMatch ? laneMatch[1] : '';
-                const alleyTxt = alleyMatch ? alleyMatch[1] : '';
-                const floorTxt = floorMatch ? floorMatch[1] : '';
-
-                // 填入各個欄位（既有邏輯）
-                if (route && streetNameEl) streetNameEl.value = route;
-                if (laneEl) laneEl.value = laneTxt;
-                if (alleyEl) alleyEl.value = alleyTxt;
-                if (numberEl) numberEl.value = numberTxt;
-                if (floorEl) floorEl.value = floorTxt;
+                const numberTxt = street_number || '';
+                if (cityTxt) parts.push(cityTxt);
+                if (districtTxt) parts.push(districtTxt);
+                if (routeTxt) parts.push(routeTxt + (numberTxt ? (' ' + numberTxt) : ''));
+                const fullAddr = parts.join(' ');
+                if (addressFullEl) addressFullEl.value = fullAddr || (r.formatted_address || '');
                 if (citySelectEl && cityTxt) {
                   let match = findOption(citySelectEl, cityTxt);
                   if (!match) {
@@ -1797,20 +1791,9 @@ async function deleteBookingFromSupabase(id) {
                   districtSelectEl.value = matchD.value;
                 }
 
-                // 組合並填入完整地址欄（簡單拼接，可依需求調整格式）
-                const parts = [];
-                if (cityTxt) parts.push(cityTxt);
-                if (districtTxt) parts.push(districtTxt);
-                if (routeTxt) parts.push(routeTxt + (numberTxt ? (' ' + numberTxt) : ''));
-                if (laneTxt) parts.push(laneTxt + '巷');
-                if (alleyTxt) parts.push(alleyTxt + '弄');
-                if (floorTxt) parts.push(floorTxt + '樓');
-                const fullAddr = parts.join(' ');
-                const addressFullEl = document.getElementById('addressFull');
-                if (addressFullEl) addressFullEl.value = fullAddr || (formatted || '');
               } else {
                 // 若無結果，維持所有欄位為空白並顯示座標或訊息
-                if (streetNameEl) streetNameEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
+                if (addressFullEl) addressFullEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
                 showAlert('無法取得詳細地址，已顯示座標，其餘欄位保留空白');
                 btn.disabled = false;
                 btn.innerText = prevText;
