@@ -1481,74 +1481,6 @@ async function deleteBookingFromSupabase(id) {
       }, { passive: true });
     }
 
-    // 縣市與行政區選單初始化
-  (function() {
-    const cities = {
-      "台北市": ["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
-      "新北市": ["板橋區","新莊區","中和區","永和區","三重區","蘆洲區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","泰山區","林口區","八里區","平溪區","貢寮區","雙溪區","深坑區","石碇區","坪林區","三芝區","石門區","萬里區","金山區","烏來區"],
-      "基隆市": ["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"],
-      "桃園市": ["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","龍潭區","龜山區","大溪區","大園區","觀音區","新屋區","復興區"],
-      "新竹市": ["東區","北區","香山區"],
-      "新竹縣": ["竹北市","湖口鄉","新豐鄉","新埔鎮","關西鎮","芎林鄉","寶山鄉","竹東鎮","五峰鄉","橫山鄉","尖石鄉","峨眉鄉","北埔鄉"],
-      "苗栗縣": ["苗栗市","頭份市","竹南鎮","後龍鎮","通霄鎮","苑裡鎮","造橋鄉","西湖鄉","頭屋鄉","公館鄉","銅鑼鄉","三義鄉","卓蘭鎮","南庄鄉","三灣鄉","獅潭鄉","苑裡鄉"],
-      "台中市": ["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","新社區","神岡區","大雅區","潭子區","大肚區","沙鹿區","梧棲區","清水區","外埔區","大安區"],
-      "彰化縣": ["彰化市","員林市","和美鎮","鹿港鎮","溪湖鎮","二林鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","大村鄉","埔心鄉","埔鹽鄉","永靖鄉","社頭鄉","二水鄉","田中鎮","北斗鎮"],
-      "南投縣": ["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","國姓鄉","仁愛鄉","魚池鄉","水里鄉","信義鄉","玄奘鄉"],
-      "雲林縣": ["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","莿桐鄉","林內鄉","古坑鄉","二崙鄉","元長鄉","四湖鄉","口湖鄉","臺西鄉","崙背鄉","麥寮鄉","褒忠鄉"],
-      "嘉義市": ["東區","西區"],
-      "嘉義縣": ["太保市","朴子市","布袋鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","大埔鄉","竹崎鄉","梅山鄉","番路鄉","阿里山鄉"],
-      "台南市": ["中西區","東區","南區","北區","安平區","安南區","永康區","歸仁區","新化區","左鎮區","玉井區","楠西區","南化區","仁德區","關廟區","龍崎區","官田區","麻豆區","佳里區","西港區","七股區","將軍區","學甲區","北門區","新營區","後壁區","白河區","東山區","六甲區","下營區","柳營區","鹽水區","善化區","大內區","山上區","新市區","安定區"],
-      "高雄市": ["新興區","前金區","苓雅區","鹽埕區","鼓山區","左營區","楠梓區","三民區","前鎮區","旗津區","小港區","鳳山區","大寮區","林園區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區"],
-      "屏東縣": ["屏東市","東港鎮","潮州鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新園鄉","枋寮鄉","枋山鄉","春日鄉","獅子鄉","車城鄉","牡丹鄉","滿州鄉"],
-      "花蓮縣": ["花蓮市","吉安鄉","鳳林鎮","玉里鎮","新城鄉","壽豐鄉","光復鄉","富里鄉","秀林鄉","卓溪鄉","秀林鄉"],
-      "台東縣": ["台東市","關山鎮","成功鎮","長濱鄉","池上鄉","東河鄉","鹿野鄉","卑南鄉","大武鄉","太麻里鄉","綠島鄉","蘭嶼鄉","延平鄉","海端鄉"],
-      "宜蘭縣": ["宜蘭市","頭城鎮","礁溪鄉","壯圍鄉","羅東鎮","五結鄉","冬山鄉","蘇澳鎮","南澳鄉","大同鄉","員山鄉"],
-      "澎湖縣": ["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"],
-      "金門縣": ["金沙鎮","金城鎮","金寧鄉","金湖鎮","烈嶼鄉"],
-      "連江縣": ["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
-    };
-
-    const citySelect = document.getElementById('citySelect');
-    const districtSelect = document.getElementById('districtSelect');
-    if (!citySelect || !districtSelect) return;
-
-    // 建立縣市選項
-    Object.keys(cities).forEach(city => {
-      const opt = document.createElement('option');
-      opt.value = city;
-      opt.textContent = city;
-      citySelect.appendChild(opt);
-    });
-
-    // 當縣市改變時填入行政區
-    citySelect.addEventListener('change', function() {
-      const selected = this.value;
-      districtSelect.innerHTML = '';
-      if (!selected || !cities[selected]) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.disabled = true;
-        opt.selected = true;
-        opt.textContent = '請先選縣市';
-        districtSelect.appendChild(opt);
-        return;
-      }
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = '';
-      defaultOpt.disabled = true;
-      defaultOpt.selected = true;
-      defaultOpt.textContent = '請選擇行政區';
-      districtSelect.appendChild(defaultOpt);
-
-      cities[selected].forEach(d => {
-        const o = document.createElement('option');
-        o.value = d;
-        o.textContent = d;
-        districtSelect.appendChild(o);
-      });
-      });
-    })();
-
       //-- Google Maps script 已在 head 中正確載入，移除此行
   // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需
   // 顯示提示訊息的簡易函式
@@ -1572,90 +1504,155 @@ function showAlert(msg, type = "info") {
 
 // ------------------------------------------------------
 // 台灣地址解析器（支援段/巷/弄/號/樓/之X）
+// 更強化：額外嘗試抓路名與中文段號（一/二/三）轉數字
 // ------------------------------------------------------
+function chineseToNumber(cn) {
+  if (!cn) return NaN;
+  const map = {零:0,一:1,二:2,兩:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9};
+  // 簡單處理「十、十一、二十」等常見情況（不足以處理複雜漢數）
+  if (cn === '十') return 10;
+  if (/^十[一二三四五六七八九]$/.test(cn)) return 10 + map[cn[1]];
+  if (/^[一二兩三四五六七八九]十$/.test(cn)) return map[cn[0]] * 10;
+  if (/^[一二兩三四五六七八九]十[一二三四五六七八九]$/.test(cn)) return map[cn[0]] * 10 + map[cn[2]];
+  // 單一漢字
+  if (cn.length === 1 && map[cn]) return map[cn];
+  // fallback: parse digits
+  const n = parseInt(cn, 10);
+  return isNaN(n) ? NaN : n;
+}
+
 function parseTaiwanAddress(address) {
   const result = {
+    street: "",
+    section: "",
     lane: "",
     alley: "",
     number: "",
-    floor: "",
-    section: "",
-    subNumber: ""
+    subNumber: "",
+    floor: ""
   };
 
-  const sectionMatch = address.match(/(\d+)\s*段/);
-  if (sectionMatch) result.section = sectionMatch[1];
+  if (!address || typeof address !== 'string') return result;
+  const s = address.replace(/\s+/g, '');
 
-  const laneMatch = address.match(/(\d+)\s*巷/);
+  // 路名（優先）：抓 route-like 字串（路/街/大道/道/巷）
+  const streetMatch = s.match(/([\u4e00-\u9fffA-Za-z0-9\-]+?(?:路|街|大道|道|巷))/);
+  if (streetMatch) {
+    result.street = streetMatch[1];
+  } else {
+    // 有些 formatted_address 會把里名與路名連在一起，例如「港墘里瑞光路」可嘗試切分（里名 + 路名）
+    const fallback = s.match(/[^\d]+里([^\d]+?(?:路|街|大道|道|巷))/);
+    if (fallback) result.street = fallback[1];
+  }
+
+  // 段：支援阿拉伯數字與簡單中文數字
+  let sectionMatch = s.match(/([0-9]+)\s*段/);
+  if (!sectionMatch) {
+    const secCn = s.match(/([一二兩三四五六七八九十]+)\s*段/);
+    if (secCn) {
+      const num = chineseToNumber(secCn[1]);
+      if (!isNaN(num)) result.section = String(num);
+      else result.section = secCn[1];
+    }
+  } else {
+    result.section = sectionMatch[1];
+  }
+
+  // 巷 / 弄 / 號 / 樓 / 之
+  const laneMatch = s.match(/([0-9]+)\s*巷/);
   if (laneMatch) result.lane = laneMatch[1];
 
-  const alleyMatch = address.match(/(\d+)\s*弄/);
+  const alleyMatch = s.match(/([0-9]+)\s*弄/);
   if (alleyMatch) result.alley = alleyMatch[1];
 
-  const numberMatch = address.match(/(\d+)(?:之(\d+))?\s*號/);
+  const numberMatch = s.match(/([0-9]+)(?:之([0-9]+))?\s*號/);
   if (numberMatch) {
     result.number = numberMatch[1] || "";
     result.subNumber = numberMatch[2] || "";
+  } else {
+    // 有些格式號碼在路名後直接出現：例如「瑞光路362號」前面已抓到路名，可以嘗試另一個 regex
+    const numMatch2 = s.match(/(?:路|街|大道|道|巷)([0-9]+)(?:之([0-9]+))?\s*號/);
+    if (numMatch2) {
+      result.number = numMatch2[1] || "";
+      result.subNumber = numMatch2[2] || "";
+    }
   }
 
-  const floorMatch = address.match(/(\d+)\s*樓/);
+  const floorMatch = s.match(/([0-9]+)\s*樓/);
   if (floorMatch) result.floor = floorMatch[1];
 
   return result;
 }
 
 // ------------------------------------------------------
-// 從 Geocoding API 的 address_components 中抽城市、行政區、里
+// 從 Geocoding API 的 address_components 中抽城市、行政區、里（強化）
+// 會接受第二參數 formattedAddress 作為 fallback 分析
 // ------------------------------------------------------
-function extractCityDistrictVillage(components) {
+function extractCityDistrictVillage(components, formattedAddress = '') {
   let city = "";
   let district = "";
   let village = "";
 
-  // 優先順序：嘗試找出最可能對應的 type（多種 fallback）
+  // 先嘗試用 components 裡的 type 判斷（保留多種 fallback）
   components.forEach(c => {
     const types = c.types || [];
     const name = (c.long_name || "").trim();
 
-    // City: 優先取 administrative_area_level_1/2 或 locality
     if (!city && (types.includes("administrative_area_level_1") || types.includes("administrative_area_level_2") || types.includes("locality"))) {
       city = name;
     }
 
-    // District: 優先取 administrative_area_level_3，若無則嘗試 sublocality_level_1 / sublocality / administrative_area_level_2
-    if (!district && (types.includes("administrative_area_level_3") || types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood") || types.includes("administrative_area_level_2"))) {
-      district = name;
+    if (!district && (types.includes("administrative_area_level_3") || types.includes("administrative_area_level_2") || types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood") || types.includes("political"))) {
+      // 排除縣市名稱誤判（有時 administrative_area_level_2 會回縣市或區）
+      if (name && name !== city) district = name;
     }
 
-    // Village / 里（較小單位）：sublocality_level_1 / neighborhood
-    if (!village && (types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood"))) {
+    if (!village && (types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood") || types.includes("postal_town"))) {
       village = name;
     }
   });
 
-  // fallback：如果 city 尚未取到，再從 components 找一次（降低漏抓情況）
-  if (!city) {
-    const comp = components.find(c => (c.types || []).some(t => ["administrative_area_level_1", "administrative_area_level_2", "locality"].includes(t)));
-    if (comp) city = (comp.long_name || "").trim();
+  // fallback：若 district 沒抓到，嘗試從 formattedAddress 用 regex 抓取第一個「區/鎮/鄉/市」
+  if ((!district || district === "") && formattedAddress) {
+    const addr = formattedAddress.replace(/\s+/g, '');
+    // 先找出所有可能的區/鎮/鄉/市片段
+    const matches = [...addr.matchAll(/([^\d,\/]+?(?:區|鎮|鄉|市))/g)].map(m => m[1]);
+    if (matches && matches.length) {
+      // 如果 city 已在 matches[0] 出現，取後面的第一個作為 district
+      if (city && matches[0] && matches[0].includes(city) && matches.length > 1) {
+        district = district || matches[1];
+      } else {
+        // 否則取第一個不是 city 的作為 district
+        const pick = matches.find(x => !city || !x.includes(city));
+        if (pick) district = district || pick;
+      }
+    }
   }
 
-  // fallback：district 最後嘗試從其他可能的 types 撈一筆
-  if (!district) {
-    const comp = components.find(c => (c.types || []).some(t => ["administrative_area_level_3", "sublocality_level_1", "sublocality", "neighborhood", "administrative_area_level_2"].includes(t)));
-    if (comp) district = (comp.long_name || "").trim();
+  // 若 village 沒抓到，嘗試從 formattedAddress 抓「里」
+  if ((!village || village === "") && formattedAddress) {
+    const v = formattedAddress.match(/([^\d\/]+里)/);
+    if (v) village = v[1];
+    // 若抓到里但沒有加上「里」則補上
+    if (village && !/里$/.test(village)) village = village + "里";
   }
 
-  // 最後確保字串沒有多餘空白
-  return {
-    city: city || "",
-    district: district || "",
-    village: village || ""
-  };
+  // 最後清理：確保 city/district/village 沒有重覆、沒有多餘空白
+  city = city ? city.trim() : "";
+  district = district ? district.trim() : "";
+  village = village ? village.trim() : "";
+
+  // 若 village 是像「港墘」沒有里字，嘗試自動補上（若 formattedAddress 也包含「里」則保留）
+  if (village && !/里$/.test(village) && formattedAddress && new RegExp(village + "里").test(formattedAddress)) {
+    village = village + "里";
+  }
+
+  return { city, district, village };
 }
 
 // ------------------------------------------------------
-// 生成完整台灣地址字串
-// 格式：縣市 + 區 + 里 + 路名 + 段 + 巷 + 弄 + 號 + 樓
+// 生成完整台灣地址字串（固定順序：縣市 + 區 + 里 + 路名 + 段 + 巷 + 弄 + 號 + 樓）
+// 會智慧處理空欄位與「之」號段
 // ------------------------------------------------------
 function formatFullTaiwanAddress({
   city = "",
@@ -1668,143 +1665,22 @@ function formatFullTaiwanAddress({
   number = "",
   floor = ""
 }) {
-  let addr = "";
-  if (city) addr += city;
-  if (district) addr += district;
-  if (village) addr += village;
-  if (street) addr += street;
-  if (section) addr += section + "段";
-  if (lane) addr += lane + "巷";
-  if (alley) addr += alley + "弄";
-  if (number) addr += number + "號";
-  if (floor) addr += floor ? floor + "樓" : "";
-  return addr;
+  const parts = [];
+  if (city) parts.push(city.trim());
+  if (district) parts.push(district.trim());
+  if (village) {
+    const v = village.trim();
+    parts.push(/里$/.test(v) ? v : v + '里');
+  }
+  if (street) parts.push(street.trim());
+  if (section) parts.push(section.toString().trim() ? (section.toString().trim() + '段') : '');
+  if (lane) parts.push(lane.toString().trim() ? (lane.toString().trim() + '巷') : '');
+  if (alley) parts.push(alley.toString().trim() ? (alley.toString().trim() + '弄') : '');
+  if (number) parts.push(number.toString().trim() ? (number.toString().trim() + '號') : '');
+  if (floor) parts.push(floor.toString().trim() ? (floor.toString().trim() + '樓') : '');
+  // join without separator to match你要的格式
+  return parts.filter(Boolean).join('');
 }
-
-// ------------------------------------------------------
-// 主流程：按下按鈕 → GPS → 地圖 → 反查地址 → 填入表單 → 生成完整地址
-// ------------------------------------------------------
-(function () {
-  const btn = document.getElementById("useLocationBtn");
-  const mapEl = document.getElementById("map"); // 可能不存在
-  const streetNameEl = document.getElementById("streetName"); // 已改成 textarea，可能不存在
-  const detailedEl = document.getElementById("detailedAddress");
-  const citySel = document.getElementById("citySelect");
-  const distSel = document.getElementById("districtSelect");
-
-  let map, marker, geocoder;
-
-  if (!btn) return; // 只需按鈕存在才繼續
-
-  btn.addEventListener("click", async () => {
-    if (mapEl) mapEl.style.display = "block";
-
-    if (!navigator.geolocation) {
-      showAlert("此裝置不支援定位", "error");
-      return;
-    }
-
-    btn.disabled = true;
-    const prevText = btn.innerText;
-    btn.innerText = "定位中...";
-
-    try {
-      const pos = await new Promise((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        })
-      );
-
-      const { latitude, longitude } = pos.coords;
-      const userPos = { lat: latitude, lng: longitude };
-
-      // 初始化 map / marker（如果頁面有地圖容器與 Google Maps）
-      if (mapEl && window.google && google.maps) {
-        if (!map) {
-          map = new google.maps.Map(mapEl, { center: userPos, zoom: 16 });
-          marker = new google.maps.Marker({ position: userPos, map: map, title: "目前位置" });
-          try { geocoder = new google.maps.Geocoder(); } catch (e) { geocoder = null; }
-        } else {
-          map.setCenter(userPos);
-          if (marker) marker.setPosition(userPos);
-        }
-        google.maps.event.trigger(map, "resize");
-        map.setCenter(userPos);
-      } else {
-        // 若無地圖，嘗試建立 Geocoder（若有載入 Google Maps）
-        if (!geocoder && window.google && google.maps && google.maps.Geocoder) {
-          try { geocoder = new google.maps.Geocoder(); } catch (e) { geocoder = null; }
-        }
-      }
-
-      // 嘗試反查地址（若有 geocoder）
-      let geocodeResult = { results: [], status: "ZERO_RESULTS" };
-      if (geocoder) {
-        geocodeResult = await new Promise((resolve) => {
-          geocoder.geocode({ location: userPos }, (results, status) => resolve({ results, status }));
-        });
-      }
-
-      if (geocodeResult.status === "OK" && geocodeResult.results && geocodeResult.results.length) {
-        const r = geocodeResult.results[0];
-        const { city, district, village } = extractCityDistrictVillage(r.address_components);
-
-        // 填縣市、行政區（若有這些 select）
-        if (citySel && city) {
-          let opt = [...citySel.options].find(o => o.value === city || o.text.includes(city));
-          if (!opt) { opt = new Option(city, city); citySel.appendChild(opt); }
-          citySel.value = opt.value;
-          citySel.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        // 等待 district 選單更新
-        await new Promise(res => setTimeout(res, 150));
-
-        if (distSel && district) {
-          let opt = [...distSel.options].find(o => o.value === district || o.text.includes(district));
-          if (!opt) { opt = new Option(district, district); distSel.appendChild(opt); }
-          distSel.value = opt.value;
-        }
-
-        const routeComp = r.address_components.find(c => c.types.includes("route"));
-        const route = routeComp ? routeComp.long_name : "";
-        if (streetNameEl) streetNameEl.value = village ? `${village}${route}` : route;
-
-        const parsed = parseTaiwanAddress(r.formatted_address);
-
-        const fullAddress = formatFullTaiwanAddress({
-          city,
-          district,
-          village,
-          street: route,
-          section: parsed.section,
-          lane: parsed.lane,
-          alley: parsed.alley,
-          number: parsed.subNumber ? `${parsed.number}之${parsed.subNumber}` : parsed.number,
-          floor: parsed.floor
-        });
-
-        if (detailedEl) detailedEl.value = fullAddress;
-        showAlert("已成功取得位置並填入地址欄位！", "success");
-      } else {
-        // 無法反查地址時填入座標到 textarea / streetName
-        const coordText = `lat:${latitude}, lng:${longitude}`;
-        if (streetNameEl) streetNameEl.value = coordText;
-        if (detailedEl) detailedEl.value = coordText;
-        showAlert("無法取得詳細地址，已填入座標。", "warning");
-      }
-
-    } catch (err) {
-      console.error(err);
-      showAlert("定位失敗：" + (err && err.message ? err.message : err), "error");
-    } finally {
-      btn.disabled = false;
-      btn.innerText = prevText;
-    }
-  });
-})();
   </script>
 </body>
 </html>
