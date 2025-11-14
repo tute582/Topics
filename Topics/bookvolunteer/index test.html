@@ -743,13 +743,11 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     </div>
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
-  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-    <label style="flex:1;display:block;font-weight:600;margin:0;">完整地址</label>
-    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
+  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
+    <label style="font-weight:600;margin:0;">完整地址</label>
+    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;">目前位置</button>
   </div>
   <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
-  <!-- 搜尋欄（地圖顯示時一併顯示） -->
-  <!-- 地圖包裝器：搜尋欄放在地圖上方中央 -->
   <div id="mapWrap" style="display:none; position:relative; width:100%; height:400px; margin-top:12px; border-radius:8px; overflow:hidden;">
     <!-- 搜尋欄：縮短並靠左（與「地圖 / 地形」按鈕對齊） -->
     <input id="mapSearch" type="text"
@@ -758,34 +756,11 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
       style="position:absolute;left:18px;right:auto;top:56px;transform:none;z-index:999;width:220px;max-width:45%;height:36px;padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);box-shadow:0 6px 16px rgba(0,0,0,0.10);background:#fff;font-size:14px;outline:none;display:none;">
     <div id="map" style="width:100%; height:100%; border-radius:8px;"></div>
    </div>
-  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
-    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請選擇縣市</option>
-    </select>
-    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請先選縣市</option>
-    </select>
-  </div>
 
-  <!-- 新增：道路 / 衝名 / 村里名稱 與 巷/弄/號/樓（已移除「使用說明」按鈕） -->
-  <div class="address-section" style="margin-top:10px;">
-      <input id="streetName" type="text" placeholder="請輸入道路/街名/村里名稱" 
-             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
-  </div>
-
-  <!-- 新增：完整地址顯示欄（readonly，可由定位/搜尋填入） -->
-  <!-- 已移除：完整地址標題與下方位址細項欄位 -->
-  <input id="addressFull" type="text" placeholder="完整地址會自動填入" readonly
-         style="width:100%;padding:8px;border-radius:8px;border:1px solid #888;background:#f7fbff;color:#222;">
-
-
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
-      
-    </div>
+  <!-- 單一完整地址欄位（取代縣市/區/路名/巷弄/號/樓等多欄位） -->
+  <div style="margin-top:10px;">
+    <input id="addressFull" type="text" placeholder="請輸入完整地址（或按「目前位置」自動填入）"
+           style="width:100%;padding:10px;border-radius:10px;border:1px solid #888;background:#fff;color:#222;font-size:16px;box-sizing:border-box;">
   </div>
 
   <button type="button" onclick="toggleCard()">配對</button>
@@ -952,8 +927,7 @@ function toggleCard() {
     { id: 'time', name: '時間' },
     { id: 'department', name: '科別' },
     { id: 'gender', name: '性別' },
-    { id: 'citySelect', name: '縣市' },
-    { id: 'districtSelect', name: '行政區' },
+    { id: 'addressFull', name: '完整地址' }
   ];
 
   // 移除先前錯誤樣式
@@ -1124,8 +1098,7 @@ document.head.appendChild(style);
       datetime,
       department: departmentVal,
       meetingPlace: meetingPlaceVal,
-      city: cityVal,
-      district: districtVal
+      address: addressVal
     };
     bookedList.push(newBooking);
     try {
@@ -1198,14 +1171,14 @@ function showBookings() {
         table.style.fontSize = '14px';
 
         const thead = document.createElement('thead');
-        // 將「縣市 / 行政區」合併成同一欄
+        // 將「縣市 / 行政區」改為單一「地址」欄
         thead.innerHTML = `<tr style="background:#74b9ff;color:white;">
           <th>志工姓名</th>
           <th>預約人</th>
           <th>日期時間</th>
           <th>門診科別</th>
           <th>見面地點</th>
-          <th>縣市 / 行政區</th>
+          <th>地址</th>
           <th>操作</th>
         </tr>`;
          table.appendChild(thead);
@@ -1221,7 +1194,7 @@ function showBookings() {
             <td>${b.datetime || ''}</td>
             <td>${b.department || ''}</td>
             <td>${b.meetingPlace || ''}</td>
-            <td>${cityDistrict}</td>
+            <td>${b.address || ''}</td>
             <td><button class="cancel-btn" data-index="${i}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
           `;
           tbody.appendChild(tr);
@@ -1609,6 +1582,8 @@ async function deleteBookingFromSupabase(id) {
       let map, marker, geocoder;
 
       if (!btn || !streetNameEl || !mapWrap || !mapEl) return;
+
+
 
       btn.addEventListener('click', () => {
         // 顯示地圖容器（按鈕按下時一起出現）
