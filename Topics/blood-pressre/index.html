@@ -248,9 +248,10 @@
 
     /* 日期範圍選擇器快捷按鈕樣式 */
     /* 使用 grid 兩欄：左側固定 label 寬度 (140px)，右側放 input + 快捷按鈕 */
+    /* 改為標題在上、欄位在下（將 input 移到標題下方） */
     .range-picker-wrap {
       display: grid;
-      grid-template-columns: 140px 1fr; /* 桌機 / 平板：標籤在左、欄位在右 */
+      grid-template-columns: 1fr; /* 標題在上、欄位在下 */
       align-items: center;
       gap: 12px;
       width: 100%;
@@ -372,7 +373,7 @@
       <div class="range-picker-wrap">
         <label for="viewRange" style="display:block; font-weight:600; margin-bottom:6px; font-size: 20px;">日期範圍：</label>
         <div class="range-controls">
-          <input id="viewRange" type="text" placeholder="選擇日期範圍" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+          <input id="viewRange" type="text" placeholder="選擇日期範圍" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:100%;">
           <div class="range-picker-actions" aria-hidden="false">
             <button type="button" class="range-quick-btn" data-range="7">最近 7 天</button>
             <button type="button" class="range-quick-btn" data-range="30">最近 30 天</button>
@@ -429,6 +430,8 @@
     // 預設改為 null => 顯示所有資料（不以固定天數過濾）
     let viewDays = null;
     let chart;
+    // 使用者是否主動選取範圍（點了快捷鍵或在 flatpickr 上選取）— 若為 true，保持範圍控制欄位顯示
+    let userSelectedRange = false;
 
     // Supabase config - replace with your values
     const SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
@@ -517,7 +520,16 @@
            mode: "range",
            dateFormat: "Y/m/d",
            onChange: function(selectedDates, dateStr, instance) {
-             if (!selectedDates || selectedDates.length === 0) return;
+             // 如果使用者清除選取，回復為未主動選取，並顯示預設（全部或原先設定）
+            if (!selectedDates || selectedDates.length === 0) {
+              userSelectedRange = false;
+              viewDays = null;
+              viewEndDateStr = null;
+              renderTable();
+              renderChart();
+              return;
+            }
+            userSelectedRange = true;
              const s = selectedDates[0];
              const e = selectedDates[1] || selectedDates[0];
              const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
@@ -573,6 +585,7 @@
 
       quickBtns.forEach(b => {
         b.addEventListener('click', (ev) => {
+          userSelectedRange = true; // 按下快捷按鈕視為使用者主動選取範圍
           quickBtns.forEach(x => x.classList.remove('active'));
           b.classList.add('active');
           const k = b.getAttribute('data-range');
@@ -592,7 +605,8 @@
       // 計算初次顯示是否有資料，決定是否顯示控制區塊
       const viewRecords = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
-      if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
+      // 若使用者主動選取範圍（userSelectedRange），仍保留控制欄位可見
+      if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
       if (!hasViewRecords) {
         if (chart) { chart.destroy(); chart = null; }
@@ -721,7 +735,8 @@
       // 先取得目前 view（依 viewDays 與 viewEndDateStr），用此判斷是否顯示控制區
       const view = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(view) && view.length > 0;
-      if (viewControlsEl) viewControlsEl.style.display = hasViewRecords ? 'flex' : 'none';
+      // 若使用者主動選取範圍（userSelectedRange），仍保留控制欄位可見
+      if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
 
       // 若 view 没資料，隱藏表格與圖表並顯示無資料訊息
