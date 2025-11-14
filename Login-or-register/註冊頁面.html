@@ -372,6 +372,12 @@
     // 初始化 LIFF
     await liff.init({ liffId: LIFF_ID });
 
+    // 如果未登入 → 直接登入
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
 
