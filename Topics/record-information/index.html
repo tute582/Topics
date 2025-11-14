@@ -363,7 +363,7 @@
   <div style="display:flex; align-items:center;">
     <h1 style="margin:0; text-align:right;">
       <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
+        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" 
              style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
         <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
       </span>
@@ -754,7 +754,7 @@ document.getElementById("continueEditBtn").onclick = () => {
 /* ==============================
    ✅ LIFF 初始化
    ============================== */
-const LIFF_ID = "2008228534-R8763A2n";
+const LIFF_ID = "2008484068-qkydRNYN";
 const avatarEl = document.getElementById("volunteerAvatar");
 const nameEl = document.getElementById("volunteerName");
 
@@ -784,7 +784,7 @@ async function initLiffAndSetProfile() {
 avatarEl.addEventListener("click", () => {
   if (liff.isLoggedIn()) {
     // 已登入則進入註冊頁面（可改為需要的頁面路徑）
-    window.location.href = "註冊頁面.html";
+    window.location.href = "../../Login-or-register/註冊頁面.html";
   } else {
     // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
     liff.login({ redirectUri: window.location.href });

@@ -361,52 +361,46 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
   // ====== LIFF 設定：把 YOUR_LIFF_ID 換成你的 LIFF ID ======
-  const LIFF_ID = "2008228534-R8763A2n";
+  const LIFF_ID = "2008484068-Kp57RrAr";
+  // 導覽列與表單的頭像元素
+  const navAvatar = document.getElementById("volunteerAvatar");
   const avatarEl = document.getElementById("avatarPreview");
+  const nameEl = document.getElementById("volunteerName");
 
-    async function initLiffAndLoadAvatar() {
+  async function initLiffAndLoadAvatar() {
   try {
     // 初始化 LIFF
     await liff.init({ liffId: LIFF_ID });
 
-    // 若未登入 → 自動導向 LINE 登入
-    if (!liff.isLoggedIn()) {
-      liff.login({
-        redirectUri: "https://tute582.github.io/Topics/Topics/註冊頁面.html"
-      });
-      return;
-    }
-
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
 
-    // 導覽列與表單的頭像元素
-    const avatarEl = document.getElementById("avatarPreview");
-    const navAvatar = document.getElementById("volunteerAvatar");
-
     // ✅ 設定頭像（兩個地方同步）
-    const avatarUrl = profile?.pictureUrl || "default-avatar.png";
+    avatarUrl = profile?.pictureUrl || "default-avatar.png";
     if (avatarEl) avatarEl.src = avatarUrl;
     if (navAvatar) navAvatar.src = avatarUrl;
 
     // ✅ 設定使用者名稱（導覽列右側）
-    const nameEl = document.getElementById("volunteerName");
+    
     if (nameEl) {
       nameEl.textContent = profile.displayName || "LINE 使用者";
     }
 
   } catch (err) {
     console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
-    const avatarEl = document.getElementById("avatarPreview");
-    const navAvatar = document.getElementById("volunteerAvatar");
     if (avatarEl) avatarEl.src = "default-avatar.png";
     if (navAvatar) navAvatar.src = "default-avatar.png";
-
-    const nameEl = document.getElementById("volunteerName");
     if (nameEl) nameEl.textContent = "未登入";
   }
 }
 
+  nameEl.addEventListener("click", () => {
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+    } else {
+      alert("已登入：" + (nameEl.innerText || "志工"));
+    }
+  });
 
   // ✅ 頁面載入後執行
   document.addEventListener("DOMContentLoaded", initLiffAndLoadAvatar);
