@@ -283,6 +283,8 @@
   <!-- flatpickr 日期範圍選擇器 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- flatpickr 繁體中文語系 -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
 </head>
 <body>
   <!-- 導覽列 -->
@@ -475,25 +477,26 @@
           }
         }
         const fpOptions = {
-          mode: "range",
-          dateFormat: "Y/m/d",
-          onChange: function(selectedDates, dateStr, instance) {
-            if (!selectedDates || selectedDates.length === 0) return;
-            const s = selectedDates[0];
-            const e = selectedDates[1] || selectedDates[0];
-            const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
-            const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
-            const startIso = `${y1}-${m1}-${d1}`;
-            const endIso = `${y2}-${m2}-${d2}`;
-            viewEndDateStr = endIso;
-            const diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-            viewDays = diff;
-            if (document.getElementById('viewStartDate')) document.getElementById('viewStartDate').value = startIso;
-            renderTable();
-            renderChart();
-            quickBtns.forEach(b => b.classList.remove('active'));
-          }
-        };
+          locale: "zh_tw",
+           mode: "range",
+           dateFormat: "Y/m/d",
+           onChange: function(selectedDates, dateStr, instance) {
+             if (!selectedDates || selectedDates.length === 0) return;
+             const s = selectedDates[0];
+             const e = selectedDates[1] || selectedDates[0];
+             const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
+             const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
+             const startIso = `${y1}-${m1}-${d1}`;
+             const endIso = `${y2}-${m2}-${d2}`;
+             viewEndDateStr = endIso;
+             const diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+             viewDays = diff;
+             if (document.getElementById('viewStartDate')) document.getElementById('viewStartDate').value = startIso;
+             renderTable();
+             renderChart();
+             quickBtns.forEach(b => b.classList.remove('active'));
+           }
+         };
         if (defaultDateArray) fpOptions.defaultDate = defaultDateArray;
         fp = flatpickr(viewRangeEl, fpOptions);
       }
