@@ -635,6 +635,44 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
   from { transform: rotate(0deg); } 
   to { transform: rotate(360deg); } 
 }
+
+/* 新增：單行地址欄位樣式（響應式） */
+.address-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-top: 10px;
+}
+.address-row .flex-grow {
+  flex: 1 1 320px; /* 主要拉伸的欄位（街道） */
+  min-width: 160px;
+}
+.address-row select,
+.address-row input[type="text"] {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #888;
+  background: #fff;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* 小欄位固定寬度 */
+.address-row .small {
+  flex: 0 0 auto;
+  width: 80px;
+  max-width: 80px;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* 當螢幕較窄時允許換行，欄位變得更友善 */
+@media (max-width: 900px) {
+  .address-row { flex-wrap: wrap; }
+  .address-row .small { width: 90px; flex: 0 0 30%; }
+  .address-row .flex-grow { flex-basis: 100%; }
+}
 </style>
 
   </style>
@@ -722,35 +760,30 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     </div>
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
-  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-    <label style="flex:1;display:block;font-weight:600;margin:0;">詳細地址</label>
-    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
+ <!-- <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+    <label style="flex:0 0 auto;display:block;font-weight:600;margin:0;">詳細地址</label>
+
   </div>
-  <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
-  <div id="map" style="display:none; width:100%; height:400px; margin-top:12px; border-radius:8px;"></div>
-  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
-    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+
+   一行地址欄位（改為僅保留 縣市/行政區/路名） 
+  <div class="address-row">
+    <select id="citySelect" name="city" aria-label="縣市" title="縣市">
       <option value="" selected disabled>請選擇縣市</option>
     </select>
-    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
+
+    <select id="districtSelect" name="district" aria-label="行政區" title="行政區">
       <option value="" selected disabled>請先選縣市</option>
     </select>
-  </div>
 
-  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓（已移除「使用說明」按鈕） -->
-  <div class="address-section" style="margin-top:10px;">
-      <input id="streetName" type="text" placeholder="請輸入道路/街名/村里名稱" 
-             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
-      
-    </div>
+    <input id="streetName" class="flex-grow" type="text" placeholder="請輸入道路/街名/村里名稱" aria-label="道路或村里名稱">
   </div>
+-->
+  <!-- 改為單一大型文字方塊輸入完整地址 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+  <label style="margin-top:12px;font-weight:600;">詳細地址說明</label>
+  <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
+  </div>
+  <textarea id="detailedAddress" placeholder="請輸入巷/弄/號/樓/補充說明（例如：近 XX 門診）" rows="3" style="width:100%;padding:10px;border-radius:10px;border:1px solid #888;box-sizing:border-box;font-size:14px;"></textarea>
 
   <button type="button" onclick="toggleCard()">配對</button>
   <button id="showBookingsBtn" type="button">預約查詢</button>
@@ -1580,7 +1613,7 @@ function extractCityDistrictVillage(components) {
   let village = "";
 
   components.forEach(c => {
-    const t = c.types;
+    const t = c.types
     if (t.includes("administrative_area_level_1") || t.includes("locality")) {
       city = city || c.long_name;
     }
@@ -1628,15 +1661,18 @@ function formatFullTaiwanAddress({
 // ------------------------------------------------------
 (function () {
   const btn = document.getElementById("useLocationBtn");
-  const mapEl = document.getElementById("map");
-  const streetNameEl = document.getElementById("streetName");
+  const mapEl = document.getElementById("map"); // 可能不存在
+  const streetNameEl = document.getElementById("streetName"); // 已改成 textarea，可能不存在
+  const detailedEl = document.getElementById("detailedAddress");
+  const citySel = document.getElementById("citySelect");
+  const distSel = document.getElementById("districtSelect");
 
   let map, marker, geocoder;
 
-  if (!btn || !mapEl || !streetNameEl) return;
+  if (!btn) return; // 只需按鈕存在才繼續
 
   btn.addEventListener("click", async () => {
-    mapEl.style.display = "block";
+    if (mapEl) mapEl.style.display = "block";
 
     if (!navigator.geolocation) {
       showAlert("此裝置不支援定位", "error");
@@ -1659,79 +1695,60 @@ function formatFullTaiwanAddress({
       const { latitude, longitude } = pos.coords;
       const userPos = { lat: latitude, lng: longitude };
 
-      if (!map) {
-        map = new google.maps.Map(mapEl, { center: userPos, zoom: 16 });
-        marker = new google.maps.Marker({ position: userPos, map: map, title: "目前位置" });
-        geocoder = new google.maps.Geocoder();
-      } else {
+      // 初始化 map / marker（如果頁面有地圖容器與 Google Maps）
+      if (mapEl && window.google && google.maps) {
+        if (!map) {
+          map = new google.maps.Map(mapEl, { center: userPos, zoom: 16 });
+          marker = new google.maps.Marker({ position: userPos, map: map, title: "目前位置" });
+          try { geocoder = new google.maps.Geocoder(); } catch (e) { geocoder = null; }
+        } else {
+          map.setCenter(userPos);
+          if (marker) marker.setPosition(userPos);
+        }
+        google.maps.event.trigger(map, "resize");
         map.setCenter(userPos);
-        marker.setPosition(userPos);
+      } else {
+        // 若無地圖，嘗試建立 Geocoder（若有載入 Google Maps）
+        if (!geocoder && window.google && google.maps && google.maps.Geocoder) {
+          try { geocoder = new google.maps.Geocoder(); } catch (e) { geocoder = null; }
+        }
       }
 
-      google.maps.event.trigger(map, "resize");
-      map.setCenter(userPos);
+      // 嘗試反查地址（若有 geocoder）
+      let geocodeResult = { results: [], status: "ZERO_RESULTS" };
+      if (geocoder) {
+        geocodeResult = await new Promise((resolve) => {
+          geocoder.geocode({ location: userPos }, (results, status) => resolve({ results, status }));
+        });
+      }
 
-      const geocodeResult = await new Promise((resolve) => {
-        geocoder.geocode({ location: userPos }, (results, status) => resolve({ results, status }));
-      });
-
-      const { results, status } = geocodeResult;
-
-      const citySel = document.getElementById("citySelect");
-      const distSel = document.getElementById("districtSelect");
-      const villageEl = document.getElementById("village");
-      const laneEl = document.getElementById("lane");
-      const alleyEl = document.getElementById("alley");
-      const numberEl = document.getElementById("number");
-      const floorEl = document.getElementById("floor");
-
-      if (citySel) citySel.value = "";
-      if (distSel) distSel.innerHTML = `<option value="" selected disabled>請先選縣市</option>`;
-      if (villageEl) villageEl.value = "";
-      streetNameEl.value = "";
-      laneEl.value = "";
-      alleyEl.value = "";
-      numberEl.value = "";
-      floorEl.value = "";
-
-      if (status === "OK" && results.length) {
-        const r = results[0];
+      if (geocodeResult.status === "OK" && geocodeResult.results && geocodeResult.results.length) {
+        const r = geocodeResult.results[0];
         const { city, district, village } = extractCityDistrictVillage(r.address_components);
 
+        // 填縣市、行政區（若有這些 select）
         if (citySel && city) {
-          let opt = [...citySel.options].find(o => o.text.includes(city));
+          let opt = [...citySel.options].find(o => o.value === city || o.text.includes(city));
           if (!opt) { opt = new Option(city, city); citySel.appendChild(opt); }
           citySel.value = opt.value;
           citySel.dispatchEvent(new Event("change", { bubbles: true }));
         }
 
-        await new Promise(res => setTimeout(res, 200));
+        // 等待 district 選單更新
+        await new Promise(res => setTimeout(res, 150));
 
         if (distSel && district) {
-          let opt = [...distSel.options].find(o => o.text.includes(district));
+          let opt = [...distSel.options].find(o => o.value === district || o.text.includes(district));
           if (!opt) { opt = new Option(district, district); distSel.appendChild(opt); }
           distSel.value = opt.value;
         }
 
-        if (villageEl && village) {
-          villageEl.value = village;
-        }
-
         const routeComp = r.address_components.find(c => c.types.includes("route"));
         const route = routeComp ? routeComp.long_name : "";
-        streetNameEl.value = village ? `${village}${route}` : route;
+        if (streetNameEl) streetNameEl.value = village ? `${village}${route}` : route;
 
         const parsed = parseTaiwanAddress(r.formatted_address);
-        laneEl.value = parsed.lane;
-        alleyEl.value = parsed.alley;
-        numberEl.value = parsed.subNumber
-          ? `${parsed.number}之${parsed.subNumber}`
-          : parsed.number;
-        floorEl.value = parsed.floor;
 
-        // ------------------------------------------------------
-        // 生成完整地址字串
-        // ------------------------------------------------------
         const fullAddress = formatFullTaiwanAddress({
           city,
           district,
@@ -1744,25 +1761,25 @@ function formatFullTaiwanAddress({
           floor: parsed.floor
         });
 
-        console.log("完整地址：", fullAddress);
-
+        if (detailedEl) detailedEl.value = fullAddress;
         showAlert("已成功取得位置並填入地址欄位！", "success");
-
       } else {
-        streetNameEl.value = `lat:${latitude}, lng:${longitude}`;
-        showAlert("無法取得詳細地址，已顯示座標", "warning");
+        // 無法反查地址時填入座標到 textarea / streetName
+        const coordText = `lat:${latitude}, lng:${longitude}`;
+        if (streetNameEl) streetNameEl.value = coordText;
+        if (detailedEl) detailedEl.value = coordText;
+        showAlert("無法取得詳細地址，已填入座標。", "warning");
       }
 
     } catch (err) {
       console.error(err);
-      showAlert("定位失敗：" + err.message, "error");
+      showAlert("定位失敗：" + (err && err.message ? err.message : err), "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = prevText;
     }
-
-    btn.disabled = false;
-    btn.innerText = prevText;
   });
 })();
-
   </script>
 </body>
 </html>
