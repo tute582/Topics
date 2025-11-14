@@ -1612,20 +1612,45 @@ function extractCityDistrictVillage(components) {
   let district = "";
   let village = "";
 
+  // 優先順序：嘗試找出最可能對應的 type（多種 fallback）
   components.forEach(c => {
-    const t = c.types
-    if (t.includes("administrative_area_level_1") || t.includes("locality")) {
-      city = city || c.long_name;
+    const types = c.types || [];
+    const name = (c.long_name || "").trim();
+
+    // City: 優先取 administrative_area_level_1/2 或 locality
+    if (!city && (types.includes("administrative_area_level_1") || types.includes("administrative_area_level_2") || types.includes("locality"))) {
+      city = name;
     }
-    if (t.includes("administrative_area_level_3")) {
-      district = c.long_name;
+
+    // District: 優先取 administrative_area_level_3，若無則嘗試 sublocality_level_1 / sublocality / administrative_area_level_2
+    if (!district && (types.includes("administrative_area_level_3") || types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood") || types.includes("administrative_area_level_2"))) {
+      district = name;
     }
-    if (t.includes("sublocality_level_1") || t.includes("sublocality")) {
-      if (!village) village = c.long_name;
+
+    // Village / 里（較小單位）：sublocality_level_1 / neighborhood
+    if (!village && (types.includes("sublocality_level_1") || types.includes("sublocality") || types.includes("neighborhood"))) {
+      village = name;
     }
   });
 
-  return { city, district, village };
+  // fallback：如果 city 尚未取到，再從 components 找一次（降低漏抓情況）
+  if (!city) {
+    const comp = components.find(c => (c.types || []).some(t => ["administrative_area_level_1", "administrative_area_level_2", "locality"].includes(t)));
+    if (comp) city = (comp.long_name || "").trim();
+  }
+
+  // fallback：district 最後嘗試從其他可能的 types 撈一筆
+  if (!district) {
+    const comp = components.find(c => (c.types || []).some(t => ["administrative_area_level_3", "sublocality_level_1", "sublocality", "neighborhood", "administrative_area_level_2"].includes(t)));
+    if (comp) district = (comp.long_name || "").trim();
+  }
+
+  // 最後確保字串沒有多餘空白
+  return {
+    city: city || "",
+    district: district || "",
+    village: village || ""
+  };
 }
 
 // ------------------------------------------------------
