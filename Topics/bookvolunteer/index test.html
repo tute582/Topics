@@ -744,7 +744,7 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
   <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-    <label style="flex:1;display:block;font-weight:600;margin:0;">詳細地址</label>
+    <label style="flex:1;display:block;font-weight:600;margin:0;">完整地址</label>
     <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
   </div>
   <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
@@ -774,7 +774,7 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
   </div>
 
   <!-- 新增：完整地址顯示欄（readonly，可由定位/搜尋填入） -->
-  <label style="margin-top:8px;">完整地址：</label>
+  <!-- 已移除：完整地址標題與下方位址細項欄位 -->
   <input id="addressFull" type="text" placeholder="完整地址會自動填入" readonly
          style="width:100%;padding:8px;border-radius:8px;border:1px solid #888;background:#f7fbff;color:#222;">
 
@@ -1545,6 +1545,7 @@ async function deleteBookingFromSupabase(id) {
       "澎湖縣": ["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"],
       "金門縣": ["金沙鎮","金城鎮","金寧鄉","金湖鎮","烈嶼鄉"],
       "連江縣": ["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
+
     };
 
     const citySelect = document.getElementById('citySelect');
