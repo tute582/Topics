@@ -244,33 +244,7 @@
       .allTable-div table { min-width: 0; width: 100%; }
       .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
-      /* 小螢幕：把表格列轉為卡片樣式（更適合閱讀與點擊） */
-      .allTable-div thead { display: none; }
-      .allTable-div tbody tr {
-        display: block;
-        margin: 10px;
-        border-radius: 10px;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-        border: 1px solid #e6e6e6;
-        background: #fff;
-        padding: 10px;
-      }
-      .allTable-div tbody td {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 6px;
-        border: none;
-      }
-      .allTable-div tbody td:before {
-        content: attr(data-label);
-        color: #666;
-        font-weight: 600;
-        margin-right: 8px;
-      }
-      .delete-btn { padding: 10px 12px; font-size: 15px; }
     }
-    /* 提升一般手機觸控目標 */
-    .primary-btn, .delete-btn, input { touch-action: manipulation; }
   </style>
 </head>
 <body>
@@ -299,12 +273,16 @@
         <input type="date" id="date" required>
       </div>
       <div class="form-row">
+        <label for="time">時間：</label>
+        <input type="time" id="time" required>
+      </div>
+      <div class="form-row">
         <label for="systolic">收縮壓（高壓）：</label>
-        <input type="number" id="systolic" required inputmode="numeric" pattern="[0-9]*" step="1" placeholder="mmHg">
+        <input type="number" id="systolic" required>
       </div>
       <div class="form-row">
         <label for="diastolic">舒張壓（低壓）：</label>
-        <input type="number" id="diastolic" required inputmode="numeric" pattern="[0-9]*" step="1" placeholder="mmHg">
+        <input type="number" id="diastolic" required>
       </div>
       <div style="display:flex;justify-content:flex-start;">
         <button type="submit" class="primary-btn">新增紀錄</button>
@@ -343,7 +321,7 @@
       <table>
         <thead>
           <tr>
-            <th>日期</th>
+            <th>日期/時間</th>
             <th>收縮壓</th>
             <th>狀態</th>
             <th>舒張壓</th>
@@ -383,7 +361,7 @@
 
     // Supabase config - replace with your values
     const SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5Z2F3YXFza3ZpamdhY2lpbnpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTU2OTEsImV4cCI6MjA3NDk5MTY5MX0.6NKKuzDkHd0Pkxm9uYoODmkpEVw6wHYuf_SFV9M9af4';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5Z2F3YXFza3ZvamdhY2lpbnpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTU2OTEsImV4cCI6MjA3NDk5MTY5MX0.6NKKuzDkHd0Pkxm9uYoODmkpEVw6wHYuf_SFV9M9af4';
     let sb = null;
     try {
       if (!SUPABASE_URL.includes('your-project')) {
@@ -517,11 +495,22 @@
     form.onsubmit = async (e) => {
       e.preventDefault();
       const dateVal = document.getElementById("date").value;
+      const timeVal = document.getElementById("time") ? document.getElementById("time").value : '';
       const systolic = parseInt(document.getElementById("systolic").value);
       const diastolic = parseInt(document.getElementById("diastolic").value);
-
+ 
       const status = getStatus(systolic, diastolic);
-      const recorded_time = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
+      // 若有時間欄位則合併為 yyyy-mm-ddThh:mm 以保留使用者輸入時間
+      let recorded_time;
+      if (dateVal) {
+        if (timeVal) {
+          recorded_time = new Date(`${dateVal}T${timeVal}`).toISOString();
+        } else {
+          recorded_time = new Date(dateVal).toISOString();
+        }
+      } else {
+        recorded_time = new Date().toISOString();
+      }
 
       // 使用本機預設使用者資訊 (已移除 LINE)
       const volunteerNameEl = document.getElementById('volunteerName');
@@ -566,6 +555,8 @@
       }
 
       form.reset();
+      // 重設為預設日期與時間，避免使用者每次都要設定
+      setDefaultDateTime();
     };
 
     // 血壓狀態判斷
@@ -601,15 +592,22 @@
       if (chartContainer) chartContainer.style.display = '';
 
       view.forEach((r) => {
-        const dateStr = r.recorded_time ? (new Date(r.recorded_time)).toLocaleDateString() : '';
+        let dateTimeStr = '';
+        if (r.recorded_time) {
+          const d = new Date(r.recorded_time);
+          // 日期與時間同樣格式顯示（同字級，同樣樣式）
+          const datePart = d.toLocaleDateString();
+          const timePart = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          dateTimeStr = `${datePart} ${timePart}`;
+        }
         const row = `
           <tr data-idx="${r._allIndex}">
-            <td data-label="日期">${dateStr}</td>
-            <td data-label="收縮壓">${r.systolic}</td>
-            <td data-label="狀態">${r.status}</td>
-            <td data-label="舒張壓">${r.diastolic}</td>
-            <td data-label="狀態">${r.status}</td>
-            <td data-label="刪除"><button class="delete-btn" onclick="confirmAndDelete(${r._allIndex})">刪除</button></td>
+            <td>${dateTimeStr}</td>
+            <td>${r.systolic}</td>
+            <td>${r.status}</td>
+            <td>${r.diastolic}</td>
+            <td>${r.status}</td>
+            <td><button class="delete-btn" onclick="deleteRecord(${r._allIndex})">刪除</button></td>
           </tr>`;
         table.innerHTML += row;
       });
@@ -629,12 +627,6 @@
       try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
       renderTable();
       renderChart();
-    }
-
-    // 新增一個確認函式，避免誤觸刪除
-    function confirmAndDelete(index) {
-      if (!confirm('確定要刪除此筆血壓紀錄嗎？此動作無法復原。')) return;
-      deleteRecord(index);
     }
 
     // 繪製圖表（只用 view 資料）
@@ -846,17 +838,6 @@
 
     initLiffAndSetProfile();
 
-    // 新增：將日期欄位預設為今天（減少使用者操作）
-    (function setDefaultDate() {
-      const dateEl = document.getElementById('date');
-      if (!dateEl) return;
-      const t = new Date();
-      const y = t.getFullYear();
-      const m = String(t.getMonth() + 1).padStart(2, '0');
-      const d = String(t.getDate()).padStart(2, '0');
-      dateEl.value = `${y}-${m}-${d}`;
-    })();
-
     /* -----------------------------
        視窗大小變化：重新調整圖表與介面
        ----------------------------- */
@@ -884,6 +865,27 @@
     window.addEventListener('resize', onResize);
     // 初始一次調整（確保載入時正確）
     window.addEventListener('load', onResize);
+
+    // 新增：將日期欄位預設為今天（減少使用者操作）
+    function setDefaultDateTime() {
+      const dateEl = document.getElementById('date');
+      const timeEl = document.getElementById('time');
+      if (dateEl) {
+        const t = new Date();
+        const y = t.getFullYear();
+        const m = String(t.getMonth() + 1).padStart(2, '0');
+        const d = String(t.getDate()).padStart(2, '0');
+        dateEl.value = `${y}-${m}-${d}`;
+      }
+      if (timeEl) {
+        const t2 = new Date();
+        const hh = String(t2.getHours()).padStart(2, '0');
+        const mm = String(t2.getMinutes()).padStart(2, '0');
+        timeEl.value = `${hh}:${mm}`;
+      }
+    }
+    // 初始化一次
+    setDefaultDateTime();
   </script>
 </body>
 </html>
