@@ -1681,6 +1681,108 @@ function formatFullTaiwanAddress({
   // join without separator to match你要的格式
   return parts.filter(Boolean).join('');
 }
+
+(function bindUseLocationButton() {
+  const btn = document.getElementById('useLocationBtn');
+  const textarea = document.getElementById('detailedAddress');
+  if (!btn) return;
+
+  function disabledBtn(state) {
+    btn.disabled = !!state;
+    btn.style.opacity = state ? '0.6' : '';
+    btn.style.pointerEvents = state ? 'none' : '';
+  }
+
+  function geocodeLatLng(latlng) {
+    return new Promise((resolve, reject) => {
+      if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+        reject('NO_GOOGLE_MAPS');
+        return;
+      }
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === 'OK' && results && results.length) resolve(results);
+        else reject(status || 'GEOCODE_FAILED');
+      });
+    });
+  }
+
+  btn.addEventListener('click', async () => {
+    if (!navigator.geolocation) {
+      showAlert('此裝置不支援定位功能', 'error');
+      return;
+    }
+    disabledBtn(true);
+    showAlert('正在取得目前位置...', 'info');
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const results = await geocodeLatLng(latlng);
+        const r = results[0];
+        console.debug('geocode result:', r);
+        const components = r.address_components || [];
+        const formattedAddress = r.formatted_address || '';
+
+        // 從 components 抽 city/district/village（使用 formatted_address 做 fallback）
+        const cdv = extractCityDistrictVillage(components, formattedAddress);
+
+        // 從 formatted_address 嘗試抓路名/段/巷/弄/號/樓
+        const parsed = parseTaiwanAddress(formattedAddress);
+
+        // 組合號碼（含之次號）
+        let numberStr = parsed.number || '';
+        if (parsed.subNumber) numberStr = numberStr ? (numberStr + '之' + parsed.subNumber) : parsed.subNumber;
+
+        const full = formatFullTaiwanAddress({
+          city: cdv.city,
+          district: cdv.district,
+          village: cdv.village,
+          street: parsed.street,
+          section: parsed.section,
+          lane: parsed.lane,
+          alley: parsed.alley,
+          number: numberStr,
+          floor: parsed.floor
+        });
+
+        // 若格式化結果為空則退回 formatted_address 的純文字（保險）
+        // 清理常見多餘片段（例： "內湖區港墘里114台灣"）
+        function removePostalCountryPrefix(s) {
+          if (!s) return s || '';
+          // 移除像 "...里114台灣" 的片段（包含前方有可能的行政區/里名），以及單獨的 "台灣"
+          s = s.replace(/[^,\/]*里\s*\d{2,}\s*台灣,?/gi, '');
+          s = s.replace(/台灣,?/gi, '');
+          // 移除多餘逗號、斜線或空白
+          s = s.replace(/^[,\/\s]+|[,\/\s]+$/g, '');
+          return s;
+        }
+
+        const rawOutput = full || formattedAddress || '';
+        const cleaned = removePostalCountryPrefix(rawOutput);
+        textarea.value = cleaned;
+        showAlert('已填入目前定位地址', 'success');
+      } catch (err) {
+        console.error('定位或反向 Geocode 失敗：', err);
+        if (err === 'NO_GOOGLE_MAPS') {
+          showAlert('Google Maps 尚未載入，請稍後再試', 'error');
+        } else {
+          showAlert('無法取得地址，請確認定位權限或稍後重試', 'error');
+        }
+      } finally {
+        disabledBtn(false);
+      }
+    }, (err) => {
+      console.error('geolocation error', err);
+      let msg = '取得定位失敗';
+      if (err && err.code === 1) msg = '定位被拒絕，請允許定位權限';
+      else if (err && err.code === 2) msg = '無法取得位置訊號';
+      else if (err && err.code === 3) msg = '定位逾時，請重試';
+      showAlert(msg, 'error');
+      disabledBtn(false);
+    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+  });
+})();
   </script>
 </body>
 </html>
