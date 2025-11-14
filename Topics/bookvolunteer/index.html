@@ -934,32 +934,71 @@ try {
 }
 
 function toggleCard() {
+  // 取得必要 DOM 參考
+  const container = document.getElementById('cardContainer');
+  const pagination = document.getElementById('pagination');
+  const slider = document.querySelector('.slider-container');
+  const hint = document.getElementById('matchHint');
+
+  if (!container || !pagination || !slider || !hint) {
+    console.warn('toggleCard: 必要 DOM 元素缺失', { container, pagination, slider, hint });
+    showAlert('頁面尚未完全載入或元素遺失，請重新整理後再試。');
+    return;
+  }
+
+  // 欄位定義（顯示名稱用於提示）
+  const fieldDefs = [
+    { id: 'date', name: '日期' },
+    { id: 'time', name: '時間' },
+    { id: 'department', name: '科別' },
+    { id: 'gender', name: '性別' },
+    { id: 'citySelect', name: '縣市' },
+    { id: 'districtSelect', name: '行政區' },
+  ];
+
+  // 移除先前錯誤樣式
+  fieldDefs.forEach(f => { const el = document.getElementById(f.id); if (el) el.classList.remove('invalid'); });
+
+  // 檢查欄位並記錄缺項（同時印出值方便除錯）
+  const missing = [];
+  console.groupCollapsed('toggleCard input values');
+  fieldDefs.forEach(f => {
+    const el = document.getElementById(f.id);
+    const val = el ? String(el.value || '').trim() : '';
+    console.debug(f.name, '=>', JSON.stringify(val));
+    if (!val) {
+      missing.push(f.name);
+      if (el) el.classList.add('invalid');
+    }
+  });
+  console.groupEnd();
+
+  if (missing.length) {
+    // 聚焦第一個缺項並提示
+    const first = fieldDefs.find(f => {
+      const el = document.getElementById(f.id); return el && !String(el.value || '').trim();
+    });
+    if (first) document.getElementById(first.id).focus();
+    showAlert(`請完整輸入欄位（${missing.join('、')}）！`);
+    hint.style.display = "block";
+    hint.innerText = "💡 請補齊上方缺少的欄位後再配對";
+    return;
+  }
+
+  // 取得已驗證的值
   const date = document.getElementById("date").value.trim();
   const time = document.getElementById("time").value.trim();
   const department = document.getElementById("department").value.trim();
   const gender = document.getElementById("gender").value.trim();
-  const city = document.getElementById("citySelect")?.value.trim() || '';
-  const district = document.getElementById("districtSelect")?.value.trim() || '';
-  const container = document.getElementById("cardContainer");
-  const pagination = document.getElementById("pagination");
-  const slider = document.querySelector(".slider-container");
-  const hint = document.getElementById("matchHint");
-
-  // ✅ 先檢查輸入欄位
-  if (!date || !time || !department || !gender || !city || !district) {
-    showAlert("請完整輸入欄位（日期、時間、科別、性別、縣市、行政區）！");
-    hint.style.display = "block";
-    hint.innerText = "💡 輸入資料即可出現配對志工";
-    return;
-  }
-
+  const city = (document.getElementById("citySelect") || {}).value.trim() || '';
+  const district = (document.getElementById("districtSelect") || {}).value.trim() || '';
 
   // 清空上一次結果
   container.innerHTML = "";
   pagination.innerHTML = "";
   slider.style.display = "none";
 
-  // 顯示 loading 提示
+  // 顯示 loading
   hint.style.display = "block";
   hint.innerHTML = `
     <span class="loader" style="
@@ -975,14 +1014,11 @@ function toggleCard() {
     正在為您尋找配對志工...
   `;
 
-  // 模擬載入時間（2 秒）
+  // 執行配對（模擬或實際過濾）
   setTimeout(() => {
     hint.innerHTML = "✅ 已找到合適志工！";
 
-    // === 以下為原本的配對與顯示志工邏輯 ===
-    const filtered = volunteers.filter(
-      (v) => !gender || gender === "皆可" || v.gender === gender
-    );
+    const filtered = volunteers.filter(v => !gender || gender === "皆可" || v.gender === gender);
     const shuffled = shuffleArray(filtered);
 
     slider.style.display = "block";
@@ -1029,7 +1065,7 @@ function toggleCard() {
     });
 
     setupSlider(shuffled.length);
-  }, 2000); // 2 秒模擬配對時間
+  }, 600);
 }
 
 // 轉圈動畫
