@@ -1582,7 +1582,7 @@ async function deleteBookingFromSupabase(id) {
       const mapSearchInput = document.getElementById('mapSearch');
       let map, marker, geocoder;
 
-      // 若必要元素不存在則不繼續（避免 silent fail）
+      // 若必要元素不存在則不進行
       if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
 
       btn.addEventListener('click', () => {
@@ -1631,12 +1631,15 @@ async function deleteBookingFromSupabase(id) {
                       map.setZoom(17);
                       marker.setPosition(place.geometry.location);
                     }
-                    // 以 Places API 的 address_components 填欄位（嘗試 city/district/route/street_number）
+
+                    // 以 Places API 的 address_components 組出較完整地址（fallback: formatted_address）
                     const comps = place.address_components || [];
                     let cityCandidate = '';
                     let districtCandidate = '';
                     let route = '';
                     let street_number = '';
+                    let subpremise = ''; // 門牌附加（如之1、之2、樓）
+                    let sublocality = ''; // 鄰/里/社區等
                     comps.forEach(c => {
                       const types = c.types || [];
                       if (types.includes('administrative_area_level_1') || types.includes('locality')) {
@@ -1647,8 +1650,13 @@ async function deleteBookingFromSupabase(id) {
                       }
                       if (types.includes('route')) route = c.long_name;
                       if (types.includes('street_number')) street_number = c.long_name;
+                      if (types.includes('subpremise')) subpremise = c.long_name;
+                      if (types.includes('sublocality') || types.includes('neighborhood')) {
+                        if (!sublocality) sublocality = c.long_name;
+                      }
                     });
-                    // helper
+
+                    // helper: 在 select 中尋找最接近的 option（by value 或 text）
                     function findOption(selectEl, name) {
                       if (!selectEl || !name) return null;
                       const opts = Array.from(selectEl.options || []);
@@ -1657,6 +1665,29 @@ async function deleteBookingFromSupabase(id) {
                       found = opts.find(o => (o.text && name.indexOf(o.text) !== -1) || (o.text && o.text.indexOf(name) !== -1));
                       return found || null;
                     }
+
+                    // 組合完整地址：縣市 行政區 路名 + 號（若有則包含 subpremise）
+                    const parts = [];
+                    if (cityCandidate) parts.push(cityCandidate);
+                    if (districtCandidate) parts.push(districtCandidate);
+                    let streetPart = '';
+                    if (route) streetPart += route;
+                    if (streetPart && street_number) streetPart += ' ' + street_number;
+                    if (streetPart) parts.push(streetPart);
+                    if (subpremise) parts.push(subpremise);
+                    if (!parts.length && place.formatted_address) {
+                      // 如果 address_components 都沒有，但有 formatted_address，則用 formatted_address
+                      parts.push(place.formatted_address);
+                    }
+                    // 另外把 sublocality 等附加資訊加到結尾（如有）
+                    if (sublocality) parts.push(sublocality);
+
+                    const assembled = parts.join(' ').trim();
+
+                    // 寫入欄位（優先使用組合結果，若空則使用 formatted_address）
+                    if (addressFullEl) addressFullEl.value = assembled || (place.formatted_address || '');
+
+                    // 嘗試同步縣市/區下拉（若頁面有）
                     const citySelectEl = document.getElementById('citySelect');
                     const districtSelectEl = document.getElementById('districtSelect');
                     if (cityCandidate && citySelectEl) {
@@ -1671,6 +1702,7 @@ async function deleteBookingFromSupabase(id) {
                       citySelectEl.value = match.value;
                       citySelectEl.dispatchEvent(new Event('change', { bubbles: true }));
                     }
+                    // 稍候 (change 事件可能重製 district)，故用 setTimeout 同步 district
                     setTimeout(() => {
                       if (districtCandidate && districtSelectEl) {
                         let matchD = findOption(districtSelectEl, districtCandidate);
@@ -1683,9 +1715,7 @@ async function deleteBookingFromSupabase(id) {
                         }
                         districtSelectEl.value = matchD.value;
                       }
-                      if (route && addressFullEl) addressFullEl.value = route;
-                      if (street_number && document.getElementById('number')) document.getElementById('number').value = street_number;
-                    }, 150);
+                    }, 120);
                   });
                 }
               } catch (e) {
