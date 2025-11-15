@@ -1333,7 +1333,7 @@ async function initLiff() {
     avatarEl.addEventListener("click", () => {
       if (liff.isLoggedIn()) {
         // 已登入則前往註冊頁面（可改為需要的頁面路徑）
-        window.location.href = "../../Login-or-register/註冊頁面.html";
+        window.location.href = "../../Login-or-register/index.html";
       } else {
         // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
         liff.login({ redirectUri: window.location.href });
