@@ -386,7 +386,7 @@
     //存取資料庫"某位長者"行程資料
     async function loadRecords() {
       try {
-        const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/schedules/elder/${userId}`;; 
+        const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/schedules/elder/${userId}`;
         const response =await fetch(GET_SUPABASE_API_URL);
         const result =await response.json();
         console.log("行事曆取得的Record行程資料JSON：/n",result);
