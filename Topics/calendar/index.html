@@ -239,6 +239,25 @@
       <input type="text" maxlength="25"  id="event" placeholder="限25字"/>
       <label>備註</label>
       <input type="text"  maxlength="25"  id="note" placeholder="限25字"/>
+      
+      <!-- 新增：重複 / 提醒方式 下拉選單 -->
+      <label>重複</label>
+      <select id="repeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+        <option value="none">不重複</option>
+        <option value="daily">每日</option>
+        <option value="weekly">每週</option>
+        <option value="monthly">每月</option>
+      </select>
+
+      <label>提醒方式</label>
+      <select id="reminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+        <option value="none">不提醒</option>
+        <option value="line">Line</option>
+        <option value="email">Email</option>
+        <option value="sms">簡訊</option>
+        <option value="popup">頁面提示</option>
+      </select>
+
       <button type="button" class="btn" id="addBtn">新增</button>
       <button type="button" class="btn" id="historyBtn">檢視過往紀錄</button>
     </form>
@@ -280,6 +299,25 @@
         <input type="text" id="editEvent" /><br />
         <label>備註</label>
         <input type="text" id="editNote" /><br />
+
+        <!-- 新增：編輯用的重複 / 提醒方式 -->
+        <label>重複</label>
+        <select id="editRepeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+          <option value="none">不重複</option>
+          <option value="daily">每日</option>
+          <option value="weekly">每週</option>
+          <option value="monthly">每月</option>
+        </select>
+
+        <label>提醒方式</label>
+        <select id="editReminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+          <option value="none">不提醒</option>
+          <option value="line">Line</option>
+          <option value="email">Email</option>
+          <option value="sms">簡訊</option>
+          <option value="popup">頁面提示</option>
+        </select>
+
         <div class="edit-actions">
           <button type="button" id="saveEditBtn">儲存修改</button>
           <button type="button" id="deleteEditBtn">刪除</button>
@@ -407,7 +445,10 @@
             elderName: item.elder_name,
             eventId: item.event_id,
             remark: item.remark,
-            isReminded: item.is_reminded
+            isReminded: item.is_reminded,
+            // 嘗試從 API 拿重複 / 提醒欄位（若無則預設）
+            repeat: item.repeat || 'none',
+            reminderMethod: item.reminder_method || 'none'
           };
         });
         renderAllTable();
@@ -482,6 +523,8 @@
       const time = document.getElementById("time").value;
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
+      const repeat = document.getElementById("repeat").value;
+      const reminder = document.getElementById("reminder").value;
 
       if (!date || !time || !event) { 
         alert("請輸入完整資料！");
@@ -503,7 +546,10 @@
           elder_name: userName,
           schedule_time: `${date} ${time}`,
           schedule_note: event,
-          remark: note
+          remark: note,
+          // 新增欄位（若後端支援會儲存）
+          repeat,
+          reminder_method: reminder
         };
 
         const res = await fetch("https://supabase-api-six.vercel.app/schedules", {
@@ -531,7 +577,9 @@
           date,
           time,
           scheduleNote: event,
-          remark: note
+          remark: note,
+          repeat,
+          reminderMethod: reminder
         });
 
         renderAllTable(); // 直接渲染即可！
@@ -567,6 +615,10 @@
       document.getElementById("editTime").value = record.time;
       document.getElementById("editEvent").value = record.scheduleNote;
       document.getElementById("editNote").value = record.remark;
+
+      // 設定編輯的重複/提醒欄位值
+      document.getElementById("editRepeat").value = record.repeat || 'none';
+      document.getElementById("editReminder").value = record.reminderMethod || 'none';
 
       document.getElementById("editModal").style.display = "block";
       bodyEl.classList.add('modal-open');
@@ -614,6 +666,8 @@
         const time = document.getElementById("editTime").value;
         const schedule_note = document.getElementById("editEvent").value.trim();
         const remark = document.getElementById("editNote").value.trim();
+        const repeat = document.getElementById("editRepeat").value;
+        const reminder_method = document.getElementById("editReminder").value;
 
         if (!date || !time || !schedule_note) {
           alert("請輸入完整資料！");
@@ -635,7 +689,10 @@
         const body = {
           schedule_time,
           schedule_note,
-          remark
+          remark,
+          // 將重複/提醒資訊一併送出（若後端支援）
+          repeat,
+          reminder_method
         };
 
         console.log("PATCH BODY：", body);
@@ -660,7 +717,11 @@
           records[idx].date = date;
           records[idx].time = time;
           records[idx].schedule_note = schedule_note;
+          // 也更新對應新欄位（在其他程式碼使用時，請注意欄名）
+          records[idx].scheduleNote = schedule_note;
           records[idx].remark = remark;
+          records[idx].repeat = repeat;
+          records[idx].reminderMethod = reminder_method;
 
           // 關閉 Modal
           document.getElementById("editModal").style.display = "none";
