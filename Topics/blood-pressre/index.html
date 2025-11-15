@@ -332,6 +332,45 @@
     /* 調整 right-side 元素在小螢幕的換行行為 */
     .range-controls input#viewRange { flex: 0 0 280px; min-width: 160px; }
 
+    /* 手機上縮小 flatpickr 日曆樣式，避免日期選取器太大 */
+    @media (max-width: 420px) {
+      /* 縮放整個日曆，並以左上角為基準避免被畫面截斷 */
+      .flatpickr-calendar {
+        transform: scale(0.86);
+        transform-origin: left top;
+        max-width: 340px;
+        font-size: 13px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      }
+      /* 打開時略微微調位置（確保不被右側邊界遮蔽） */
+      .flatpickr-calendar.open {
+        left: 8px !important;
+        right: auto !important;
+      }
+      /* 縮小月份標題、按鈕與間距 */
+      .flatpickr-month {
+        padding: 6px 8px;
+      }
+      .flatpickr-weekdays {
+        padding: 4px 6px;
+      }
+      /* 日期格子變小，減少內距與高度 */
+      .flatpickr-day,
+      .flatpickr-weekday {
+        padding: 6px;
+        height: 28px;
+        line-height: 28px;
+      }
+      /* 若有時間選取器也縮小 */
+      .flatpickr-time {
+        font-size: 13px;
+        padding: 6px 8px;
+      }
+      /* default input 寬度微調以配合縮小日曆 */
+      #viewRange { font-size: 14px; padding: 8px; }
+    }
+
   </style>
   <!-- flatpickr 日期範圍選擇器 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
