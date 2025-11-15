@@ -112,12 +112,28 @@
     button {
       background-color: #4a90e2;
       color: white;
+      margin: 0 10px 0 0;
       padding: 6px 12px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
     }
     button:hover { background-color: #3a78c6; }
+    button.advice-button { 
+      padding: 6px 12px; 
+      background-color: #007bff; 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+    }
+
+    button:disabled { background-color: #ccc; }
+
+    #advice-output { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
+    .error { color: red; }
+    .loading { color: gray; }
 
     /* ==============================
        表格容器（calendar 風格）
@@ -354,15 +370,19 @@
       </div>
       <div class="form-row">
         <label for="systolic">收縮壓（高壓）：</label>
-        <input type="number" id="systolic" required>
+        <input type="number" id="systolic" placeholder="例如 120" required>
       </div>
       <div class="form-row">
         <label for="diastolic">舒張壓（低壓）：</label>
-        <input type="number" id="diastolic" required>
+        <input type="number" id="diastolic" placeholder="例如 80" required>
       </div>
       <div style="display:flex;justify-content:flex-start;">
         <button type="submit" class="primary-btn">新增紀錄</button>
+        <button id="advice-button">產生 AI 建議</button>
       </div>
+      <p style="font-size: 12px; color: #555;">
+        <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
+    </p>
     </form>
 
     
@@ -379,6 +399,10 @@
             <button type="button" class="range-quick-btn" data-range="thisMonth">本月</button>
             <button type="button" class="range-quick-btn" data-range="lastMonth">上個月</button>
           </div>
+        </div>
+        <div id="advice-output">
+        <h4>AI 建議：</h4>
+        <p id="advice-text"></p>
         </div>
         <!-- 新增：無資料時顯示的訊息（預設隱藏） -->
     <div id="no-record-msg" class="no-record">目前尚未有紀錄</div>
@@ -1047,6 +1071,71 @@
         timeEl.value = `${hh}:${mm}`;
       }
     }
+    
+    //--------------------------------------
+    // 1. 定義您的後端 API 網址
+    //--------------------------------------
+        // ！！重要！！這必須指向您在第 1 部分運行的 Node.js 伺服器
+        const BACKEND_API_URL = "http://localhost:3001/getAdvice";
+
+        // 2. 獲取 DOM 元素
+        const systolicInput = document.getElementById('systolic');
+        const diastolicInput = document.getElementById('diastolic');
+        const adviceButton = document.getElementById('advice-button');
+        const adviceText = document.getElementById('advice-text');
+
+        // 3. 綁定點擊事件
+        adviceButton.addEventListener('click', getAIAdvice);
+
+        async function getAIAdvice() {
+            const systolic = systolicInput.valueAsNumber;
+            const diastolic = diastolicInput.valueAsNumber;
+
+            // 4. 簡易驗證
+            if (isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
+                adviceText.innerHTML = "請輸入有效的數值。";
+                adviceText.className = "error";
+                return;
+            }
+
+            // 5. 呼叫後端 API
+            adviceText.innerHTML = "AI 建議產生中，請稍候...";
+            adviceText.className = "loading";
+            adviceButton.disabled = true; // 防止重複點擊
+
+            try {
+                const response = await fetch(BACKEND_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        systolic: systolic,
+                        diastolic: diastolic,
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `伺服器錯誤: ${response.status}`);
+                }
+
+                const data = await response.json(); // 解析 JSON 回應
+
+                // 6. 顯示 AI 建議
+                adviceText.innerHTML = data.advice; // 顯示後端傳來的建議
+                adviceText.className = ""; // 清除樣式
+
+            } catch (error) {
+                // 7. 處理錯誤
+                console.error('API 呼叫失敗:', error);
+                adviceText.innerHTML = `無法取得建議：${error.message}`;
+                adviceText.className = "error";
+            } finally {
+                // 8. 無論成功或失敗，都恢復按鈕
+                adviceButton.disabled = false;
+            }
+        }
     // 初始化一次
     setDefaultDateTime();
   </script>
