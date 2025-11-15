@@ -1284,90 +1284,52 @@ function showBookings() {
 
 // === LIFF Integration ===
 let liffProfile = null;
-async function initLiff() {
+const LIFF_ID = '2008484068-vazlor5r';
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+
+async function initLiffAndSetProfile() {
   try {
-    // TODO: 把下面的 liffId 換成你的 LIFF Channel ID
-    const LIFF_ID = '2008484068-vazlor5r';
-    await liff.init({ LIFF_ID });
+    await liff.init({ liffId: LIFF_ID });
 
-    // LIFF in-client 偵測（保持原有行為）
-    try {
-      let inClient = false;
-      if (typeof liff.isInClient === 'function') {
-        inClient = liff.isInClient();
-      } else {
-        const ua = navigator.userAgent || '';
-        inClient = /Line/i.test(ua) || /Line\s/i.test(ua);
-      }
-      console.debug('LIFF inClient:', inClient);
-      if (inClient) document.documentElement.classList.add('in-liff');
-    } catch (e) {
-      console.debug('LIFF in-client detection failed', e);
+    if (!liff.isLoggedIn()) {
+      nameEl.innerText = "未登入";
+      avatarEl.style.display = "none";
+      return;
     }
 
-    // 導覽列元素
-    const avatarEl = document.getElementById('volunteerAvatar');
-    const nameEl = document.getElementById('volunteerName');
-
-    if (liff.isLoggedIn()) {
-      try {
-        liffProfile = await liff.getProfile();
-        if (nameEl) nameEl.innerText = liffProfile.displayName || '志工';
-        if (avatarEl) {
-          if (liffProfile.pictureUrl) {
-            avatarEl.src = liffProfile.pictureUrl;
-            avatarEl.style.display = 'inline-block';
-          } else {
-            avatarEl.style.display = 'none';
-          }
-        }
-      } catch (e) {
-        console.error('取得 profile 失敗', e);
-      }
+    const profile = await liff.getProfile();
+    nameEl.innerText = profile.displayName || "志工";
+    if (profile.pictureUrl) {
+      avatarEl.src = profile.pictureUrl;
+      avatarEl.style.display = "inline-block";
     } else {
-      if (nameEl) nameEl.innerText = '未登入';
-      if (avatarEl) avatarEl.style.display = 'none';
-      liffProfile = null;
+      avatarEl.style.display = "none";
     }
-
-    avatarEl.addEventListener("click", () => {
-      if (liff.isLoggedIn()) {
-        // 已登入則前往註冊頁面（可改為需要的頁面路徑）
-        window.location.href = "../../Login-or-register/註冊頁面.html";
-      } else {
-        // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
-        liff.login({ redirectUri: window.location.href });
-      }
-    });
-
-    nameEl.addEventListener("click", () => {
-      if (!liff.isLoggedIn()) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("已登入：" + (nameEl.innerText || "志工"));
-      }
-    });
-  } catch (e) {
-    console.error('LIFF init 失敗，請確認 liffId 是否正確', e);
+  } catch (err) {
+    console.error("LIFF init error:", err);
   }
-
-  // 已移除點擊名稱 / 頭像的快速登入 UI 綁定（導覽列已刪除）
 }
 
-function liffLogin() {
-  if (!window.liff) {
-    alert('LIFF SDK 未載入');
-    return;
+avatarEl.addEventListener("click", () => {
+  if (liff.isLoggedIn()) {
+    // 已登入則進入註冊頁面（可改為需要的頁面路徑）
+    window.location.href = "../../Login-or-register/註冊頁面.html";
+  } else {
+    // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
+    liff.login({ redirectUri: window.location.href });
   }
-  if (!liff.isLoggedIn()) liff.login();
-}
+});
 
-// 移除 liffLogout 中對導覽列 DOM 的操作（導覽列已刪除）
-function liffLogout() {
-  if (!window.liff) return;
-  if (liff.isLoggedIn()) liff.logout();
-  liffProfile = null;
-}
+nameEl.addEventListener("click", () => {
+  if (!liff.isLoggedIn()) {
+    liff.login({ redirectUri: window.location.href });
+  } else {
+    alert("已登入：" + (nameEl.innerText || "志工"));
+  }
+});
+
+initLiffAndSetProfile();
 
 // 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
 window.addEventListener('load', () => {
