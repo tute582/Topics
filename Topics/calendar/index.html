@@ -234,7 +234,7 @@
       <input type="date" id="date" placeholder="例如(例：2025-10-02)" />
       <label>時間</label>
       <input type="time" id="time" placeholder="例如：09:00" />
-      <label>行程提醒</label>
+      <label>行程內容</label>
       <input type="text" maxlength="25"  id="event" placeholder="限25字"/>
       <label>備註</label>
       <input type="text"  maxlength="25"  id="note" placeholder="限25字"/>
@@ -254,7 +254,7 @@
           <tr>
           <th>日期</th>
           <th>時間</th>
-          <th>行程提醒</th>
+          <th>行程內容</th>
           <th>備註</th>
           <th>操作</th>
           </tr>
@@ -275,7 +275,7 @@
         <input type="date" id="editDate" /><br />
         <label>時間</label>
         <input type="time" id="editTime" /><br />
-        <label>行程提醒</label>
+        <label>行程內容</label>
         <input type="text" id="editEvent" /><br />
         <label>備註</label>
         <input type="text" id="editNote" /><br />
@@ -507,32 +507,32 @@
         newEventId = result?.data?.event_id; // ← 從 API 回傳取得 eventId
         if (!newEventId) console.warn("⚠ 無法取得 event_id");
 
+        // --- 重要：不 GET，直接 push 到記憶體 ---
+        records.push({
+          eventId: newEventId,
+          date,
+          time,
+          scheduleNote: event,
+          remark: note
+        });
+
+        renderAllTable(); // 直接渲染即可！
+
+        // --- 過去時間處理 ---
+        if (dt < now) {
+          const msgEl = document.getElementById("pastModalMessage");
+          msgEl.textContent = `您輸入的資料 (${date} ${time} - ${event}) 已歸到過往紀錄。`;
+          document.getElementById("pastModal").style.display = "block";
+          bodyEl.classList.add("modal-open");
+        }
+
+        document.getElementById("dataForm").reset();
+
       } catch (err) {
         console.error("❌ Supabase 錯誤:", err);
         alert("⚠️ 無法連線資料庫");
         return;
       }
-
-      // --- 重要：不 GET，直接 push 到記憶體 ---
-      records.push({
-        eventId: newEventId,
-        date,
-        time,
-        scheduleNote: event,
-        remark: note
-      });
-
-      renderAllTable(); // 直接渲染即可！
-
-      // --- 過去時間處理 ---
-      if (dt < now) {
-        const msgEl = document.getElementById("pastModalMessage");
-        msgEl.textContent = `您輸入的資料 (${date} ${time} - ${event}) 已歸到過往紀錄。`;
-        document.getElementById("pastModal").style.display = "block";
-        bodyEl.classList.add("modal-open");
-      }
-
-      document.getElementById("dataForm").reset();
     });
 
     // 關閉編輯彈窗
@@ -696,7 +696,7 @@
           <tr>
             <th>日期</th>
             <th>時間</th>
-            <th>行程提醒</th>
+            <th>行程內容</th>
             <th>備註</th>
           </tr>
         `;
