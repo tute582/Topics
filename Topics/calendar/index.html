@@ -320,9 +320,7 @@
     let records = "";
     //執行LIFF初始化
     initLiffAndSetProfile();
-    //執行資料內容初始化
-    loadRecords();
-
+ 
     // ---- 初始化設定 ----------------------------------------------------------------------------
     //LIFF 初始化設定
     async function initLiffAndSetProfile() {
@@ -357,6 +355,9 @@
         } else {
           avatarEl.style.display = "none";
         }
+
+        //執行資料內容初始化
+        loadRecords();
       } catch (err) {
         console.error("LIFF init error:", err);
       }
@@ -466,9 +467,7 @@
       const time = document.getElementById("time").value;
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
-      // 資料存入變數後，清除資料
-      document.getElementById("dataForm").reset();
-      
+
       if (!date || !time || !event) { 
         alert("請輸入完整資料！");
         return; 
@@ -476,7 +475,10 @@
 
       const dt = parseDateTime(date, time);
       const now = nowDate();
-      
+
+      // 表格重製
+      document.getElementById("dataForm").reset();
+
       // --- POST 到資料庫 ---
       let newEventId = null;   // 新增的 event_id
 
