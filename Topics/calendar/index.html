@@ -315,13 +315,11 @@
     const LIFF_ID = '2008484068-Kp57RrAr';
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
-    let userId = "";
+    let userId = "U10243a4b528760aad0d03a51d13c2e4c";
     let userName ="";
     let records = "";
     //執行LIFF初始化
     initLiffAndSetProfile();
-    //執行資料內容初始化
-    loadRecords();
 
     // ---- 初始化設定 ----------------------------------------------------------------------------
     //LIFF 初始化設定
@@ -357,6 +355,9 @@
         } else {
           avatarEl.style.display = "none";
         }
+
+        //執行資料內容初始化
+        loadRecords();
       } catch (err) {
         console.error("LIFF init error:", err);
       }
