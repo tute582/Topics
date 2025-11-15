@@ -310,14 +310,22 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
+    // ---- 全域變數宣告 ----------------------------------------------------------------------------
     const bodyEl = document.body;
-    // ---- LIFF 初始化 ----
     const LIFF_ID = '2008484068-Kp57RrAr';
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
-    let userId = "U10243a4b528760aad0d03a51d13c2e4c";
+    let userId = "";
     let userName ="";
+    let records = "";
+    let currentEditId = null;
+    //執行LIFF初始化
+    initLiffAndSetProfile();
+    //執行資料內容初始化
+    loadRecords();
 
+    // ---- 初始化設定 ----------------------------------------------------------------------------
+    //LIFF 初始化設定
     async function initLiffAndSetProfile() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -355,6 +363,7 @@
       }
     }
 
+    //當頭像被點選
     avatarEl.addEventListener("click", () => {
       if (liff.isLoggedIn()) {
         // 已登入則進入註冊頁面（可改為需要的頁面路徑）
@@ -365,6 +374,7 @@
       }
     });
 
+    //當使用者名稱被點選
     nameEl.addEventListener("click", () => {
       if (!liff.isLoggedIn()) {
         liff.login({ redirectUri: window.location.href });
@@ -372,14 +382,6 @@
         alert("已登入：" + (nameEl.innerText || "志工"));
       }
     });
-
-    //LIFF初始化
-    initLiffAndSetProfile();
-    // 資料初始化
-    loadRecords();
-    // ---- 行事曆功能 ----
-    let records = "";
-    let currentEditId = null;
 
     //存取資料庫"某位長者"行程資料
     async function loadRecords() {
@@ -412,9 +414,11 @@
       }
     }
 
+    // 取得現在時間
     function nowDate() { return new Date(); }
+
+    // 解析日期時間
     function parseDateTime(dateStr, timeStr) {
-      // 加上秒以避免某些瀏覽器解析差異
       return new Date(`${dateStr}T${timeStr}:00`);
     }
 
@@ -456,6 +460,7 @@
       });
     }
 
+    // ---- 行事曆功能 ----------------------------------------------------------------------------
     // 新增
     document.getElementById("addBtn").addEventListener("click", async () => {
       const date = document.getElementById("date").value;
@@ -538,8 +543,6 @@
 
     // 打開編輯 modal（透過 event_id）
     function openEditModalById(eventId) {
-      currentEditId = eventId;
-
       const idx = records.findIndex(r => r.eventId === eventId);
       if (idx === -1) return alert('找不到該筆資料');
 
