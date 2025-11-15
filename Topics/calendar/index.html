@@ -244,18 +244,24 @@
       <label>重複</label>
       <select id="repeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
         <option value="none">不重複</option>
-        <option value="daily">每日</option>
+        <option value="daily">每天</option>
         <option value="weekly">每週</option>
         <option value="monthly">每月</option>
+        <option value="yearly">每年</option>
       </select>
 
-      <label>提醒方式</label>
+      <label>提醒時間</label>
       <select id="reminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
-        <option value="none">不提醒</option>
-        <option value="line">Line</option>
-        <option value="email">Email</option>
-        <option value="sms">簡訊</option>
-        <option value="popup">頁面提示</option>
+        <option value="none">無</option>
+        <option value="5min">5分鐘前</option>
+        <option value="10min">10分鐘前</option>
+        <option value="15min">15分鐘前</option>
+        <option value="30min">30分鐘前</option>
+        <option value="1h">1小時前</option>
+        <option value="2h">2小時前</option>
+        <option value="day">1天前</option>
+        <option value="2day">2天前</option>
+        <option value="week">一週前</option>
       </select>
 
       <button type="button" class="btn" id="addBtn">新增</button>
@@ -276,6 +282,8 @@
           <th>時間</th>
           <th>行程內容</th>
           <th>備註</th>
+          <th>重複</th>
+          <th>提醒時間</th>
           <th>操作</th>
           </tr>
         </thead>
@@ -304,12 +312,12 @@
         <label>重複</label>
         <select id="editRepeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
           <option value="none">不重複</option>
-          <option value="daily">每日</option>
+          <option value="daily">每天</option>
           <option value="weekly">每週</option>
           <option value="monthly">每月</option>
         </select>
 
-        <label>提醒方式</label>
+        <label>提醒時間</label>
         <select id="editReminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
           <option value="none">不提醒</option>
           <option value="line">Line</option>
