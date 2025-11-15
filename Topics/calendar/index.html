@@ -318,7 +318,6 @@
     let userId = "";
     let userName ="";
     let records = "";
-    let currentEditId = null;
     //執行LIFF初始化
     initLiffAndSetProfile();
     //執行資料內容初始化
@@ -467,7 +466,9 @@
       const time = document.getElementById("time").value;
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
-
+      // 資料存入變數後，清除資料
+      document.getElementById("dataForm").reset();
+      
       if (!date || !time || !event) { 
         alert("請輸入完整資料！");
         return; 
@@ -475,7 +476,7 @@
 
       const dt = parseDateTime(date, time);
       const now = nowDate();
-
+      
       // --- POST 到資料庫 ---
       let newEventId = null;   // 新增的 event_id
 
@@ -525,9 +526,6 @@
           document.getElementById("pastModal").style.display = "block";
           bodyEl.classList.add("modal-open");
         }
-
-        document.getElementById("dataForm").reset();
-
       } catch (err) {
         console.error("❌ Supabase 錯誤:", err);
         alert("⚠️ 無法連線資料庫");
