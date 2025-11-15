@@ -320,7 +320,9 @@
     let records = "";
     //執行LIFF初始化
     initLiffAndSetProfile();
- 
+    //執行資料內容初始化
+    loadRecords();
+
     // ---- 初始化設定 ----------------------------------------------------------------------------
     //LIFF 初始化設定
     async function initLiffAndSetProfile() {
@@ -355,9 +357,6 @@
         } else {
           avatarEl.style.display = "none";
         }
-
-        //執行資料內容初始化
-        loadRecords();
       } catch (err) {
         console.error("LIFF init error:", err);
       }
