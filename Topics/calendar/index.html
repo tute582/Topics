@@ -428,18 +428,29 @@
       tbody.innerHTML = "";
       const now = nowDate();
       const noRecordEl = document.getElementById("no-record-msg");
+     // 確保 records 為陣列
+     if (!Array.isArray(records)) records = [];
+
+     const tableEl = document.getElementById("allTable");
+     const theadEl = tableEl.querySelector("thead");
 
       const upcomingRecords = records
         .filter(r => parseDateTime(r.date, r.time) >= now)
         .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
 
-      if (upcomingRecords.length > 0) {
-        document.getElementById("allTable").style.display = "table";
-        if (noRecordEl) noRecordEl.style.display = "none";
-      } else {
-        document.getElementById("allTable").style.display = "none";
-        if (noRecordEl) noRecordEl.style.display = "block";
-      }
+     // 控制表格（含表頭）與無資料提示的顯示
+     if (upcomingRecords.length > 0) {
+       tableEl.style.display = "table";
+       // 顯示表頭（用正確的 table header display）
+       theadEl.style.display = "table-header-group";
+       if (noRecordEl) noRecordEl.style.display = "none";
+     } else {
+       // 隱藏整張表格（會包含表頭）
+       tableEl.style.display = "none";
+       // 若欲只隱藏 body 而保留表頭，可改變 theadEl.style.display
+       theadEl.style.display = "none";
+       if (noRecordEl) noRecordEl.style.display = "block";
+     }
 
       upcomingRecords.forEach(record => {
         const row = tbody.insertRow();
