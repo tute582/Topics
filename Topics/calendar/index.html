@@ -93,7 +93,8 @@
     border: none; /* ← 改成沒有外框線 */
     border-radius:20px; 
     background:white;
-    display:block;
+    /* 預設隱藏，沒有資料或尚未載入時不顯示表格容器 */
+    display:none;
     padding: none; /* 與 form 內距一致，讓內容列對齊 */
     box-sizing: border-box;
   }
@@ -317,7 +318,8 @@
     const nameEl = document.getElementById("volunteerName");
     let userId = "";
     let userName ="";
-    let records = "";
+    // 確保 records 預設為陣列，便於後續 filter/map 操作
+    let records = [];
     //執行LIFF初始化
     initLiffAndSetProfile();
 
@@ -431,27 +433,29 @@
      // 確保 records 為陣列
      if (!Array.isArray(records)) records = [];
 
+     const tableWrapper = document.querySelector(".allTable-div"); // 外層容器（含圓角/背景）
      const tableEl = document.getElementById("allTable");
      const theadEl = tableEl.querySelector("thead");
-
+ 
       const upcomingRecords = records
         .filter(r => parseDateTime(r.date, r.time) >= now)
         .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
-
-     // 控制表格（含表頭）與無資料提示的顯示
+ 
+     // 控制外層容器（含表頭）與無資料提示的顯示
      if (upcomingRecords.length > 0) {
+       // 顯示容器與表格
+       if (tableWrapper) tableWrapper.style.display = "block";
        tableEl.style.display = "table";
-       // 顯示表頭（用正確的 table header display）
        theadEl.style.display = "table-header-group";
        if (noRecordEl) noRecordEl.style.display = "none";
      } else {
-       // 隱藏整張表格（會包含表頭）
+       // 隱藏整個容器（包含表頭與圓角背景）
+       if (tableWrapper) tableWrapper.style.display = "none";
        tableEl.style.display = "none";
-       // 若欲只隱藏 body 而保留表頭，可改變 theadEl.style.display
        theadEl.style.display = "none";
        if (noRecordEl) noRecordEl.style.display = "block";
      }
-
+ 
       upcomingRecords.forEach(record => {
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -462,7 +466,7 @@
           <td><button data-id="${record.eventId}" class="but-ans edit-btn">編輯</button></td>
         `;
       });
-
+ 
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const eventId  = btn.getAttribute('data-id');
@@ -743,7 +747,9 @@
 
       document.getElementById("historyModal").style.display = "block";
       bodyEl.classList.add('modal-open');
-      document.getElementById("allTable").style.display = "none"; // 隱藏主表格
+      // 隱藏主表格的外層容器（包含表頭與圓角背景）
+      const mainWrapper = document.querySelector('.allTable-div');
+      if (mainWrapper) mainWrapper.style.display = 'none';
     });
 
     // 過去時間提示 Modal 的按鈕處理
