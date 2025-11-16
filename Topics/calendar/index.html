@@ -93,7 +93,6 @@
     border: none; /* ← 改成沒有外框線 */
     border-radius:20px; 
     background:white;
-    /* 預設隱藏，沒有資料或尚未載入時不顯示表格容器 */
     display:none;
     padding: none; /* 與 form 內距一致，讓內容列對齊 */
     box-sizing: border-box;
@@ -250,18 +249,13 @@
         <option value="yearly">每年</option>
       </select>
 
-      <label>提醒時間</label>
+      <label>提醒類型</label>
       <select id="reminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
         <option value="none">無</option>
-        <option value="5min">5分鐘前</option>
-        <option value="10min">10分鐘前</option>
-        <option value="15min">15分鐘前</option>
-        <option value="30min">30分鐘前</option>
-        <option value="1h">1小時前</option>
-        <option value="2h">2小時前</option>
-        <option value="day">1天前</option>
-        <option value="2day">2天前</option>
-        <option value="week">一週前</option>
+          <option value="0min">當下提醒</option>
+          <option value="30min">30分鐘前</option>
+          <option value="1h">1小時前</option>
+          <option value="day">1天前</option>
       </select>
 
       <button type="button" class="btn" id="addBtn">新增</button>
@@ -283,7 +277,7 @@
           <th>行程內容</th>
           <th>備註</th>
           <th>重複</th>
-          <th>提醒時間</th>
+          <th>提醒類型</th>
           <th>操作</th>
           </tr>
         </thead>
@@ -315,15 +309,16 @@
           <option value="daily">每天</option>
           <option value="weekly">每週</option>
           <option value="monthly">每月</option>
+          <option value="yearly">每年</option>
         </select>
 
-        <label>提醒時間</label>
+        <label>提醒類型</label>
         <select id="editReminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
-          <option value="none">不提醒</option>
-          <option value="line">Line</option>
-          <option value="email">Email</option>
-          <option value="sms">簡訊</option>
-          <option value="popup">頁面提示</option>
+          <option value="none">無</option>
+          <option value="0min">當下提醒</option>
+          <option value="30min">30分鐘前</option>
+          <option value="1h">1小時前</option>
+          <option value="day">1天前</option>
         </select>
 
         <div class="edit-actions">
@@ -364,8 +359,8 @@
     const nameEl = document.getElementById("volunteerName");
     let userId = "";
     let userName ="";
-    // 確保 records 預設為陣列，便於後續 filter/map 操作
-    let records = [];
+    let records = "";
+    let currentEditEventId = null;
     //執行LIFF初始化
     initLiffAndSetProfile();
 
@@ -454,7 +449,6 @@
             eventId: item.event_id,
             remark: item.remark,
             isReminded: item.is_reminded,
-            // 嘗試從 API 拿重複 / 提醒欄位（若無則預設）
             repeat: item.repeat || 'none',
             reminderMethod: item.reminder_method || 'none'
           };
@@ -499,17 +493,14 @@
         case 'none': default: return '無';
       }
     }
-
-    // 渲染未來行程（包含重複、提醒欄位）
+    // 渲染未來行程
     async function renderAllTable() {
       const tbody = document.querySelector("#allTable tbody");
       tbody.innerHTML = "";
       const now = nowDate();
       const noRecordEl = document.getElementById("no-record-msg");
-      // 確保 records 為陣列
-      if (!Array.isArray(records)) records = [];
 
-      const tableWrapper = document.querySelector(".allTable-div"); // 外層容器（含圓角/背景）
+      const tableWrapper = document.querySelector(".allTable-div");
       const tableEl = document.getElementById("allTable");
       const theadEl = tableEl.querySelector("thead");
 
@@ -517,29 +508,25 @@
         .filter(r => parseDateTime(r.date, r.time) >= now)
         .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
 
-      // 控制外層容器（含表頭）與無資料提示的顯示
       if (upcomingRecords.length > 0) {
-        if (tableWrapper) tableWrapper.style.display = "block";
+        tableWrapper.style.display = "block";
         tableEl.style.display = "table";
         theadEl.style.display = "table-header-group";
         if (noRecordEl) noRecordEl.style.display = "none";
       } else {
-        if (tableWrapper) tableWrapper.style.display = "none";
-        tableEl.style.display = "none";
-        theadEl.style.display = "none";
+        document.getElementById("allTable").style.display = "none";
         if (noRecordEl) noRecordEl.style.display = "block";
       }
 
       upcomingRecords.forEach(record => {
         const repeatLabel = formatRepeat(record.repeat || record.repeat || 'none');
         const reminderLabel = formatReminder(record.reminderMethod || record.reminder || 'none');
-
         const row = tbody.insertRow();
         row.innerHTML = `
           <td>${record.date}</td>
           <td>${record.time}</td>
           <td>${escapeHtml(record.scheduleNote)}</td>
-          <td>${escapeHtml(record.remark || '')}</td>
+          <td>${escapeHtml(record.remark)}</td>
           <td>${escapeHtml(repeatLabel)}</td>
           <td>${escapeHtml(reminderLabel)}</td>
           <td><button data-id="${record.eventId}" class="but-ans edit-btn">編輯</button></td>
@@ -585,8 +572,7 @@
           schedule_time: `${date} ${time}`,
           schedule_note: event,
           remark: note,
-          // 新增欄位（若後端支援會儲存）
-          repeat,
+          repeat:repeat,
           reminder_method: reminder
         };
 
@@ -616,7 +602,7 @@
           time,
           scheduleNote: event,
           remark: note,
-          repeat,
+          repeat:repeat,
           reminderMethod: reminder
         });
 
@@ -644,6 +630,7 @@
 
     // 打開編輯 modal（透過 event_id）
     function openEditModalById(eventId) {
+      currentEditEventId = eventId;
       const idx = records.findIndex(r => r.eventId === eventId);
       if (idx === -1) return alert('找不到該筆資料');
 
@@ -653,8 +640,6 @@
       document.getElementById("editTime").value = record.time;
       document.getElementById("editEvent").value = record.scheduleNote;
       document.getElementById("editNote").value = record.remark;
-
-      // 設定編輯的重複/提醒欄位值
       document.getElementById("editRepeat").value = record.repeat || 'none';
       document.getElementById("editReminder").value = record.reminderMethod || 'none';
 
@@ -697,83 +682,76 @@
           alert("刪除時發生錯誤");
         }
       };
+    }
 
-      // 儲存編輯
-      document.getElementById("saveEditBtn").addEventListener("click", async () => {
-        const date = document.getElementById("editDate").value;
-        const time = document.getElementById("editTime").value;
-        const schedule_note = document.getElementById("editEvent").value.trim();
-        const remark = document.getElementById("editNote").value.trim();
-        const repeat = document.getElementById("editRepeat").value;
-        const reminder_method = document.getElementById("editReminder").value;
+    // 儲存編輯
+    document.getElementById("saveEditBtn").addEventListener("click", saveEdit);
+    async function saveEdit() {
+      if (!currentEditEventId) {
+        alert("無效編輯事件");
+        return;
+      }
+      
+      const eventId = currentEditEventId;
+      const idx = records.findIndex(r => r.eventId === eventId);
+      if (idx === -1) return alert("找不到該筆資料");
 
-        if (!date || !time || !schedule_note) {
-          alert("請輸入完整資料！");
+      const date = document.getElementById("editDate").value;
+      const time = document.getElementById("editTime").value;
+      const schedule_note = document.getElementById("editEvent").value.trim();
+      const remark = document.getElementById("editNote").value.trim();
+      const repeat = document.getElementById("editRepeat").value;
+      const reminder_method = document.getElementById("editReminder").value;
+
+      if (!date || !time || !schedule_note) {
+        alert("請輸入完整資料！");
+        return;
+      }
+
+      const schedule_time = `${date} ${time}:00`;
+
+      const url = `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
+
+      const body = {
+        schedule_time,
+        schedule_note,
+        remark,
+        repeat,
+        reminder_method
+      };
+
+      try {
+        const res = await fetch(url, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const result = await res.json();
+        console.log("更新結果：", result);
+
+        if (!res.ok) {
+          alert("更新失敗：" + (result.message || res.status));
           return;
         }
 
-        // ➜ 找出目前編輯的資料
-        const idx = records.findIndex(r => r.eventId === eventId);
-        if (idx === -1) return alert("找不到該筆資料");
+        // 更新前端
+        records[idx].date = date;
+        records[idx].time = time;
+        records[idx].scheduleNote = schedule_note;
+        records[idx].remark = remark;
+        records[idx].repeat = repeat;
+        records[idx].reminderMethod = reminder_method;
 
-        const record = records[idx];
-        // ➜ 組合 schedule_time (符合後端格式：YYYY-MM-DD HH:mm:00)
-        const schedule_time = `${date} ${time}:00`;
+        document.getElementById("editModal").style.display = "none";
+        bodyEl.classList.remove("modal-open");
 
-        // ➜ 正確 PATCH API URL
-        const PATCH_SUPABASE_API_URL =
-          `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
-
-        const body = {
-          schedule_time,
-          schedule_note,
-          remark,
-          // 將重複/提醒資訊一併送出（若後端支援）
-          repeat,
-          reminder_method
-        };
-
-        console.log("PATCH BODY：", body);
-        console.log("PATCH URL：", PATCH_SUPABASE_API_URL);
-
-        try {
-          const res = await fetch(PATCH_SUPABASE_API_URL, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          });
-
-          const result = await res.json();
-          console.log("更新結果：", result);
-
-          if (!res.ok) {
-            alert("更新失敗：" + (result.message || res.status));
-            return;
-          }
-
-          // ➜ 更新前端 records
-          records[idx].date = date;
-          records[idx].time = time;
-          records[idx].schedule_note = schedule_note;
-          // 也更新對應新欄位（在其他程式碼使用時，請注意欄名）
-          records[idx].scheduleNote = schedule_note;
-          records[idx].remark = remark;
-          records[idx].repeat = repeat;
-          records[idx].reminderMethod = reminder_method;
-
-          // 關閉 Modal
-          document.getElementById("editModal").style.display = "none";
-          bodyEl.classList.remove("modal-open");
-
-          // ➜ 重新渲染畫面
-          await renderAllTable();
-          alert("更新成功！");
-
-        } catch (err) {
-          console.error("PATCH Error：", err);
-          alert("更新時發生錯誤");
-        }
-      });
+        await renderAllTable();
+        alert("更新成功！");
+      } catch (err) {
+        console.error("PATCH Error：", err);
+        alert("更新時發生錯誤");
+      }
     }
 
     // 關閉過往紀錄
@@ -797,6 +775,7 @@
         historyContent.innerHTML = '<p style="text-align:center;">目前沒有過往紀錄</p>';
       } else {
         const tableWrapper = document.createElement('div');
+        tableWrapper.style.display = "block";
         tableWrapper.className = 'allTable-div';
         tableWrapper.style.margin = '10px auto';
 
@@ -810,8 +789,6 @@
             <th>時間</th>
             <th>行程內容</th>
             <th>備註</th>
-            <th>重複</th>
-            <th>提醒時間</th>
           </tr>
         `;
         table.appendChild(thead);
@@ -833,16 +810,8 @@
           tr.appendChild(tdEvent);
 
           const tdNote = document.createElement('td');
-          tdNote.textContent = record.remark || '';
+          tdNote.textContent = record.remark;
           tr.appendChild(tdNote);
-
-          const tdRepeat = document.createElement('td');
-          tdRepeat.textContent = formatRepeat(record.repeat || 'none');
-          tr.appendChild(tdRepeat);
-
-          const tdReminder = document.createElement('td');
-          tdReminder.textContent = formatReminder(record.reminderMethod || record.reminder || 'none');
-          tr.appendChild(tdReminder);
 
           tbody.appendChild(tr);
         });
@@ -855,7 +824,7 @@
       document.getElementById("historyModal").style.display = "block";
       bodyEl.classList.add('modal-open');
       const mainWrapper = document.querySelector('.allTable-div');
-      if (mainWrapper) mainWrapper.style.display = 'none';
+      mainWrapper.style.display = 'none';
     });
 
     // 過去時間提示 Modal 的按鈕處理
