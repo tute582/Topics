@@ -473,49 +473,79 @@
       return new Date(`${dateStr}T${timeStr}:00`);
     }
 
-    // 渲染未來行程
+    // 格式化顯示：重複、提醒
+    function formatRepeat(val) {
+      switch ((val||'').toString()) {
+        case 'daily': return '每天';
+        case 'weekly': return '每週';
+        case 'monthly': return '每月';
+        case 'yearly': return '每年';
+        case 'none': default: return '不重複';
+      }
+    }
+
+    function formatReminder(val) {
+      if (!val) return '無';
+      switch (val.toString()) {
+        case '5min': return '5 分鐘前';
+        case '10min': return '10 分鐘前';
+        case '15min': return '15 分鐘前';
+        case '30min': return '30 分鐘前';
+        case '1h': return '1 小時前';
+        case '2h': return '2 小時前';
+        case 'day': return '1 天前';
+        case '2day': return '2 天前';
+        case 'week': return '1 週前';
+        case 'none': default: return '無';
+      }
+    }
+
+    // 渲染未來行程（包含重複、提醒欄位）
     async function renderAllTable() {
       const tbody = document.querySelector("#allTable tbody");
       tbody.innerHTML = "";
       const now = nowDate();
       const noRecordEl = document.getElementById("no-record-msg");
-     // 確保 records 為陣列
-     if (!Array.isArray(records)) records = [];
+      // 確保 records 為陣列
+      if (!Array.isArray(records)) records = [];
 
-     const tableWrapper = document.querySelector(".allTable-div"); // 外層容器（含圓角/背景）
-     const tableEl = document.getElementById("allTable");
-     const theadEl = tableEl.querySelector("thead");
- 
+      const tableWrapper = document.querySelector(".allTable-div"); // 外層容器（含圓角/背景）
+      const tableEl = document.getElementById("allTable");
+      const theadEl = tableEl.querySelector("thead");
+
       const upcomingRecords = records
         .filter(r => parseDateTime(r.date, r.time) >= now)
         .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
- 
-     // 控制外層容器（含表頭）與無資料提示的顯示
-     if (upcomingRecords.length > 0) {
-       // 顯示容器與表格
-       if (tableWrapper) tableWrapper.style.display = "block";
-       tableEl.style.display = "table";
-       theadEl.style.display = "table-header-group";
-       if (noRecordEl) noRecordEl.style.display = "none";
-     } else {
-       // 隱藏整個容器（包含表頭與圓角背景）
-       if (tableWrapper) tableWrapper.style.display = "none";
-       tableEl.style.display = "none";
-       theadEl.style.display = "none";
-       if (noRecordEl) noRecordEl.style.display = "block";
-     }
- 
+
+      // 控制外層容器（含表頭）與無資料提示的顯示
+      if (upcomingRecords.length > 0) {
+        if (tableWrapper) tableWrapper.style.display = "block";
+        tableEl.style.display = "table";
+        theadEl.style.display = "table-header-group";
+        if (noRecordEl) noRecordEl.style.display = "none";
+      } else {
+        if (tableWrapper) tableWrapper.style.display = "none";
+        tableEl.style.display = "none";
+        theadEl.style.display = "none";
+        if (noRecordEl) noRecordEl.style.display = "block";
+      }
+
       upcomingRecords.forEach(record => {
+        const repeatLabel = formatRepeat(record.repeat || record.repeat || 'none');
+        const reminderLabel = formatReminder(record.reminderMethod || record.reminder || 'none');
+
         const row = tbody.insertRow();
         row.innerHTML = `
           <td>${record.date}</td>
           <td>${record.time}</td>
           <td>${escapeHtml(record.scheduleNote)}</td>
-          <td>${escapeHtml(record.remark)}</td>
+          <td>${escapeHtml(record.remark || '')}</td>
+          <td>${escapeHtml(repeatLabel)}</td>
+          <td>${escapeHtml(reminderLabel)}</td>
           <td><button data-id="${record.eventId}" class="but-ans edit-btn">編輯</button></td>
         `;
       });
- 
+
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const eventId  = btn.getAttribute('data-id');
@@ -766,15 +796,13 @@
       if (pastRecords.length === 0) {
         historyContent.innerHTML = '<p style="text-align:center;">目前沒有過往紀錄</p>';
       } else {
-        // 使用與主表格相同的外層容器與 table 結構，套用相同樣式
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'allTable-div';
-        tableWrapper.style.margin = '10px auto'; // 可微調間距
+        tableWrapper.style.margin = '10px auto';
 
         const table = document.createElement('table');
         table.id = 'historyTable';
 
-        // 使用與主表格相同的欄位（包含操作欄位，過往紀錄可視需求保留空欄或顯示備註）
         const thead = document.createElement('thead');
         thead.innerHTML = `
           <tr>
@@ -782,6 +810,8 @@
             <th>時間</th>
             <th>行程內容</th>
             <th>備註</th>
+            <th>重複</th>
+            <th>提醒時間</th>
           </tr>
         `;
         table.appendChild(thead);
@@ -803,8 +833,16 @@
           tr.appendChild(tdEvent);
 
           const tdNote = document.createElement('td');
-          tdNote.textContent = record.remark;
+          tdNote.textContent = record.remark || '';
           tr.appendChild(tdNote);
+
+          const tdRepeat = document.createElement('td');
+          tdRepeat.textContent = formatRepeat(record.repeat || 'none');
+          tr.appendChild(tdRepeat);
+
+          const tdReminder = document.createElement('td');
+          tdReminder.textContent = formatReminder(record.reminderMethod || record.reminder || 'none');
+          tr.appendChild(tdReminder);
 
           tbody.appendChild(tr);
         });
@@ -816,7 +854,6 @@
 
       document.getElementById("historyModal").style.display = "block";
       bodyEl.classList.add('modal-open');
-      // 隱藏主表格的外層容器（包含表頭與圓角背景）
       const mainWrapper = document.querySelector('.allTable-div');
       if (mainWrapper) mainWrapper.style.display = 'none';
     });
