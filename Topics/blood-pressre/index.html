@@ -262,115 +262,156 @@
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
     }
 
-    /* 日期範圍選擇器快捷按鈕樣式 */
-    /* 使用 grid 兩欄：左側固定 label 寬度 (140px)，右側放 input + 快捷按鈕 */
-    /* 改為標題在上、欄位在下（將 input 移到標題下方） */
-    .range-picker-wrap {
-      display: grid;
-      grid-template-columns: 1fr; /* 標題在上、欄位在下 */
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    /* 右側容器：包含 input 與按鈕列 */
-    .range-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    .range-picker-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-left: 0;
-    }
-    .range-controls input#viewRange {
-      flex: 1 1 auto;
-      min-width: 220px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-    /* 手機/小螢幕：改為上下排列（label 在上，欄位全部撐滿）*/
-    @media (max-width: 600px) {
-      .range-picker-wrap {
-        grid-template-columns: 1fr;
-        align-items: stretch;
-      }
-      .range-picker-wrap label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600;
-      }
-      .range-controls { flex-direction: column; align-items: stretch; gap: 8px; }
-      .range-picker-actions { justify-content: flex-start; }
-      .range-controls input#viewRange { width: 100%; }
-    }
+   /* 日期範圍選擇器主要區塊 */
+.range-picker-wrap {
+  display: grid;
+  grid-template-columns: 1fr; /* 標題在上、欄位在下 */
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
-    .range-quick-btn {
-      background: #f6f8fa;
-      border: 1px solid #dfe4e8;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #222;
-      transition: background .12s, color .12s, box-shadow .12s;
-    }
-    /* 預設顯色（由 JS 加上 .active）*/
-    .range-quick-btn.active {
-      background: #4a90e2;
-      color: #fff;
-      border-color: #3a78c6;
-      box-shadow: 0 2px 6px rgba(74,144,226,0.18);
-    }
-    .range-quick-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(74,144,226,0.12); }
-    /* 調整 right-side 元素在小螢幕的換行行為 */
-    .range-controls input#viewRange { flex: 0 0 280px; min-width: 160px; }
+/* 包含 input + 快捷按鈕列 */
+.range-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
 
-    /* 手機上縮小 flatpickr 日曆樣式，避免日期選取器太大 */
-    @media (max-width: 420px) {
-      /* 縮放整個日曆，並以左上角為基準避免被畫面截斷 */
-      .flatpickr-calendar {
-        transform: scale(0.86);
-        transform-origin: left top;
-        width: auto !important;
-        max-width: 300px !important;
-        max-height: 300px !important;
-        font-size: 13px;
-        border-radius: 10px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-        overflow: hidden;
-      }
-      /* 打開時略微微調位置（確保不被右側邊界遮蔽） */
-      .flatpickr-calendar.open {
-        left: 8px !important;
-        right: auto !important;
-      }
-      /* 內部容器與標題、按鈕縮小 */
-      .flatpickr-innerContainer { padding: 6px !important; }
-      .flatpickr-months, .flatpickr-month { padding: 6px 8px !important; }
-      .flatpickr-month .flatpickr-current-month { font-size: 14px !important; }
-      .flatpickr-weekdays { padding: 4px 6px !important; font-size: 12px !important; }
-      /* 日期格子變小，減少內距與高度，避免大面積空白 */
-      .flatpickr-days { padding: 4px !important; max-height: 200px; overflow-y: auto; }
-      .flatpickr-day,
-      .flatpickr-weekday {
-        padding: 4px 6px !important;
-        height: 30px !important;
-        line-height: 30px !important;
-        min-width: 30px !important;
-        box-sizing: border-box !important;
-      }
-      /* 若有時間選取器也縮小 */
-      .flatpickr-time { font-size: 13px; padding: 6px 8px; }
-      /* default input 寬度微調以配合縮小日曆 */
-      #viewRange { font-size: 14px; padding: 8px; }
-    }
+/* 快捷按鈕列 */
+.range-picker-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-left: 0;
+}
+
+/* 日期輸入框 */
+.range-controls input#viewRange {
+  flex: 1 1 auto;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* 防止 input 太寬把頁面撐爆 */
+.range-controls input#viewRange {
+  flex: 0 0 280px;
+  min-width: 160px;
+  max-width: 100%;
+}
+
+/* 手機/小螢幕：欄位垂直排列、避免跑版 */
+@media (max-width: 600px) {
+  .range-picker-wrap {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .range-picker-wrap label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .range-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .range-picker-actions {
+    justify-content: flex-start;
+  }
+
+  .range-controls input#viewRange {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* 快捷按鈕樣式 */
+.range-quick-btn {
+  background: #f6f8fa;
+  border: 1px solid #dfe4e8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #222;
+  transition: background .12s, color .12s, box-shadow .12s;
+}
+
+/* JS 加上 active 時的樣式 */
+.range-quick-btn.active {
+  background: #4a90e2;
+  color: #fff;
+  border-color: #3a78c6;
+  box-shadow: 0 2px 6px rgba(74,144,226,0.18);
+}
+
+.range-quick-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74,144,226,0.12);
+}
+
+
+/* ============================================================
+   📱 Flatpickr 手機版爆版修正（最關鍵）
+   ============================================================ */
+@media (max-width: 420px) {
+  .flatpickr-calendar {
+    transform: none !important;
+    transform-origin: top left !important;
+
+    width: calc(100% - 32px) !important;  /* 滿版 but 保留左右邊距 */
+    max-width: none !important;
+
+    left: 16px !important;
+    right: 16px !important;
+
+    box-sizing: border-box !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    z-index: 9999 !important;
+  }
+
+  .flatpickr-calendar.open {
+    left: 16px !important;
+    right: 16px !important;
+  }
+
+  .flatpickr-innerContainer {
+    padding: 8px !important;
+  }
+
+  .flatpickr-months,
+  .flatpickr-month,
+  .flatpickr-weekdays {
+    padding: 6px 8px !important;
+  }
+
+  .flatpickr-days {
+    padding: 6px !important;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .flatpickr-day,
+  .flatpickr-weekday {
+    padding: 6px 8px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    min-width: auto !important;
+  }
+}
+
 
   </style>
   <!-- flatpickr 日期範圍選擇器 -->
