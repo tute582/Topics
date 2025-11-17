@@ -334,42 +334,39 @@
 
     /* 手機上縮小 flatpickr 日曆樣式，避免日期選取器太大 */
     @media (max-width: 420px) {
-      /* 縮放整個日曆，並以左上角為基準避免被畫面截斷 */
+      /* 讓 flatpickr 日曆像一般欄位：移除縮放、並以輸入欄位寬度為基準 */
       .flatpickr-calendar {
-        transform: scale(0.86);
-        transform-origin: left top;
-        width: auto !important;
-        max-width: 100px !important;
-        max-height: 100px !important;
-        font-size: 13px;
-        border-radius: 10px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-        overflow: hidden;
-      }
-      /* 打開時略微微調位置（確保不被右側邊界遮蔽） */
-      .flatpickr-calendar.open {
-        left: 8px !important;
-        right: auto !important;
-      }
-      /* 內部容器與標題、按鈕縮小 */
-      .flatpickr-innerContainer { padding: 6px !important; }
-      .flatpickr-months, .flatpickr-month { padding: 6px 8px !important; }
-      .flatpickr-month .flatpickr-current-month { font-size: 14px !important; }
-      .flatpickr-weekdays { padding: 4px 6px !important; font-size: 12px !important; }
-      /* 日期格子變小，減少內距與高度，避免大面積空白 */
-      .flatpickr-days { padding: 4px !important; max-height: 200px; overflow-y: auto; }
-      .flatpickr-day,
-      .flatpickr-weekday {
-        padding: 4px 6px !important;
-        height: 30px !important;
-        line-height: 30px !important;
-        min-width: 30px !important;
+        transform: none !important;
+        transform-origin: top left !important;
+        width: calc(100% - 32px) !important; /* 與頁面左右內距相容 */
+        max-width: none !important;
+        left: 16px !important;
+        right: 16px !important;
         box-sizing: border-box !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        z-index: 9999 !important;
       }
-      /* 若有時間選取器也縮小 */
-      .flatpickr-time { font-size: 13px; padding: 6px 8px; }
-      /* default input 寬度微調以配合縮小日曆 */
-      #viewRange { font-size: 14px; padding: 8px; }
+      /* 開啟狀態也固定位置 */
+      .flatpickr-calendar.open {
+        left: 16px !important;
+        right: 16px !important;
+      }
+      .flatpickr-innerContainer { padding: 8px !important; }
+      .flatpickr-months, .flatpickr-month, .flatpickr-weekdays {
+        padding: 6px 8px !important;
+      }
+      .flatpickr-days {
+        padding: 6px !important;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .flatpickr-day, .flatpickr-weekday {
+        padding: 6px 8px !important;
+        height: 36px !important;
+        line-height: 36px !important;
+        min-width: auto !important;
+      }
     }
 
   </style>
