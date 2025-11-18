@@ -583,6 +583,47 @@
           alert("更新失敗，請稍後再試。");
         }
     }
+     //supabase
+    document.getElementById("submit").addEventListener("click", saveEdit);
+    async function saveEdit() {
+      if (!currentEditEventId) {
+        alert("無效編輯事件");
+        return;
+      }
+      
+      const eventId = currentEditEventId;
+      const idx = records.findIndex(r => r.eventId === eventId);
+      if (idx === -1) return alert("找不到該筆資料");
+
+        const date = document.getElementById("editDate").value;
+        const time = document.getElementById("editTime").value;
+        const systolic = Number(document.getElementById("systolic").value);
+        const diastolic = Number(document.getElementById("diastolic").value);
+
+        // 驗證必填欄位（使用血壓欄位而非未定義的 schedule_note）
+        if (!date || !time || isNaN(systolic) || isNaN(diastolic)) {
+          alert("請輸入完整且有效的資料！");
+          return;
+        }
+
+        const schedule_time = `${date} ${time}:00`;
+
+        const url = `https://supabase-api-six.vercel.app/bloodPressre/${userId}/${eventId}`;
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule_time, systolic, diastolic })
+          });
+          if (!response.ok) throw new Error('更新失敗');
+          alert("更新成功！");
+          closeEditModal();
+          loadRecords(); // 重新載入資料
+        } catch (error) {
+          console.error('Error updating schedule:', error);
+          alert("更新失敗，請稍後再試。");
+        }
+    }
     // Supabase config - replace with your values
     const COST_SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
     let sb = null;
