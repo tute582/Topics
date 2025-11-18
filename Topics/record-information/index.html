@@ -553,50 +553,87 @@ window.onload = function () {
   updateNoRecordMessage(); // 初次檢查
 };
 
-function addRow() {
+async  function addRow() {
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
   const time = document.getElementById("time").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const department = document.getElementById("department").value.trim();
+  const record = document.getElementById("record").value.trim();
+  const note = document.getElementById("note").value.trim();
+  const table = document.getElementById("dataTable");
+  const tbody = table.querySelector("tbody");
   if (!date || !time) {
     alert("請輸入日期與時間！");
     return;
   }
 
-  const name = document.getElementById("name").value.trim();
-  const department = document.getElementById("department").value.trim();
-  const record = document.getElementById("record").value.trim();
-  const note = document.getElementById("note").value.trim();
+  //Supabase Post API
+  let newEventId = null;   // 新增的 event_id
 
-  const table = document.getElementById("dataTable");
-  const tbody = table.querySelector("tbody");
+  try {
+    const payload = {
+      elder_user_id : userId,   //看診資訊可能由志工輸入，日後有判斷身分時使用
+      elder_name : elderName,   //因原先有要用於志工協助輸入，但尚未處理
+      visit_time: `${date} ${time}`,
+      doctor_name: name,
+      department: department,
+      visit_details:record,
+      remarks: note
+    };
 
-  // 新增一列資料
-  const newRow = tbody.insertRow(-1);
-  newRow.insertCell(0).innerText = elderName;
-  newRow.insertCell(1).innerText = date;
-  newRow.insertCell(2).innerText = time;
-  newRow.insertCell(3).innerText = name;
-  newRow.insertCell(4).innerText = department;
-  newRow.insertCell(5).innerText = record;
-  newRow.insertCell(6).innerText = note;
+    const POST_SUPABASE_API_URL = "https://supabase-api-six.vercel.app/consultations";
+    const res = await fetch(POST_SUPABASE_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  // 操作欄
-  const actionCell = newRow.insertCell(7);
-  const editBtn = document.createElement("button");
-  editBtn.type = "button";
-  editBtn.innerText = "編輯";
-  editBtn.style.padding = "6px 10px";
-  editBtn.onclick = () => openEditModal(newRow);
-  actionCell.appendChild(editBtn);
+    const result = await res.json();
 
-  // 更新表格狀態
-  sortTableByDateTime("dataTable");
-  altRows("dataTable");
-  addEditButtonsToRows();
-  clearInputs();
-  updateNoRecordMessage(); // ✅ 新增後立即更新提示
+    if (!res.ok) {
+      console.error("❌ 上傳失敗:", result);
+      alert("⚠️ 上傳資料失敗！");
+      return;
+    }
 
-  saveData(); // ✅ 新增後儲存
+    console.log("🎉 新增成功", result);
+
+    newEventId = result?.data?.event_id; // ← 從 API 回傳取得 eventId
+    if (!newEventId) console.warn("⚠ 無法取得 event_id");
+
+    // 新增一列資料
+    const newRow = tbody.insertRow(-1);
+    newRow.insertCell(0).innerText = elderName;
+    newRow.insertCell(1).innerText = date;
+    newRow.insertCell(2).innerText = time;
+    newRow.insertCell(3).innerText = name;
+    newRow.insertCell(4).innerText = department;
+    newRow.insertCell(5).innerText = record;
+    newRow.insertCell(6).innerText = note;
+
+    // 操作欄
+    const actionCell = newRow.insertCell(7);
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.innerText = "編輯";
+    editBtn.style.padding = "6px 10px";
+    editBtn.onclick = () => openEditModal(newRow);
+    actionCell.appendChild(editBtn);
+
+    // 更新表格狀態
+    sortTableByDateTime("dataTable");
+    altRows("dataTable");
+    addEditButtonsToRows();
+    clearInputs();
+    updateNoRecordMessage(); // ✅ 新增後立即更新提示
+
+    saveData(); // ✅ 新增後儲存
+  } catch (err) {
+    console.error("❌ Supabase 錯誤:", err);
+    alert("⚠️ 無法連線資料庫");
+    return;
+  }
 }
 
 /* ==============================
@@ -624,16 +661,58 @@ function saveData() {
   localStorage.setItem("clinicData", document.getElementById("dataTable").innerHTML);
 }
 
-function loadData() {
-  const saved = localStorage.getItem("clinicData");
-  if (saved) {
-    document.getElementById("dataTable").innerHTML = saved;
-    addEditButtonsToRows();
-  }
-  updateNoRecordMessage(); // ✅ 載入後檢查
-}
+async function loadData() {
+  const table = document.getElementById("dataTable");
+  const tbody = table.querySelector("tbody");
 
-window.onload = loadData;
+  tbody.innerHTML = "";
+
+  const userId = "U10243a4b528760aad0d03a51d13c2e4c";
+  const API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}`;
+
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+
+    if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
+      console.warn("⚠ API 雖成功但無資料");
+      updateNoRecordMessage();
+      return;
+    }
+
+    json.data.forEach(d => {
+      const datetime = d.visit_time ? new Date(d.visit_time) : null;
+      const date = datetime ? datetime.toISOString().split("T")[0] : "";
+      const time = datetime ? datetime.toISOString().split("T")[1].substring(0, 5) : "";
+
+      const newRow = tbody.insertRow(-1);
+      newRow.insertCell(0).innerText = d.elder_name || "";
+      newRow.insertCell(1).innerText = date;
+      newRow.insertCell(2).innerText = time;
+      newRow.insertCell(3).innerText = d.doctor_name || "";
+      newRow.insertCell(4).innerText = d.department || "";
+      newRow.insertCell(5).innerText = d.visit_details || "";
+      newRow.insertCell(6).innerText = d.remarks || "";
+
+      const actionCell = newRow.insertCell(7);
+      const editBtn = document.createElement("button");
+      editBtn.innerText = "編輯";
+      editBtn.type = "button";
+      editBtn.style.padding = "6px 10px";
+      editBtn.onclick = () => openEditModal(newRow);
+      actionCell.appendChild(editBtn);
+    });
+
+    sortTableByDateTime("dataTable");
+    altRows("dataTable");
+    addEditButtonsToRows();
+    updateNoRecordMessage();
+
+  } catch (err) {
+    console.error("❌ API 讀取失敗", err);
+    updateNoRecordMessage();
+  }
+}
 
 function altRows(id) {
   const table = document.getElementById(id);
@@ -757,6 +836,8 @@ document.getElementById("continueEditBtn").onclick = () => {
 const LIFF_ID = "2008484068-qkydRNYN";
 const avatarEl = document.getElementById("volunteerAvatar");
 const nameEl = document.getElementById("volunteerName");
+const userId = "U10243a4b528760aad0d03a51d13c2e4c";
+const userName = "";
 
 async function initLiffAndSetProfile() {
   try {
@@ -769,6 +850,10 @@ async function initLiffAndSetProfile() {
     }
 
     const profile = await liff.getProfile();
+    userId = profile.userId;
+    userName = profile.displayName;
+    console.log("LIFF Profile userId:", userId, "userName:", userName);
+
     nameEl.innerText = profile.displayName || "志工";
     if (profile.pictureUrl) {
       avatarEl.src = profile.pictureUrl;
@@ -799,8 +884,6 @@ nameEl.addEventListener("click", () => {
   }
 });
 
-initLiffAndSetProfile();
-
 /* ==============================
    ✅ 初始化表格按鈕
    ============================== */
@@ -822,6 +905,7 @@ function addEditButtonsToRows() {
 
 // 🔹頁面載入時自動執行
 window.addEventListener("DOMContentLoaded", () => {
+  initLiffAndSetProfile();
   loadData();
   updateNoRecordMessage();
 });
