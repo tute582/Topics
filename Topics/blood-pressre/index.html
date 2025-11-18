@@ -516,15 +516,15 @@
   </div>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    // LIFF 全部移除 — 改用本機/預設使用者資訊
-    let liffProfile = null; // 保留變數名稱供兼容（不使用 LIFF）
+    // LIFF 初始化與使用者資訊
+    let liffProfile = null;
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
     const ctx = document.getElementById("bpChart").getContext("2d");
     const chartContainer = document.querySelector('.chart-container');
     const tableContainer = document.querySelector('.allTable-div');
     const noRecordMsg = document.getElementById('no-record-msg');
-    let userId = "";
+    let userId = null;
 
     // 初始隱藏表格與圖表（由 renderTable/ renderChart 控制）
     if (chartContainer) chartContainer.style.display = 'none';
@@ -822,10 +822,10 @@
         recorded_time = new Date().toISOString();
       }
 
-      // 使用本機預設使用者資訊 (已移除 LINE)
+      // 使用 LIFF 提供的 userId（若未登入則 fallback 為 'local-user'）
       const volunteerNameEl = document.getElementById('volunteerName');
       const payload = {
-        elder_user_id: 'local-user',
+        elder_user_id: userId || 'local-user',
         elder_name: volunteerNameEl ? volunteerNameEl.innerText : null,
         systolic: systolic,
         diastolic: diastolic,
@@ -1113,6 +1113,7 @@
         if (!liff.isLoggedIn()) {
           nameEl.innerText = "未登入";
           avatarEl.style.display = "none";
+          userId = null;
           return;
         }
 
@@ -1132,17 +1133,20 @@
     }
 
     avatarEl.addEventListener("click", () => {
-      if (liff.isLoggedIn()) {
+      if (typeof liff !== 'undefined' && liff.isLoggedIn && liff.isLoggedIn()) {
         // 已登入則前往註冊頁面
         window.location.href = "../../Login-or-register/index.html";
-      } else {
-        // 未登入：以當前頁面為 redirectUri，桌機/平板開啟也能回到此頁面
+      } else if (typeof liff !== 'undefined' && liff.login) {
+        // 未登入：觸發 LIFF 登入
         liff.login({ redirectUri: window.location.href });
+      } else {
+        // fallback
+        alert('無法使用 LINE 登入');
       }
     });
 
     nameEl.addEventListener("click", () => {
-      if (!liff.isLoggedIn()) {
+      if (typeof liff !== 'undefined' && liff.isLoggedIn && !liff.isLoggedIn()) {
         liff.login({ redirectUri: window.location.href });
       } else {
         alert("已登入：" + (nameEl.innerText || "志工"));
