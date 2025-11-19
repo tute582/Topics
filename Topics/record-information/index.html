@@ -521,6 +521,19 @@ let editRowIndex = null;
 let isEditing = false;
 let originalData = {};
 
+//Liff初始化相關變數
+const LIFF_ID = "2008484068-qkydRNYN";
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+let userId = "";
+let userName = "";
+let currentEditEventId = "";
+
+//執行function
+initLiffAndSetProfile();
+updateNoRecordMessage();
+
+//清除輸入資料
 function clearInputs() {
   ["elderName", "date", "time", "name", "department", "record", "note"].forEach(id => {
     document.getElementById(id).value = "";
@@ -546,13 +559,7 @@ function updateNoRecordMessage() {
   }
 }
 
-// ✅ 初始化載入 localStorage 資料
-// =============================
-window.onload = function () {
-  loadData();
-  updateNoRecordMessage(); // 初次檢查
-};
-
+//新增資料
 async  function addRow() {
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
@@ -563,6 +570,9 @@ async  function addRow() {
   const note = document.getElementById("note").value.trim();
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
+  // 存入完成變數
+  clearInputs();
+
   if (!date || !time) {
     alert("請輸入日期與時間！");
     return;
@@ -570,7 +580,6 @@ async  function addRow() {
 
   //Supabase Post API
   let newEventId = null;   // 新增的 event_id
-
   try {
     const payload = {
       elder_user_id : userId,   //看診資訊可能由志工輸入，日後有判斷身分時使用
@@ -625,10 +634,7 @@ async  function addRow() {
     sortTableByDateTime("dataTable");
     altRows("dataTable");
     addEditButtonsToRows();
-    clearInputs();
     updateNoRecordMessage(); // ✅ 新增後立即更新提示
-
-    saveData(); // ✅ 新增後儲存
   } catch (err) {
     console.error("❌ Supabase 錯誤:", err);
     alert("⚠️ 無法連線資料庫");
@@ -657,10 +663,56 @@ function sortTableByDateTime(tableId) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
-function saveData() {
-  localStorage.setItem("clinicData", document.getElementById("dataTable").innerHTML);
+//透過Patch URL 更新編輯資料到資料庫
+async function saveEditData() {
+  if (!currentEditEventId) {
+    console.error("❌ event_id 不存在，無法 PATCH");
+    return;
+  }
+
+  const elderName = document.getElementById("editElderName").value;
+  const date = document.getElementById("editDate").value;
+  const time = document.getElementById("editTime").value;
+  const doctorName = document.getElementById("editDoctorName").value;
+  const department = document.getElementById("editDepartment").value;
+  const record = document.getElementById("editRecord").value;
+  const note = document.getElementById("editNote").value;
+
+  const visit_time = `${date}T${time}:00`;
+
+  const payload = {
+    elder_name: elderName,
+    visit_time: visit_time,
+    doctor_name: doctorName,
+    department: department,
+    visit_details: record,
+    remarks: note
+  };
+
+  const PATCH_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}/${currentEditEventId}`;
+
+  try {
+    const res = await fetch(PATCH_SUPABASE_API_URL, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+    console.log("PATCH 回傳：", json);
+
+    if (json.success) {
+      alert("資料成功更新到資料庫！✨");
+    } else {
+      alert("更新失敗：" + json.message);
+    }
+  } catch (err) {
+    console.error("❌ PATCH API 錯誤：", err);
+    alert("更新失敗，請查看 console");
+  }
 }
 
+//初始化載入資料
 async function loadData() {
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
@@ -695,6 +747,7 @@ async function loadData() {
       newRow.insertCell(4).innerText = d.department || "";
       newRow.insertCell(5).innerText = d.visit_details || "";
       newRow.insertCell(6).innerText = d.remarks || "";
+      newRow.dataset.event_id = d.event_id
 
       const actionCell = newRow.insertCell(7);
       const editBtn = document.createElement("button");
@@ -709,7 +762,6 @@ async function loadData() {
     altRows("dataTable");
     addEditButtonsToRows();
     updateNoRecordMessage();
-
   } catch (err) {
     console.error("❌ API 讀取失敗", err);
     updateNoRecordMessage();
@@ -723,8 +775,10 @@ function altRows(id) {
     rows[i].className = (i % 2 === 0) ? "evenrowcolor" : "oddrowcolor";
 }
 
+//開啟編輯視窗
 function openEditModal(row) {
   editRowIndex = row.rowIndex;
+  currentEditEventId = row.dataset.eventId;
   const modal = document.getElementById("editModal");
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     const val = row.cells[i].innerText;
@@ -754,6 +808,7 @@ function setReadOnly(readOnly) {
 
 document.getElementById("enterEditBtn").onclick = () => setReadOnly(false);
 
+//編輯中的"儲存"按鈕被點選時執行
 document.getElementById("saveEditBtn").onclick = () => {
   const row = document.getElementById("dataTable").rows[editRowIndex];
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
@@ -763,10 +818,11 @@ document.getElementById("saveEditBtn").onclick = () => {
   sortTableByDateTime("dataTable");
   altRows("dataTable");
   alert("資料已更新 ✅");
-  saveData(); // ✅ 儲存變更
+  saveEditData(); // ✅ 更新變更
   closeModal();
 };
 
+//編輯中的"刪除"按鈕被點選時執行
 document.getElementById("deleteEditBtn").onclick = () => {
   if (confirm("確定刪除此筆資料？")) {
     document.getElementById("dataTable").deleteRow(editRowIndex);
@@ -793,6 +849,7 @@ function tryCloseModal() {
   }
 }
 
+//關閉編輯室窗
 function closeModal() {
   const modal = document.getElementById("editModal");
   modal.classList.remove("show");
@@ -835,12 +892,6 @@ document.getElementById("continueEditBtn").onclick = () => {
 /* ==============================
    ✅ LIFF 初始化
    ============================== */
-const LIFF_ID = "2008484068-qkydRNYN";
-const avatarEl = document.getElementById("volunteerAvatar");
-const nameEl = document.getElementById("volunteerName");
-const userId = "";
-const userName = "";
-
 async function initLiffAndSetProfile() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -848,6 +899,7 @@ async function initLiffAndSetProfile() {
     if (!liff.isLoggedIn()) {
       nameEl.innerText = "未登入";
       avatarEl.style.display = "none";
+      await loadData();
       return;
     }
 
@@ -859,10 +911,13 @@ async function initLiffAndSetProfile() {
     nameEl.innerText = profile.displayName || "志工";
     if (profile.pictureUrl) {
       avatarEl.src = profile.pictureUrl;
-      avatarEl.style.display = "inline-block";
-    } else {
+      avatarEl.style.display = "inline-block";  
+    } 
+    else {
       avatarEl.style.display = "none";
     }
+
+    await loadData();
   } catch (err) {
     console.error("LIFF init error:", err);
   }
@@ -904,13 +959,6 @@ function addEditButtonsToRows() {
   });
 }
 
-
-// 🔹頁面載入時自動執行
-window.addEventListener("DOMContentLoaded", () => {
-  initLiffAndSetProfile();
-  loadData();
-  updateNoRecordMessage();
-});
 </script>
 
 </body>
