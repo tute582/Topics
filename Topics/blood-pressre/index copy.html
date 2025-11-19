@@ -578,6 +578,8 @@
     // 預設改為 null => 顯示所有資料（不以固定天數過濾）
     let viewDays = null;
     let chart;
+    // 全域 flatpickr 實例，讓 applyQuick 與其他函式都能存取並更新日曆顯示
+    let fp = null;
     // 使用者是否主動選取範圍（點了快捷鍵或在 flatpickr 上選取）— 若為 true，保持範圍控制欄位顯示
     let userSelectedRange = false;
 
@@ -674,7 +676,8 @@
     function initViewControlsAndRender() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
-      const viewRangeEl = document.getElementById('viewRange');
+      // 修正 id 為實際 input id：dateRange
+      const viewRangeEl = document.getElementById('dateRange');
       const quickBtns = document.querySelectorAll('.range-quick-btn');
 
       // 計算預設結束日（今天）與開始日（最近 viewDays）
@@ -682,8 +685,7 @@
       const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       viewEndDateStr = endStr;
 
-      // flatpickr 初始化（range 模式）
-      let fp = null;
+      // flatpickr 初始化（range 模式） — 使用全域 fp 變數
       const rangeSelect = document.getElementById('rangeSelect');
       if (viewRangeEl && typeof flatpickr === 'function') {
         // 如果 viewDays 是數字，使用最近 viewDays 為預設；若 viewDays 為 null => 嘗試使用資料的最小/最大日期作為預設範圍（顯示「所有」）
@@ -739,6 +741,7 @@
             }
           };
         if (defaultDateArray) fpOptions.defaultDate = defaultDateArray;
+        // 指派到全域 fp，讓 applyQuick 可呼叫 fp.setDate(...) 並觸發 onChange
         fp = flatpickr(viewRangeEl, fpOptions);
       }
 
@@ -1298,15 +1301,8 @@
                 adviceButton.disabled = false;
             }
         }
-        flatpickr("#dateRange", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    locale: {
-        rangeSeparator: " - "
-    }
-});
-    // 初始化一次
-    setDefaultDateTime();
+        // 已在 initViewControlsAndRender 內初始化 flatpickr (存於全域 fp)，
+        // 因此移除重複的 flatpickr("#dateRange", ...) 初始化。
   </script>
 </body>
 </html>
