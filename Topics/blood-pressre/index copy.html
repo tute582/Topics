@@ -508,10 +508,14 @@
 
           <!-- 將快捷按鈕放在右側的垂直列，視窗窄時仍會換行 -->
           <div style="display:flex; flex-direction:column; gap:8px; margin-left:12px;">
-            <button type="button" class="range-quick-btn" data-range="7">最近 7 天</button>
-            <button type="button" class="range-quick-btn" data-range="30">最近 30 天</button>
-            <button type="button" class="range-quick-btn" data-range="thisMonth">本月</button>
-            <button type="button" class="range-quick-btn" data-range="lastMonth">上個月</button>
+            <label for="rangeSelect" style="font-weight:600; margin-bottom:6px;">快速選擇範圍：</label>
+            <select id="rangeSelect" style="padding:8px; border-radius:6px; border:1px solid #ccc; min-width:140px;">
+              <option value="">自訂範圍（或清除）</option>
+              <option value="7">最近 7 天</option>
+              <option value="30">最近 30 天</option>
+              <option value="thisMonth">本月</option>
+              <option value="lastMonth">上個月</option>
+            </select>
           </div>
         </div>
 
@@ -680,6 +684,7 @@
 
       // flatpickr 初始化（range 模式）
       let fp = null;
+      const rangeSelect = document.getElementById('rangeSelect');
       if (viewRangeEl && typeof flatpickr === 'function') {
         // 如果 viewDays 是數字，使用最近 viewDays 為預設；若 viewDays 為 null => 嘗試使用資料的最小/最大日期作為預設範圍（顯示「所有」）
         let defaultDateArray = null;
@@ -729,14 +734,15 @@
              if (document.getElementById('viewStartDate')) document.getElementById('viewStartDate').value = startIso;
              renderTable();
              renderChart();
-             quickBtns.forEach(b => b.classList.remove('active'));
-           }
-         };
+             // 使用者在 flatpickr 選取範圍時，清除下拉快速選單的選取（表示自訂範圍）
+             if (rangeSelect) rangeSelect.value = "";
+            }
+          };
         if (defaultDateArray) fpOptions.defaultDate = defaultDateArray;
         fp = flatpickr(viewRangeEl, fpOptions);
       }
 
-      // 快捷按鈕事件（最近7/30、本月、上個月）
+      // 快捷/下拉選單事件處理（最近7/30、本月、上個月）
       function applyQuick(rangeKey) {
         const t = new Date();
         let s, e;
@@ -760,7 +766,8 @@
         // set flatpickr 選取
         if (fp) {
           fp.setDate([s, e], true, "Y-m-d");
-        } else {
+          if (rangeSelect) rangeSelect.value = rangeKey;
+         } else {
           // fallback: 手動設定全域變數
           const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
           const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
@@ -770,23 +777,24 @@
         }
       }
 
-      quickBtns.forEach(b => {
-        b.addEventListener('click', (ev) => {
-          userSelectedRange = true; // 按下快捷按鈕視為使用者主動選取範圍
-          quickBtns.forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          const k = b.getAttribute('data-range');
+      // 若使用下拉式快速選單
+      if (rangeSelect) {
+        rangeSelect.addEventListener('change', (ev) => {
+          const k = ev.target.value;
+          if (!k) return; // 空值代表使用者想要自訂/清除快速選擇
+          userSelectedRange = true;
           applyQuick(k);
         });
-      });
-
-      // 預設不強制套用快捷按鈕：只有當 viewDays 為數字時才 auto-apply（避免覆蓋「顯示所有」）
-      if (typeof viewDays === 'number' && quickBtns && quickBtns.length) {
-        let initialBtn = Array.from(quickBtns).find(b => b.getAttribute('data-range') === String(viewDays));
-        if (!initialBtn) initialBtn = quickBtns[0];
-        quickBtns.forEach(x => x.classList.remove('active'));
-        initialBtn.classList.add('active');
-        applyQuick(initialBtn.getAttribute('data-range'));
+      }
+ 
+      // 預設不強制套用快速選單：只有當 viewDays 為數字時才 auto-apply（避免覆蓋「顯示所有」）
+      if (typeof viewDays === 'number' && rangeSelect) {
+        const v = String(viewDays);
+        const opt = Array.from(rangeSelect.options).find(o => o.value === v);
+        if (opt) {
+          rangeSelect.value = v;
+          applyQuick(v);
+        }
       }
 
       // 計算初次顯示是否有資料，決定是否顯示控制區塊
