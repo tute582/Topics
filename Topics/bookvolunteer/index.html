@@ -743,14 +743,12 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
     </div>
 
   <!-- 新增：縣市與行政區（縣市無額外標籤，使用 placeholder） -->
-  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-    <label style="flex:1;display:block;font-weight:600;margin:0;">詳細地址</label>
-    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;white-space:nowrap;">目前位置</button>
+  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
+    <label style="font-weight:600;margin:0;">完整地址</label>
+    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;">目前位置</button>
   </div>
   <!-- 地圖容器（預設隱藏，按下「目前位置」才顯示） -->
-  <!-- 搜尋欄（地圖顯示時一併顯示） -->
-  <!-- 地圖包裝器：搜尋欄放在地圖上方中央 -->
-  <div id="mapWrap" style="display:none; position:relative; width:100%; height:400px; margin-top:12px; border-radius:8px; overflow:hidden;">
+  <div id="mapWrap" style="display:none; position:relative; width:100%; height:250px; margin-top:12px; border-radius:8px; overflow:hidden;">
     <!-- 搜尋欄：縮短並靠左（與「地圖 / 地形」按鈕對齊） -->
     <input id="mapSearch" type="text"
       placeholder="搜尋地點或地址"
@@ -758,34 +756,11 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
       style="position:absolute;left:18px;right:auto;top:56px;transform:none;z-index:999;width:220px;max-width:45%;height:36px;padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);box-shadow:0 6px 16px rgba(0,0,0,0.10);background:#fff;font-size:14px;outline:none;display:none;">
     <div id="map" style="width:100%; height:100%; border-radius:8px;"></div>
    </div>
-  <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
-    <select id="citySelect" name="city" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請選擇縣市</option>
-    </select>
-    <select id="districtSelect" name="district" style="flex:1;padding:8px;border-radius:10px;border:1px solid #888;background:#fff;">
-      <option value="" selected disabled>請先選縣市</option>
-    </select>
-  </div>
 
-  <!-- 新增：道路 / 衝名 / 村里名稱 與 巷/弄/號/樓（已移除「使用說明」按鈕） -->
-  <div class="address-section" style="margin-top:10px;">
-      <input id="streetName" type="text" placeholder="請輸入道路/街名/村里名稱" 
-             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
-  </div>
-
-  <!-- 新增：完整地址顯示欄（readonly，可由定位/搜尋填入） -->
-  <label style="margin-top:8px;">完整地址：</label>
-  <input id="addressFull" type="text" placeholder="完整地址會自動填入" readonly
-         style="width:100%;padding:8px;border-radius:8px;border:1px solid #888;background:#f7fbff;color:#222;">
-
-
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
-      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
-      
-    </div>
+  <!-- 單一完整地址欄位（取代縣市/區/路名/巷弄/號/樓等多欄位） -->
+  <div style="margin-top:10px;">
+    <input id="addressFull" type="text" placeholder="請輸入完整地址（或按「目前位置」自動填入）"
+           style="width:100%;padding:10px;border-radius:10px;border:1px solid #888;background:#fff;color:#222;font-size:16px;box-sizing:border-box;">
   </div>
 
   <button type="button" onclick="toggleCard()">配對</button>
@@ -952,8 +927,7 @@ function toggleCard() {
     { id: 'time', name: '時間' },
     { id: 'department', name: '科別' },
     { id: 'gender', name: '性別' },
-    { id: 'citySelect', name: '縣市' },
-    { id: 'districtSelect', name: '行政區' },
+    { id: 'addressFull', name: '完整地址' }
   ];
 
   // 移除先前錯誤樣式
@@ -1124,8 +1098,7 @@ document.head.appendChild(style);
       datetime,
       department: departmentVal,
       meetingPlace: meetingPlaceVal,
-      city: cityVal,
-      district: districtVal
+      address: addressVal
     };
     bookedList.push(newBooking);
     try {
@@ -1198,14 +1171,14 @@ function showBookings() {
         table.style.fontSize = '14px';
 
         const thead = document.createElement('thead');
-        // 將「縣市 / 行政區」合併成同一欄
+        // 將「縣市 / 行政區」改為單一「地址」欄
         thead.innerHTML = `<tr style="background:#74b9ff;color:white;">
           <th>志工姓名</th>
           <th>預約人</th>
           <th>日期時間</th>
           <th>門診科別</th>
           <th>見面地點</th>
-          <th>縣市 / 行政區</th>
+          <th>地址</th>
           <th>操作</th>
         </tr>`;
          table.appendChild(thead);
@@ -1221,7 +1194,7 @@ function showBookings() {
             <td>${b.datetime || ''}</td>
             <td>${b.department || ''}</td>
             <td>${b.meetingPlace || ''}</td>
-            <td>${cityDistrict}</td>
+            <td>${b.address || ''}</td>
             <td><button class="cancel-btn" data-index="${i}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
           `;
           tbody.appendChild(tr);
@@ -1482,74 +1455,7 @@ async function deleteBookingFromSupabase(id) {
       }, { passive: true });
     }
 
-    // 縣市與行政區選單初始化
-  (function() {
-    const cities = {
-      "台北市": ["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
-      "新北市": ["板橋區","新莊區","中和區","永和區","三重區","蘆洲區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","泰山區","林口區","八里區","平溪區","貢寮區","雙溪區","深坑區","石碇區","坪林區","三芝區","石門區","萬里區","金山區","烏來區"],
-      "基隆市": ["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"],
-      "桃園市": ["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","龍潭區","龜山區","大溪區","大園區","觀音區","新屋區","復興區"],
-      "新竹市": ["東區","北區","香山區"],
-      "新竹縣": ["竹北市","湖口鄉","新豐鄉","新埔鎮","關西鎮","芎林鄉","寶山鄉","竹東鎮","五峰鄉","橫山鄉","尖石鄉","峨眉鄉","北埔鄉"],
-      "苗栗縣": ["苗栗市","頭份市","竹南鎮","後龍鎮","通霄鎮","苑裡鎮","造橋鄉","西湖鄉","頭屋鄉","公館鄉","銅鑼鄉","三義鄉","卓蘭鎮","南庄鄉","三灣鄉","獅潭鄉","苑裡鄉"],
-      "台中市": ["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","新社區","神岡區","大雅區","潭子區","大肚區","沙鹿區","梧棲區","清水區","外埔區","大安區"],
-      "彰化縣": ["彰化市","員林市","和美鎮","鹿港鎮","溪湖鎮","二林鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","大村鄉","埔心鄉","埔鹽鄉","永靖鄉","社頭鄉","二水鄉","田中鎮","北斗鎮"],
-      "南投縣": ["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","國姓鄉","仁愛鄉","魚池鄉","水里鄉","信義鄉","玄奘鄉"],
-      "雲林縣": ["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","莿桐鄉","林內鄉","古坑鄉","二崙鄉","元長鄉","四湖鄉","口湖鄉","臺西鄉","崙背鄉","麥寮鄉","褒忠鄉"],
-      "嘉義市": ["東區","西區"],
-      "嘉義縣": ["太保市","朴子市","布袋鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","大埔鄉","竹崎鄉","梅山鄉","番路鄉","阿里山鄉"],
-      "台南市": ["中西區","東區","南區","北區","安平區","安南區","永康區","歸仁區","新化區","左鎮區","玉井區","楠西區","南化區","仁德區","關廟區","龍崎區","官田區","麻豆區","佳里區","西港區","七股區","將軍區","學甲區","北門區","新營區","後壁區","白河區","東山區","六甲區","下營區","柳營區","鹽水區","善化區","大內區","山上區","新市區","安定區"],
-      "高雄市": ["新興區","前金區","苓雅區","鹽埕區","鼓山區","左營區","楠梓區","三民區","前鎮區","旗津區","小港區","鳳山區","大寮區","林園區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區"],
-      "屏東縣": ["屏東市","東港鎮","潮州鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新園鄉","枋寮鄉","枋山鄉","春日鄉","獅子鄉","車城鄉","牡丹鄉","滿州鄉"],
-      "花蓮縣": ["花蓮市","吉安鄉","鳳林鎮","玉里鎮","新城鄉","壽豐鄉","光復鄉","富里鄉","秀林鄉","卓溪鄉","秀林鄉"],
-      "台東縣": ["台東市","關山鎮","成功鎮","長濱鄉","池上鄉","東河鄉","鹿野鄉","卑南鄉","大武鄉","太麻里鄉","綠島鄉","蘭嶼鄉","延平鄉","海端鄉"],
-      "宜蘭縣": ["宜蘭市","頭城鎮","礁溪鄉","壯圍鄉","羅東鎮","五結鄉","冬山鄉","蘇澳鎮","南澳鄉","大同鄉","員山鄉"],
-      "澎湖縣": ["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"],
-      "金門縣": ["金沙鎮","金城鎮","金寧鄉","金湖鎮","烈嶼鄉"],
-      "連江縣": ["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
-    };
-
-    const citySelect = document.getElementById('citySelect');
-    const districtSelect = document.getElementById('districtSelect');
-    if (!citySelect || !districtSelect) return;
-
-    // 建立縣市選項
-    Object.keys(cities).forEach(city => {
-      const opt = document.createElement('option');
-      opt.value = city;
-      opt.textContent = city;
-      citySelect.appendChild(opt);
-    });
-
-    // 當縣市改變時填入行政區
-    citySelect.addEventListener('change', function() {
-      const selected = this.value;
-      districtSelect.innerHTML = '';
-      if (!selected || !cities[selected]) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.disabled = true;
-        opt.selected = true;
-        opt.textContent = '請先選縣市';
-        districtSelect.appendChild(opt);
-        return;
-      }
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = '';
-      defaultOpt.disabled = true;
-      defaultOpt.selected = true;
-      defaultOpt.textContent = '請選擇行政區';
-      districtSelect.appendChild(defaultOpt);
-
-      cities[selected].forEach(d => {
-        const o = document.createElement('option');
-        o.value = d;
-        o.textContent = d;
-        districtSelect.appendChild(o);
-      });
-      });
-    })();
-
+    
       //-- Google Maps script 已在 head 中正確載入，移除此行
   // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需
   // 顯示提示訊息的簡易函式
@@ -1563,13 +1469,15 @@ async function deleteBookingFromSupabase(id) {
 
     (function() {
       const btn = document.getElementById('useLocationBtn');
-      const streetNameEl = document.getElementById('streetName');
+      // 使用存在的完整地址欄位 id
+      const addressFullEl = document.getElementById('addressFull');
       const mapWrap = document.getElementById('mapWrap');
       const mapEl = document.getElementById('map');
       const mapSearchInput = document.getElementById('mapSearch');
       let map, marker, geocoder;
 
-      if (!btn || !streetNameEl || !mapWrap || !mapEl) return;
+      // 若必要元素不存在則不進行
+      if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
 
       btn.addEventListener('click', () => {
         // 顯示地圖容器（按鈕按下時一起出現）
@@ -1617,12 +1525,15 @@ async function deleteBookingFromSupabase(id) {
                       map.setZoom(17);
                       marker.setPosition(place.geometry.location);
                     }
-                    // 以 Places API 的 address_components 填欄位（嘗試 city/district/route/street_number）
+
+                    // 以 Places API 的 address_components 組出較完整地址（fallback: formatted_address）
                     const comps = place.address_components || [];
                     let cityCandidate = '';
                     let districtCandidate = '';
                     let route = '';
                     let street_number = '';
+                    let subpremise = ''; // 門牌附加（如之1、之2、樓）
+                    let sublocality = ''; // 鄰/里/社區等
                     comps.forEach(c => {
                       const types = c.types || [];
                       if (types.includes('administrative_area_level_1') || types.includes('locality')) {
@@ -1633,8 +1544,13 @@ async function deleteBookingFromSupabase(id) {
                       }
                       if (types.includes('route')) route = c.long_name;
                       if (types.includes('street_number')) street_number = c.long_name;
+                      if (types.includes('subpremise')) subpremise = c.long_name;
+                      if (types.includes('sublocality') || types.includes('neighborhood')) {
+                        if (!sublocality) sublocality = c.long_name;
+                      }
                     });
-                    // helper
+
+                    // helper: 在 select 中尋找最接近的 option（by value 或 text）
                     function findOption(selectEl, name) {
                       if (!selectEl || !name) return null;
                       const opts = Array.from(selectEl.options || []);
@@ -1643,6 +1559,29 @@ async function deleteBookingFromSupabase(id) {
                       found = opts.find(o => (o.text && name.indexOf(o.text) !== -1) || (o.text && o.text.indexOf(name) !== -1));
                       return found || null;
                     }
+
+                    // 組合完整地址：縣市 行政區 路名 + 號（若有則包含 subpremise）
+                    const parts = [];
+                    if (cityCandidate) parts.push(cityCandidate);
+                    if (districtCandidate) parts.push(districtCandidate);
+                    let streetPart = '';
+                    if (route) streetPart += route;
+                    if (streetPart && street_number) streetPart += ' ' + street_number;
+                    if (streetPart) parts.push(streetPart);
+                    if (subpremise) parts.push(subpremise);
+                    if (!parts.length && place.formatted_address) {
+                      // 如果 address_components 都沒有，但有 formatted_address，則用 formatted_address
+                      parts.push(place.formatted_address);
+                    }
+                    // 另外把 sublocality 等附加資訊加到結尾（如有）
+                    if (sublocality) parts.push(sublocality);
+
+                    const assembled = parts.join(' ').trim();
+
+                    // 寫入欄位（優先使用組合結果，若空則使用 formatted_address）
+                    if (addressFullEl) addressFullEl.value = assembled || (place.formatted_address || '');
+
+                    // 嘗試同步縣市/區下拉（若頁面有）
                     const citySelectEl = document.getElementById('citySelect');
                     const districtSelectEl = document.getElementById('districtSelect');
                     if (cityCandidate && citySelectEl) {
@@ -1657,6 +1596,7 @@ async function deleteBookingFromSupabase(id) {
                       citySelectEl.value = match.value;
                       citySelectEl.dispatchEvent(new Event('change', { bubbles: true }));
                     }
+                    // 稍候 (change 事件可能重製 district)，故用 setTimeout 同步 district
                     setTimeout(() => {
                       if (districtCandidate && districtSelectEl) {
                         let matchD = findOption(districtSelectEl, districtCandidate);
@@ -1669,9 +1609,7 @@ async function deleteBookingFromSupabase(id) {
                         }
                         districtSelectEl.value = matchD.value;
                       }
-                      if (route && streetNameEl) streetNameEl.value = route;
-                      if (street_number && document.getElementById('number')) document.getElementById('number').value = street_number;
-                    }, 150);
+                    }, 120);
                   });
                 }
               } catch (e) {
@@ -1707,7 +1645,7 @@ async function deleteBookingFromSupabase(id) {
               if (districtSelectEl) {
                 districtSelectEl.innerHTML = '<option value=\"\" disabled selected>請先選縣市</option>';
               }
-              if (streetNameEl) streetNameEl.value = '';
+              if (addressFullEl) addressFullEl.value = '';
               if (laneEl) laneEl.value = '';
               if (alleyEl) alleyEl.value = '';
               if (numberEl) numberEl.value = '';
@@ -1720,8 +1658,6 @@ async function deleteBookingFromSupabase(id) {
                 let districtCandidate = '';
                 let route = '';
                 let street_number = '';
-                const formatted = r.formatted_address || '';
-
                 comps.forEach(c => {
                   const types = c.types || [];
                   if (types.includes('administrative_area_level_1') || types.includes('locality')) {
@@ -1744,21 +1680,17 @@ async function deleteBookingFromSupabase(id) {
                   return found || null;
                 }
 
-                // 在解析完 cityCandidate, districtCandidate, route, street_number, laneMatch, alleyMatch, numberMatch, floorMatch 後
+                // 組合並填入完整地址欄（簡單拼接，可依需求調整格式）
+                const parts = [];
                 const cityTxt = cityCandidate || '';
                 const districtTxt = districtCandidate || '';
                 const routeTxt = route || '';
-                const numberTxt = street_number || (numberMatch ? numberMatch[1] : '');
-                const laneTxt = laneMatch ? laneMatch[1] : '';
-                const alleyTxt = alleyMatch ? alleyMatch[1] : '';
-                const floorTxt = floorMatch ? floorMatch[1] : '';
-
-                // 填入各個欄位（既有邏輯）
-                if (route && streetNameEl) streetNameEl.value = route;
-                if (laneEl) laneEl.value = laneTxt;
-                if (alleyEl) alleyEl.value = alleyTxt;
-                if (numberEl) numberEl.value = numberTxt;
-                if (floorEl) floorEl.value = floorTxt;
+                const numberTxt = street_number || '';
+                if (cityTxt) parts.push(cityTxt);
+                if (districtTxt) parts.push(districtTxt);
+                if (routeTxt) parts.push(routeTxt + (numberTxt ? (' ' + numberTxt) : ''));
+                const fullAddr = parts.join(' ');
+                if (addressFullEl) addressFullEl.value = fullAddr || (r.formatted_address || '');
                 if (citySelectEl && cityTxt) {
                   let match = findOption(citySelectEl, cityTxt);
                   if (!match) {
@@ -1783,20 +1715,9 @@ async function deleteBookingFromSupabase(id) {
                   districtSelectEl.value = matchD.value;
                 }
 
-                // 組合並填入完整地址欄（簡單拼接，可依需求調整格式）
-                const parts = [];
-                if (cityTxt) parts.push(cityTxt);
-                if (districtTxt) parts.push(districtTxt);
-                if (routeTxt) parts.push(routeTxt + (numberTxt ? (' ' + numberTxt) : ''));
-                if (laneTxt) parts.push(laneTxt + '巷');
-                if (alleyTxt) parts.push(alleyTxt + '弄');
-                if (floorTxt) parts.push(floorTxt + '樓');
-                const fullAddr = parts.join(' ');
-                const addressFullEl = document.getElementById('addressFull');
-                if (addressFullEl) addressFullEl.value = fullAddr || (formatted || '');
               } else {
                 // 若無結果，維持所有欄位為空白並顯示座標或訊息
-                if (streetNameEl) streetNameEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
+                if (addressFullEl) addressFullEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
                 showAlert('無法取得詳細地址，已顯示座標，其餘欄位保留空白');
                 btn.disabled = false;
                 btn.innerText = prevText;
