@@ -411,7 +411,34 @@
     min-width: auto !important;
   }
 }
+  /* 調整外觀更像你截圖的版本 */
+    .flatpickr-input {
+        width: 260px;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
 
+    /* 加上 calendar icon */
+    .date-range-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .date-range-wrapper::before {
+        content: "📅";
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        font-size: 18px;
+        pointer-events: none;
+    }
+
+    /* 讓文字不要被 icon 壓住 */
+    .date-range-input {
+        padding-left: 32px;
+    }
 
   </style>
   <!-- flatpickr 日期範圍選擇器 -->
@@ -419,6 +446,7 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <!-- flatpickr 繁體中文語系 -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+  
 </head>
 <body>
   <!-- 導覽列 -->
@@ -473,8 +501,9 @@
       <div class="range-picker-wrap">
         <label for="viewRange" style="display:block; font-weight:600; margin-bottom:6px; font-size: 20px;">日期範圍：</label>
         <div class="range-controls">
-          <input id="viewRange" type="text" placeholder="選擇日期範圍" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:100%;">
-          <div class="range-picker-actions" aria-hidden="false">
+          <div class="date-range-wrapper">
+            <input id="dateRange" class="date-range-input" placeholder="選擇日期 - 選擇日期" />
+            </div>
             <button type="button" class="range-quick-btn" data-range="7">最近 7 天</button>
             <button type="button" class="range-quick-btn" data-range="30">最近 30 天</button>
             <button type="button" class="range-quick-btn" data-range="thisMonth">本月</button>
@@ -514,6 +543,7 @@
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     // LIFF 初始化與使用者資訊
@@ -1253,6 +1283,13 @@
                 adviceButton.disabled = false;
             }
         }
+        flatpickr("#dateRange", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    locale: {
+        rangeSeparator: " - "
+    }
+});
     // 初始化一次
     setDefaultDateTime();
   </script>
