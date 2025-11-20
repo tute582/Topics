@@ -119,6 +119,40 @@ input[type="time"] {
   box-sizing: border-box;
   /* 避免 iOS 自動放大字級 */
   -webkit-text-size-adjust: 100%;
+
+  /* 讓原生 picker icon 可以正確定位並可點擊 */
+  position: relative;
+  padding-right: 44px; /* 留空間給 icon */
+}
+
+/* WebKit 原生 picker indicator（calendar/clock）確保可見且可點擊 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  opacity: 0.95;
+  display: block;
+  -webkit-appearance: none; /* 保留圖示但不讓瀏覽器套用奇怪預設 */
+}
+
+/* 備援：若某瀏覽器隱藏原生 indicator，顯示內嵌 SVG 背景圖（不影響 picker 行為） */
+input[type="date"] {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px 20px;
+}
+
+input[type="time"] {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px 20px;
 }
 
 /* 調整 WebKit 內部 editable field 的內距/字級，避免被預設樣式撐開 */
