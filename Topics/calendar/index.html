@@ -585,8 +585,13 @@
         const result = await res.json();
 
         if (!res.ok) {
+          if (result.message == "缺少長者ID") {
+            console.error("❌ 上傳失敗:", result);
+            alert("⚠️ 請點擊右上方[未登入]，登入您的LINE帳號，確保資料準確被保存");
+            return;
+          }
           console.error("❌ 上傳失敗:", result);
-          alert("⚠️ 上傳資料失敗！");
+          alert("⚠️ 上傳資料發生錯誤，請聯繫服務窗口確認，謝謝!");
           return;
         }
 
