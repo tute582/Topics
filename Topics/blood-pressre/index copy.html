@@ -497,10 +497,10 @@
     
 
     <!-- 顯示控制：日期範圍（合併開始/結束）與快捷選項 -->
-    <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 30px; display:none;">
+    <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 ; display:none;">
       <div class="range-picker-wrap">
-        <label for="viewRange" style="display:block; font-weight:600; margin-bottom:6px; font-size: 20px;">日期範圍：</label>
-
+        <h2 class="title" style="font-size:20px; margin:6px 0;">日期範圍：</h2>
+ 
         <div class="range-controls">
           <div class="date-range-wrapper" style="flex:1;">
             <input id="dateRange" class="date-range-input" placeholder="開始日期 - 結束日期"/>
@@ -519,11 +519,7 @@
           </div>
         </div>
 
-        <!-- AI 建議區塊：明確放在 range-picker-wrap 內，位於按鈕下方 -->
-        <div id="advice-output" style="margin-top:12px;">
-          <h4>AI 建議：</h4>
-          <p id="advice-text"></p>
-        </div>
+        
 
         <!-- 新增：無資料時顯示的訊息（預設隱藏） -->
         <div id="no-record-msg" class="no-record" style="display:none;">目前尚未有紀錄</div>
@@ -550,7 +546,11 @@
       </table>
     </div>
   </div>
-   
+   <!-- AI 建議區塊：明確放在 range-picker-wrap 內，位於按鈕下方 -->
+        <div id="advice-output" style="max-width:820px;margin:8px auto;padding:0 16px 12px;">
+          <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議：</h2>
+          <p id="advice-text"></p>
+        </div>
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
