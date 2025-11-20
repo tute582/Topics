@@ -964,9 +964,8 @@ function toggleCard() {
   const time = document.getElementById("time").value.trim();
   const department = document.getElementById("department").value.trim();
   const gender = document.getElementById("gender").value.trim();
-  const city = (document.getElementById("citySelect") || {}).value.trim() || '';
-  const district = (document.getElementById("districtSelect") || {}).value.trim() || '';
-
+  const city = document.getElementById("addressFull").value.trim() || '';
+  
   // 清空上一次結果
   container.innerHTML = "";
   pagination.innerHTML = "";
@@ -1303,11 +1302,6 @@ nameEl.addEventListener("click", () => {
 });
 
 initLiffAndSetProfile();
-
-// 在頁面載入時嘗試初始化 LIFF（若未替換 liffId，會在 console 顯示提示）
-window.addEventListener('load', () => {
-  initLiff();
-});
 
 /* ----------------- Supabase integration -----------------
    To enable, replace the placeholders below with your project's
