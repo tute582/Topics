@@ -663,55 +663,6 @@ function sortTableByDateTime(tableId) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
-//透過Patch URL 更新編輯資料到資料庫
-async function saveEditData() {
-  if (!currentEditEventId) {
-    console.error("❌ event_id 不存在，無法 PATCH");
-    return;
-  }
-
-  const elderName = document.getElementById("editElderName").value;
-  const date = document.getElementById("editDate").value;
-  const time = document.getElementById("editTime").value;
-  const doctorName = document.getElementById("editDoctorName").value;
-  const department = document.getElementById("editDepartment").value;
-  const record = document.getElementById("editRecord").value;
-  const note = document.getElementById("editNote").value;
-
-  const visit_time = `${date}T${time}:00`;
-
-  const payload = {
-    elder_name: elderName,
-    visit_time: visit_time,
-    doctor_name: doctorName,
-    department: department,
-    visit_details: record,
-    remarks: note
-  };
-
-  const PATCH_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}/${currentEditEventId}`;
-
-  try {
-    const res = await fetch(PATCH_SUPABASE_API_URL, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const json = await res.json();
-    console.log("PATCH 回傳：", json);
-
-    if (json.success) {
-      alert("資料成功更新到資料庫！✨");
-    } else {
-      alert("更新失敗：" + json.message);
-    }
-  } catch (err) {
-    console.error("❌ PATCH API 錯誤：", err);
-    alert("更新失敗，請查看 console");
-  }
-}
-
 //初始化載入資料
 async function loadData() {
   const table = document.getElementById("dataTable");
@@ -720,12 +671,13 @@ async function loadData() {
   tbody.innerHTML = "";
   if (userId=="")
   {
+    console.log("沒有檢測到使用者登入ID，是否未登入LINE帳號?");
     return
   }
-  const API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}`;
+  const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}`;
 
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(GET_SUPABASE_API_URL);
     const json = await res.json();
 
     if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
@@ -778,7 +730,7 @@ function altRows(id) {
 //開啟編輯視窗
 function openEditModal(row) {
   editRowIndex = row.rowIndex;
-  currentEditEventId = row.dataset.eventId;
+  currentEditEventId = row.dataset.event_id;
   const modal = document.getElementById("editModal");
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     const val = row.cells[i].innerText;
@@ -817,7 +769,6 @@ document.getElementById("saveEditBtn").onclick = () => {
 
   sortTableByDateTime("dataTable");
   altRows("dataTable");
-  alert("資料已更新 ✅");
   saveEditData(); // ✅ 更新變更
   closeModal();
 };
@@ -828,12 +779,81 @@ document.getElementById("deleteEditBtn").onclick = () => {
     document.getElementById("dataTable").deleteRow(editRowIndex);
     sortTableByDateTime("dataTable");
     altRows("dataTable");
-    alert("資料已刪除 ✅");
-    updateNoRecordMessage(); // ✅ 刪除後檢查
-    saveData(); // ✅ 刪除後儲存
+    deleteData(); // ✅ 刪除後儲存
     closeModal();
   }
 };
+
+//透過Patch URL 更新編輯資料到資料庫
+async function saveEditData() {
+  if (!currentEditEventId) {
+    console.error("❌ event_id 不存在，無法 PATCH");
+    return;
+  }
+
+  const elderName = document.getElementById("editElderName").value;
+  const date = document.getElementById("editDate").value;
+  const time = document.getElementById("editTime").value;
+  const doctorName = document.getElementById("editDoctorName").value;
+  const department = document.getElementById("editDepartment").value;
+  const record = document.getElementById("editRecord").value;
+  const note = document.getElementById("editNote").value;
+
+  const visit_time = `${date}T${time}:00`;
+
+  const payload = {
+    elder_name: elderName,
+    visit_time: visit_time,
+    doctor_name: doctorName,
+    department: department,
+    visit_details: record,
+    remarks: note
+  };
+
+  const PATCH_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/consultations/${userId}/${currentEditEventId}`;
+
+  try {
+    const res = await fetch(PATCH_SUPABASE_API_URL, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+    console.log("PATCH 回傳：", json);
+
+    if (json.success) {
+      alert("資料更新已完成！✨");
+    } else {
+      alert("更新失敗：" + json.message);
+    }
+  } catch (err) {
+    console.error("❌ PATCH API 錯誤：", err);
+    alert("更新失敗，請查看 console");
+  }
+}
+
+//透過Delete URL 刪除編輯資料到資料庫
+async function deleteData() {
+  // 📌 正確 Delete API URL
+  const DELETE_API_URL =
+    `https://supabase-api-six.vercel.app/consultations/${userId}/${currentEditEventId}`;
+
+  try {
+    const res = await fetch(DELETE_API_URL, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) {
+      alert("刪除失敗: " + (result.message || res.status));
+      return;
+    }
+    alert("刪除成功！");
+  }catch (err) {
+    console.error("DELETE Error：", err);
+    alert("刪除時發生錯誤");
+  }
+}
 
 function hasChanges() {
   return ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].some(
@@ -899,6 +919,7 @@ async function initLiffAndSetProfile() {
     if (!liff.isLoggedIn()) {
       nameEl.innerText = "未登入";
       avatarEl.style.display = "none";
+      //測試用
       await loadData();
       return;
     }
