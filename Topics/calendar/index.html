@@ -101,7 +101,7 @@
   .allTable-div table, table {
     width:100%; 
     border-collapse:collapse; 
-    min-width:0; /* 允許在窄螢幕時收縮，避免與 form 不對齊 */
+    min-width:800px; /* ← 改為 800px，窄螢幕會出現橫向捲動，與看診資訊一致 */
     font-size:14px;
     background:transparent;
   }
@@ -197,7 +197,7 @@
     input[type="text"], input[type="date"], input[type="time"], textarea { 
       padding:10px; 
       border-radius:10px; }
-    .allTable-div table { min-width:0; width:100%; }
+    .allTable-div table { min-width:0; width:100%; } /* 在手機上允許表格縮放並出現橫向滾動 */
     th, td { padding:10px 8px;  white-space:normal; }
     .btn, button { padding:10px 14px;  }
     
