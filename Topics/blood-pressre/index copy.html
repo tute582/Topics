@@ -140,22 +140,24 @@
        ============================== */
     .allTable-div {
       width: 100%;
-      max-width: 820px; /* 與 form 相同寬度，保持左右對齊 */
-      margin: 5px auto; /* 置中 */
+      /*max-width: 820px; /* 與 form 相同寬度，保持左右對齊 */
+      margin: 5px ; /* 置中 */
       -webkit-overflow-scrolling: touch;
       border: 1px solid #aaa;
-      border-radius: 16px;
+      border-radius: 20px;
       background-color: white;
-      display: block;
+      display: none;
+      /* 允許水平滾動，必要時顯示水平滾軸 */
       overflow-x: auto;
+      overflow-y: auto;
       box-sizing: border-box;
       padding: 0;
     }
     .allTable-div table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
       border-spacing: 0;
-      min-width: 720px; /* 桌機上表格最小寬度，手機時會解除最小寬度 */
+      min-width: 800px; /* 桌機上表格最小寬度，手機時會解除最小寬度 */
       box-sizing: border-box;
       background: transparent;
       margin: 0;
@@ -363,7 +365,7 @@
 
 
 /* ============================================================
-   📱 Flatpickr 手機版爆版修正（最關鍵）
+   📱 Flatpickr 手機版跑版修正（最關鍵）
    ============================================================ */
 @media (max-width: 420px) {
   .flatpickr-calendar {
