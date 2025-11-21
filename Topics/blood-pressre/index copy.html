@@ -233,9 +233,16 @@
       .form-row { gap: 8px; }
       .form-row label { width: 110px; font-size: 20px; }
       .primary-btn { width: 140px; }
-      /* 手機上移除表格強制最小寬度，允許寬度收縮並顯示橫向捲動 */
-      .allTable-div table { min-width: 0; width: 100%; }
-      .allTable-div th, .allTable-div td { padding: 10px; font-size: 16px; white-space: normal; }
+      /* 保留表格最小寬度，讓手機上可左右滑動（不要把 min-width 設為 0） */
+      .allTable-div {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .allTable-div table { 
+        min-width: 720px; /* 保持較寬，觸發容器水平捲動 */
+        width: auto;
+      }
+      .allTable-div th, .allTable-div td { padding: 10px; font-size: 16px; white-space: nowrap; }
       .volunteer-area .avatar { width:30px; height:30px; }
       .volunteer-area #volunteerName { font-size: 14px; }
       /* 圖表高度限制，避免過高 */
@@ -257,8 +264,13 @@
         padding: 16px !important;
         margin-top: 18px;
       }
-      .allTable-div table { min-width: 0; width: 100%; }
-      .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: normal; }
+      /* 同樣保留最小寬度以啟用左右滾動 */
+      .allTable-div {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .allTable-div table { min-width: 720px; width: auto; }
+      .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: nowrap; }
       input[type="number"], input[type="date"] { font-size: 15px; padding: 8px; }
     }
 
