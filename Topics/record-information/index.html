@@ -372,12 +372,12 @@
 <h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
 <!-- 輸入表單區 -->
 <form>
-  <label>長輩姓名<input type="text" id="elderName"></label>
-  <label>看診日期<input type="date" id="date"></label>
-  <label>看診時間<input type="time" id="time"></label>
-  <label>醫生姓名<input type="text" id="name"></label>
+  <label>長輩姓名<input type="text" id="elderName" required></label>
+  <label>看診日期<input type="date" id="date" required></label>
+  <label>看診時間<input type="time" id="time" required></label>
+  <label>醫生姓名<input type="text" id="name" required></label>
   <label>醫生科別
-  <input type="text" id="department" list="departmentList">
+  <input type="text" id="department" list="departmentList" required>
   <datalist id="departmentList">
     <option value="內科"></option>
     <option value="外科"></option>
