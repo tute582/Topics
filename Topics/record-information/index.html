@@ -343,6 +343,41 @@
     background: transparent;
   }
   .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
+
+/* 建議複製到其他頁面全域 CSS */
+* { box-sizing: border-box; }
+
+/* flex row 中讓 input 能夠正確縮小（避免撐版） */
+.form-row, .range-controls, .some-flex-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.form-row label { width: 140px; min-width: 100px; }
+.form-row input, .range-controls input {
+  flex: 1 1 auto;
+  min-width: 0; /* ← 關鍵：允許縮小，解 iOS flex overflow bug */
+}
+
+/* 手機時調小 date/time 的字級與 padding，避免原生 picker 撐開 */
+@media (max-width: 768px) {
+  input[type="date"], input[type="time"], input[type="number"] {
+    font-size: 16px;
+    padding: 8px;
+  }
+}
+
+/* optional：如果需要可移除某些瀏覽器預設外觀（視需求，可能影響原生 picker） */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: textfield; /* 若要統一樣式，注意會影響 native picker icon */
+}
+
+/* flatpickr 手機修正（如使用 flatpickr） */
+.flatpickr-calendar { z-index: 9999; }
+@media (max-width:420px) {
+  .flatpickr-calendar { width: calc(100% - 32px) !important; left:16px !important; right:16px !important; }
+}
   </style>
 </head>
 
