@@ -371,6 +371,8 @@
 /* optional：如果需要可移除某些瀏覽器預設外觀（視需求，可能影響原生 picker） */
 input[type="date"], input[type="time"] {
   -webkit-appearance: textfield; /* 若要統一樣式，注意會影響 native picker icon */
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* flatpickr 手機修正（如使用 flatpickr） */
