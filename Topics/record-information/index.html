@@ -6,357 +6,402 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>看診資訊</title>
 
-  <style>
-    /* ==============================
-       全域設定：版面與字體
-       ============================== */
-    body { 
-      font-family: "Arial", sans-serif;
-      padding: 0;
-      box-sizing: border-box;
+<style>
+    /* =========================================
+       1. 全域與基礎設定 (Global & Reset)
+       說明：重置瀏覽器預設邊距，設定全站字體與盒模型
+       ========================================= */
+    body {
+        font-family: "Arial", sans-serif; /* 設定通用字體 */
+        padding: 0;
+        box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
     }
 
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
 
-    .input-container { margin-top: 15px; }
-    .search-container { margin-bottom: 30px; }
-
-    /* 統一左右對齊：一個容器控制左右內距 */
-    .input-container, .search-container {
-      padding: 0 25px; /* 與標題相同的左右間距 */
-      box-sizing: border-box;
+    /* =========================================
+       2. 頂部導覽列 (Navigation)
+       功能：固定在畫面上方的標題列，包含使用者資訊
+       ========================================= */
+    .nav-1 {
+        display: flex;              /* 使用 Flex 排版讓左右物件對齊 */
+        align-items: center;        /* 垂直置中 */
+        justify-content: space-between; /* 左右兩端對齊 */
+        
+        position: sticky;           /* 【關鍵】讓導覽列滾動時吸附在頂部 */
+        top: 0;
+        z-index: 1001;              /* 層級設高，確保蓋過內容與表格標頭 */
+        
+        width: 100%;
+        padding: 10px 25px;         /* 上下 10px，左右 25px */
+        background-color: white;
+        border-bottom: 1px solid #ddd; /* 底部細線增加層次感 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 微微陰影 */
+        color: black;
     }
 
+    /* --- 導覽列右側：志工/使用者登入資訊區 --- */
+    .volunteer-area {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* 元素間距 */
+    }
+
+    .volunteer-area .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%; /* 圓形頭像 */
+        object-fit: cover;  /* 圖片不變形填滿 */
+        border: 1px solid #ddd;
+        display: none;      /* 預設隱藏，登入後透過 JS 顯示 */
+    }
+
+    .volunteer-area #volunteerName {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: transparent;
+    }
+
+    .volunteer-area button {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-top: 0; /* 覆蓋下方全域 button 的 margin 設定 */
+    }
+
+    /* =========================================
+       3. 版面容器與排版 (Layout Containers)
+       功能：控制內容與兩側的間距，確保整齊
+       ========================================= */
+    
+    /* 統一左右對齊：所有主要區塊共用此內距 */
+    .input-container,
+    .search-container {
+        padding: 0 25px; /* 與導覽列左右間距一致，視覺較整齊 */
+        margin-top: 15px;
+        box-sizing: border-box;
+    }
+
+    .search-container {
+        margin-bottom: 30px; /* 搜尋區塊下方的緩衝空間 */
+    }
+
+    /* --- 標題文字樣式 --- */
     .title {
-      margin: 5px 0;
-      font-size: 26px;
+        margin: 5px 0;
+        font-size: 26px;
     }
 
-    /* 標題樣式 */
-    h1 { 
-      margin-top: 5px;
-      margin-bottom: 5px;
-      /*font-size: 42px; */ 
-    }
+    h1 { margin: 5px 0; }
     h2 { 
-      margin-top: 5px;
-      margin-bottom: 5px;
-      font-size: 20px; 
-      display: inline-block; }
-
+        margin: 5px 0; 
+        font-size: 20px; 
+        display: inline-block; 
+    }
     h3 { 
-      margin: 0; 
-      font-size: 16px; 
-      color: #555; 
+        margin: 0; 
+        font-size: 16px; 
+        color: #555; /* 次要標題顏色較淡 */
     }
 
-    /* 表單外框樣式 */
+    /* =========================================
+       4. 表單與輸入元件 (Forms & Inputs)
+       功能：輸入框、日期選單、按鈕的視覺風格
+       ========================================= */
+    
+    /* 表單外框卡片樣式 */
     .input-container > form {
-      width:100%; 
-      margin: 10px 0;
-      padding: 20px; /* 只保留上下內距，左右由容器控制，避免雙重內距 */
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      box-sizing: border-box;
+        width: 100%;
+        margin: 10px 0;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 20px; /* 圓角卡片風格 */
+        background-color: white;
     }
 
-    /* ==============================
-       表格容器樣式
-       ============================== */
-    .table-container {
-      width: 100%;
-      margin: 5px ;
-      /* 允許水平滾動，必要時顯示水平滾軸 */
-      overflow-x: auto;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch; /* 行動裝置平滑滾動 */
-      /* 若希望在內容超出時總是顯示水平滾軸（某些系統會隱藏），可改用 overflow: auto; */
-      /* max-height: 200px;  限制高度，超過出現滾輪 */
-      border: 1px solid #aaa;
-      border-radius: 20px;
-      background-color: white;
-      display: none; /* ✅ 一開始整個容器隱藏 */
+    label {
+        display: block;
+        width: 100%;
+        margin-bottom: 15px;
+        font-size: 20px;
     }
 
-    /* 表格基本樣式 */
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      /* 設定比容器寬，當容器較窄會出現橫向滾動 */
-      min-width: 800px; 
-      box-sizing: border-box;
-    }
-    
-    /*#message {
-      margin-top: 15px;
-      font-weight: bold;
-      color: #444;
-    }*/
-
-    th, td { 
-      padding:10px; 
-      text-align:center; 
-      border: 1px solid #ddd;
-      white-space: nowrap; /* 防止換行，配合橫向滾動 */
-    }
-    
-    /* 行動裝置上仍可觸發橫向捲動（若想在窄螢幕降低 min-width 可用下面的設定） */
-    @media (max-width: 600px) {
-      table { min-width: 700px; }
+    /* --- 輸入欄位 (文字、日期、時間、多行) 通用設定 --- */
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 10px;
+        border: 1px solid #888;
+        font-size: 14px;
+        background-color: white;
+        color: #222;
+        box-sizing: border-box;
+        min-width: 0; /* 修正 iOS flex item 最小寬度問題 */
     }
 
-    /* 表頭固定 */
-    th { 
-      background-color:#f9f9f9; 
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-
-    /* ==============================
-       響應式設定（手機介面）
-       ============================== */
-    @media (max-width: 768px) {
-    
-      form { width: 95%; }
-      /* 在手機上移除強制最小寬度 讓表格可縮放並出現橫向滾動 */
-      table { min-width: 0; width:100%; }
-      /* 調整輸入欄位字級與按鈕更適合手機 */
-      input[type="text"], input[type="date"], input[type="time"], textarea { font-size:16px; padding:10px; }
-      button { padding:12px 18px; font-size:16px; }
-    }
-
-    /* 表單輸入欄位樣式 */
-    label{ 
-      display:block;
-      width: 100%;
-      margin-bottom: 15px;
-      font-size: 20px;
-    }
-
+    /* 移除 iOS Safari 原生外觀 (如圓角陰影)，讓樣式統一 */
     input[type="date"],
     input[type="time"] {
-      width: 100%;
-      padding:8px;
-      margin-top:5px;
-      border:1px solid #888;
-      font-size:14px;
-      border-radius:10px;
-      background-color: white; /* 主表單預設白底 */
-      min-width: 0;     /* iOS 必加 */
-      -webkit-appearance: none;
-      appearance: none; /* 移除原生樣式 */
+        -webkit-appearance: none;
+        appearance: none;
     }
-    input[type="text"],
-    textarea {
-      width:100% ;
-      padding:8px;
-      margin-top:5px;
-      border-radius:10px;
-      border:1px solid #888;
-      font-size:14px;
-      box-sizing:border-box;
-      background-color: white; /* 主表單預設白底 */
-      color: #222;
-    }
-    /* 若輸入欄位為 readonly，也保持白底（覆蓋瀏覽器預設灰底） */
-    input[readonly], textarea[readonly], input[readonly]:not([type="checkbox"]) {
-      background-color: white;
-      cursor: default;
-    }
-    textarea { font-size:16px; }
 
-    /* 按鈕樣式 */
+    textarea { font-size: 16px; }
+
+    /* 唯讀狀態樣式：保持白底 (覆蓋瀏覽器預設的灰色) */
+    input[readonly],
+    textarea[readonly],
+    input[readonly]:not([type="checkbox"]) {
+        background-color: white;
+        cursor: default; /* 滑鼠游標不變為輸入狀 */
+    }
+
+    /* --- 按鈕樣式 --- */
     button {
-      margin-top:15px; 
-      padding:10px 20px; 
-      border:none; 
-      border-radius:10px;
-      background-color:#4a90e2; color:white; 
-      cursor:pointer; 
-      font-size:20px;
-    }
-    button:hover { background-color:#357abd; }
-
-    /* 表格列的交錯顏色 */
-    .evenrowcolor{ background-color: #f9f9f9; }
-    .oddrowcolor{ background-color: #ffffff; }
-
-    /* ==============================
-       Modal 編輯視窗樣式
-       ============================== */
-    #editModal {
-      display:none;
-      position:fixed; top:0; left:0;
-      width:100%; height:100%;
-      background-color:rgba(0,0,0,0.5);
-      z-index:1000;
-      opacity:0;
-      transition:opacity 0.3s ease;
-    }
-    #editModal.show { display:block; opacity:1; }
-
-    /* Modal 盒子：固定寬度但會在窄螢幕縮放；內容可垂直滾動 */
-    #editModal > div {
-      background:#fff;
-      width:420px;
-      max-width: calc(100% - 40px); /* 在小螢幕時自動縮小 */
-      margin:80px auto;
-      padding:20px 24px;
-      border-radius:15px;
-      position:relative;
-      box-sizing: border-box;
-      max-height: calc(100vh - 100px); /* 可見範圍內最大高度 */
-      overflow-y: auto; /* 內容超出時顯示捲軸 */
-      transform:translateY(-20px);
-      transition:transform 0.3s ease;
-    }
-    #editModal.show > div { transform:translateY(0); }
-
-    /* ==============================
-       編輯視窗按鈕樣式
-       ============================== */
-    #cancelEditBtn {
-      background:none;
-      border:none;
-      color:#555;
-      font-size:20px;
-      position:absolute;
-      top:10px;
-      right:10px;
-      cursor:pointer;
-      border-radius:5px;
-      padding:5px 10px;
-      transition: all 0.3s ease;
-    }
-    #cancelEditBtn:hover {
-      background-color:#e74c3c; /* 紅色背景 */
-      color:white;
-      transform: scale(1.1);
+        margin-top: 15px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        background-color: #4a90e2; /* 主色調藍色 */
+        color: white;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background-color 0.3s; /* 滑鼠懸停的漸變效果 */
     }
 
-    /* 編輯按鈕 */
-    #enterEditBtn {
-      position:absolute; top:10px; right:10px;
-      background-color:#f4b977; color:#333;
-      border:none; border-radius:8px; padding:6px 12px; cursor:pointer;
-      transition:all 0.3s ease;
+    button:hover {
+        background-color: #357abd; /* 深藍色 */
     }
-    #enterEditBtn:hover { background-color:#e0b557; }
 
-    /* 儲存與刪除按鈕 */
-    #saveEditBtn, #deleteEditBtn {
-      margin-top:10px; font-size:16px; padding:8px 15px;
-      border-radius:10px; border:none; cursor:pointer; display:none;
-    }
-    #saveEditBtn { background-color:#4a90e2; color:white; }
-    #saveEditBtn:hover { background-color:#357abd; }
-    #deleteEditBtn { background-color:#f37a7a; color:white; }
-    #deleteEditBtn:hover { background-color:#d94a4a; }
-
-    h3{ margin-top:0; text-align:center; }
-
-    /* ==============================
-       儲存提示視窗 (是否儲存變更)
-       ============================== */
-    #saveConfirmModal {
-      display:none;
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background-color:rgba(0,0,0,0.5);
-      z-index:2000;
-      opacity:0;
-      transition:opacity 0.3s ease;
-    }
-    #saveConfirmModal.show { display:block; opacity:1; }
-
-    #saveConfirmModal > div {
-      background:#fff;
-      width:350px;
-      margin:150px auto;
-      padding:25px;
-      border-radius:15px;
-      text-align:center;
-      transform:translateY(-20px);
-      transition:transform 0.3s ease;
-    }
-    #saveConfirmModal.show > div { transform:translateY(0); }
-
-    /* 提示視窗按鈕樣式 */
-    #saveConfirmModal button {
-      margin:10px;
-      padding:8px 18px;
-      font-size:16px;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
-      transition: all 0.3s ease;
-    }
-    #confirmSaveBtn { background-color:#4a90e2; color:white; }
-    #confirmSaveBtn:hover { background-color:#357abd; }
-
-    #confirmDiscardBtn { background-color:#f37a7a; color:white; }
-    #confirmDiscardBtn:hover { background-color:#d94a4a; }
-
-    #continueEditBtn {
-      background-color:#f2f2f2;
-      color:white;
-      font-size:15px;
-    }
-    #continueEditBtn:hover { background-color:#ffffff; }
+    /* =========================================
+       5. 資料表格區 (Data Tables)
+       功能：顯示搜尋結果，支援手機橫向捲動
+       ========================================= */
     
-    /* 導覽列 */
-  .nav-1{
-    display: flex;                 /* 水平排列內容 */
-   /* font-weight: 500;*/
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 1001;                 /* 保證在其他元素之上 */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    left: 0;
-    right: 0;
-    color: black;
-    background-color: white;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
-  }
+    /* 表格容器：負責產生捲軸 */
+    .table-container {
+        width: 100%;
+        margin: 5px;
+        /* 【關鍵】讓表格內容過長時出現橫向捲軸，不破版 */
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* 讓 iOS 滾動更滑順 */
+        border: 1px solid #aaa;
+        border-radius: 20px;
+        background-color: white;
+        display: none; /* 預設隱藏，搜尋後由 JS 開啟 */
+    }
 
-  .record-item {
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 800px; /* 設定最小寬度，強制在小螢幕觸發橫向捲動 */
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+        white-space: nowrap; /* 禁止文字換行，保持表格整齊 */
+    }
+
+    /* 表頭固定功能 (Sticky Header) */
+    th {
+        background-color: #f9f9f9;
+        position: sticky; /* 固定位置 */
+        top: 0;           /* 吸附在容器頂部 */
+        z-index: 2;       /* 確保蓋過下方資料 */
+    }
+
+    /* 列表項目樣式 (若非表格呈現時使用) */
+    .record-item {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
     }
 
     .no-record {
-      text-align: center;
-      color: #888;
-      font-size: 18px;
-      margin: 20px 0;
+        text-align: center;
+        color: #888;
+        font-size: 18px;
+        margin: 20px 0;
     }
 
+    /* 表格斑馬紋 (隔行變色) */
+    .evenrowcolor { background-color: #f9f9f9; }
+    .oddrowcolor { background-color: #ffffff; }
 
-  /* volunteer area */
-  .volunteer-area { display:flex; align-items:center; gap:8px; }
-  .volunteer-area .avatar {
-    width:36px; height:36px; border-radius:50%; object-fit:cover;
-    border:1px solid #ddd; display:none;
-  }
-  /* 可點擊的登入區域樣式 */
-  .volunteer-area #volunteerName {
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: transparent;
-  }
-  .volunteer-area button { padding:4px 8px; border-radius:6px; font-size:14px; }
-  </style>
+    /* =========================================
+       6. 編輯彈窗 (Edit Modal)
+       功能：點擊編輯時跳出的全螢幕遮罩與對話框
+       ========================================= */
+    #editModal {
+        display: none;          /* 預設不顯示 */
+        position: fixed;        /* 固定覆蓋整個視窗 */
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑底遮罩 */
+        z-index: 1000;
+        opacity: 0;             /* 透明度動畫起始狀態 */
+        transition: opacity 0.3s ease;
+    }
+
+    /* 加上 .show 類別時顯示 */
+    #editModal.show {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Modal 本體 (白色卡片) */
+    #editModal > div {
+        background: #fff;
+        width: 420px;
+        max-width: calc(100% - 40px); /* 手機版保留左右邊距 */
+        margin: 80px auto;            /* 距離頂部 80px */
+        padding: 20px 24px;
+        border-radius: 15px;
+        position: relative;
+        max-height: calc(100vh - 100px); /* 限制高度避免超出螢幕 */
+        overflow-y: auto;             /* 內容過多時顯示垂直捲軸 */
+        transform: translateY(-20px); /* 位移動畫起始位置 */
+        transition: transform 0.3s ease;
+    }
+
+    #editModal.show > div {
+        transform: translateY(0);     /* 位移回原位 */
+    }
+
+    #editModal h3 {
+        margin-top: 0;
+        text-align: center;
+    }
+
+    /* --- 編輯視窗內的按鈕群 --- */
+    /* 右上角取消/關閉圖示 */
+    #cancelEditBtn {
+        background: none;
+        border: none;
+        color: #555;
+        font-size: 20px;
+        position: absolute;
+        top: 10px; right: 10px;
+        padding: 5px 10px;
+        transition: all 0.3s ease;
+    }
+    #cancelEditBtn:hover {
+        background-color: #e74c3c; /* 紅色警示 */
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* 進入編輯模式按鈕 */
+    #enterEditBtn {
+        position: absolute;
+        top: 10px; right: 10px;
+        background-color: #f4b977; /* 橘黃色 */
+        color: #333;
+        font-size: 14px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    #enterEditBtn:hover { background-color: #e0b557; }
+
+    /* 儲存與刪除按鈕 (預設隱藏，進入編輯模式後顯示) */
+    #saveEditBtn, #deleteEditBtn {
+        margin-top: 10px;
+        font-size: 16px;
+        padding: 8px 15px;
+        display: none; 
+    }
+    #saveEditBtn { background-color: #4a90e2; }
+    #deleteEditBtn { background-color: #f37a7a; }
+
+    /* =========================================
+       7. 確認提示視窗 (Confirmation Modal)
+       功能：詢問「是否儲存變更」的二次確認
+       ========================================= */
+    #saveConfirmModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2000; /* 層級最高，蓋過編輯視窗 */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #saveConfirmModal.show {
+        display: block;
+        opacity: 1;
+    }
+
+    #saveConfirmModal > div {
+        background: #fff;
+        width: 350px;
+        margin: 150px auto;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+
+    #saveConfirmModal.show > div { transform: translateY(0); }
+
+    /* 確認視窗按鈕 */
+    #saveConfirmModal button {
+        margin: 10px;
+        padding: 8px 18px;
+        font-size: 16px;
+    }
+    #confirmSaveBtn { background-color: #4a90e2; }
+    #confirmDiscardBtn { background-color: #f37a7a; }
+    #continueEditBtn { background-color: #f2f2f2; color: #333; }
+
+    /* =========================================
+       8. 響應式設計 (RWD for Mobile)
+       功能：針對螢幕寬度小於 768px (手機/平板) 的調整
+       ========================================= */
+    @media (max-width: 768px) {
+        form { width: 95%; } /* 表單佔滿螢幕寬度 */
+        
+        /* 手機版設定：移除表格最小寬度限制，讓容器控制滾動 */
+        table {
+            min-width: 0;
+            width: 100%;
+        }
+        
+        /* 極小螢幕 (如 iPhone SE) 設定最小寬度以確保橫向捲動 */
+        @media (max-width: 600px) {
+            table { min-width: 700px; }
+        }
+
+        /* 放大輸入框文字與按鈕，方便手指點擊 */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea {
+            font-size: 16px; /* 16px 防止 iOS 輸入時自動放大畫面 */
+            padding: 10px;
+        }
+
+        button {
+            padding: 12px 18px;
+            font-size: 16px;
+        }
+    }
+</style>
 </head>
 
 <body>
