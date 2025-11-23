@@ -106,6 +106,38 @@
       border: 1px solid #ccc;
     }
 
+    /* 新增：指定只有日期列在窄螢幕也維持橫向排列 */
+    .form-row.date-row {
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .form-row.date-row label {
+      width: auto;
+      min-width: 80px;
+      margin-right: 8px;
+      text-align: left;
+    }
+    .form-row.date-row input[type="date"] {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    /* 新增：時間列保持橫向排列（label + 時間欄位同列） */
+    .form-row.time-row {
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .form-row.time-row label {
+      width: auto;
+      min-width: 80px;
+      margin-right: 8px;
+      text-align: left;
+    }
+    .form-row.time-row input[type="time"] {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     .primary-btn { width: 160px; padding: 8px 12px; }
     input { margin: 5px; padding: 6px; border-radius: 6px; border: 1px solid #ccc; }
 
@@ -253,6 +285,12 @@
     @media (max-width: 420px) {
       .form-row label { width: 100%; }
       .form-row { flex-direction: column; align-items: stretch; }
+      /* 例外：日期列保持橫向（label + 日期欄位同列） */
+      .form-row.date-row { flex-direction: row !important; align-items: center !important; }
+     /* 例外：時間列保持橫向（label + 時間欄位同列） */
+     .form-row.time-row { flex-direction: row !important; align-items: center !important; }
+      .form-row.date-row label { width: auto !important; }
+     .form-row.time-row label { width: auto !important; }
       .primary-btn { width: 100%; }
       .volunteer-area .avatar { display: none; } /* 極小螢幕隱藏頭像 */
       .volunteer-area #volunteerName { font-size: 13px; }
@@ -481,11 +519,11 @@
   <div class="div-b">
     <h1 class="title">輸入內容</h1>
     <form id="bpForm">
-      <div class="form-row">
+      <div class="form-row date-row">
         <label for="date">日期：</label>
         <input type="date" id="date" required>
       </div>
-      <div class="form-row">
+      <div class="form-row time-row">
         <label for="time">時間：</label>
         <input type="time" id="time" required>
       </div>
