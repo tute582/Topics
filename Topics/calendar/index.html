@@ -76,8 +76,7 @@
     font-size:16px; 
     background:#fff;
   }
-  input[type="date"],
-      input[type="time"] {
+  input[type="date"],input[type="time"] {
         width: 100%;
         padding:8px;
         margin-top:5px;
@@ -87,7 +86,7 @@
         background-color: white; /* 主表單預設白底 */
         min-width: 0;     /* iOS 必加 */
         -webkit-appearance: none;
-        appearance: none; /* 移除原生樣式 */
+        /*appearance: none;  移除原生樣式 */
       }
   .btn {
     margin-top:12px; padding:10px 18px; border:none; border-radius:12px; color:#fff; cursor:pointer;
@@ -102,20 +101,29 @@
     overflow-x:auto; 
     overflow-y: auto;
     -webkit-overflow-scrolling:touch;
-    border: none; /* ← 改成沒有外框線 */
+    border: none;
     border-radius:20px; 
     background:white;
     display:none;
-    padding: none; /* 與 form 內距一致，讓內容列對齊 */
+    padding: 0; /* 改為 0 */
     box-sizing: border-box;
   }
 
-  .allTable-div table, table {
-    width:100%; 
-    border-collapse:collapse; 
-    min-width:800px; /* ← 改為 800px，窄螢幕會出現橫向捲動，與看診資訊一致 */
-    font-size:14px;
-    background:transparent;
+  /* 全域 table 預設（一般表格）*/
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: transparent;
+  }
+
+  /* 針對 .allTable-div 下的 table 強制依內容寬度延伸，超出容器時出現橫向捲動 */
+  .allTable-div table {
+    width: max-content;
+    border-collapse: collapse;
+    min-width: 800px; /* 可視需要調整或移除 */
+    font-size: 14px;
+    background: transparent;
   }
 
   th, td {
@@ -223,8 +231,8 @@
     .volunteer-area .avatar { width:32px; height:32px; }
   }
   </style>
-</head>
-<body>
+  </head>
+  <body>
   <nav class="nav-1">
     <div> 
   <h1 style="margin: 0; font-size: 28px;">行事曆</h1>
@@ -245,7 +253,8 @@
       <label>日期</label>
       <input type="date" id="date" placeholder="例如(例：2025-10-02)" />
       <label>時間</label>
-      <input type="time" id="time" placeholder="例如：09:00" />
+      <!-- 改為文字輸入並用 class time-input ，由 JS 強制為 24 小時格式 -->
+      <input type="text" id="time" class="time-input" placeholder="24小時制 (HH:MM)" maxlength="5" inputmode="numeric" />
       <label>行程內容</label>
       <input type="text" maxlength="25"  id="event" placeholder="限25字"/>
       <label>備註</label>
@@ -308,7 +317,8 @@
         <label>日期</label>
         <input type="date" id="editDate" /><br />
         <label>時間</label>
-        <input type="time" id="editTime" /><br />
+        <!-- 編輯欄位同樣改為文字輸入 -->
+        <input type="text" id="editTime" class="time-input" placeholder="24小時制 (HH:MM)" maxlength="5" inputmode="numeric" /><br />
         <label>行程內容</label>
         <input type="text" id="editEvent" /><br />
         <label>備註</label>
@@ -474,11 +484,92 @@
     // 取得現在時間
     function nowDate() { return new Date(); }
 
-    // 解析日期時間
-    function parseDateTime(dateStr, timeStr) {
-      return new Date(`${dateStr}T${timeStr}:00`);
+    // 將時間字串統一為 24 小時制 HH:MM（接受 "9:00", "09:00", "9:00 AM", "9:00PM" 等）
+    function normalizeTimeTo24(timeStr) {
+      if (!timeStr) return "";
+      timeStr = String(timeStr).trim();
+      // 若包含 AM/PM，轉換為 24h
+      const ampmMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*([APMapm\.]{2,4})/);
+      if (ampmMatch) {
+        let hh = parseInt(ampmMatch[1], 10);
+        const mm = ampmMatch[2].padStart(2, '0');
+        const ampm = ampmMatch[3].toLowerCase().replace(/\./g, '');
+        if (ampm === 'pm' && hh !== 12) hh += 12;
+        if (ampm === 'am' && hh === 12) hh = 0;
+        return String(hh).padStart(2, '0') + ':' + mm;
+      }
+      // 若為純數字格式 like "9:5" 或 "9:05"
+      const m = timeStr.match(/^(\d{1,2}):(\d{1,2})$/);
+      if (m) {
+        let hh = parseInt(m[1], 10);
+        const mm = String(parseInt(m[2], 10)).padStart(2, '0');
+        hh = Math.max(0, Math.min(23, hh));
+        return String(hh).padStart(2, '0') + ':' + mm;
+      }
+      // 若為純數字 "0905" 或 "905"
+      const numOnly = timeStr.match(/^(\d{3,4})$/);
+      if (numOnly) {
+        const s = numOnly[1].padStart(4,'0');
+        const hh = String(Math.max(0, Math.min(23, parseInt(s.slice(0,2),10)))).padStart(2,'0');
+        const mm = String(Math.max(0, Math.min(59, parseInt(s.slice(2),10)))).padStart(2,'0');
+        return `${hh}:${mm}`;
+      }
+      // 若已是完整 HH:MM:SS，截取前5字
+      const fullMatch = timeStr.match(/^(\d{2}:\d{2}):\d{2}$/);
+      if (fullMatch) return fullMatch[1];
+      return timeStr; // fallback
     }
 
+    // 強制 time-input 使用 24 小時格式：即時格式化輸入（自動加冒號、限制範圍）
+    function attachTimeInputFormatter(selector) {
+      document.querySelectorAll(selector).forEach(el => {
+        // on input: 只保留數字與冒號，若連續輸入 3~4 位數自動插入冒號
+        el.addEventListener('input', (e) => {
+          let v = e.target.value.replace(/[^0-9]/g, '');
+          if (v.length >= 3) {
+            v = v.padStart(4, '0');
+            v = v.slice(0,4);
+            v = v.slice(0,2) + ':' + v.slice(2);
+          } else if (v.length >= 1 && v.length <= 2) {
+            // 如果只有 1-2 位數，暫不插入冒號，但允許顯示
+            v = v;
+          }
+          // 若已包含冒號則格式化成 HH:MM
+          if (v.includes(':')) {
+            const parts = v.split(':');
+            let hh = parseInt(parts[0],10);
+            let mm = parseInt(parts[1] || '0',10);
+            if (isNaN(hh)) hh = 0;
+            if (isNaN(mm)) mm = 0;
+            hh = Math.max(0, Math.min(23, hh));
+            mm = Math.max(0, Math.min(59, mm));
+            e.target.value = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+          } else {
+            e.target.value = v;
+          }
+        });
+
+        // on blur: 最終校正並填滿為 HH:MM
+        el.addEventListener('blur', (e) => {
+          const formatted = normalizeTimeTo24(e.target.value);
+          e.target.value = formatted;
+        });
+
+        // 若 JS 要填入時間也可使用 normalizeTimeTo24 再賦值
+      });
+    }
+
+    // 於頁面初始化時啟用格式器
+    window.addEventListener('DOMContentLoaded', () => {
+      attachTimeInputFormatter('.time-input');
+    });
+    
+    // 解析日期時間
+    function parseDateTime(dateStr, timeStr) {
+      const t = normalizeTimeTo24(timeStr);
+      return new Date(`${dateStr}T${t}:00`);
+    }
+    
     // 格式化顯示：重複、提醒
     function formatRepeat(val) {
       switch ((val||'').toString()) {
@@ -557,12 +648,13 @@
     // 新增
     document.getElementById("addBtn").addEventListener("click", async () => {
       const date = document.getElementById("date").value;
-      const time = document.getElementById("time").value;
+      let time = document.getElementById("time").value;
+      time = normalizeTimeTo24(time);
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
       const repeat = document.getElementById("repeat").value;
       const reminder = document.getElementById("reminder").value;
-
+      
       if (!date || !time || !event) { 
         alert("請輸入完整資料！");
         return; 
@@ -654,12 +746,12 @@
       const record = records[idx];
 
       document.getElementById("editDate").value = record.date;
-      document.getElementById("editTime").value = record.time;
+      document.getElementById("editTime").value = normalizeTimeTo24(record.time);
       document.getElementById("editEvent").value = record.scheduleNote;
       document.getElementById("editNote").value = record.remark;
       document.getElementById("editRepeat").value = record.repeat || 'none';
       document.getElementById("editReminder").value = record.reminderMethod || 'none';
-
+      
       document.getElementById("editModal").style.display = "block";
       bodyEl.classList.add('modal-open');
     
@@ -714,19 +806,20 @@
       if (idx === -1) return alert("找不到該筆資料");
 
       const date = document.getElementById("editDate").value;
-      const time = document.getElementById("editTime").value;
+      let time = document.getElementById("editTime").value;
+      time = normalizeTimeTo24(time);
       const schedule_note = document.getElementById("editEvent").value.trim();
       const remark = document.getElementById("editNote").value.trim();
       const repeat = document.getElementById("editRepeat").value;
       const reminder_method = document.getElementById("editReminder").value;
-
+      
       if (!date || !time || !schedule_note) {
         alert("請輸入完整資料！");
         return;
       }
 
       const schedule_time = `${date} ${time}:00`;
-
+      
       const url = `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
 
       const body = {
@@ -759,7 +852,7 @@
         records[idx].remark = remark;
         records[idx].repeat = repeat;
         records[idx].reminderMethod = reminder_method;
-
+        
         document.getElementById("editModal").style.display = "none";
         bodyEl.classList.remove("modal-open");
 
