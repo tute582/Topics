@@ -139,7 +139,14 @@
       font-size: 20px;
     }
 
-    input[type="text"], input[type="date"], input[type="time"],
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      min-width: 0;     /* iOS 必加 */
+      -webkit-appearance: none;
+      appearance: none; /* 移除原生樣式 */
+    }
+    input[type="text"],
     textarea {
       width:100% ;
       padding:8px;
