@@ -883,6 +883,7 @@ input[type="date"], input[type="time"], select { width: 100% !important; }
 
         // 將 API 資料轉成可用的 volunteers 陣列格式
         volunteers = result.data.map((v, i) => ({
+          userId:v.volunteer_user_id || "未取得該志工userId",
           name: v.volunteer_name || "未命名",
           gender: v.gender || "未填寫",
           age: v.age || "未提供",
@@ -1021,17 +1022,42 @@ function toggleCard() {
   `;
 
   // 執行配對（模擬或實際過濾）
-  setTimeout(() => {
+  setTimeout(async () => {
     hint.innerHTML = "✅ 已找到合適志工！";
 
-    const filtered = volunteers.filter(v => !gender || gender === "皆可" || v.gender === gender);
-    const shuffled = shuffleArray(filtered);
+    // 1️⃣ 呼叫 match API
+    const matchRes = await fetch("https://supabase-api-six.vercel.app/match", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        elder_user_id: userId,
+        date,
+        time,
+        department,
+        city
+      })
+    });
+
+    const result = await matchRes.json();
+    
+    // 2️⃣ API 回傳的志工 userId
+    let getConformVolunteers = result.volunteer_user_ids || [];
+    console.log("符合的志工清單ID：", getConformVolunteers);
+
+    // 舊版使用性別篩選 const filtered = volunteers.filter(v => !gender || gender === "皆可" || v.gender === gender);
+    const filtered = volunteers.filter(v => 
+      getConformVolunteers.includes(v.userId)
+    );
+
+    const sorted = getConformVolunteers
+      .map(id => volunteers.find(v => v.userId === id))
+      .filter(v => v); // 避免找不到造成 undefined
 
     slider.style.display = "block";
     const prevBtnEl = document.getElementById("prevBtn");
     const nextBtnEl = document.getElementById("nextBtn");
 
-    if (!shuffled.length) {
+    if (!sorted.length) {
       if (prevBtnEl) prevBtnEl.style.display = "none";
       if (nextBtnEl) nextBtnEl.style.display = "none";
       container.innerHTML = `
@@ -1048,7 +1074,7 @@ function toggleCard() {
       if (nextBtnEl) nextBtnEl.style.display = "";
     }
 
-    shuffled.forEach((v) => {
+    sorted.forEach((v) => {
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
@@ -1070,7 +1096,7 @@ function toggleCard() {
       container.appendChild(card);
     });
 
-    setupSlider(shuffled.length);
+    setupSlider(sorted.length);
   }, 600);
 }
 
@@ -1292,6 +1318,9 @@ let liffProfile = null;
 const LIFF_ID = '2008484068-vazlor5r';
 const avatarEl = document.getElementById("volunteerAvatar");
 const nameEl = document.getElementById("volunteerName");
+//目前先用假資料(待移除)
+let userId = "test_line_id_002o";
+let userName ="";
 
 async function initLiffAndSetProfile() {
   try {
@@ -1304,6 +1333,10 @@ async function initLiffAndSetProfile() {
     }
 
     const profile = await liff.getProfile();
+    userId = profile.userId;
+    userName = profile.displayName;
+    console.log("LIFF Profile userId:", userId, "userName:", userName);
+
     nameEl.innerText = profile.displayName || "志工";
     if (profile.pictureUrl) {
       avatarEl.src = profile.pictureUrl;
