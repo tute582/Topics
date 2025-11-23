@@ -111,11 +111,19 @@
   }
 
   .allTable-div table, table {
-    width:100%; 
-    border-collapse:collapse; 
-    min-width:800px; /* ← 改為 800px，窄螢幕會出現橫向捲動，與看診資訊一致 */
-    font-size:14px;
-    background:transparent;
+    width: max-content; /* 依內容寬度延伸，超出容器時會出現橫向捲動條 */
+    border-collapse: collapse;
+    min-width: 800px; /* 保留最小寬度（可依需求調整或移除） */
+    font-size: 14px;
+    background: transparent;
+  }
+
+  /* 其他一般 table 保持寬度 100%（如需要可微調） */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: transparent;
   }
 
   th, td {
