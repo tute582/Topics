@@ -139,7 +139,20 @@
       font-size: 20px;
     }
 
-    input[type="text"], input[type="date"], input[type="time"],
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      padding:8px;
+      margin-top:5px;
+      border:1px solid #888;
+      font-size:14px;
+      border-radius:10px;
+      background-color: white; /* 主表單預設白底 */
+      min-width: 0;     /* iOS 必加 */
+      -webkit-appearance: none;
+      appearance: none; /* 移除原生樣式 */
+    }
+    input[type="text"],
     textarea {
       width:100% ;
       padding:8px;
