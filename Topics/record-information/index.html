@@ -2,20 +2,17 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <html lang="zh-TW"></html>
-  <!-- 響應式，讓手機可正確縮放 -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>看診資訊</title>
 
 <style>
     /* =========================================
        1. 全域與基礎設定 (Global & Reset)
-       說明：重置瀏覽器預設邊距，設定全站字體與盒模型
        ========================================= */
     body {
-        font-family: "Arial", sans-serif; /* 設定通用字體 */
+        font-family: "Arial", sans-serif;
         padding: 0;
-        box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+        box-sizing: border-box;
     }
 
     * {
@@ -26,39 +23,35 @@
 
     /* =========================================
        2. 頂部導覽列 (Navigation)
-       功能：固定在畫面上方的標題列，包含使用者資訊
        ========================================= */
     .nav-1 {
-        display: flex;              /* 使用 Flex 排版讓左右物件對齊 */
-        align-items: center;        /* 垂直置中 */
-        justify-content: space-between; /* 左右兩端對齊 */
-        
-        position: sticky;           /* 【關鍵】讓導覽列滾動時吸附在頂部 */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
         top: 0;
-        z-index: 1001;              /* 層級設高，確保蓋過內容與表格標頭 */
-        
+        z-index: 1001;
         width: 100%;
-        padding: 10px 25px;         /* 上下 10px，左右 25px */
+        padding: 10px 25px;
         background-color: white;
-        border-bottom: 1px solid #ddd; /* 底部細線增加層次感 */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 微微陰影 */
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         color: black;
     }
 
-    /* --- 導覽列右側：志工/使用者登入資訊區 --- */
     .volunteer-area {
         display: flex;
         align-items: center;
-        gap: 8px; /* 元素間距 */
+        gap: 8px;
     }
 
     .volunteer-area .avatar {
         width: 36px;
         height: 36px;
-        border-radius: 50%; /* 圓形頭像 */
-        object-fit: cover;  /* 圖片不變形填滿 */
+        border-radius: 50%;
+        object-fit: cover;
         border: 1px solid #ddd;
-        display: none;      /* 預設隱藏，登入後透過 JS 顯示 */
+        display: none;
     }
 
     .volunteer-area #volunteerName {
@@ -72,27 +65,23 @@
         padding: 4px 8px;
         border-radius: 6px;
         font-size: 14px;
-        margin-top: 0; /* 覆蓋下方全域 button 的 margin 設定 */
+        margin-top: 0;
     }
 
     /* =========================================
        3. 版面容器與排版 (Layout Containers)
-       功能：控制內容與兩側的間距，確保整齊
        ========================================= */
-    
-    /* 統一左右對齊：所有主要區塊共用此內距 */
     .input-container,
     .search-container {
-        padding: 0 25px; /* 與導覽列左右間距一致，視覺較整齊 */
+        padding: 0 25px;
         margin-top: 15px;
         box-sizing: border-box;
     }
 
     .search-container {
-        margin-bottom: 30px; /* 搜尋區塊下方的緩衝空間 */
+        margin-bottom: 30px;
     }
 
-    /* --- 標題文字樣式 --- */
     .title {
         margin: 5px 0;
         font-size: 26px;
@@ -107,21 +96,18 @@
     h3 { 
         margin: 0; 
         font-size: 16px; 
-        color: #555; /* 次要標題顏色較淡 */
+        color: #555; 
     }
 
     /* =========================================
        4. 表單與輸入元件 (Forms & Inputs)
-       功能：輸入框、日期選單、按鈕的視覺風格
        ========================================= */
-    
-    /* 表單外框卡片樣式 */
     .input-container > form {
         width: 100%;
         margin: 10px 0;
         padding: 20px;
         border: 1px solid #ccc;
-        border-radius: 20px; /* 圓角卡片風格 */
+        border-radius: 20px;
         background-color: white;
     }
 
@@ -132,11 +118,11 @@
         font-size: 20px;
     }
 
-    /* --- 輸入欄位 (文字、日期、時間、多行) 通用設定 --- */
+    /* --- 輸入欄位通用設定 --- */
     input[type="text"],
     input[type="date"],
-    input[type="time"],
-    textarea {
+    textarea,
+    .time-display { /* 加入 .time-display 讓外觀一致 */
         width: 100%;
         padding: 8px;
         margin-top: 5px;
@@ -146,24 +132,53 @@
         background-color: white;
         color: #222;
         box-sizing: border-box;
-        min-width: 0; /* 修正 iOS flex item 最小寬度問題 */
+        min-width: 0;
+        min-height: 38px; /* 確保高度一致 */
     }
 
-    /* 移除 iOS Safari 原生外觀 (如圓角陰影)，讓樣式統一 */
-    input[type="date"],
-    input[type="time"] {
+    input[type="date"] {
         -webkit-appearance: none;
         appearance: none;
+        height: 38px; /* 強制高度對齊 */
     }
 
     textarea { font-size: 16px; }
 
-    /* 唯讀狀態樣式：保持白底 (覆蓋瀏覽器預設的灰色) */
     input[readonly],
     textarea[readonly],
-    input[readonly]:not([type="checkbox"]) {
-        background-color: white;
-        cursor: default; /* 滑鼠游標不變為輸入狀 */
+    .time-display.readonly-mode {
+        background-color: #f7f7f7; /* 唯讀時變灰 */
+        cursor: default;
+        color: #555;
+    }
+
+    /* --- [關鍵修改] 時間選擇器專用樣式 (Time Picker Hack) --- */
+    .time-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    /* 替身：負責顯示中文時間 */
+    .time-display {
+        display: flex;
+        align-items: center;
+        margin-top: 0; /* 已經在 wrapper 設過 margin */
+        height: 38px;
+        overflow: hidden;
+    }
+
+    /* 真身：透明，蓋在最上面 */
+    .real-time-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0; /* 完全透明 */
+        z-index: 10; /* 確保在最上層 */
+        cursor: pointer;
+        -webkit-appearance: none;
     }
 
     /* --- 按鈕樣式 --- */
@@ -172,62 +187,51 @@
         padding: 10px 20px;
         border: none;
         border-radius: 10px;
-        background-color: #4a90e2; /* 主色調藍色 */
+        background-color: #4a90e2;
         color: white;
         cursor: pointer;
         font-size: 20px;
-        transition: background-color 0.3s; /* 滑鼠懸停的漸變效果 */
+        transition: background-color 0.3s;
     }
 
     button:hover {
-        background-color: #357abd; /* 深藍色 */
+        background-color: #357abd;
     }
 
     /* =========================================
        5. 資料表格區 (Data Tables)
-       功能：顯示搜尋結果，支援手機橫向捲動
        ========================================= */
-    
-    /* 表格容器：負責產生捲軸 */
     .table-container {
         width: 100%;
         margin: 5px;
-        /* 【關鍵】讓表格內容過長時出現橫向捲軸，不破版 */
         overflow-x: auto;
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch; /* 讓 iOS 滾動更滑順 */
+        -webkit-overflow-scrolling: touch;
         border: 1px solid #aaa;
         border-radius: 20px;
         background-color: white;
-        display: none; /* 預設隱藏，搜尋後由 JS 開啟 */
+        display: none;
     }
 
     table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        min-width: 800px; /* 設定最小寬度，強制在小螢幕觸發橫向捲動 */
+        min-width: 800px;
     }
 
     th, td {
         padding: 10px;
         text-align: center;
         border: 1px solid #ddd;
-        white-space: nowrap; /* 禁止文字換行，保持表格整齊 */
+        white-space: nowrap;
     }
 
-    /* 表頭固定功能 (Sticky Header) */
     th {
         background-color: #f9f9f9;
-        position: sticky; /* 固定位置 */
-        top: 0;           /* 吸附在容器頂部 */
-        z-index: 2;       /* 確保蓋過下方資料 */
-    }
-
-    /* 列表項目樣式 (若非表格呈現時使用) */
-    .record-item {
-        border-bottom: 1px solid #ddd;
-        padding: 10px 0;
+        position: sticky;
+        top: 0;
+        z-index: 2;
     }
 
     .no-record {
@@ -237,48 +241,44 @@
         margin: 20px 0;
     }
 
-    /* 表格斑馬紋 (隔行變色) */
     .evenrowcolor { background-color: #f9f9f9; }
     .oddrowcolor { background-color: #ffffff; }
 
     /* =========================================
        6. 編輯彈窗 (Edit Modal)
-       功能：點擊編輯時跳出的全螢幕遮罩與對話框
        ========================================= */
     #editModal {
-        display: none;          /* 預設不顯示 */
-        position: fixed;        /* 固定覆蓋整個視窗 */
+        display: none;
+        position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑底遮罩 */
+        background-color: rgba(0, 0, 0, 0.5);
         z-index: 1000;
-        opacity: 0;             /* 透明度動畫起始狀態 */
+        opacity: 0;
         transition: opacity 0.3s ease;
     }
 
-    /* 加上 .show 類別時顯示 */
     #editModal.show {
         display: block;
         opacity: 1;
     }
 
-    /* Modal 本體 (白色卡片) */
     #editModal > div {
         background: #fff;
         width: 420px;
-        max-width: calc(100% - 40px); /* 手機版保留左右邊距 */
-        margin: 80px auto;            /* 距離頂部 80px */
+        max-width: calc(100% - 40px);
+        margin: 80px auto;
         padding: 20px 24px;
         border-radius: 15px;
         position: relative;
-        max-height: calc(100vh - 100px); /* 限制高度避免超出螢幕 */
-        overflow-y: auto;             /* 內容過多時顯示垂直捲軸 */
-        transform: translateY(-20px); /* 位移動畫起始位置 */
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        transform: translateY(-20px);
         transition: transform 0.3s ease;
     }
 
     #editModal.show > div {
-        transform: translateY(0);     /* 位移回原位 */
+        transform: translateY(0);
     }
 
     #editModal h3 {
@@ -286,8 +286,6 @@
         text-align: center;
     }
 
-    /* --- 編輯視窗內的按鈕群 --- */
-    /* 右上角取消/關閉圖示 */
     #cancelEditBtn {
         background: none;
         border: none;
@@ -299,16 +297,15 @@
         transition: all 0.3s ease;
     }
     #cancelEditBtn:hover {
-        background-color: #e74c3c; /* 紅色警示 */
+        background-color: #e74c3c;
         color: white;
         transform: scale(1.1);
     }
 
-    /* 進入編輯模式按鈕 */
     #enterEditBtn {
         position: absolute;
         top: 10px; right: 10px;
-        background-color: #f4b977; /* 橘黃色 */
+        background-color: #f4b977;
         color: #333;
         font-size: 14px;
         padding: 6px 12px;
@@ -317,7 +314,6 @@
     }
     #enterEditBtn:hover { background-color: #e0b557; }
 
-    /* 儲存與刪除按鈕 (預設隱藏，進入編輯模式後顯示) */
     #saveEditBtn, #deleteEditBtn {
         margin-top: 10px;
         font-size: 16px;
@@ -329,7 +325,6 @@
 
     /* =========================================
        7. 確認提示視窗 (Confirmation Modal)
-       功能：詢問「是否儲存變更」的二次確認
        ========================================= */
     #saveConfirmModal {
         display: none;
@@ -337,7 +332,7 @@
         top: 0; left: 0;
         width: 100%; height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 2000; /* 層級最高，蓋過編輯視窗 */
+        z-index: 2000;
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -360,7 +355,6 @@
 
     #saveConfirmModal.show > div { transform: translateY(0); }
 
-    /* 確認視窗按鈕 */
     #saveConfirmModal button {
         margin: 10px;
         padding: 8px 18px;
@@ -372,28 +366,24 @@
 
     /* =========================================
        8. 響應式設計 (RWD for Mobile)
-       功能：針對螢幕寬度小於 768px (手機/平板) 的調整
        ========================================= */
     @media (max-width: 768px) {
-        form { width: 95%; } /* 表單佔滿螢幕寬度 */
+        form { width: 95%; }
         
-        /* 手機版設定：移除表格最小寬度限制，讓容器控制滾動 */
         table {
             min-width: 0;
             width: 100%;
         }
         
-        /* 極小螢幕 (如 iPhone SE) 設定最小寬度以確保橫向捲動 */
         @media (max-width: 600px) {
             table { min-width: 700px; }
         }
 
-        /* 放大輸入框文字與按鈕，方便手指點擊 */
         input[type="text"],
         input[type="date"],
-        input[type="time"],
-        textarea {
-            font-size: 16px; /* 16px 防止 iOS 輸入時自動放大畫面 */
+        textarea,
+        .time-display { /* 確保手機上文字大小 */
+            font-size: 16px; 
             padding: 10px;
         }
 
@@ -406,10 +396,6 @@
 </head>
 
 <body>
-<!-- ==============================
-     頁面標題與表單
-     ============================== -->
-<!-- 導覽列 -->
 <nav class="nav-1" >
   <div>
     <h1 style="margin:0; font-size: 28px;">看診資訊</h1>
@@ -429,11 +415,17 @@
 
 <div class="input-container"> 
 <h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
-<!-- 輸入表單區 -->
 <form>
   <label>長輩姓名<input type="text" id="elderName"></label>
   <label>看診日期<input type="date" id="date"></label>
-  <label>看診時間<input type="time" id="time"></label>
+  
+  <label>看診時間
+      <div class="time-wrapper">
+          <div id="timeDisplay" class="time-display">請選擇時間</div>
+          <input type="time" id="time" class="real-time-input">
+      </div>
+  </label>
+
   <label>醫生姓名<input type="text" id="name"></label>
   <label>醫生科別
   <input type="text" id="department" list="departmentList">
@@ -461,8 +453,7 @@
   </datalist>
 </label>
     <label for="record">看診內容 <textarea id="record" rows="2"></textarea></label>
-   
-
+    
     <label for="note">備註<textarea id="note" rows="2"></textarea></label>
     
   
@@ -471,16 +462,10 @@
 </div>
 
 <div class="search-container"> 
-<!-- 查詢標題 -->
-
 <h1 class="title" style="font-size: 24px;">查詢</h1>
 
-<!-- 新增：無資料時顯示的訊息 -->
 <div id="no-record-msg" class="no-record">目前尚未有紀錄</div>
 
-<!-- ==============================
-     資料表格區域
-     ============================== -->
 <div class="table-container">
   <table id="dataTable">
     <thead>
@@ -501,9 +486,6 @@
 </div>
 </div>
 
-<!-- ==============================
-     編輯資料 Modal 視窗
-     ============================== -->
 <div id="editModal">
   <div>
     <button id="cancelEditBtn" title="按 Esc 或點我關閉">✖</button>
@@ -512,10 +494,16 @@
     <div style="display: flex; justify-content: center;">
   <h2>看診資訊</h2>
 </div>
-    <!-- 欄位資料 -->
     <label>長輩姓名<input type="text" id="editElderName" placeholder="長輩姓名" readonly></label>
     <label>日期<input type="date" id="editDate" readonly></label>
-    <label>時間<input type="time" id="editTime" readonly></label>
+    
+    <label>時間
+        <div class="time-wrapper">
+            <div id="editTimeDisplay" class="time-display readonly-mode">請選擇時間</div>
+            <input type="time" id="editTime" class="real-time-input" readonly>
+        </div>
+    </label>
+
     <label>醫生姓名<input type="text" id="editDoctorName" placeholder="請輸入醫生姓名" readonly>
     </label>
     <label>醫生科別
@@ -546,7 +534,6 @@
     <label>內容<textarea id="editRecord" rows="3" readonly></textarea></label>
     <label>備註<textarea id="editNote" rows="3" readonly></textarea></label>
 
-    <!-- 儲存/刪除按鈕 -->
     <div style="text-align:center; margin-top:10px;">
       <button id="saveEditBtn">儲存</button>
       <button id="deleteEditBtn">刪除</button>
@@ -554,9 +541,6 @@
   </div>
 </div>
 
-<!-- ==============================
-     儲存確認提示視窗
-     ============================== -->
 <div id="saveConfirmModal">
   <div>
     <h3>此次修改需要儲存嗎？</h3>
@@ -574,14 +558,13 @@
    ----------------------------------------- */
 const LIFF_ID = "2008484068-qkydRNYN";
 const POST_SUPABASE_API_URL = "https://supabase-api-six.vercel.app/consultations";
-// GET 與 PATCH/DELETE 的 Base URL 稍後動態組裝
 
-let userId = "";         // LIFF 取得的 User ID
-let userName = "";       // LIFF 取得的顯示名稱
-let currentEditEventId = ""; // 當前正在編輯的資料庫 ID
-let editRowIndex = null; // 當前正在編輯的表格列索引
-let isEditing = false;   // 是否處於編輯模式狀態
-let originalData = {};   // 紀錄編輯前的原始資料，用於比對是否有變更
+let userId = "";        
+let userName = "";      
+let currentEditEventId = ""; 
+let editRowIndex = null; 
+let isEditing = false;   
+let originalData = {};   
 
 const avatarEl = document.getElementById("volunteerAvatar");
 const nameEl = document.getElementById("volunteerName");
@@ -590,7 +573,8 @@ const nameEl = document.getElementById("volunteerName");
 /* -----------------------------------------
    2. 初始化與 LIFF 整合 (Init & LIFF)
    ----------------------------------------- */
-// 頁面載入後立即執行初始化
+// [新增] 初始化時間選擇器監聽
+initTimePickers();
 initLiffAndSetProfile();
 updateNoRecordMessage();
 
@@ -601,7 +585,6 @@ async function initLiffAndSetProfile() {
     if (!liff.isLoggedIn()) {
       nameEl.innerText = "未登入";
       avatarEl.style.display = "none";
-      // 即使未登入也嘗試載入資料 (測試用，實際可能需要 userId)
       await loadData();
       return;
     }
@@ -619,17 +602,15 @@ async function initLiffAndSetProfile() {
       avatarEl.style.display = "none";
     }
 
-    // 取得使用者 ID 後載入資料
     await loadData();
   } catch (err) {
     console.error("LIFF init error:", err);
   }
 }
 
-// LIFF 相關點擊事件
 avatarEl.addEventListener("click", () => {
   if (liff.isLoggedIn()) {
-    window.location.href = "../../Login-or-register/index.html"; // 跳轉至註冊/個人頁
+    window.location.href = "../../Login-or-register/index.html";
   } else {
     liff.login({ redirectUri: window.location.href });
   }
@@ -643,6 +624,54 @@ nameEl.addEventListener("click", () => {
   }
 });
 
+/* -----------------------------------------
+   [新增] 時間選擇器邏輯 (Time Picker Logic)
+   ----------------------------------------- */
+function initTimePickers() {
+    // 綁定新增表單的時間輸入
+    const timeInput = document.getElementById("time");
+    timeInput.addEventListener("input", function() {
+        updateTimeDisplay(this.value, "timeDisplay");
+    });
+
+    // 綁定編輯表單的時間輸入
+    const editTimeInput = document.getElementById("editTime");
+    editTimeInput.addEventListener("input", function() {
+        updateTimeDisplay(this.value, "editTimeDisplay");
+    });
+}
+
+// 通用時間格式化函式：將 HH:mm 轉為 "下午 02:30"
+function updateTimeDisplay(timeValue, displayElementId) {
+    const displayEl = document.getElementById(displayElementId);
+    
+    if (!timeValue) {
+        displayEl.textContent = "請選擇時間";
+        displayEl.style.color = "#888";
+        return;
+    }
+
+    const [hourStr, minuteStr] = timeValue.split(':');
+    let hour = parseInt(hourStr);
+    let period = "上午";
+
+    if (hour >= 12) {
+        period = "下午";
+        if (hour > 12) hour -= 12;
+    }
+    if (hour === 0) hour = 12; 
+
+    const formattedHour = hour.toString().padStart(2, '0');
+    
+    // 更新假顯示框的文字
+    displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
+    
+    // 根據目前是否唯讀來決定顏色，若非唯讀則為深色
+    if (!displayEl.classList.contains("readonly-mode")) {
+        displayEl.style.color = "#222";
+    }
+}
+
 
 /* -----------------------------------------
    3. 資料讀取 (READ - Load Data)
@@ -651,9 +680,9 @@ async function loadData() {
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
 
-  tbody.innerHTML = ""; // 清空表格
+  tbody.innerHTML = ""; 
   if (userId == "") {
-    console.log("沒有檢測到使用者登入ID，是否未登入LINE帳號?");
+    console.log("沒有檢測到使用者登入ID");
     return;
   }
 
@@ -670,9 +699,9 @@ async function loadData() {
     }
 
     json.data.forEach(d => {
-      // 格式化日期時間
       const datetime = d.visit_time ? new Date(d.visit_time) : null;
       const date = datetime ? datetime.toISOString().split("T")[0] : "";
+      // 這裡顯示在表格中的時間，可以考慮也轉成中文格式，但為了排序方便先維持原本 HH:mm
       const time = datetime ? datetime.toISOString().split("T")[1].substring(0, 5) : "";
 
       const newRow = tbody.insertRow(-1);
@@ -684,10 +713,8 @@ async function loadData() {
       newRow.insertCell(5).innerText = d.visit_details || "";
       newRow.insertCell(6).innerText = d.remarks || "";
       
-      // 綁定資料庫 ID 到 DOM 元素，供後續編輯使用
       newRow.dataset.event_id = d.event_id;
 
-      // 加入操作按鈕
       const actionCell = newRow.insertCell(7);
       const editBtn = document.createElement("button");
       editBtn.innerText = "編輯";
@@ -697,10 +724,9 @@ async function loadData() {
       actionCell.appendChild(editBtn);
     });
 
-    // 載入後進行排序與樣式調整
     sortTableByDateTime("dataTable");
     altRows("dataTable");
-    addEditButtonsToRows(); // 雙重確保按鈕存在
+    addEditButtonsToRows(); 
     updateNoRecordMessage();
   } catch (err) {
     console.error("❌ API 讀取失敗", err);
@@ -713,18 +739,15 @@ async function loadData() {
    4. 資料新增 (CREATE - Add Row)
    ----------------------------------------- */
 async function addRow() {
-  // 取得欄位值
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
-  const time = document.getElementById("time").value.trim();
+  const time = document.getElementById("time").value.trim(); // 這裡依然拿真正的 input value
   const name = document.getElementById("name").value.trim();
   const department = document.getElementById("department").value.trim();
   const record = document.getElementById("record").value.trim();
   const note = document.getElementById("note").value.trim();
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
-
-  clearInputs(); // 清空輸入框
 
   if (!date || !time) {
     alert("請輸入日期與時間！");
@@ -760,11 +783,9 @@ async function addRow() {
 
     console.log("🎉 新增成功", result);
     newEventId = result?.data?.event_id; 
-    if (!newEventId) console.warn("⚠ 無法取得 event_id");
 
-    // 成功後動態新增一列到表格
     const newRow = tbody.insertRow(-1);
-    newRow.dataset.event_id = newEventId; // 綁定新 ID
+    newRow.dataset.event_id = newEventId; 
     
     newRow.insertCell(0).innerText = elderName;
     newRow.insertCell(1).innerText = date;
@@ -782,10 +803,12 @@ async function addRow() {
     editBtn.onclick = () => openEditModal(newRow);
     actionCell.appendChild(editBtn);
 
-    // 更新表格 UI
     sortTableByDateTime("dataTable");
     altRows("dataTable");
     updateNoRecordMessage();
+    
+    clearInputs(); // 新增成功後清空
+
   } catch (err) {
     console.error("❌ Supabase 錯誤:", err);
     alert("⚠️ 無法連線資料庫");
@@ -797,8 +820,6 @@ async function addRow() {
 /* -----------------------------------------
    5. 資料更新與刪除 (UPDATE & DELETE)
    ----------------------------------------- */
-
-// 儲存編輯 (PATCH)
 document.getElementById("saveEditBtn").onclick = () => {
   const row = document.getElementById("dataTable").rows[editRowIndex];
   
@@ -809,7 +830,7 @@ document.getElementById("saveEditBtn").onclick = () => {
 
   sortTableByDateTime("dataTable");
   altRows("dataTable");
-  saveEditData(); // 同步至後端
+  saveEditData(); 
   closeModal();
 };
 
@@ -860,13 +881,12 @@ async function saveEditData() {
   }
 }
 
-// 刪除資料 (DELETE)
 document.getElementById("deleteEditBtn").onclick = () => {
   if (confirm("確定刪除此筆資料？")) {
     document.getElementById("dataTable").deleteRow(editRowIndex);
     sortTableByDateTime("dataTable");
     altRows("dataTable");
-    deleteData(); // 同步至後端
+    deleteData(); 
     closeModal();
   }
 };
@@ -880,7 +900,6 @@ async function deleteData() {
     });
 
     if (!res.ok) {
-      // 若 res 含有 body 再解析，否則顯示狀態碼
       const result = await res.json().catch(() => ({})); 
       alert("刪除失敗: " + (result.message || res.status));
       return;
@@ -896,8 +915,6 @@ async function deleteData() {
 /* -----------------------------------------
    6. 彈窗與 UI 控制邏輯 (UI & Modals)
    ----------------------------------------- */
-
-// 顯示/隱藏「目前尚未有紀錄」
 function updateNoRecordMessage() {
   const table = document.getElementById("dataTable");
   const tbody = table.querySelector("tbody");
@@ -914,14 +931,16 @@ function updateNoRecordMessage() {
   }
 }
 
-// 清空輸入欄位
+// [修改] 清空輸入欄位，同時重置時間顯示
 function clearInputs() {
   ["elderName", "date", "time", "name", "department", "record", "note"].forEach(id => {
     document.getElementById(id).value = "";
   });
+  // 重置時間顯示文字
+  document.getElementById("timeDisplay").textContent = "請選擇時間";
+  document.getElementById("timeDisplay").style.color = "#888";
 }
 
-// 表格排序 (依照日期+時間)
 function sortTableByDateTime(tableId) {
   const table = document.getElementById(tableId);
   const tbody = table.querySelector("tbody");
@@ -940,7 +959,6 @@ function sortTableByDateTime(tableId) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
-// 表格斑馬紋效果
 function altRows(id) {
   const table = document.getElementById(id);
   const rows = table.getElementsByTagName("tr");
@@ -948,42 +966,56 @@ function altRows(id) {
     rows[i].className = (i % 2 === 0) ? "evenrowcolor" : "oddrowcolor";
 }
 
-// 開啟編輯視窗
+// [修改] 開啟編輯視窗，需同時更新假時間顯示
 function openEditModal(row) {
   editRowIndex = row.rowIndex;
   currentEditEventId = row.dataset.event_id;
   const modal = document.getElementById("editModal");
   
-  // 填入資料到編輯框
   ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].forEach((f, i) => {
     const val = row.cells[i].innerText;
     document.getElementById("edit" + f).value = val;
-    originalData[f] = val; // 紀錄原始值供比對
+    originalData[f] = val; 
   });
 
-  setReadOnly(false); // 預設進去是顯示模式，需點按鈕才變編輯模式？原程式邏輯是點編輯就開Modal，這邊依照原意
-  // 原邏輯：openEditModal 呼叫 setReadOnly(false) -> 設為可編輯? 
-  // 修正：依照原程式碼邏輯，這裡似乎是想預設進去是「唯讀」，點擊右上角「編輯」才變可寫
-  // 但原程式碼中 openEditModal 呼叫 setReadOnly(false)，意思是「非唯讀=可寫」。
-  // 為了使用者體驗，通常點列表的編輯就是要改，這裡維持原設定：
+  // 手動更新編輯框的時間顯示文字
+  const timeVal = row.cells[2].innerText; // 格式 HH:mm
+  updateTimeDisplay(timeVal, "editTimeDisplay");
+
   setReadOnly(false); 
   
   modal.style.display = "block";
   setTimeout(() => modal.classList.add("show"), 10);
-  document.querySelector(".nav-1").style.display = "none"; // 編輯時隱藏導覽列
+  document.querySelector(".nav-1").style.display = "none"; 
 }
 
-// 設定編輯視窗欄位狀態 (ReadOnly toggle)
+// [修改] 設定編輯視窗欄位狀態 (包含假顯示框的樣式)
 function setReadOnly(readOnly) {
   document.querySelectorAll("#editModal input, #editModal textarea").forEach(el => {
     el.readOnly = readOnly;
-    if (el.type === "date" || el.type === "time") {
-      el.style.backgroundColor = "white";
-    } else {
-      el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
+    if (el.type === "date") {
+       el.style.backgroundColor = "white"; 
+    } else if (el.type !== "time") {
+       // time 的樣式由 .time-display 處理
+       el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
     }
   });
-  // 按鈕顯示切換
+
+  // 處理假時間框的唯讀樣式
+  const timeDisplay = document.getElementById("editTimeDisplay");
+  const editTimeInput = document.getElementById("editTime");
+  
+  if (readOnly) {
+      timeDisplay.classList.add("readonly-mode");
+      timeDisplay.style.color = "#555";
+      // 唯讀時讓 real input 不能被點到 (避免跳出選擇器)
+      editTimeInput.style.pointerEvents = "none";
+  } else {
+      timeDisplay.classList.remove("readonly-mode");
+      timeDisplay.style.color = editTimeInput.value ? "#222" : "#888";
+      editTimeInput.style.pointerEvents = "auto";
+  }
+
   document.getElementById("saveEditBtn").style.display = readOnly ? "none" : "inline-block";
   document.getElementById("deleteEditBtn").style.display = readOnly ? "none" : "inline-block";
   document.getElementById("enterEditBtn").style.display = readOnly ? "inline-block" : "none";
@@ -992,7 +1024,6 @@ function setReadOnly(readOnly) {
 
 document.getElementById("enterEditBtn").onclick = () => setReadOnly(false);
 
-// 關閉編輯視窗
 function closeModal() {
   const modal = document.getElementById("editModal");
   modal.classList.remove("show");
@@ -1001,7 +1032,6 @@ function closeModal() {
   document.querySelector(".nav-1").style.display = "flex";
 }
 
-// 嘗試關閉 (檢查是否有變更)
 function tryCloseModal() {
   if (isEditing && hasChanges()) {
     showSaveConfirmModal();
@@ -1010,14 +1040,12 @@ function tryCloseModal() {
   }
 }
 
-// 檢查欄位是否有變更
 function hasChanges() {
   return ["ElderName", "Date", "Time", "DoctorName", "Department", "Record", "Note"].some(
     f => document.getElementById("edit" + f).value !== originalData[f]
   );
 }
 
-// 按下 ESC 或點擊關閉按鈕
 document.getElementById("cancelEditBtn").onclick = () => tryCloseModal();
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") tryCloseModal();
@@ -1053,7 +1081,6 @@ document.getElementById("continueEditBtn").onclick = () => {
   closeSaveConfirmModal();
 };
 
-// 輔助：確保每一列都有編輯按鈕 (LoadData 已處理，此為保險用)
 function addEditButtonsToRows() {
   const tbody = document.getElementById("dataTable").querySelector("tbody");
   Array.from(tbody.rows).forEach(row => {
