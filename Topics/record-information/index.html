@@ -7,7 +7,7 @@
 
 <style>
     /* =========================================
-       1. 全域與基礎設定 (Global & Reset)
+       1. 全域與基礎設定
        ========================================= */
     body {
         font-family: "Arial", sans-serif;
@@ -22,7 +22,7 @@
     }
 
     /* =========================================
-       2. 頂部導覽列 (Navigation)
+       2. 頂部導覽列
        ========================================= */
     .nav-1 {
         display: flex;
@@ -69,7 +69,7 @@
     }
 
     /* =========================================
-       3. 版面容器與排版 (Layout Containers)
+       3. 版面容器與排版
        ========================================= */
     .input-container,
     .search-container {
@@ -100,7 +100,7 @@
     }
 
     /* =========================================
-       4. 表單與輸入元件 (Forms & Inputs)
+       4. 表單與輸入元件
        ========================================= */
     .input-container > form {
         width: 100%;
@@ -120,9 +120,8 @@
 
     /* --- 輸入欄位通用設定 --- */
     input[type="text"],
-    input[type="date"],
     textarea,
-    .time-display { /* 加入 .time-display 讓外觀一致 */
+    .picker-display { /* [修改] 改名為 picker-display 供日期與時間共用 */
         width: 100%;
         padding: 8px;
         margin-top: 5px;
@@ -136,31 +135,25 @@
         min-height: 38px; /* 確保高度一致 */
     }
 
-    input[type="date"] {
-        -webkit-appearance: none;
-        appearance: none;
-        height: 38px; /* 強制高度對齊 */
-    }
-
     textarea { font-size: 16px; }
 
     input[readonly],
     textarea[readonly],
-    .time-display.readonly-mode {
+    .picker-display.readonly-mode {
         background-color: #f7f7f7; /* 唯讀時變灰 */
         cursor: default;
         color: #555;
     }
 
-    /* --- [關鍵修改] 時間選擇器專用樣式 (Time Picker Hack) --- */
-    .time-wrapper {
+    /* --- [關鍵修改] 日期與時間選擇器專用樣式 (Picker Hack) --- */
+    .picker-wrapper {
         position: relative;
         width: 100%;
         margin-top: 5px;
     }
 
-    /* 替身：負責顯示中文時間 */
-    .time-display {
+    /* 替身：負責顯示 formatted text */
+    .picker-display {
         display: flex;
         align-items: center;
         margin-top: 0; /* 已經在 wrapper 設過 margin */
@@ -169,7 +162,7 @@
     }
 
     /* 真身：透明，蓋在最上面 */
-    .real-time-input {
+    .real-picker-input {
         position: absolute;
         top: 0;
         left: 0;
@@ -199,7 +192,7 @@
     }
 
     /* =========================================
-       5. 資料表格區 (Data Tables)
+       5. 資料表格區
        ========================================= */
     .table-container {
         width: 100%;
@@ -245,7 +238,7 @@
     .oddrowcolor { background-color: #ffffff; }
 
     /* =========================================
-       6. 編輯彈窗 (Edit Modal)
+       6. 編輯彈窗
        ========================================= */
     #editModal {
         display: none;
@@ -324,7 +317,7 @@
     #deleteEditBtn { background-color: #f37a7a; }
 
     /* =========================================
-       7. 確認提示視窗 (Confirmation Modal)
+       7. 確認提示視窗
        ========================================= */
     #saveConfirmModal {
         display: none;
@@ -365,7 +358,7 @@
     #continueEditBtn { background-color: #f2f2f2; color: #333; }
 
     /* =========================================
-       8. 響應式設計 (RWD for Mobile)
+       8. 響應式設計
        ========================================= */
     @media (max-width: 768px) {
         form { width: 95%; }
@@ -380,9 +373,8 @@
         }
 
         input[type="text"],
-        input[type="date"],
         textarea,
-        .time-display { /* 確保手機上文字大小 */
+        .picker-display { /* 確保手機上文字大小 */
             font-size: 16px; 
             padding: 10px;
         }
@@ -417,12 +409,18 @@
 <h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
 <form>
   <label>長輩姓名<input type="text" id="elderName"></label>
-  <label>看診日期<input type="date" id="date"></label>
+  
+  <label>看診日期
+      <div class="picker-wrapper">
+          <div id="dateDisplay" class="picker-display"></div>
+          <input type="date" id="date" class="real-picker-input">
+      </div>
+  </label>
   
   <label>看診時間
-      <div class="time-wrapper">
-          <div id="timeDisplay" class="time-display">請選擇時間</div>
-          <input type="time" id="time" class="real-time-input">
+      <div class="picker-wrapper">
+          <div id="timeDisplay" class="picker-display"></div>
+          <input type="time" id="time" class="real-picker-input">
       </div>
   </label>
 
@@ -495,12 +493,18 @@
   <h2>看診資訊</h2>
 </div>
     <label>長輩姓名<input type="text" id="editElderName" placeholder="長輩姓名" readonly></label>
-    <label>日期<input type="date" id="editDate" readonly></label>
+    
+    <label>日期
+        <div class="picker-wrapper">
+            <div id="editDateDisplay" class="picker-display readonly-mode"></div>
+            <input type="date" id="editDate" class="real-picker-input" readonly>
+        </div>
+    </label>
     
     <label>時間
-        <div class="time-wrapper">
-            <div id="editTimeDisplay" class="time-display readonly-mode">請選擇時間</div>
-            <input type="time" id="editTime" class="real-time-input" readonly>
+        <div class="picker-wrapper">
+            <div id="editTimeDisplay" class="picker-display readonly-mode"></div>
+            <input type="time" id="editTime" class="real-picker-input" readonly>
         </div>
     </label>
 
@@ -573,8 +577,8 @@ const nameEl = document.getElementById("volunteerName");
 /* -----------------------------------------
    2. 初始化與 LIFF 整合 (Init & LIFF)
    ----------------------------------------- */
-// [新增] 初始化時間選擇器監聽
-initTimePickers();
+// [修改] 初始化時間與日期選擇器
+initDateTimePickers();
 initLiffAndSetProfile();
 updateNoRecordMessage();
 
@@ -625,28 +629,36 @@ nameEl.addEventListener("click", () => {
 });
 
 /* -----------------------------------------
-   [新增] 時間選擇器邏輯 (Time Picker Logic)
+   3. 日期與時間選擇器邏輯 (Date & Time Picker Logic)
    ----------------------------------------- */
-function initTimePickers() {
-    // 綁定新增表單的時間輸入
+function initDateTimePickers() {
+    // 初始化時間
     const timeInput = document.getElementById("time");
     timeInput.addEventListener("input", function() {
         updateTimeDisplay(this.value, "timeDisplay");
     });
-
-    // 綁定編輯表單的時間輸入
     const editTimeInput = document.getElementById("editTime");
     editTimeInput.addEventListener("input", function() {
         updateTimeDisplay(this.value, "editTimeDisplay");
     });
+
+    // [新增] 初始化日期
+    const dateInput = document.getElementById("date");
+    dateInput.addEventListener("input", function() {
+        updateDateDisplay(this.value, "dateDisplay");
+    });
+    const editDateInput = document.getElementById("editDate");
+    editDateInput.addEventListener("input", function() {
+        updateDateDisplay(this.value, "editDateDisplay");
+    });
 }
 
-// 通用時間格式化函式：將 HH:mm 轉為 "下午 02:30"
+// 更新時間顯示
 function updateTimeDisplay(timeValue, displayElementId) {
     const displayEl = document.getElementById(displayElementId);
     
     if (!timeValue) {
-        displayEl.textContent = "請選擇時間";
+        displayEl.textContent = ""; 
         displayEl.style.color = "#888";
         return;
     }
@@ -662,11 +674,27 @@ function updateTimeDisplay(timeValue, displayElementId) {
     if (hour === 0) hour = 12; 
 
     const formattedHour = hour.toString().padStart(2, '0');
-    
-    // 更新假顯示框的文字
     displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
     
-    // 根據目前是否唯讀來決定顏色，若非唯讀則為深色
+    if (!displayEl.classList.contains("readonly-mode")) {
+        displayEl.style.color = "#222";
+    }
+}
+
+// [新增] 更新日期顯示 (將 YYYY-MM-DD 轉為 YYYY 年 MM 月 DD 日)
+function updateDateDisplay(dateValue, displayElementId) {
+    const displayEl = document.getElementById(displayElementId);
+    
+    if (!dateValue) {
+        displayEl.textContent = ""; 
+        displayEl.style.color = "#888";
+        return;
+    }
+
+    const [year, month, day] = dateValue.split('-');
+    // 顯示格式：2025 年 11 月 24 日
+    displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
+    
     if (!displayEl.classList.contains("readonly-mode")) {
         displayEl.style.color = "#222";
     }
@@ -674,7 +702,7 @@ function updateTimeDisplay(timeValue, displayElementId) {
 
 
 /* -----------------------------------------
-   3. 資料讀取 (READ - Load Data)
+   4. 資料讀取 (READ - Load Data)
    ----------------------------------------- */
 async function loadData() {
   const table = document.getElementById("dataTable");
@@ -701,7 +729,6 @@ async function loadData() {
     json.data.forEach(d => {
       const datetime = d.visit_time ? new Date(d.visit_time) : null;
       const date = datetime ? datetime.toISOString().split("T")[0] : "";
-      // 這裡顯示在表格中的時間，可以考慮也轉成中文格式，但為了排序方便先維持原本 HH:mm
       const time = datetime ? datetime.toISOString().split("T")[1].substring(0, 5) : "";
 
       const newRow = tbody.insertRow(-1);
@@ -736,12 +763,12 @@ async function loadData() {
 
 
 /* -----------------------------------------
-   4. 資料新增 (CREATE - Add Row)
+   5. 資料新增 (CREATE - Add Row)
    ----------------------------------------- */
 async function addRow() {
   const elderName = document.getElementById("elderName").value.trim();
   const date = document.getElementById("date").value.trim();
-  const time = document.getElementById("time").value.trim(); // 這裡依然拿真正的 input value
+  const time = document.getElementById("time").value.trim();
   const name = document.getElementById("name").value.trim();
   const department = document.getElementById("department").value.trim();
   const record = document.getElementById("record").value.trim();
@@ -807,7 +834,7 @@ async function addRow() {
     altRows("dataTable");
     updateNoRecordMessage();
     
-    clearInputs(); // 新增成功後清空
+    clearInputs(); 
 
   } catch (err) {
     console.error("❌ Supabase 錯誤:", err);
@@ -818,7 +845,7 @@ async function addRow() {
 
 
 /* -----------------------------------------
-   5. 資料更新與刪除 (UPDATE & DELETE)
+   6. 資料更新與刪除 (UPDATE & DELETE)
    ----------------------------------------- */
 document.getElementById("saveEditBtn").onclick = () => {
   const row = document.getElementById("dataTable").rows[editRowIndex];
@@ -913,7 +940,7 @@ async function deleteData() {
 
 
 /* -----------------------------------------
-   6. 彈窗與 UI 控制邏輯 (UI & Modals)
+   7. 彈窗與 UI 控制邏輯 (UI & Modals)
    ----------------------------------------- */
 function updateNoRecordMessage() {
   const table = document.getElementById("dataTable");
@@ -931,14 +958,17 @@ function updateNoRecordMessage() {
   }
 }
 
-// [修改] 清空輸入欄位，同時重置時間顯示
+// [修改] 清空輸入欄位，同時重置時間與日期的假顯示
 function clearInputs() {
   ["elderName", "date", "time", "name", "department", "record", "note"].forEach(id => {
     document.getElementById(id).value = "";
   });
-  // 重置時間顯示文字
-  document.getElementById("timeDisplay").textContent = "請選擇時間";
+  // 清空時間文字
+  document.getElementById("timeDisplay").textContent = "";
   document.getElementById("timeDisplay").style.color = "#888";
+  // 清空日期文字
+  document.getElementById("dateDisplay").textContent = "";
+  document.getElementById("dateDisplay").style.color = "#888";
 }
 
 function sortTableByDateTime(tableId) {
@@ -966,7 +996,6 @@ function altRows(id) {
     rows[i].className = (i % 2 === 0) ? "evenrowcolor" : "oddrowcolor";
 }
 
-// [修改] 開啟編輯視窗，需同時更新假時間顯示
 function openEditModal(row) {
   editRowIndex = row.rowIndex;
   currentEditEventId = row.dataset.event_id;
@@ -978,9 +1007,11 @@ function openEditModal(row) {
     originalData[f] = val; 
   });
 
-  // 手動更新編輯框的時間顯示文字
-  const timeVal = row.cells[2].innerText; // 格式 HH:mm
+  // 更新假顯示框
+  const timeVal = row.cells[2].innerText; 
   updateTimeDisplay(timeVal, "editTimeDisplay");
+  const dateVal = row.cells[1].innerText;
+  updateDateDisplay(dateVal, "editDateDisplay");
 
   setReadOnly(false); 
   
@@ -989,37 +1020,41 @@ function openEditModal(row) {
   document.querySelector(".nav-1").style.display = "none"; 
 }
 
-// [修改] 設定編輯視窗欄位狀態 (包含假顯示框的樣式)
+// [修改] 統一管理 ReadOnly 樣式
 function setReadOnly(readOnly) {
   document.querySelectorAll("#editModal input, #editModal textarea").forEach(el => {
     el.readOnly = readOnly;
-    if (el.type === "date") {
-       el.style.backgroundColor = "white"; 
-    } else if (el.type !== "time") {
-       // time 的樣式由 .time-display 處理
+    // 如果不是 date 或 time，背景變灰 (因為 date/time 有自己的假顯示框處理背景)
+    if (el.type !== "date" && el.type !== "time") {
        el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
     }
   });
 
-  // 處理假時間框的唯讀樣式
-  const timeDisplay = document.getElementById("editTimeDisplay");
-  const editTimeInput = document.getElementById("editTime");
-  
-  if (readOnly) {
-      timeDisplay.classList.add("readonly-mode");
-      timeDisplay.style.color = "#555";
-      // 唯讀時讓 real input 不能被點到 (避免跳出選擇器)
-      editTimeInput.style.pointerEvents = "none";
-  } else {
-      timeDisplay.classList.remove("readonly-mode");
-      timeDisplay.style.color = editTimeInput.value ? "#222" : "#888";
-      editTimeInput.style.pointerEvents = "auto";
-  }
+  // 處理假顯示框的唯讀樣式 (時間 & 日期)
+  togglePickerReadOnly("editTimeDisplay", "editTime", readOnly);
+  togglePickerReadOnly("editDateDisplay", "editDate", readOnly);
 
   document.getElementById("saveEditBtn").style.display = readOnly ? "none" : "inline-block";
   document.getElementById("deleteEditBtn").style.display = readOnly ? "none" : "inline-block";
   document.getElementById("enterEditBtn").style.display = readOnly ? "inline-block" : "none";
   isEditing = !readOnly;
+}
+
+// [新增] 輔助函式：切換假顯示框的唯讀狀態
+function togglePickerReadOnly(displayId, inputId, readOnly) {
+    const displayEl = document.getElementById(displayId);
+    const inputEl = document.getElementById(inputId);
+
+    if (readOnly) {
+        displayEl.classList.add("readonly-mode");
+        displayEl.style.color = "#555";
+        inputEl.style.pointerEvents = "none"; // 禁止點擊觸發原生選單
+    } else {
+        displayEl.classList.remove("readonly-mode");
+        // 如果有值顯示深色，沒值顯示淺色
+        displayEl.style.color = inputEl.value ? "#222" : "#888";
+        inputEl.style.pointerEvents = "auto";
+    }
 }
 
 document.getElementById("enterEditBtn").onclick = () => setReadOnly(false);
@@ -1053,7 +1088,7 @@ document.addEventListener("keydown", e => {
 
 
 /* -----------------------------------------
-   7. 儲存確認視窗 (Save Confirm Modal)
+   8. 儲存確認視窗 (Save Confirm Modal)
    ----------------------------------------- */
 function showSaveConfirmModal() {
   const modal = document.getElementById("saveConfirmModal");
