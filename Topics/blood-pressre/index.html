@@ -124,7 +124,7 @@
         margin: 0; /* 重置 margin */
         width: 100%;
         overflow: hidden;
-        color: #222;
+        color: #888; /* 預設為淺灰，等到有值才變深 */
     }
 
     /* 真身：透明，蓋在最上面 */
@@ -653,20 +653,20 @@
     function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
-            displayEl.textContent = "";
+            displayEl.textContent = ""; // 若無值，顯示空白
             displayEl.style.color = "#888";
             return;
         }
         const [year, month, day] = dateValue.split('-');
         displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
-        displayEl.style.color = "#222";
+        displayEl.style.color = "#222"; // 有值變深色
     }
 
     // 更新時間顯示
     function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
-            displayEl.textContent = "";
+            displayEl.textContent = ""; // 若無值，顯示空白
             displayEl.style.color = "#888";
             return;
         }
@@ -683,11 +683,11 @@
         displayEl.style.color = "#222";
     }
 
-     //supabase & Edit logic placeholder (User provided saveEdit but no HTML, kept logic in case needed later)
+     //supabase & Edit logic placeholder
     document.getElementById("submit").addEventListener("click", saveEdit);
     async function saveEdit() {
       if (!currentEditEventId) return;
-      // ... (Existing logic kept intact)
+      // (Existing logic)
     }
     
     const COST_SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
@@ -972,10 +972,22 @@
         }
       }
 
+      // 表單送出後：重置表單並清空顯示
       form.reset();
-      // [修改] 新增完畢後，重新設為今天，並更新顯示文字
-      setDefaultDateTime();
+      clearInputs(); 
     };
+
+    // [新增] 清空輸入與顯示
+    function clearInputs() {
+        document.getElementById('date').value = '';
+        document.getElementById('time').value = '';
+        document.getElementById('systolic').value = '';
+        document.getElementById('diastolic').value = '';
+        
+        // 清空假顯示框文字
+        document.getElementById("dateDisplay").textContent = "";
+        document.getElementById("timeDisplay").textContent = "";
+    }
 
     function getStatus(systolic, diastolic) {
       if (systolic < 90 || diastolic < 60) return "偏低";
@@ -1203,7 +1215,7 @@
           nameEl.innerText = "未登入";
           avatarEl.style.display = "none";
           userId = null;
-          setDefaultDateTime(); // 未登入也要設時間
+          // setDefaultDateTime(); // 已移除自動填入
           return;
         }
 
@@ -1218,8 +1230,7 @@
           avatarEl.style.display = "none";
         }
         
-        // 登入成功後設定時間
-        setDefaultDateTime();
+        // setDefaultDateTime(); // 已移除自動填入
         
       } catch (err) {
         console.error("LIFF init error:", err);
@@ -1267,31 +1278,6 @@
 
     window.addEventListener('resize', onResize);
     window.addEventListener('load', onResize);
-
-    // [修改] 預設日期時間：設定值的同時，更新假顯示文字
-    function setDefaultDateTime() {
-      const dateEl = document.getElementById('date');
-      const timeEl = document.getElementById('time');
-      
-      if (dateEl) {
-        const t = new Date();
-        const y = t.getFullYear();
-        const m = String(t.getMonth() + 1).padStart(2, '0');
-        const d = String(t.getDate()).padStart(2, '0');
-        const dateVal = `${y}-${m}-${d}`;
-        dateEl.value = dateVal;
-        updateDateDisplay(dateVal, "dateDisplay"); // 更新顯示
-      }
-      
-      if (timeEl) {
-        const t2 = new Date();
-        const hh = String(t2.getHours()).padStart(2, '0');
-        const mm = String(t2.getMinutes()).padStart(2, '0');
-        const timeVal = `${hh}:${mm}`;
-        timeEl.value = timeVal;
-        updateTimeDisplay(timeVal, "timeDisplay"); // 更新顯示
-      }
-    }
     
     const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice";
     const adviceButton = document.getElementById('advice-button');
