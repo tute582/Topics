@@ -137,9 +137,9 @@
     textarea,
     select,
     #editModal input,
-    .picker-display { /* [關鍵] 讓 picker-display 繼承所有漂亮樣式 */
+    .picker-display { 
         width: 100%;
-        padding: 10px; /* 統一 padding */
+        padding: 10px;
         margin: 5px 0;
         border-radius: 10px;
         border: 1px solid #888;
@@ -147,30 +147,47 @@
         background-color: #ffffff;
         color: #222;
         box-sizing: border-box;
-        min-height: 44px; /* 確保高度一致 */
+        min-height: 44px; 
         height: 44px;
-        line-height: 22px; /* 讓文字垂直置中 */
+        line-height: 22px; 
     }
 
-    /* --- [關鍵修正] 日期與時間選擇器結構 --- */
+    /* --- 日期與時間選擇器結構 --- */
     .picker-wrapper {
         position: relative;
         width: 100%;
         margin: 5px 0;
-        height: 44px; /* 固定高度，避免塌陷 */
+        height: 44px; 
     }
 
     /* 替身 (顯示文字用) */
     .picker-display {
         display: flex;
-        align-items: center; /* 垂直置中 */
+        align-items: center; 
         margin: 0; 
-        position: absolute; /* 絕對定位以充滿容器 */
+        position: absolute; 
         top: 0;
         left: 0;
-        z-index: 1; /* 在下層 */
-        color: #888; /* 預設文字顏色 */
+        z-index: 1; 
+        color: #888; 
         overflow: hidden;
+    }
+
+    /* [關鍵新增] 將圖示設定在假顯示框上 */
+    #dateDisplay {
+        background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px 20px;
+        padding-right: 44px; /* 留位給 icon */
+    }
+
+    #timeDisplay {
+        background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px 20px;
+        padding-right: 44px; /* 留位給 icon */
     }
 
     /* 真身 (實際功能用) - 透明覆蓋 */
@@ -540,7 +557,7 @@
         
         input[type="text"],
         select,
-        .picker-display { /* 確保假顯示框在手機上高度正確 */
+        .picker-display {
             font-size: 16px;
             padding: 10px;
             height: 44px;
@@ -739,7 +756,7 @@
     initDateTimePickers();
 
     /* =================================================================
-       [新增] 日期與時間選擇器邏輯 (Logic)
+       [新增] 日期與時間選擇器邏輯
        ================================================================= */
     function initDateTimePickers() {
         // 日期欄位監聽
