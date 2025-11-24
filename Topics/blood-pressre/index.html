@@ -298,9 +298,6 @@
        1. 全域變數與設定
        ================================================================= */
     const LIFF_ID = "2008484068-DEJL7363"; // 替換為您的 LIFF ID
-    const COST_SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co'; // Supabase URL
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_KEY'; // ⚠️ 請填入您的 Supabase Key
-    const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; // AI 建議 API
 
     // DOM 元素
     const form = document.getElementById("bpForm");
@@ -313,7 +310,8 @@
     const nameEl = document.getElementById("volunteerName");
 
     // 狀態變數
-    let userId = null;
+    let userId = "";
+    let userName = null;
     let liffProfile = null;
     let records = []; 
     let viewEndDateStr = null; 
@@ -321,7 +319,6 @@
     let chart;
     let fp = null; // Flatpickr 實例
     let userSelectedRange = false;
-    let sb = null; // Supabase Client
 
     // 初始化 UI 狀態 (隱藏表格與圖表)
     if (chartContainer) chartContainer.style.display = 'none';
@@ -342,14 +339,15 @@
         if (!liff.isLoggedIn()) {
           nameEl.innerText = "未登入";
           avatarEl.style.display = "none";
-          userId = null;
           return;
         }
 
         const profile = await liff.getProfile();
-        nameEl.innerText = profile.displayName || "志工";
         userId = profile.userId;
-        
+        userName = profile.displayName;
+        console.log("LIFF Profile userId:", userId, "userName:", userName);
+
+        nameEl.innerText = profile.displayName || "志工";
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
           avatarEl.style.display = "inline-block";
@@ -383,52 +381,42 @@
     initLiffAndSetProfile();
 
     /* =================================================================
-       3. 資料初始化 (Supabase / LocalStorage)
-       說明：初始化 Supabase，若失敗則退回 LocalStorage
+       3. 資料初始化 (SupabaseAPI)
        ================================================================= */
-    try {
-      // 這裡檢查 URL 是否為 placeholder，實際使用時請填入正確 URL
-      if (!COST_SUPABASE_URL.includes('your-project')) {
-        sb = supabase.createClient(COST_SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.debug('Supabase client ready');
-      } else {
-        console.debug('Supabase not configured; using localStorage only');
-      }
-    } catch (e) { console.warn('supabase init failed', e); sb = null; }
-
     // [Read] 載入資料函式 (IIFE)
     (async function loadRecords() {
-      // 嘗試從 Supabase 載入
-      if (sb) {
-        try {
-          const { data, error } = await sb.from('blood_pressure_records').select('*').order('recorded_time', { ascending: true });
-          if (!error && data) {
-            records = data.map(r => ({
-              uuid: r.uuid,
-              elder_user_id: r.elder_user_id,
-              elder_name: r.elder_name,
-              systolic: r.systolic,
-              diastolic: r.diastolic,
-              recorded_time: r.recorded_time,
-              status: getStatus(r.systolic, r.diastolic),
-              created_at: r.created_at
-            }));
-            initViewControlsAndRender();
-            return;
-          }
-        } catch (e) { console.warn('fetch from supabase failed', e); }
+      // call supabase GET API
+      const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}`  //取得某位長者血壓紀錄
+      try {
+        const response = await fetch(GET_SUPABASE_API_URL);
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          console.log("API loaded data:", result.data);
+
+          // 轉換格式 → 你的 records 陣列格式
+          records = result.data.map(r => ({
+            uuid: r.uuid,
+            elder_user_id: r.elder_user_id,
+            elder_name: r.elder_name,
+            systolic: r.systolic,
+            diastolic: r.diastolic,
+            recorded_time: r.recorded_time,
+            status: getStatus(r.systolic, r.diastolic),
+            created_at: r.created_at,
+            remarks: r.remarks,
+            pulse: r.pulse,
+            event_id: r.event_id
+          }));
+
+          initViewControlsAndRender();
+          return;
+        } else {
+          console.warn("API did not return success", result);
+        }
+      } catch (e) {
+        console.error("Fetch API error:", e);
       }
-      
-      // Fallback: 從 LocalStorage 載入
-      const local = JSON.parse(localStorage.getItem('bloodPressureRecords')) || [];
-      records = local.map(r => ({
-        uuid: r.uuid || null,
-        systolic: r.systolic,
-        diastolic: r.diastolic,
-        recorded_time: r.date || r.recorded_time || '',
-        status: r.status || getStatus(r.systolic, r.diastolic)
-      }));
-      initViewControlsAndRender();
     })();
 
     /* =================================================================
@@ -616,44 +604,56 @@
 
       const volunteerNameEl = document.getElementById('volunteerName');
       const payload = {
-        elder_user_id: userId || 'local-user',
-        elder_name: volunteerNameEl ? volunteerNameEl.innerText : null,
+        elder_user_id: userId,
+        elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        pulse: null,
-        recorded_time: recorded_time,
-        remarks: null
+        recorded_time: recorded_time
       };
 
-      // 先寫入前端與 LocalStorage 讓 UI 即時反應
+      // 先寫入前端讓 UI 即時反應
       const tempRecord = { uuid: null, systolic, diastolic, recorded_time, status };
       records.push(tempRecord);
-      try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
       renderTable();
       renderChart();
 
-      // 寫入 Supabase
-      if (sb) {
-        try {
-          const { data, error } = await sb.from('blood_pressure_records').insert([payload]).select();
-          if (error) throw error;
-          if (data && data[0]) {
-            // 更新剛才新增的紀錄 (加上 uuid)
-            const saved = data[0];
-            records[records.length - 1] = {
-              uuid: saved.uuid,
-              systolic: saved.systolic,
-              diastolic: saved.diastolic,
-              recorded_time: saved.recorded_time,
-              status: getStatus(saved.systolic, saved.diastolic),
-              created_at: saved.created_at
-            };
-            try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) {}
-            renderTable(); renderChart();
-          }
-        } catch (err) {
-          console.warn('save to supabase failed', err);
+      //Call Supabase POST API
+      const POST_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre` 
+      try {
+        const response = await fetch(POST_SUPABASE_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const saved = result.data;
+
+          // 更新 records 最後一筆（剛插入的）
+          records[records.length - 1] = {
+            uuid: saved.uuid,
+            elder_user_id: saved.elder_user_id,
+            elder_name: saved.elder_name,
+            systolic: saved.systolic,
+            diastolic: saved.diastolic,
+            recorded_time: saved.recorded_time,
+            status: getStatus(saved.systolic, saved.diastolic),
+            created_at: saved.created_at,
+            remarks: saved.remarks || null,
+            pulse: saved.pulse || null,
+            event_id: saved.event_id || null
+          };
+
+          renderTable();
+          renderChart();
+        } else {
+          console.warn("後端回應錯誤：", result);
         }
+
+      } catch (err) {
+        console.error("API POST 錯誤：", err);
       }
 
       // 重置表單
@@ -672,19 +672,22 @@
     }
 
     // [Delete] 刪除紀錄
-    async function deleteRecord(index) {
-      const rec = records[index];
-      // 若有 uuid 則刪除 Supabase 資料
-      if (sb && rec && rec.uuid) {
-        try {
-          const { data, error } = await sb.from('blood_pressure_records').delete().eq('uuid', rec.uuid);
-          if (error) throw error;
-          console.debug('deleted from supabase', data);
-        } catch (e) { console.warn('supabase delete failed', e); }
+    async function deleteRecord(event_id) {
+      const ok = confirm("確定要刪除這筆血壓紀錄嗎？");
+      if (!ok) return;
+
+      // call Supabase DELETE API
+      try {
+        const DELETE_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}/${event_id}` 
+        const response = await fetch(DELETE_SUPABASE_API_URL, { method: "DELETE" });
+
+      } catch (err) {
+        console.error("API DELETE 錯誤：", err);
       }
-      
-      records.splice(index, 1);
-      try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
+      // 從 records 移除
+      const newRecords = records.filter(r => r.event_id !== event_id);
+      records = newRecords;
+
       renderTable();
       renderChart();
     }
@@ -768,7 +771,7 @@
             <td>${r.status}</td>
             <td>${r.diastolic}</td>
             <td>${r.status}</td>
-            <td><button class="delete-btn" onclick="deleteRecord(${r._allIndex})">刪除</button></td>
+            <td><button class="delete-btn" onclick="deleteRecord('${r.event_id}')">刪除</button></td>
           </tr>`;
         table.innerHTML += row;
       });
@@ -875,8 +878,9 @@
         adviceText.innerHTML = "AI 建議產生中，請稍候...";
         adviceText.className = "loading";
         adviceButton.disabled = true; 
-
+      
         try {
+            const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; // AI 建議 API
             const response = await fetch(BACKEND_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
