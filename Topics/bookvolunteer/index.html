@@ -136,10 +136,10 @@
     input[type="text"],
     textarea,
     select,
-    .picker-display, /* [新增] 讓假顯示框共用樣式 */
-    #editModal input {
+    #editModal input,
+    .picker-display { /* [關鍵] 讓 picker-display 繼承所有漂亮樣式 */
         width: 100%;
-        padding: 8px;
+        padding: 10px; /* 統一 padding */
         margin: 5px 0;
         border-radius: 10px;
         border: 1px solid #888;
@@ -148,26 +148,32 @@
         color: #222;
         box-sizing: border-box;
         min-height: 44px; /* 確保高度一致 */
+        height: 44px;
+        line-height: 22px; /* 讓文字垂直置中 */
     }
 
-    /* --- [關鍵新增] 日期與時間選擇器專用樣式 (Picker Hack) --- */
+    /* --- [關鍵修正] 日期與時間選擇器結構 --- */
     .picker-wrapper {
         position: relative;
         width: 100%;
         margin: 5px 0;
+        height: 44px; /* 固定高度，避免塌陷 */
     }
 
-    /* 替身：負責顯示 formatted text */
+    /* 替身 (顯示文字用) */
     .picker-display {
         display: flex;
-        align-items: center;
+        align-items: center; /* 垂直置中 */
         margin: 0; 
-        height: 44px; 
+        position: absolute; /* 絕對定位以充滿容器 */
+        top: 0;
+        left: 0;
+        z-index: 1; /* 在下層 */
+        color: #888; /* 預設文字顏色 */
         overflow: hidden;
-        color: #888; /* 預設顏色 */
     }
 
-    /* 真身：透明，蓋在最上面 */
+    /* 真身 (實際功能用) - 透明覆蓋 */
     .real-picker-input {
         position: absolute;
         top: 0;
@@ -175,9 +181,11 @@
         width: 100%;
         height: 100%;
         opacity: 0; /* 完全透明 */
-        z-index: 10; /* 確保在最上層 */
+        z-index: 10; /* 在最上層接收點擊 */
         cursor: pointer;
         -webkit-appearance: none;
+        margin: 0;
+        padding: 0;
     }
 
     /* --- 單選按鈕群組 (Radio Group) --- */
@@ -532,12 +540,14 @@
         
         input[type="text"],
         select,
-        .picker-display {
+        .picker-display { /* 確保假顯示框在手機上高度正確 */
             font-size: 16px;
             padding: 10px;
             height: 44px;
         }
         
+        .picker-wrapper { height: 44px; }
+
         .arrow { width: 72px; height: 72px; font-size: 28px; }
         .slider-container { padding: 12px 40px; }
         .arrow.left { left: 12px; }
@@ -640,7 +650,6 @@
 
     <label>志工性別</label>
     <select id="gender" class="form-select">
-      
       <option value="" disabled selected>請選擇性別</option>
       <option value="皆可">皆可</option>
       <option value="男性">男性</option>
@@ -726,26 +735,27 @@
       }`;
     document.head.appendChild(style);
 
-    // [新增] 初始化日期時間選擇器
+    // [新增] 初始化選擇器監聽
     initDateTimePickers();
 
     /* =================================================================
-       [新增] 日期與時間選擇器邏輯
+       [新增] 日期與時間選擇器邏輯 (Logic)
        ================================================================= */
     function initDateTimePickers() {
-        // 日期欄位
+        // 日期欄位監聽
         const dateInput = document.getElementById("date");
         dateInput.addEventListener("input", function() {
             updateDateDisplay(this.value, "dateDisplay");
         });
 
-        // 時間欄位
+        // 時間欄位監聽
         const timeInput = document.getElementById("time");
         timeInput.addEventListener("input", function() {
             updateTimeDisplay(this.value, "timeDisplay");
         });
     }
 
+    // 格式化日期顯示：YYYY-MM-DD -> YYYY 年 MM 月 DD 日
     function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
@@ -758,6 +768,7 @@
         displayEl.style.color = "#222";
     }
 
+    // 格式化時間顯示：HH:mm -> 上午/下午 HH:mm
     function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
