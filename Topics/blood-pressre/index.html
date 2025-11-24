@@ -4,520 +4,203 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>血壓紀錄</title>
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <style>
-    /* =========================
-       全域與版面（調整為響應式為主）
-       ========================= */
-    body {
-      font-family: "Arial", sans-serif;
-      background: #ffffff; 
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* 保持 readonly 欄位白底 */
-    input[readonly], textarea[readonly], input[readonly]:not([type="checkbox"]) {
-      background-color: white;
-      cursor: default;
-    }
-
-    .input-container { margin-top: 15px; }
-    .search-container { margin-bottom: 30px; }
-
-    h1 { margin-top: 5px; margin-bottom: 5px; }
-
-    /* 讓表單以寬度限制並置中，手機時縮放 */
-    form {
-      width: 100%;
-      max-width: 820px; 
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      border: 1px solid #aaa;
-      margin: 12px auto 20px; 
-      box-sizing: border-box;
-    }
-
-    .title {
-      margin: 5px 0;
-      font-size: 26px;
-      box-sizing: border-box;
-    }
-
-    /* 導覽列 / volunteer area */
-    .nav-1{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 18px;
-      position: sticky;
-      top: 0;
-      z-index: 1001;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      width: 100%;
-      color: black;
-      background-color: white;
-      box-sizing: border-box;
-      border-bottom: 1px solid #eee;
-    }
-    .volunteer-area { display:flex; align-items:center; gap:8px; }
-    .volunteer-area .avatar {
-      width:36px; height:36px; border-radius:50%; object-fit:cover;
-      border:1px solid #ddd; display:inline-block;
-    }
-    .volunteer-area #volunteerName {
-      cursor: default;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: transparent;
-      font-size: 18px;
-    }
-
-    /* form row */
-    .form-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .form-row label {
-      width: 140px;
-      min-width: 100px;
-      text-align: left;
-      font-weight: 600;
-    }
-    
-    /* 通用 Input 樣式 */
-    .form-row input,
-    .picker-display {
-      flex: 1 1 auto;
-      min-width: 0;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #fff;
-      min-height: 38px; /* 確保高度一致 */
-      box-sizing: border-box;
-    }
-
-    /* --- [關鍵新增] 日期與時間選擇器專用樣式 (Picker Hack) --- */
-    .picker-wrapper {
-        position: relative;
-        flex: 1 1 auto; /* 讓它在 flex 佈局中自動伸展 */
-        display: flex;
-    }
-
-    /* 替身：負責顯示 formatted text */
-    .picker-display {
-        display: flex;
-        align-items: center;
-        margin: 0; /* 重置 margin */
-        width: 100%;
-        overflow: hidden;
-        color: #888; /* 預設為淺灰，等到有值才變深 */
-    }
-
-    /* 真身：透明，蓋在最上面 */
-    .real-picker-input {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0; /* 完全透明 */
-        z-index: 10; /* 確保在最上層 */
-        cursor: pointer;
-        -webkit-appearance: none;
-    }
-
-    /* 新增：指定只有日期列在窄螢幕也維持橫向排列 */
-    .form-row.date-row {
-      flex-wrap: nowrap;
-      align-items: center;
-    }
-    .form-row.date-row label {
-      width: auto;
-      min-width: 80px;
-      margin-right: 8px;
-      text-align: left;
-    }
-
-    /* 新增：時間列保持橫向排列 */
-    .form-row.time-row {
-      flex-wrap: nowrap;
-      align-items: center;
-    }
-    .form-row.time-row label {
-      width: auto;
-      min-width: 80px;
-      margin-right: 8px;
-      text-align: left;
-    }
-
-    .primary-btn { width: 160px; padding: 8px 12px; }
-
-    button {
-      background-color: #4a90e2;
-      color: white;
-      margin: 0 10px 0 0;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #3a78c6; }
-    button.advice-button { 
-      padding: 6px 12px; 
-      background-color: #007bff; 
-      color: white; 
-      border: none; 
-      border-radius: 8px; 
-      cursor: pointer; 
-    }
-
-    button:disabled { background-color: #ccc; }
-
-    #advice-output { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
-    .error { color: red; }
-    .loading { color: gray; }
-
-    /* ==============================
-       表格容器（calendar 風格）
-       ============================== */
-    .allTable-div {
-      width: 100%;
-      max-width: 820px; 
-      margin: 5px auto; 
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid #aaa;
-      border-radius: 16px;
-      background-color: white;
-      display: block;
-      overflow-x: auto;
-      box-sizing: border-box;
-      padding: 0;
-    }
-    .allTable-div table {
-      width: 100%;
-      border-collapse: collapse;
-      border-spacing: 0;
-      min-width: 720px; 
-      box-sizing: border-box;
-      background: transparent;
-      margin: 0;
-      border: none;
-    }
-    .allTable-div th, .allTable-div td {
-      padding: 12px 10px;
-      text-align: center;
-      border: 1px solid #ddd;
-      white-space: nowrap;
-      font-size: 14px;
-      background: transparent;
-    }
-    .allTable-div th { background-color: #fafafa; position: sticky; top: 0; z-index: 2; }
-    .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
-    .allTable-div tbody tr:nth-child(odd)  { background-color: #ffffff; }
-
-    .delete-btn {
-      background-color: #e74c3c;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
-    .delete-btn:hover { background-color: #c0392b; }
-
-    /* 圖表容器調整為響應式 */
-    .chart-container {
-      width: 100%;
-      max-width: 820px;
-      margin: 8px auto 30px;
-      box-sizing: border-box;
-      padding: 0 12px;
-    }
-    canvas {
-      margin-top: 12px;
-      background: #f3f0f0;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid #aaa;
-      width: 100% !important;
-      height: auto !important;
-      display: block;
-    }
-
-    .div-b {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      box-sizing: border-box;
-      padding: 0 16px;
-    }
-
-    /* 無資料提示 */
-    .no-record {
-      text-align: center;
-      color: #888;
-      font-size: 18px;
-      margin: 20px 0;
-      display: none; 
-    }
-
-    /* ==============================
-       響應式斷點
-       ============================== */
-    @media (max-width: 1024px) {
-      .form-row label { width: 120px; }
-      .volunteer-area #volunteerName { font-size: 16px; }
-    }
-
-    @media (max-width: 768px) {
-      form { width: 95%; padding: 16px; }
-      .form-row { gap: 8px; }
-      .form-row label { width: 110px; font-size: 20px; }
-      .primary-btn { width: 140px; }
-      
-      .allTable-div {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .allTable-div table { 
-        min-width: 720px; 
-        width: auto;
-      }
-      .allTable-div th, .allTable-div td { padding: 10px; font-size: 16px; white-space: nowrap; }
-      .volunteer-area .avatar { width:30px; height:30px; }
-      .volunteer-area #volunteerName { font-size: 14px; }
-      
-      canvas { height: 220px !important; max-height: 320px; }
-      input, button, .picker-display { font-size: 16px; }
-    }
-
-    @media (max-width: 420px) {
-      .form-row label { width: 100%; }
-      .form-row { flex-direction: column; align-items: stretch; }
-      
-      .form-row.date-row { flex-direction: row !important; align-items: center !important; }
-      .form-row.time-row { flex-direction: row !important; align-items: center !important; }
-      .form-row.date-row label { width: auto !important; }
-      .form-row.time-row label { width: auto !important; }
-      .primary-btn { width: 100%; }
-      .volunteer-area .avatar { display: none; } 
-      .volunteer-area #volunteerName { font-size: 13px; }
-      
-      .chart-container { padding: 8px 14px; }
-      canvas {
-        height: 240px !important;
-        max-height: 360px;
-        padding: 16px !important;
-        margin-top: 18px;
-      }
-      
-      .allTable-div {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .allTable-div table { min-width: 720px; width: auto; }
-      .allTable-div th, .allTable-div td { font-size: 13px; padding: 8px; white-space: nowrap; }
-      input[type="number"] { font-size: 15px; padding: 8px; }
-    }
-
-   /* 日期範圍選擇器主要區塊 */
-.range-picker-wrap {
-  display: grid;
-  grid-template-columns: 1fr; 
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.range-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.range-picker-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-left: 0;
-}
-
-.range-controls input#viewRange {
-  flex: 1 1 auto;
-  min-width: 220px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  box-sizing: border-box;
-}
-
-.range-controls input#viewRange {
-  flex: 0 0 280px;
-  min-width: 160px;
-  max-width: 100%;
-}
-
-@media (max-width: 600px) {
-  .range-picker-wrap {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-  }
-
-  .range-picker-wrap label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-
-  .range-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .range-picker-actions {
-    justify-content: flex-start;
-  }
-
-  .range-controls input#viewRange {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-.range-quick-btn {
-  background: #f6f8fa;
-  border: 1px solid #dfe4e8;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #222;
-  transition: background .12s, color .12s, box-shadow .12s;
-}
-
-.range-quick-btn.active {
-  background: #4a90e2;
-  color: #fff;
-  border-color: #3a78c6;
-  box-shadow: 0 2px 6px rgba(74,144,226,0.18);
-}
-
-.range-quick-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74,144,226,0.12);
-}
-
-@media (max-width: 420px) {
-  .flatpickr-calendar {
-    transform: none !important;
-    transform-origin: top left !important;
-
-    width: calc(100% - 32px) !important;  
-    max-width: none !important;
-
-    left: 16px !important;
-    right: 16px !important;
-
-    box-sizing: border-box !important;
-    border-radius: 10px !important;
-    font-size: 14px !important;
-    z-index: 9999 !important;
-  }
-
-  .flatpickr-calendar.open {
-    left: 16px !important;
-    right: 16px !important;
-  }
-
-  .flatpickr-innerContainer {
-    padding: 8px !important;
-  }
-
-  .flatpickr-months,
-  .flatpickr-month,
-  .flatpickr-weekdays {
-    padding: 6px 8px !important;
-  }
-
-  .flatpickr-days {
-    padding: 6px !important;
-    max-height: 320px;
-    overflow-y: auto;
-  }
-
-  .flatpickr-day,
-  .flatpickr-weekday {
-    padding: 6px 8px !important;
-    height: 36px !important;
-    line-height: 36px !important;
-    min-width: auto !important;
-  }
-}
-
-    .flatpickr-input {
-        width: 260px;
-        padding: 8px 12px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    .date-range-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-
-    .date-range-wrapper::before {
-        content: "📅";
-        position: absolute;
-        left: 8px;
-        top: 8px;
-        font-size: 18px;
-        pointer-events: none;
-    }
-
-    .date-range-input {
-        padding-left: 32px;
-    }
-
-  </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
-  
+
+  <style>
+    /* =========================================
+       1. 全域與基礎設定 (Global & Reset)
+       ========================================= */
+    body {
+      font-family: "Arial", sans-serif;
+      background: #ffffff; 
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* 保持唯讀欄位為白底 (覆蓋瀏覽器預設灰底) */
+    input[readonly], textarea[readonly] {
+      background-color: white; cursor: default;
+    }
+
+    /* =========================================
+       2. 導覽列 (Navigation)
+       ========================================= */
+    .nav-1 {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; position: sticky; top: 0; z-index: 1001;
+      width: 100%; background-color: white;
+      border-bottom: 1px solid #eee;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    
+    /* 志工頭像與名稱區域 */
+    .volunteer-area { display: flex; align-items: center; gap: 8px; }
+    .volunteer-area .avatar {
+      width: 36px; height: 36px; border-radius: 50%; 
+      object-fit: cover; border: 1px solid #ddd; display: inline-block;
+    }
+    .volunteer-area #volunteerName {
+      cursor: default; padding: 4px 8px; border-radius: 6px;
+      background: transparent; font-size: 18px;
+    }
+
+    /* =========================================
+       3. 表單與輸入區 (Form & Inputs)
+       ========================================= */
+    .div-b {
+      width: 100%; max-width: 900px; margin: 0 auto;
+      box-sizing: border-box; padding: 0 16px;
+    }
+
+    form {
+      width: 100%; max-width: 820px;
+      background: #fff; padding: 30px;
+      border-radius: 12px; border: 1px solid #aaa;
+      margin: 12px auto 20px;
+    }
+
+    .title { margin: 5px 0; font-size: 26px; }
+
+    /* 表單列設定 */
+    .form-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .form-row label {
+      width: 140px; min-width: 100px; text-align: left; font-weight: 600;
+    }
+    
+    /* 輸入框通用樣式 */
+    .form-row input, .picker-display {
+      flex: 1 1 auto; min-width: 0; padding: 8px;
+      border-radius: 6px; border: 1px solid #ccc;
+      background: #fff; min-height: 38px;
+    }
+
+    /* --- [關鍵樣式] Picker Hack: 自定義日期/時間顯示 --- */
+    .picker-wrapper {
+      position: relative; flex: 1 1 auto; display: flex;
+    }
+    /* 顯示層 (假的 input，負責顯示格式化文字) */
+    .picker-display {
+      display: flex; align-items: center; margin: 0; width: 100%;
+      overflow: hidden; color: #888; /* 預設淺灰 */
+    }
+    /* 互動層 (真的 input，透明並覆蓋在上方) */
+    .real-picker-input {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; z-index: 10; cursor: pointer; -webkit-appearance: none;
+    }
+
+    /* 日期與時間列的特殊排列 (強制不換行) */
+    .form-row.date-row, .form-row.time-row { flex-wrap: nowrap; align-items: center; }
+    .form-row.date-row label, .form-row.time-row label { width: auto; min-width: 80px; margin-right: 8px; }
+
+    /* 按鈕樣式 */
+    button {
+      background-color: #4a90e2; color: white; margin: 0 10px 0 0;
+      padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer;
+    }
+    button:hover { background-color: #3a78c6; }
+    button:disabled { background-color: #ccc; }
+    
+    /* AI 建議區塊 */
+    #advice-output { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
+    .error { color: red; } .loading { color: gray; }
+
+    /* =========================================
+       4. 日期範圍選擇器 (Range Picker)
+       ========================================= */
+    .range-picker-wrap {
+      display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%;
+    }
+    .range-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    
+    .date-range-wrapper { position: relative; display: inline-block; width: 100%; }
+    .date-range-wrapper::before {
+      content: "📅"; position: absolute; left: 8px; top: 8px; font-size: 18px; pointer-events: none;
+    }
+    .date-range-input { padding-left: 32px; width: 100%; padding: 8px 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+
+    .range-quick-btn {
+      background: #f6f8fa; border: 1px solid #dfe4e8; padding: 6px 10px;
+      border-radius: 6px; cursor: pointer; color: #222;
+    }
+    .range-quick-btn.active { background: #4a90e2; color: #fff; border-color: #3a78c6; }
+
+    /* =========================================
+       5. 資料表格與圖表 (Table & Chart)
+       ========================================= */
+    .allTable-div {
+      width: 100%; max-width: 820px; margin: 5px auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid #aaa; border-radius: 16px;
+      background-color: white; display: block; overflow-x: auto; padding: 0;
+    }
+    .allTable-div table {
+      width: 100%; border-collapse: collapse; min-width: 720px; margin: 0;
+    }
+    .allTable-div th, .allTable-div td {
+      padding: 12px 10px; text-align: center; border: 1px solid #ddd; white-space: nowrap; font-size: 14px;
+    }
+    .allTable-div th { background-color: #fafafa; position: sticky; top: 0; z-index: 2; }
+    .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
+
+    .delete-btn {
+      background-color: #e74c3c; padding: 4px 8px; border-radius: 6px; border: none; color: white; cursor: pointer;
+    }
+
+    /* 圖表 RWD 設定 */
+    .chart-container {
+      width: 100%; max-width: 820px; margin: 8px auto 30px; padding: 0 12px;
+    }
+    canvas {
+      margin-top: 12px; background: #f3f0f0; padding: 10px;
+      border-radius: 12px; border: 1px solid #aaa;
+      width: 100% !important; height: auto !important; display: block;
+    }
+
+    .no-record { text-align: center; color: #888; font-size: 18px; margin: 20px 0; display: none; }
+
+    /* =========================================
+       6. 響應式設計 (RWD Breakpoints)
+       ========================================= */
+    @media (max-width: 768px) {
+      form { width: 95%; padding: 16px; }
+      .form-row label { width: 110px; font-size: 20px; }
+      canvas { height: 220px !important; max-height: 320px; }
+    }
+
+    @media (max-width: 420px) {
+      .form-row { flex-direction: column; align-items: stretch; }
+      /* 日期時間在手機版強制橫向 */
+      .form-row.date-row, .form-row.time-row { flex-direction: row !important; }
+      .form-row.date-row label, .form-row.time-row label { width: auto !important; }
+      
+      .chart-container { padding: 8px 14px; }
+      canvas { height: 240px !important; padding: 16px !important; }
+      
+      /* Flatpickr 手機版樣式修正 */
+      .flatpickr-calendar { width: calc(100% - 32px) !important; left: 16px !important; right: 16px !important; }
+    }
+  </style>
 </head>
 <body>
-  <nav class="nav-1" >
-    <div>
-      <h1 style="margin:0; font-size: 28px;">血壓紀錄</h1>
-    </div>
 
+  <nav class="nav-1">
+    <div><h1 style="margin:0; font-size: 28px;">血壓紀錄</h1></div>
     <div style="display:flex; align-items:center;">
       <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
+      <span class="volunteer-area">
+        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar">
+        <span id="volunteerName" title="點此以 Line 登入">載入中</span>
       </span>
       </h1>
     </div>
@@ -525,8 +208,8 @@
 
   <div class="div-b">
     <h1 class="title">輸入內容</h1>
+    
     <form id="bpForm">
-      
       <div class="form-row date-row">
         <label for="date">日期：</label>
         <div class="picker-wrapper">
@@ -551,32 +234,30 @@
         <label for="diastolic">舒張壓（低壓）：</label>
         <input type="number" id="diastolic" placeholder="例如 80" required>
       </div>
+      
       <div style="display:flex;justify-content:flex-start;">
         <button id="submit" type="submit" class="primary-btn">新增紀錄</button>
-        <button id="advice-button">產生 AI 建議</button>
+        <button id="advice-button" type="button">產生 AI 建議</button>
       </div>
       <p style="font-size: 12px; color: #555;">
         <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
-    </p>
+      </p>
     </form>
 
     <div id="viewControls" style="max-width:820px;margin:8px auto 4px;padding:0 ; display:none;">
       <div class="range-picker-wrap">
         <h2 class="title" style="font-size:20px; margin:6px 0;">日期範圍：</h2>
-
         <div class="range-controls" style="flex-direction:column; align-items:stretch; gap:8px;">
           <div class="date-range-wrapper" style="width:100%;">
             <input id="dateRange" class="date-range-input" placeholder="開始日期 - 結束日期" style="width:100%;"/>
           </div>
-
           <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
             <label for="rangeSelect" style="font-weight:600; margin:0;">快速選擇範圍：</label>
-            <button id="rangePrev" class="range-quick-btn" type="button" aria-label="上一個範圍" style="padding:6px 10px;">‹</button>
+            <button id="rangePrev" class="range-quick-btn" type="button">‹</button>
             <span id="rangeLabel" style="min-width:160px; display:inline-block; text-align:center; padding:8px; border:1px solid #ccc; border-radius:6px; background:#fff;">最近 7 天</span>
-            <button id="rangeNext" class="range-quick-btn" type="button" aria-label="下一個範圍" style="padding:6px 10px;">›</button>
+            <button id="rangeNext" class="range-quick-btn" type="button">›</button>
           </div>
         </div>
-
         <div id="no-record-msg" class="no-record" style="display:none;">目前尚未有紀錄</div>
       </div>
     </div>
@@ -600,99 +281,113 @@
       </table>
     </div>
   </div>
-   <div id="advice-output" style="max-width:820px;margin:8px auto;padding:0 16px 12px;">
-          <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議：</h2>
-          <p id="advice-text"></p>
-        </div>
+
+  <div id="advice-output" style="max-width:820px;margin:8px auto;padding:0 16px 12px;">
+    <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議：</h2>
+    <p id="advice-text"></p>
+  </div>
+
   <div class="chart-container">
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
   <script>
-    // LIFF 初始化與使用者資訊
-    let liffProfile = null;
+    /* =================================================================
+       1. 全域變數與設定
+       ================================================================= */
+    const LIFF_ID = "2008484068-DEJL7363"; // 替換為您的 LIFF ID
+    const COST_SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co'; // Supabase URL
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_KEY'; // ⚠️ 請填入您的 Supabase Key
+    const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; // AI 建議 API
+
+    // DOM 元素
     const form = document.getElementById("bpForm");
     const table = document.getElementById("recordTable");
     const ctx = document.getElementById("bpChart").getContext("2d");
     const chartContainer = document.querySelector('.chart-container');
     const tableContainer = document.querySelector('.allTable-div');
     const noRecordMsg = document.getElementById('no-record-msg');
+    const avatarEl = document.getElementById("volunteerAvatar");
+    const nameEl = document.getElementById("volunteerName");
+
+    // 狀態變數
     let userId = null;
-
-    // [新增] 初始化日期與時間選擇器
-    initDateTimePickers();
-
-    // 初始隱藏表格與圖表
-    if (chartContainer) chartContainer.style.display = 'none';
-    if (tableContainer) tableContainer.style.display = 'none';
-    if (noRecordMsg) noRecordMsg.style.display = 'none';
-
-    // 載入紀錄
+    let liffProfile = null;
     let records = []; 
     let viewEndDateStr = null; 
     let viewDays = null;
     let chart;
-    let fp = null;
+    let fp = null; // Flatpickr 實例
     let userSelectedRange = false;
+    let sb = null; // Supabase Client
 
-    // [新增] 日期與時間選擇器監聽
-    function initDateTimePickers() {
-        const dateInput = document.getElementById("date");
-        dateInput.addEventListener("input", function() {
-            updateDateDisplay(this.value, "dateDisplay");
-        });
+    // 初始化 UI 狀態 (隱藏表格與圖表)
+    if (chartContainer) chartContainer.style.display = 'none';
+    if (tableContainer) tableContainer.style.display = 'none';
+    if (noRecordMsg) noRecordMsg.style.display = 'none';
 
-        const timeInput = document.getElementById("time");
-        timeInput.addEventListener("input", function() {
-            updateTimeDisplay(this.value, "timeDisplay");
-        });
-    }
+    // 初始化自定義日期/時間選擇器
+    initDateTimePickers();
 
-    // 更新日期顯示
-    function updateDateDisplay(dateValue, displayElementId) {
-        const displayEl = document.getElementById(displayElementId);
-        if (!dateValue) {
-            displayEl.textContent = ""; // 若無值，顯示空白
-            displayEl.style.color = "#888";
-            return;
+    /* =================================================================
+       2. LIFF 初始化 (LIFF Integration)
+       說明：連接 LINE，取得 User ID 與 Profile
+       ================================================================= */
+    async function initLiffAndSetProfile() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+
+        if (!liff.isLoggedIn()) {
+          nameEl.innerText = "未登入";
+          avatarEl.style.display = "none";
+          userId = null;
+          return;
         }
-        const [year, month, day] = dateValue.split('-');
-        displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
-        displayEl.style.color = "#222"; // 有值變深色
+
+        const profile = await liff.getProfile();
+        nameEl.innerText = profile.displayName || "志工";
+        userId = profile.userId;
+        
+        if (profile.pictureUrl) {
+          avatarEl.src = profile.pictureUrl;
+          avatarEl.style.display = "inline-block";
+        } else {
+          avatarEl.style.display = "none";
+        }
+      } catch (err) {
+        console.error("LIFF init error:", err);
+      }
     }
 
-    // 更新時間顯示
-    function updateTimeDisplay(timeValue, displayElementId) {
-        const displayEl = document.getElementById(displayElementId);
-        if (!timeValue) {
-            displayEl.textContent = ""; // 若無值，顯示空白
-            displayEl.style.color = "#888";
-            return;
-        }
-        const [hourStr, minuteStr] = timeValue.split(':');
-        let hour = parseInt(hourStr);
-        let period = "上午";
-        if (hour >= 12) {
-            period = "下午";
-            if (hour > 12) hour -= 12;
-        }
-        if (hour === 0) hour = 12;
-        const formattedHour = hour.toString().padStart(2, '0');
-        displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
-        displayEl.style.color = "#222";
-    }
+    // 綁定 LIFF 登入事件
+    avatarEl.addEventListener("click", () => {
+      if (typeof liff !== 'undefined' && liff.isLoggedIn && liff.isLoggedIn()) {
+        window.location.href = "../../Login-or-register/index.html";
+      } else if (typeof liff !== 'undefined' && liff.login) {
+        liff.login({ redirectUri: window.location.href });
+      } else {
+        alert('無法使用 LINE 登入');
+      }
+    });
 
-     //supabase & Edit logic placeholder
-    document.getElementById("submit").addEventListener("click", saveEdit);
-    async function saveEdit() {
-      if (!currentEditEventId) return;
-      // (Existing logic)
-    }
-    
-    const COST_SUPABASE_URL = 'https://rygawaqskvijgaciinzc.supabase.co';
-    let sb = null;
+    nameEl.addEventListener("click", () => {
+      if (typeof liff !== 'undefined' && liff.isLoggedIn && !liff.isLoggedIn()) {
+        liff.login({ redirectUri: window.location.href });
+      } else {
+        alert("已登入：" + (nameEl.innerText || "志工"));
+      }
+    });
+
+    initLiffAndSetProfile();
+
+    /* =================================================================
+       3. 資料初始化 (Supabase / LocalStorage)
+       說明：初始化 Supabase，若失敗則退回 LocalStorage
+       ================================================================= */
     try {
+      // 這裡檢查 URL 是否為 placeholder，實際使用時請填入正確 URL
       if (!COST_SUPABASE_URL.includes('your-project')) {
         sb = supabase.createClient(COST_SUPABASE_URL, SUPABASE_ANON_KEY);
         console.debug('Supabase client ready');
@@ -701,7 +396,9 @@
       }
     } catch (e) { console.warn('supabase init failed', e); sb = null; }
 
+    // [Read] 載入資料函式 (IIFE)
     (async function loadRecords() {
+      // 嘗試從 Supabase 載入
       if (sb) {
         try {
           const { data, error } = await sb.from('blood_pressure_records').select('*').order('recorded_time', { ascending: true });
@@ -721,6 +418,8 @@
           }
         } catch (e) { console.warn('fetch from supabase failed', e); }
       }
+      
+      // Fallback: 從 LocalStorage 載入
       const local = JSON.parse(localStorage.getItem('bloodPressureRecords')) || [];
       records = local.map(r => ({
         uuid: r.uuid || null,
@@ -732,69 +431,116 @@
       initViewControlsAndRender();
     })();
 
+    /* =================================================================
+       4. UI 互動邏輯：Picker Hack & View Controls
+       ================================================================= */
+    // 日期時間選擇器初始化
+    function initDateTimePickers() {
+        const dateInput = document.getElementById("date");
+        dateInput.addEventListener("input", function() {
+            updateDateDisplay(this.value, "dateDisplay");
+        });
+
+        const timeInput = document.getElementById("time");
+        timeInput.addEventListener("input", function() {
+            updateTimeDisplay(this.value, "timeDisplay");
+        });
+    }
+
+    // 更新日期顯示文字
+    function updateDateDisplay(dateValue, displayElementId) {
+        const displayEl = document.getElementById(displayElementId);
+        if (!dateValue) {
+            displayEl.textContent = ""; 
+            displayEl.style.color = "#888";
+            return;
+        }
+        const [year, month, day] = dateValue.split('-');
+        displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
+        displayEl.style.color = "#222";
+    }
+
+    // 更新時間顯示文字
+    function updateTimeDisplay(timeValue, displayElementId) {
+        const displayEl = document.getElementById(displayElementId);
+        if (!timeValue) {
+            displayEl.textContent = ""; 
+            displayEl.style.color = "#888";
+            return;
+        }
+        const [hourStr, minuteStr] = timeValue.split(':');
+        let hour = parseInt(hourStr);
+        let period = "上午";
+        if (hour >= 12) {
+            period = "下午";
+            if (hour > 12) hour -= 12;
+        }
+        if (hour === 0) hour = 12;
+        const formattedHour = hour.toString().padStart(2, '0');
+        displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
+        displayEl.style.color = "#222";
+    }
+
+    // 初始化視圖控制器 (日期範圍篩選)
     function initViewControlsAndRender() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
       const viewRangeEl = document.getElementById('dateRange');
-      const quickBtns = document.querySelectorAll('.range-quick-btn');
-
+      
+      // 預設顯示最近 7 天
       const today = new Date();
       const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       viewEndDateStr = endStr;
 
-      const rangeSelect = document.getElementById('rangeSelect');
+      // Flatpickr 設定
       if (viewRangeEl && typeof flatpickr === 'function') {
         let defaultDateArray = null;
-        if (typeof viewDays === 'number' && viewDays > 0) {
-          const start = new Date();
-          start.setDate(today.getDate() - (viewDays - 1));
-          const startStr = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
-          defaultDateArray = [startStr, endStr];
-        } else { 
-          if (records && records.length) {
+        
+        // 若 records 有資料，預設選取全部範圍，或根據邏輯調整
+        if (records && records.length) {
             const times = records.filter(r => r.recorded_time).map(r => new Date(r.recorded_time));
             if (times.length) {
-              const minD = new Date(Math.min.apply(null, times));
               const maxD = new Date(Math.max.apply(null, times));
-              const sStr = `${minD.getFullYear()}-${String(minD.getMonth()+1).padStart(2,'0')}-${String(minD.getDate()).padStart(2,'0')}`;
+              // 若資料中有更晚的日期，更新結束日
               const eStr = `${maxD.getFullYear()}-${String(maxD.getMonth()+1).padStart(2,'0')}-${String(maxD.getDate()).padStart(2,'0')}`;
-              defaultDateArray = [sStr, eStr];
-              viewEndDateStr = eStr;
+              viewEndDateStr = eStr; 
             }
-          }
         }
-        const fpOptions = {
+
+        // 設定 Flatpickr
+        fp = flatpickr(viewRangeEl, {
           locale: "zh_tw",
-           mode: "range",
-           dateFormat: "Y/m/d",
-           onChange: function(selectedDates, dateStr, instance) {
+          mode: "range",
+          dateFormat: "Y/m/d",
+          onChange: function(selectedDates, dateStr, instance) {
             if (!selectedDates || selectedDates.length === 0) {
-              userSelectedRange = false;
-              viewDays = null;
-              viewEndDateStr = null;
-              renderTable();
-              renderChart();
+              userSelectedRange = false; viewDays = null; viewEndDateStr = null;
+              renderTable(); renderChart();
               return;
             }
             userSelectedRange = true;
-             const s = selectedDates[0];
-             const e = selectedDates[1] || selectedDates[0];
-             const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
-             const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
-             const startIso = `${y1}-${m1}-${d1}`;
-             const endIso = `${y2}-${m2}-${d2}`;
-             viewEndDateStr = endIso;
-             const diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-             viewDays = diff;
-             if (document.getElementById('viewStartDate')) document.getElementById('viewStartDate').value = startIso;
-             renderTable();
-             renderChart();
-             if (rangeSelect) rangeSelect.value = "";
-            }
-         };
-        if (defaultDateArray) fpOptions.defaultDate = defaultDateArray;
-        fp = flatpickr(viewRangeEl, fpOptions);
+            const s = selectedDates[0];
+            const e = selectedDates[1] || selectedDates[0];
+            // 計算天數差
+            viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            
+            const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
+            viewEndDateStr = `${y2}-${m2}-${d2}`;
+            
+            renderTable();
+            renderChart();
+          }
+        });
       }
+
+      // 快速選擇按鈕邏輯 (7天, 30天, 本月...)
+      const quickOptions = [
+        { key: '7', label: '最近 7 天' },
+        { key: '30', label: '最近 30 天' },
+        { key: 'thisMonth', label: '本月' },
+        { key: 'lastMonth', label: '上個月' }
+      ];
+      let currentQuickIndex = 0; // 預設 "最近 7 天"
 
       function applyQuick(rangeKey) {
         const t = new Date();
@@ -810,125 +556,60 @@
         } else if (rangeKey === 'lastMonth') {
           s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
           e = new Date(t.getFullYear(), t.getMonth(), 0);
-        } else {
-          e = new Date();
-          s = new Date();
-          s.setDate(e.getDate() - (viewDays - 1));
         }
+        
         if (fp) {
           fp.setDate([s, e], true, "Y-m-d");
           const opt = quickOptions.find(o => o.key === rangeKey);
           if (opt) {
-            currentQuickIndex = quickOptions.indexOf(opt);
-            if (rangeLabel) rangeLabel.textContent = opt.label;
+             currentQuickIndex = quickOptions.indexOf(opt);
+             document.getElementById('rangeLabel').textContent = opt.label;
           }
-         } else {
-          const y1 = s.getFullYear(), m1 = String(s.getMonth()+1).padStart(2,'0'), d1 = String(s.getDate()).padStart(2,'0');
-          const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
-          viewEndDateStr = `${y2}-${m2}-${d2}`;
-          viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-          renderTable(); renderChart();
         }
       }
 
-      const rangePrev = document.getElementById('rangePrev');
-      const rangeNext = document.getElementById('rangeNext');
-      const rangeLabel = document.getElementById('rangeLabel');
-      const quickOptions = [
-        { key: '7', label: '最近 7 天' },
-        { key: '30', label: '最近 30 天' },
-        { key: 'thisMonth', label: '本月' },
-        { key: 'lastMonth', label: '上個月' }
-      ];
-      let currentQuickIndex = 0;
-
-      function updateRangeLabel() {
-        if (rangeLabel) rangeLabel.textContent = quickOptions[currentQuickIndex].label;
-      }
-
-      if (rangePrev) rangePrev.addEventListener('click', () => {
+      // 綁定快速切換按鈕
+      document.getElementById('rangePrev').addEventListener('click', () => {
         currentQuickIndex = (currentQuickIndex - 1 + quickOptions.length) % quickOptions.length;
-        userSelectedRange = true;
         applyQuick(quickOptions[currentQuickIndex].key);
-        updateRangeLabel();
       });
-      if (rangeNext) rangeNext.addEventListener('click', () => {
+      document.getElementById('rangeNext').addEventListener('click', () => {
         currentQuickIndex = (currentQuickIndex + 1) % quickOptions.length;
-        userSelectedRange = true;
         applyQuick(quickOptions[currentQuickIndex].key);
-        updateRangeLabel();
       });
 
-      if (typeof viewDays === 'number') {
-        const mapping = { '7': 7, '30': 30 };
-        const idx = quickOptions.findIndex(o => (o.key === String(viewDays)) || (o.key === 'thisMonth' && viewDays === 'thisMonth'));
-        if (idx >= 0) {
-          currentQuickIndex = idx;
-          updateRangeLabel();
-          applyQuick(quickOptions[currentQuickIndex].key);
-        }
-      }
-
+      // 初次渲染檢查
       const viewRecords = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
       if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
+      
       if (!hasViewRecords) {
-        if (chart) { chart.destroy(); chart = null; }
-        if (chartContainer) chartContainer.style.display = 'none';
-        if (tableContainer) tableContainer.style.display = 'none';
         if (noRecordMsg) noRecordMsg.style.display = 'block';
         return;
       }
-      renderTable();
-      renderChart();
+      
+      // 初次執行預設 (最近 7 天)
+      applyQuick('7'); 
     }
 
-    function computeStartDateString(days, endDateStrLocal) {
-      const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
-      const start = new Date(end);
-      start.setDate(end.getDate() - (days - 1));
-      const y = start.getFullYear();
-      const m = String(start.getMonth() + 1).padStart(2, '0');
-      const d = String(start.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-
-    function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
-      if (days === null || typeof days === 'undefined') {
-        return records
-          .map((r, idx) => ({ ...r, _allIndex: idx }))
-          .filter(r => r.recorded_time) 
-          .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
-      }
-      const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
-      const start = new Date(end);
-      start.setDate(end.getDate() - (days - 1));
-      return records
-        .map((r, idx) => ({ ...r, _allIndex: idx }))
-        .filter(r => {
-          if (!r.recorded_time) return false;
-          const d = new Date(r.recorded_time);
-          return d >= start && d <= end;
-        })
-        .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
-    }
-
+    /* =================================================================
+       5. 資料 CRUD 功能 (Create, Delete)
+       ================================================================= */
+    
+    // [Create] 表單送出
     form.onsubmit = async (e) => {
       e.preventDefault();
       const dateVal = document.getElementById("date").value;
       const timeVal = document.getElementById("time") ? document.getElementById("time").value : '';
       const systolic = parseInt(document.getElementById("systolic").value);
       const diastolic = parseInt(document.getElementById("diastolic").value);
- 
       const status = getStatus(systolic, diastolic);
+
+      // 組合時間字串
       let recorded_time;
       if (dateVal) {
-        if (timeVal) {
-          recorded_time = new Date(`${dateVal}T${timeVal}`).toISOString();
-        } else {
-          recorded_time = new Date(dateVal).toISOString();
-        }
+        recorded_time = timeVal ? new Date(`${dateVal}T${timeVal}`).toISOString() : new Date(dateVal).toISOString();
       } else {
         recorded_time = new Date().toISOString();
       }
@@ -944,17 +625,20 @@
         remarks: null
       };
 
+      // 先寫入前端與 LocalStorage 讓 UI 即時反應
       const tempRecord = { uuid: null, systolic, diastolic, recorded_time, status };
       records.push(tempRecord);
       try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
       renderTable();
       renderChart();
 
+      // 寫入 Supabase
       if (sb) {
         try {
           const { data, error } = await sb.from('blood_pressure_records').insert([payload]).select();
           if (error) throw error;
           if (data && data[0]) {
+            // 更新剛才新增的紀錄 (加上 uuid)
             const saved = data[0];
             records[records.length - 1] = {
               uuid: saved.uuid,
@@ -964,7 +648,7 @@
               status: getStatus(saved.systolic, saved.diastolic),
               created_at: saved.created_at
             };
-            try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { /* ignore */ }
+            try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) {}
             renderTable(); renderChart();
           }
         } catch (err) {
@@ -972,35 +656,86 @@
         }
       }
 
-      // 表單送出後：重置表單並清空顯示
+      // 重置表單
       form.reset();
       clearInputs(); 
     };
 
-    // [新增] 清空輸入與顯示
+    // 清空輸入欄位與顯示文字
     function clearInputs() {
         document.getElementById('date').value = '';
         document.getElementById('time').value = '';
         document.getElementById('systolic').value = '';
         document.getElementById('diastolic').value = '';
-        
-        // 清空假顯示框文字
         document.getElementById("dateDisplay").textContent = "";
         document.getElementById("timeDisplay").textContent = "";
     }
 
+    // [Delete] 刪除紀錄
+    async function deleteRecord(index) {
+      const rec = records[index];
+      // 若有 uuid 則刪除 Supabase 資料
+      if (sb && rec && rec.uuid) {
+        try {
+          const { data, error } = await sb.from('blood_pressure_records').delete().eq('uuid', rec.uuid);
+          if (error) throw error;
+          console.debug('deleted from supabase', data);
+        } catch (e) { console.warn('supabase delete failed', e); }
+      }
+      
+      records.splice(index, 1);
+      try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
+      renderTable();
+      renderChart();
+    }
+
+    /* =================================================================
+       6. 輔助函式與邏輯
+       ================================================================= */
+    
+    // 判斷血壓狀態
     function getStatus(systolic, diastolic) {
       if (systolic < 90 || diastolic < 60) return "偏低";
       if (systolic > 140 || diastolic > 90) return "偏高";
       return "正常";
     }
 
+    // 取得目前篩選範圍內的紀錄
+    function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
+      if (days === null || typeof days === 'undefined') {
+        // 若無天數限制，顯示全部
+        return records.map((r, idx) => ({ ...r, _allIndex: idx }))
+          .filter(r => r.recorded_time) 
+          .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
+      }
+      // 計算開始日期
+      const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
+      const start = new Date(end);
+      start.setDate(end.getDate() - (days - 1));
+      start.setHours(0,0,0,0); // 設定為當天起始
+
+      return records
+        .map((r, idx) => ({ ...r, _allIndex: idx }))
+        .filter(r => {
+          if (!r.recorded_time) return false;
+          const d = new Date(r.recorded_time);
+          return d >= start && d <= end;
+        })
+        .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
+    }
+
+    /* =================================================================
+       7. 視覺化渲染 (Table & Chart)
+       ================================================================= */
+    
+    // 渲染表格
     function renderTable() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
-
       const view = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(view) && view.length > 0;
+
+      // 控制 UI 顯示
       if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
 
@@ -1012,10 +747,12 @@
         if (noRecordMsg) noRecordMsg.style.display = 'block';
         return;
       }
+      
       if (noRecordMsg) noRecordMsg.style.display = 'none';
       if (tableContainer) tableContainer.style.display = '';
       if (chartContainer) chartContainer.style.display = '';
 
+      // 產生表格行
       view.forEach((r) => {
         let dateTimeStr = '';
         if (r.recorded_time) {
@@ -1037,21 +774,7 @@
       });
     }
 
-    async function deleteRecord(index) {
-      const rec = records[index];
-      if (sb && rec && rec.uuid) {
-        try {
-          const { data, error } = await sb.from('blood_pressure_records').delete().eq('uuid', rec.uuid);
-          if (error) throw error;
-          console.debug('deleted from supabase', data);
-        } catch (e) { console.warn('supabase delete failed', e); }
-      }
-      records.splice(index, 1);
-      try { localStorage.setItem('bloodPressureRecords', JSON.stringify(records)); } catch (e) { console.error(e); }
-      renderTable();
-      renderChart();
-    }
-
+    // 渲染 Chart.js 圖表
     function renderChart() {
       const view = getViewRecords(viewDays, viewEndDateStr);
       if (!view || view.length === 0) {
@@ -1067,6 +790,7 @@
 
       if (chart) chart.destroy();
 
+      // 正常範圍參考線資料
       const bandSystolicLower = labels.map(() => 90);
       const bandSystolicUpper = labels.map(() => 140);
       const bandDiastolicLower = labels.map(() => 60);
@@ -1077,186 +801,53 @@
         data: {
           labels: labels,
           datasets: [
-            {
-              label: '收縮壓正常下限',
-              data: bandSystolicLower,
-              borderWidth: 0,
-              pointRadius: 0,
-              backgroundColor: 'rgba(144, 238, 144, 0.5)'
-            },
-            {
-              label: '收縮壓正常上限',
-              data: bandSystolicUpper,
-              borderWidth: 0,
-              pointRadius: 0,
-              backgroundColor: 'rgba(144, 238, 144, 0.5)',
-              fill: '-1'
-            },
-            {
-              label: '舒張壓正常下限',
-              data: bandDiastolicLower,
-              borderWidth: 0,
-              pointRadius: 0,
-              backgroundColor: 'rgba(255, 190, 159, 0.7)'
-            },
-            {
-              label: '舒張壓正常上限',
-              data: bandDiastolicUpper,
-              borderWidth: 0,
-              pointRadius: 0,
-              backgroundColor: 'rgba(255, 190, 159, 0.7)',
-              fill: '-1'
-            },
-            {
-              label: "收縮壓 (高壓)",
-              data: systolicData,
-              borderColor: "rgb(255, 99, 132)",
-              backgroundColor: 'rgba(255,99,132,0.12)',
-              tension: 0.2,
-              fill: false,
-              pointRadius: 3,
-              order: 5
-            },
-            {
-              label: "舒張壓 (低壓)",
-              data: diastolicData,
-              borderColor: "rgb(54, 162, 235)",
-              backgroundColor: 'rgba(54,162,235,0.12)',
-              tension: 0.2,
-              fill: false,
-              pointRadius: 3,
-              order: 5
-            }
+            // 背景色帶區塊 (正常範圍)
+            { label: '收縮壓正常下限', data: bandSystolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)' },
+            { label: '收縮壓正常上限', data: bandSystolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)', fill: '-1' },
+            { label: '舒張壓正常下限', data: bandDiastolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)' },
+            { label: '舒張壓正常上限', data: bandDiastolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)', fill: '-1' },
+            // 實際數據線
+            { label: "收縮壓 (高壓)", data: systolicData, borderColor: "rgb(255, 99, 132)", backgroundColor: 'rgba(255,99,132,0.12)', tension: 0.2, fill: false, pointRadius: 3 },
+            { label: "舒張壓 (低壓)", data: diastolicData, borderColor: "rgb(54, 162, 235)", backgroundColor: 'rgba(54,162,235,0.12)', tension: 0.2, fill: false, pointRadius: 3 }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false, 
-          layout: {
-            padding: { left: 14, right: 14, top: 12, bottom: 12 }
-          },
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { left: 14, right: 14, top: 12, bottom: 12 } },
           plugins: {
             legend: { position: "top", labels: { padding: 12 } },
             title: { display: true, text: "血壓變化圖", padding: { top: 6, bottom: 6 } }
           },
           scales: {
-            y: {
-              beginAtZero: false,
-              title: { display: true, text: "mmHg" },
-              ticks: { padding: 8 }, 
-              grid: { drawOnChartArea: true, tickLength: 6 }
-            },
-            x: {
-              title: { display: true, text: "日期" },
-              ticks: {
-                padding: 8,    
-                maxRotation: 45,
-                autoSkip: true,
-                maxTicksLimit: 10
-              },
-              grid: { drawOnChartArea: false } 
-            }
-          },
-          interaction: { mode: 'index', intersect: false },
-          elements: { point: { radius: 4 }, line: { tension: 0.2 } }
+            y: { beginAtZero: false, title: { display: true, text: "mmHg" } },
+            x: { title: { display: true, text: "日期" }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } }
+          }
         }
       });
+      
+      // 套用響應式圖表設定
+      applyResponsiveChartOptions(chart);
+    }
 
-      function applyResponsiveChartOptions(ch) {
+    // 圖表響應式調整邏輯 (根據螢幕寬度調整字體、Padding)
+    function applyResponsiveChartOptions(ch) {
         if (!ch) return;
         const w = window.innerWidth;
         if (w <= 420) {
-          ch.options.plugins.legend.position = 'top';
-          ch.options.plugins.legend.align = 'start';
           ch.options.plugins.legend.labels.boxWidth = 12;
-          ch.options.plugins.title.display = true;
-          ch.options.plugins.title.padding = { top: 4, bottom: 4 };
-          ch.options.elements.point.radius = 2;
-          ch.options.layout.padding = { left: 12, right: 12, top: 10, bottom: 12 };
           ch.options.scales.x.ticks.maxRotation = 25;
           ctx.canvas.style.height = '240px';
-        }
-        else if (w <= 768) {
-          ch.options.plugins.legend.position = 'top';
-          ch.options.plugins.legend.align = 'center';
+        } else if (w <= 768) {
           ch.options.plugins.legend.labels.boxWidth = 14;
-          ch.options.plugins.title.display = true;
-          ch.options.elements.point.radius = 3;
-          ch.options.layout.padding = { left: 14, right: 14, top: 10, bottom: 12 };
           ch.options.scales.x.ticks.maxRotation = 35;
           ctx.canvas.style.height = '280px';
-        }
-        else {
-          ch.options.plugins.legend.position = 'top';
-          ch.options.plugins.legend.align = 'center';
-          ch.options.plugins.legend.labels.boxWidth = 16;
-          ch.options.plugins.title.display = true;
-          ch.options.elements.point.radius = 4;
-          ch.options.layout.padding = { left: 18, right: 18, top: 14, bottom: 14 };
-          ch.options.scales.x.ticks.maxRotation = 45;
+        } else {
           ctx.canvas.style.height = '320px';
         }
-        try { ch.update(); } catch (e) { /* ignore */ }
-      }
-
-      applyResponsiveChartOptions(chart);
-      window.applyResponsiveChartOptions = applyResponsiveChartOptions;
-    }
-    
-    const LIFF_ID = "2008484068-DEJL7363";
-    const avatarEl = document.getElementById("volunteerAvatar");
-    const nameEl = document.getElementById("volunteerName");
-
-    async function initLiffAndSetProfile() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-
-        if (!liff.isLoggedIn()) {
-          nameEl.innerText = "未登入";
-          avatarEl.style.display = "none";
-          userId = null;
-          // setDefaultDateTime(); // 已移除自動填入
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        nameEl.innerText = profile.displayName || "志工";
-        userId = profile.userId;
-        userName = profile.displayName;
-        if (profile.pictureUrl) {
-          avatarEl.src = profile.pictureUrl;
-          avatarEl.style.display = "inline-block";
-        } else {
-          avatarEl.style.display = "none";
-        }
-        
-        // setDefaultDateTime(); // 已移除自動填入
-        
-      } catch (err) {
-        console.error("LIFF init error:", err);
-      }
+        try { ch.update(); } catch (e) {}
     }
 
-    avatarEl.addEventListener("click", () => {
-      if (typeof liff !== 'undefined' && liff.isLoggedIn && liff.isLoggedIn()) {
-        window.location.href = "../../Login-or-register/index.html";
-      } else if (typeof liff !== 'undefined' && liff.login) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert('無法使用 LINE 登入');
-      }
-    });
-
-    nameEl.addEventListener("click", () => {
-      if (typeof liff !== 'undefined' && liff.isLoggedIn && !liff.isLoggedIn()) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("已登入：" + (nameEl.innerText || "志工"));
-      }
-    });
-
-    initLiffAndSetProfile();
-
+    // 監聽視窗大小改變以重繪圖表 (Debounce 防抖動)
     function debounce(fn, delay = 120) {
       let t;
       return function(...args) {
@@ -1264,22 +855,17 @@
         t = setTimeout(() => fn.apply(this, args), delay);
       };
     }
-
     const onResize = debounce(() => {
       if (chart) {
-        try { 
-          if (typeof window.applyResponsiveChartOptions === 'function') {
-            window.applyResponsiveChartOptions(chart);
-          }
-          chart.resize(); 
-        } catch (e) { /* ignore */ }
+        applyResponsiveChartOptions(chart);
+        chart.resize();
       }
     }, 150);
-
     window.addEventListener('resize', onResize);
-    window.addEventListener('load', onResize);
-    
-    const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice";
+
+    /* =================================================================
+       8. AI 建議功能
+       ================================================================= */
     const adviceButton = document.getElementById('advice-button');
     const adviceText = document.getElementById('advice-text');
 
@@ -1293,12 +879,8 @@
         try {
             const response = await fetch(BACKEND_API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    elder_user_id: userId
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ elder_user_id: userId })
             });
 
             if (!response.ok) {
