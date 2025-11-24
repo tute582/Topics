@@ -5,284 +5,285 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>行事曆</title>
   <style>
-  /* 全域設定 */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Arial", sans-serif;
-    padding: 0;
-    background: #ffffff;
-    color: #222;
-  }
-
-  /* 導覽列 */
-  .nav-1{
-    display:flex; 
-    align-items:center; 
-    justify-content:space-between;
-    padding:10px 25px; 
-    position:sticky; 
-    top:0; 
-    z-index:1001;
-    width:100%; 
-    background:#fff; 
-    border-bottom:1px solid #ddd;
-  }
-
-  h1{ 
-    margin:0; 
-    font-size:28px; }
-
-  h2{ 
-    margin:5px 0; 
-    font-size:24px; 
-    display:inline-block;
-    padding: 0 5px;
+    /* =========================================
+       1. 全域設定 (Global Reset)
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Arial", sans-serif;
+      padding: 0;
+      background: #ffffff;
+      color: #222;
     }
 
-  h3{ 
-    margin:0; 
-    text-align:center; 
-    font-size:20px; }
+    /* =========================================
+       2. 導覽列樣式 (Navigation)
+       ========================================= */
+    .nav-1 {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      padding: 10px 25px; 
+      position: sticky; 
+      top: 0; 
+      z-index: 1001;
+      width: 100%; 
+      background: #fff; 
+      border-bottom: 1px solid #ddd;
+    }
 
-  /* 調整：讓表單與表格左右對齊並移除 table 固定 min-width */
-  .div-b {
-    width:100%; 
-    max-width:800px; 
-    margin: 0; 
-    padding: 0 20px 0;
-  }
+    .nav-1 h1 { margin: 0; font-size: 28px; }
 
-  form {
-    margin: 10px 0; 
-    padding: 18px; 
-    border-radius:16px; 
-    background:#fff;
-    border:1px solid #ccc;
-  }
+    /* 志工頭像區域 */
+    .volunteer-area { display: flex; align-items: center; gap: 8px; }
+    .volunteer-area .avatar { 
+      width: 36px; height: 36px; 
+      border-radius: 50%; object-fit: cover; 
+      border: 1px solid #ddd; display: none; 
+    }
+    .volunteer-area #volunteerName { 
+      cursor: pointer; padding: 4px 8px; 
+      border-radius: 6px; font-size: 18px; 
+    }
 
-  label { 
-    display:block; 
-    margin-top:0; 
-    font-size:20px; }
+    /* =========================================
+       3. 主要內容容器 (Main Container)
+       ========================================= */
+    .div-b {
+      width: 100%; 
+      max-width: 800px; 
+      margin: 0; 
+      padding: 0 20px 0;
+    }
 
-  /* --- 通用輸入框樣式 --- */
-  input[type="text"],  textarea,
-  .picker-display, /* [新增] 讓假顯示框共用樣式 */
-  #editModal input[type="text"], #editModal textarea {
-    width:100%; 
-    padding:8px; 
-    margin-top:6px; 
-    margin: 5 0 15px;
-    border-radius:10px; 
-    border:1px solid #ccc;
-    font-size:16px; 
-    background:#fff;
-    min-height: 40px; /* 確保高度一致 */
-    box-sizing: border-box;
-  }
+    h2 { margin: 5px 0; font-size: 24px; display: inline-block; padding: 0 5px; }
+    h3 { margin: 0; text-align: center; font-size: 20px; }
 
-  /* --- [關鍵新增] 日期與時間選擇器專用樣式 (Picker Hack) --- */
-  .picker-wrapper {
+    /* =========================================
+       4. 表單樣式 (Forms & Inputs)
+       ========================================= */
+    form {
+      margin: 10px 0; 
+      padding: 18px; 
+      border-radius: 16px; 
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+
+    label { display: block; margin-top: 0; font-size: 20px; }
+
+    /* 通用輸入框 */
+    input[type="text"], textarea,
+    .picker-display, /* 讓自定義顯示框共用樣式 */
+    #editModal input[type="text"], #editModal textarea {
+      width: 100%; 
+      padding: 8px; 
+      margin: 5px 0 15px;
+      border-radius: 10px; 
+      border: 1px solid #ccc;
+      font-size: 16px; 
+      background: #fff;
+      min-height: 40px; 
+      box-sizing: border-box;
+    }
+
+    /* 下拉選單樣式 */
+    select {
+      width: 100%; 
+      padding: 8px; 
+      margin: 5px 0 15px; 
+      border-radius: 8px; 
+      border: 1px solid #ccc; 
+      font-size: 16px;
+    }
+
+    /* --- [關鍵樣式] 日期與時間選擇器 Hack --- 
+       原理：用一個漂亮的 .picker-display 顯示文字，
+       然後把原生的 input (type=date/time) 變透明蓋在上面，
+       讓使用者點擊時觸發原生選單，但視覺上保持一致。
+    */
+    .picker-wrapper {
       position: relative;
       width: 100%;
       margin-top: 6px;
       margin-bottom: 15px;
-  }
+    }
 
-  /* 替身：負責顯示 formatted text */
-  .picker-display {
+    /* 顯示層：負責顯示格式化後的文字 */
+    .picker-display {
       display: flex;
       align-items: center;
-      margin-top: 0; /* 已經在 wrapper 設過 margin */
-      height: 40px; /* 與 input 高度一致 */
+      margin-top: 0;
+      height: 40px;
       overflow: hidden;
-      color: #888; /* 預設顏色 */
-  }
+      color: #888;
+    }
 
-  /* 真身：透明，蓋在最上面 */
-  .real-picker-input {
+    /* 互動層：透明的原生輸入框，層級最高 */
+    .real-picker-input {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0; /* 完全透明 */
-      z-index: 10; /* 確保在最上層 */
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0; /* 透明 */
+      z-index: 10;
       cursor: pointer;
       -webkit-appearance: none;
-  }
-  
-  /* 唯讀模式 */
-  input[readonly], textarea[readonly], .picker-display.readonly-mode {
+    }
+    
+    /* 唯讀模式 */
+    input[readonly], textarea[readonly], .picker-display.readonly-mode {
       background-color: #f7f7f7;
       cursor: default;
       color: #555;
-  }
+    }
 
-  .btn {
-    margin-top:12px; padding:10px 18px; border:none; border-radius:12px; color:#fff; cursor:pointer;
-    font-size:16px;
-  }
-  #addBtn{ background:#4a90e2; } #historyBtn{ background:#f39c12; margin-left:8px; }
-
-  /* 表格容器 */
-  .allTable-div, .table-container {
-    width:100%; 
-    margin:10px 0 17px 0; 
-    overflow-x:auto; 
-    overflow-y: auto;
-    -webkit-overflow-scrolling:touch;
-    border: none;
-    border-radius:20px; 
-    background:white;
-    display:none;
-    padding: 0; 
-    box-sizing: border-box;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    background: transparent;
-  }
-
-  .allTable-div table {
-    width: max-content;
-    border-collapse: collapse;
-    min-width: 800px; 
-    font-size: 14px;
-    background: transparent;
-  }
-
-  th, td {
-    padding:10px; 
-    text-align:center; 
-    border:1px solid #e6e6e6; 
-    white-space:nowrap;
-  }
-  th { 
-    background:#f9f9f9; 
-    position:sticky; 
-    top:0; 
-    z-index:2; }
-
-  tbody tr:nth-child(even){ background:#f9f9f9; }
-  tbody tr:nth-child(odd){ background:#fff; }
-
-  .allTable-div thead tr th:first-child { border-top-left-radius:14px; }
-  .allTable-div thead tr th:last-child { border-top-right-radius:14px; }
-  .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius:14px; }
-  .allTable-div tbody tr:last-child td:last-child { border-bottom-right-radius:14px; }
-
-  /* Modal 共用樣式 */
-  #editModal, #historyModal, #pastModal {
-    display:none; 
-    position:fixed; 
-    top:0; left:0; 
-    width:100%; 
-    height:100%;
-    background:rgba(0,0,0,0.5); 
-    z-index:1000;
-  }
-  #editModal > div, #historyModal > div, #pastModal > div {
-    background:#fff; 
-    width:420px; 
-    max-width:calc(100% - 40px);
-    margin:80px auto; 
-    padding:18px; 
-    border-radius:12px; 
-    position:relative;
-    box-sizing:border-box; 
-    max-height:calc(100vh - 120px); 
-    overflow-y:auto;
-  }
-  .close-btn { position:absolute; 
-    top:10px; right:10px; 
-    background:transparent; 
-    border:none; font-size:26px; 
-    cursor:pointer; color:#666; }
+    /* =========================================
+       5. 按鈕樣式 (Buttons)
+       ========================================= */
+    .btn {
+      margin-top: 12px; padding: 10px 18px; 
+      border: none; border-radius: 12px; 
+      color: #fff; cursor: pointer; font-size: 16px;
+    }
+    #addBtn { background: #4a90e2; }
+    #historyBtn { background: #f39c12; margin-left: 8px; }
     
-  .close-btn:hover{ color:#000; }
-
-  /* 按鈕樣式（Modal） */
-  #saveEditBtn, #deleteEditBtn {
-    margin-top:10px; font-size:16px; padding:8px 15px;
-    border-radius:10px; border:none; cursor:pointer;
-  }
-  #saveEditBtn { background-color:#4a90e2; color:white; }
-  #saveEditBtn:hover { background-color:#357abd; }
-  #deleteEditBtn { background-color:#f37a7a; color:white; }
-  #deleteEditBtn:hover { background-color:#d94a4a; }
-
-  .but-ans { padding:6px 10px; border-radius:8px; border:none; cursor:pointer; background:#61aaf3; color:#fff; }
-
-    .record-item {
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
+    /* 編輯按鈕 (表格內) */
+    .but-ans { 
+      padding: 6px 10px; border-radius: 8px; 
+      border: none; cursor: pointer; 
+      background: #61aaf3; color: #fff; 
     }
 
-    .no-record {
-      text-align: center;
-      color: #888;
-      font-size: 18px;
-      margin: 20px 0;
+    /* =========================================
+       6. 表格樣式 (Tables)
+       ========================================= */
+    .allTable-div, .table-container {
+      width: 100%; 
+      margin: 10px 0 17px 0; 
+      overflow-x: auto; 
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border: none; border-radius: 20px; 
+      background: white; display: none;
+      padding: 0; box-sizing: border-box;
     }
 
-  /* volunteer area */
-  .volunteer-area { display:flex; align-items:center; gap:8px; }
-  .volunteer-area .avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #ddd; display:none; }
-  .volunteer-area #volunteerName { cursor:pointer; padding:4px 8px; border-radius:6px; font-size:18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; background: transparent; }
+    
+    /* 確保表格有最小寬度以觸發捲動 */
+    .allTable-div table { width: max-content; min-width: 800px; }
 
-  /* 小螢幕響應式 */
-  @media (max-width: 768px) {
-    .div-b { 
-      padding: 20px; 
-      max-width:100%; }
+    th, td {
+      padding: 10px; text-align: center; 
+      border: 1px solid #e6e6e6; white-space: nowrap;
+    }
+    
+    /* 固定表頭 */
+    th { background: #f9f9f9; position: sticky; top: 0; z-index: 2; }
 
-    form { padding:14px; }
+    /* 斑馬紋 */
+    tbody tr:nth-child(even) { background: #f9f9f9; }
+    tbody tr:nth-child(odd) { background: #fff; }
 
-    input[type="text"], textarea, .picker-display { 
-      padding:10px; 
-      border-radius:10px; }
-    .allTable-div table { min-width:0; width:100%; } 
-    th, td { padding:10px 8px;  white-space:normal; }
-    .btn, button { padding:10px 14px;  }
-  }
+    /* 表格圓角處理 */
+    .allTable-div thead tr th:first-child { border-top-left-radius: 14px; }
+    .allTable-div thead tr th:last-child { border-top-right-radius: 14px; }
+    .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius: 14px; }
+    .allTable-div tbody tr:last-child td:last-child { border-bottom-right-radius: 14px; }
 
-  @media (max-width: 600px) {
-    .btn { padding:8px 12px; }
-    #editModal > div, #historyModal > div, #pastModal > div { margin:60px auto; padding:12px; }
-    .volunteer-area .avatar { width:32px; height:32px; }
-  }
+    .no-record { text-align: center; color: #888; font-size: 18px; margin: 20px 0; }
+
+    /* =========================================
+       7. 彈窗樣式 (Modals)
+       ========================================= */
+    #editModal, #historyModal, #pastModal {
+      display: none; 
+      position: fixed; top: 0; left: 0; 
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); 
+      z-index: 1000;
+    }
+    
+    /* 彈窗內容區塊 */
+    #editModal > div, #historyModal > div, #pastModal > div {
+      background: #fff; 
+      width: 420px; max-width: calc(100% - 40px);
+      margin: 80px auto; padding: 18px; 
+      border-radius: 12px; position: relative;
+      box-sizing: border-box; 
+      max-height: calc(100vh - 120px); overflow-y: auto;
+    }
+
+    .close-btn { 
+      position: absolute; top: 10px; right: 10px; 
+      background: transparent; border: none; 
+      font-size: 26px; cursor: pointer; color: #666; 
+    }
+    .close-btn:hover { color: #000; }
+
+    /* 彈窗內按鈕 */
+    #saveEditBtn, #deleteEditBtn {
+      margin-top: 10px; font-size: 16px; padding: 8px 15px;
+      border-radius: 10px; border: none; cursor: pointer;
+    }
+    #saveEditBtn { background-color: #4a90e2; color: white; }
+    #saveEditBtn:hover { background-color: #357abd; }
+    #deleteEditBtn { background-color: #f37a7a; color: white; }
+    #deleteEditBtn:hover { background-color: #d94a4a; }
+
+    /* =========================================
+       8. 響應式設計 (Responsive)
+       ========================================= */
+    @media (max-width: 768px) {
+      .div-b { padding: 20px; max-width: 100%; }
+      form { padding: 14px; }
+      input[type="text"], textarea, .picker-display { padding: 10px; border-radius: 10px; }
+      /* 手機版表格寬度 */
+      .allTable-div table { min-width: 0; width: 100%; } 
+      th, td { padding: 10px 8px; white-space: normal; }
+      .btn, button { padding: 10px 14px; }
+    }
+
+    @media (max-width: 600px) {
+      .btn { padding: 8px 12px; }
+      #editModal > div, #historyModal > div, #pastModal > div { margin: 60px auto; padding: 12px; }
+      .volunteer-area .avatar { width: 32px; height: 32px; }
+    }
   </style>
-  </head>
-  <body>
+</head>
+<body>
+
   <nav class="nav-1">
     <div> 
-  <h1 style="margin: 0; font-size: 28px;">行事曆</h1>
+      <h1 style="margin: 0; font-size: 28px;">行事曆</h1>
     </div>
     <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
-      </span>
-    </h1>
-  </div>
+      <h1 style="margin:0; text-align:right;">
+        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+          <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" 
+               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">載入中</span>
+        </span>
+      </h1>
+    </div>
   </nav>
+
   <div class="div-b">
     <h2>輸入內容</h2>
     <form id="dataForm" onsubmit="return false;">
       
       <label>日期</label>
       <div class="picker-wrapper">
-          <div id="dateDisplay" class="picker-display"></div> <input type="date" id="date" class="real-picker-input" /> </div>
+          <div id="dateDisplay" class="picker-display"></div> 
+          <input type="date" id="date" class="real-picker-input" /> 
+      </div>
 
       <label>時間</label>
       <div class="picker-wrapper">
-          <div id="timeDisplay" class="picker-display"></div> <input type="time" id="time" class="real-picker-input" /> </div>
+          <div id="timeDisplay" class="picker-display"></div> 
+          <input type="time" id="time" class="real-picker-input" /> 
+      </div>
       
       <label>行程內容</label>
       <input type="text" maxlength="25"  id="event" placeholder="限25字"/>
@@ -290,7 +291,7 @@
       <input type="text"  maxlength="25"  id="note" placeholder="限25字"/>
       
       <label>重複</label>
-      <select id="repeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+      <select id="repeat">
         <option value="none">不重複</option>
         <option value="daily">每天</option>
         <option value="weekly">每週</option>
@@ -299,18 +300,18 @@
       </select>
 
       <label>提醒類型</label>
-      <select id="reminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+      <select id="reminder">
         <option value="none">無</option>
-          <option value="0min">當下提醒</option>
-          <option value="30min">30分鐘前</option>
-          <option value="1h">1小時前</option>
-          <option value="day">1天前</option>
+        <option value="0min">當下提醒</option>
+        <option value="30min">30分鐘前</option>
+        <option value="1h">1小時前</option>
+        <option value="day">1天前</option>
       </select>
 
       <button type="button" class="btn" id="addBtn">新增</button>
       <button type="button" class="btn" id="historyBtn">檢視過往紀錄</button>
     </form>
-  
+   
     <h2>即將到來的行程</h2>
 
     <div id="no-record-msg" class="no-record" >目前尚未有紀錄</div>
@@ -358,7 +359,7 @@
         <input type="text" id="editNote" /><br />
 
         <label>重複</label>
-        <select id="editRepeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+        <select id="editRepeat">
           <option value="none">不重複</option>
           <option value="daily">每天</option>
           <option value="weekly">每週</option>
@@ -367,7 +368,7 @@
         </select>
 
         <label>提醒類型</label>
-        <select id="editReminder" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+        <select id="editReminder">
           <option value="none">無</option>
           <option value="0min">當下提醒</option>
           <option value="30min">30分鐘前</option>
@@ -403,25 +404,40 @@
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
   <script>
-    // ---- 全域變數宣告 ----------------------------------------------------------------------------
+    // ==========================================
+    // 1. 全域變數與設定
+    // ==========================================
     const bodyEl = document.body;
     const LIFF_ID = '2008484068-Kp57RrAr';
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
+    
+    // 狀態變數
     let userId = "";
     let userName ="";
-    let records = "";
-    let currentEditEventId = null;
+    let records = []; // 儲存所有行程資料
+    let currentEditEventId = null; // 當前編輯的 ID
 
-    // [新增] 初始化日期時間選擇器邏輯
+    // ==========================================
+    // 2. 初始化程式
+    // ==========================================
+    
+    // 啟動日期時間選擇器邏輯 (Picker Hack)
     initDateTimePickers();
 
-    //執行LIFF初始化
+    // 執行 LIFF 初始化
     initLiffAndSetProfile();
 
-    // ---- 初始化設定 ----------------------------------------------------------------------------
-    //LIFF 初始化設定
+    // ==========================================
+    // 3. 函數定義：初始化與工具
+    // ==========================================
+
+    /**
+     * LIFF 初始化並取得使用者資訊
+     * 若未登入則隱藏頭像，若登入則載入資料
+     */
     async function initLiffAndSetProfile() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -445,15 +461,19 @@
           avatarEl.style.display = "none";
         }
 
+        // 取得使用者資料後，開始載入行程
         loadRecords();
       } catch (err) {
         console.error("LIFF init error:", err);
       }
     }
 
-    // [新增] 日期與時間選擇器監聽與更新函式
+    /**
+     * 初始化自定義日期/時間選擇器
+     * 監聽 input 變更，並同步更新顯示文字 (Picker Hack)
+     */
     function initDateTimePickers() {
-        // 綁定日期
+        // 綁定日期 (新增與編輯)
         ['date', 'editDate'].forEach(id => {
             const el = document.getElementById(id);
             el.addEventListener('input', function() {
@@ -461,7 +481,7 @@
             });
         });
 
-        // 綁定時間
+        // 綁定時間 (新增與編輯)
         ['time', 'editTime'].forEach(id => {
             const el = document.getElementById(id);
             el.addEventListener('input', function() {
@@ -470,7 +490,7 @@
         });
     }
 
-    // 更新日期顯示 (YYYY-MM-DD -> YYYY 年 MM 月 DD 日)
+    // 更新日期顯示格式 (YYYY-MM-DD -> YYYY 年 MM 月 DD 日)
     function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
@@ -483,7 +503,7 @@
         displayEl.style.color = "#222";
     }
 
-    // 更新時間顯示 (HH:mm -> 上午/下午 HH:mm)
+    // 更新時間顯示格式 (HH:mm -> 上午/下午 HH:mm)
     function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
@@ -504,32 +524,77 @@
         displayEl.style.color = "#222";
     }
 
-    //當頭像被點選
-    avatarEl.addEventListener("click", () => {
-      if (liff.isLoggedIn()) {
-        window.location.href = "../../Login-or-register/index.html";
-      } else {
-        liff.login({ redirectUri: window.location.href });
-      }
-    });
+    /**
+     * 工具：HTML 跳脫字元 (防止 XSS)
+     */
+    function escapeHtml(unsafe) {
+      return String(unsafe || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
-    nameEl.addEventListener("click", () => {
-      if (!liff.isLoggedIn()) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("已登入：" + (nameEl.innerText || "志工"));
-      }
-    });
+    function nowDate() { return new Date(); }
 
-    //存取資料庫"某位長者"行程資料
+    // 轉換時間字串為 Date 物件
+    function parseDateTime(dateStr, timeStr) {
+      const t = normalizeTimeTo24(timeStr);
+      return new Date(`${dateStr}T${t}:00`);
+    }
+
+    // 確保時間格式為 24 小時制 HH:mm
+    function normalizeTimeTo24(timeStr) {
+      if (!timeStr) return "";
+      timeStr = String(timeStr).trim();
+      const m = timeStr.match(/^(\d{1,2}):(\d{2})/);
+      if (m) return timeStr.substring(0, 5);
+      return timeStr; 
+    }
+    
+    // 格式化重複選項顯示
+    function formatRepeat(val) {
+      switch ((val||'').toString()) {
+        case 'daily': return '每天';
+        case 'weekly': return '每週';
+        case 'monthly': return '每月';
+        case 'yearly': return '每年';
+        case 'none': default: return '不重複';
+      }
+    }
+
+    // 格式化提醒選項顯示
+    function formatReminder(val) {
+      if (!val) return '無';
+      switch (val.toString()) {
+        case '5min': return '5 分鐘前';
+        case '10min': return '10 分鐘前';
+        case '15min': return '15 分鐘前';
+        case '30min': return '30 分鐘前';
+        case '1h': return '1 小時前';
+        case '2h': return '2 小時前';
+        case 'day': return '1 天前';
+        case '2day': return '2 天前';
+        case 'week': return '1 週前';
+        case 'none': default: return '無';
+      }
+    }
+
+    // ==========================================
+    // 4. 資料庫串接 (API)
+    // ==========================================
+
+    // [Read] 讀取行程資料
     async function loadRecords() {
       try {
         const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/schedules/elder/${userId}`;
-        const response =await fetch(GET_SUPABASE_API_URL);
-        const result =await response.json();
-        console.log("行事曆取得的Record行程資料JSON：/n",result);
+        const response = await fetch(GET_SUPABASE_API_URL);
+        const result = await response.json();
+        console.log("行事曆取得的Record行程資料JSON：\n", result);
         const data = result.data || [];
 
+        // 資料映射
         records = data.map(item => {
           const [date, timeFull] = item.schedule_time.split("T");
           const time = timeFull.substring(0, 5); 
@@ -552,48 +617,13 @@
       }
     }
 
-    function nowDate() { return new Date(); }
+    // ==========================================
+    // 5. UI 渲染邏輯
+    // ==========================================
 
-    // 舊的轉換函式保留，供後端資料校正使用
-    function normalizeTimeTo24(timeStr) {
-      if (!timeStr) return "";
-      timeStr = String(timeStr).trim();
-      const m = timeStr.match(/^(\d{1,2}):(\d{2})/);
-      if (m) return timeStr.substring(0, 5);
-      return timeStr; 
-    }
-    
-    function parseDateTime(dateStr, timeStr) {
-      const t = normalizeTimeTo24(timeStr);
-      return new Date(`${dateStr}T${t}:00`);
-    }
-    
-    function formatRepeat(val) {
-      switch ((val||'').toString()) {
-        case 'daily': return '每天';
-        case 'weekly': return '每週';
-        case 'monthly': return '每月';
-        case 'yearly': return '每年';
-        case 'none': default: return '不重複';
-      }
-    }
-
-    function formatReminder(val) {
-      if (!val) return '無';
-      switch (val.toString()) {
-        case '5min': return '5 分鐘前';
-        case '10min': return '10 分鐘前';
-        case '15min': return '15 分鐘前';
-        case '30min': return '30 分鐘前';
-        case '1h': return '1 小時前';
-        case '2h': return '2 小時前';
-        case 'day': return '1 天前';
-        case '2day': return '2 天前';
-        case 'week': return '1 週前';
-        case 'none': default: return '無';
-      }
-    }
-
+    /**
+     * 渲染主列表 (僅顯示未來行程)
+     */
     async function renderAllTable() {
       const tbody = document.querySelector("#allTable tbody");
       tbody.innerHTML = "";
@@ -604,6 +634,7 @@
       const tableEl = document.getElementById("allTable");
       const theadEl = tableEl.querySelector("thead");
 
+      // 過濾並排序 (未來時間)
       const upcomingRecords = records
         .filter(r => parseDateTime(r.date, r.time) >= now)
         .sort((a, b) => parseDateTime(a.date, a.time) - parseDateTime(b.date, b.time));
@@ -619,8 +650,8 @@
       }
 
       upcomingRecords.forEach(record => {
-        const repeatLabel = formatRepeat(record.repeat || record.repeat || 'none');
-        const reminderLabel = formatReminder(record.reminderMethod || record.reminder || 'none');
+        const repeatLabel = formatRepeat(record.repeat || 'none');
+        const reminderLabel = formatReminder(record.reminderMethod || 'none');
         const row = tbody.insertRow();
         row.innerHTML = `
           <td>${record.date}</td>
@@ -633,6 +664,7 @@
         `;
       });
 
+      // 綁定編輯按鈕事件
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const eventId  = btn.getAttribute('data-id');
@@ -641,12 +673,14 @@
       });
     }
 
-    // ---- 行事曆功能 ----------------------------------------------------------------------------
-    // 新增
+    // ==========================================
+    // 6. 事件監聽：表單操作 (新增、編輯、刪除)
+    // ==========================================
+
+    // [Create] 新增行程
     document.getElementById("addBtn").addEventListener("click", async () => {
       const date = document.getElementById("date").value;
       let time = document.getElementById("time").value; 
-      // input[type="time"] 自動回傳 24h 格式，無需手動 normalize
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
       const repeat = document.getElementById("repeat").value;
@@ -660,15 +694,13 @@
       const dt = parseDateTime(date, time);
       const now = nowDate();
 
-      // 表格重製
+      // 重置表單與顯示文字
       document.getElementById("dataForm").reset();
-      // [新增] 重置假顯示框的文字
       document.getElementById("dateDisplay").textContent = "";
       document.getElementById("timeDisplay").textContent = "";
 
-      // --- POST 到資料庫 ---
+      // POST 到資料庫
       let newEventId = null;
-
       try {
         const payload = {
           elder_user_id: userId,
@@ -676,7 +708,7 @@
           schedule_time: `${date} ${time}`,
           schedule_note: event,
           remark: note,
-          repeat:repeat,
+          repeat: repeat,
           reminder_method: reminder
         };
 
@@ -690,7 +722,6 @@
 
         if (!res.ok) {
           if (result.message == "缺少長者ID") {
-            console.error("❌ 上傳失敗:", result);
             alert("⚠️ 請點擊右上方[未登入]，登入您的LINE帳號，確保資料準確被保存");
             return;
           }
@@ -700,22 +731,22 @@
         }
 
         console.log("🎉 新增成功", result);
-
         newEventId = result?.data?.event_id; 
         if (!newEventId) console.warn("⚠ 無法取得 event_id");
 
+        // 更新前端資料
         records.push({
           eventId: newEventId,
-          date,
-          time,
+          date, time,
           scheduleNote: event,
           remark: note,
-          repeat:repeat,
+          repeat: repeat,
           reminderMethod: reminder
         });
 
         renderAllTable();
 
+        // 若為過去時間，顯示提示彈窗
         if (dt < now) {
           const msgEl = document.getElementById("pastModalMessage");
           msgEl.textContent = `您輸入的資料 (${date} ${time} - ${event}) 已歸到過往紀錄。`;
@@ -729,28 +760,21 @@
       }
     });
 
-    // 關閉編輯彈窗
-    document.getElementById("closeEditModalBtn").addEventListener("click", () => {
-      document.getElementById("editModal").style.display = "none";
-      bodyEl.classList.remove('modal-open');
-    });
-
-    // 打開編輯 modal
+    // 開啟編輯 Modal
     function openEditModalById(eventId) {
       currentEditEventId = eventId;
       const idx = records.findIndex(r => r.eventId === eventId);
       if (idx === -1) return alert('找不到該筆資料');
 
       const record = records[idx];
-
       const editDateEl = document.getElementById("editDate");
       const editTimeEl = document.getElementById("editTime");
 
-      // 填入值
+      // 填入表單資料
       editDateEl.value = record.date;
       editTimeEl.value = normalizeTimeTo24(record.time);
       
-      // [新增] 呼叫更新函式以顯示假文字
+      // 更新顯示文字 (Picker Hack)
       updateDateDisplay(editDateEl.value, "editDateDisplay");
       updateTimeDisplay(editTimeEl.value, "editTimeDisplay");
 
@@ -762,19 +786,14 @@
       document.getElementById("editModal").style.display = "block";
       bodyEl.classList.add('modal-open');
     
-
-      // 刪除
+      // [Delete] 綁定刪除按鈕
       document.getElementById("deleteEditBtn").onclick = async () => {
         if (!confirm("確定要刪除這筆行程嗎？")) return;
 
-        const DELETE_API_URL =
-          `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
+        const DELETE_API_URL = `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
 
         try {
-          const res = await fetch(DELETE_API_URL, {
-            method: "DELETE"
-          });
-
+          const res = await fetch(DELETE_API_URL, { method: "DELETE" });
           const result = await res.json();
           console.log("DELETE 結果：", result);
 
@@ -783,14 +802,11 @@
             return;
           }
 
-          records.splice(idx, 1);
-
+          records.splice(idx, 1); // 移除資料
           document.getElementById("editModal").style.display = "none";
           bodyEl.classList.remove('modal-open');
-
           await renderAllTable();
           alert("刪除成功！");
-
         } catch (err) {
           console.error("DELETE Error：", err);
           alert("刪除時發生錯誤");
@@ -798,8 +814,9 @@
       };
     }
 
-    // 儲存編輯
+    // [Update] 儲存編輯
     document.getElementById("saveEditBtn").addEventListener("click", saveEdit);
+    
     async function saveEdit() {
       if (!currentEditEventId) {
         alert("無效編輯事件");
@@ -811,8 +828,7 @@
       if (idx === -1) return alert("找不到該筆資料");
 
       const date = document.getElementById("editDate").value;
-      let time = document.getElementById("editTime").value;
-      // time = normalizeTimeTo24(time); // type=time 不需要轉
+      const time = document.getElementById("editTime").value;
       const schedule_note = document.getElementById("editEvent").value.trim();
       const remark = document.getElementById("editNote").value.trim();
       const repeat = document.getElementById("editRepeat").value;
@@ -824,7 +840,6 @@
       }
 
       const schedule_time = `${date} ${time}:00`;
-      
       const url = `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
 
       const body = {
@@ -850,7 +865,7 @@
           return;
         }
 
-        // 更新前端
+        // 更新前端暫存
         records[idx].date = date;
         records[idx].time = time;
         records[idx].scheduleNote = schedule_note;
@@ -869,6 +884,33 @@
       }
     }
 
+    // ==========================================
+    // 7. 其他互動事件 (頭像、歷史紀錄、Modal開關)
+    // ==========================================
+
+    // 點擊頭像跳轉
+    avatarEl.addEventListener("click", () => {
+      if (liff.isLoggedIn()) {
+        window.location.href = "../../Login-or-register/index.html";
+      } else {
+        liff.login({ redirectUri: window.location.href });
+      }
+    });
+
+    nameEl.addEventListener("click", () => {
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: window.location.href });
+      } else {
+        alert("已登入：" + (nameEl.innerText || "志工"));
+      }
+    });
+
+    // 關閉編輯彈窗
+    document.getElementById("closeEditModalBtn").addEventListener("click", () => {
+      document.getElementById("editModal").style.display = "none";
+      bodyEl.classList.remove('modal-open');
+    });
+
     // 關閉過往紀錄
     document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
       document.getElementById("historyModal").style.display = "none";
@@ -876,7 +918,7 @@
       renderAllTable();
     });
 
-    // 檢視過往紀錄
+    // 檢視過往紀錄按鈕
     document.getElementById("historyBtn").addEventListener("click", () => {
       const now = new Date();
       const pastRecords = records
@@ -911,23 +953,12 @@
         const tbody = document.createElement('tbody');
         pastRecords.forEach(record => {
           const tr = document.createElement('tr');
-
-          const tdDate = document.createElement('td');
-          tdDate.textContent = record.date;
-          tr.appendChild(tdDate);
-
-          const tdTime = document.createElement('td');
-          tdTime.textContent = record.time;
-          tr.appendChild(tdTime);
-
-          const tdEvent = document.createElement('td');
-          tdEvent.textContent = record.scheduleNote;
-          tr.appendChild(tdEvent);
-
-          const tdNote = document.createElement('td');
-          tdNote.textContent = record.remark;
-          tr.appendChild(tdNote);
-
+          tr.innerHTML = `
+            <td>${record.date}</td>
+            <td>${record.time}</td>
+            <td>${escapeHtml(record.scheduleNote)}</td>
+            <td>${escapeHtml(record.remark)}</td>
+          `;
           tbody.appendChild(tr);
         });
 
@@ -939,9 +970,10 @@
       document.getElementById("historyModal").style.display = "block";
       bodyEl.classList.add('modal-open');
       const mainWrapper = document.querySelector('.allTable-div');
-      mainWrapper.style.display = 'none';
+      if(mainWrapper) mainWrapper.style.display = 'none';
     });
 
+    // 過去時間提示 Modal 內按鈕
     document.getElementById("openHistoryFromPast").addEventListener("click", () => {
       document.getElementById("pastModal").style.display = "none";
       bodyEl.classList.remove('modal-open');
@@ -954,14 +986,6 @@
       renderAllTable();
     });
 
-    function escapeHtml(unsafe) {
-      return String(unsafe)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
   </script>
 </body>
 </html>
