@@ -53,7 +53,7 @@
   }
 
   form {
-    margin: 10px 0; /* 移除左右 18px 外距，改用容器內距對齊 */
+    margin: 10px 0; 
     padding: 18px; 
     border-radius:16px; 
     background:#fff;
@@ -65,36 +65,67 @@
     margin-top:0; 
     font-size:20px; }
 
+  /* --- 通用輸入框樣式 --- */
   input[type="text"],  textarea,
-  #editModal input, #editModal textarea {
+  .picker-display, /* [新增] 讓假顯示框共用樣式 */
+  #editModal input[type="text"], #editModal textarea {
     width:100%; 
     padding:8px; 
     margin-top:6px; 
     margin: 5 0 15px;
-    border-radius:8px; 
+    border-radius:10px; 
     border:1px solid #ccc;
     font-size:16px; 
     background:#fff;
+    min-height: 40px; /* 確保高度一致 */
+    box-sizing: border-box;
   }
-  input[type="date"],input[type="time"] {
-        width: 100%;
-        padding:8px;
-        margin-top:5px;
-        border:1px solid #888;
-        font-size:14px;
-        border-radius:10px;
-        background-color: white; /* 主表單預設白底 */
-        min-width: 0;     /* iOS 必加 */
-        -webkit-appearance: none;
-        /*appearance: none;  移除原生樣式 */
-      }
+
+  /* --- [關鍵新增] 日期與時間選擇器專用樣式 (Picker Hack) --- */
+  .picker-wrapper {
+      position: relative;
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 15px;
+  }
+
+  /* 替身：負責顯示 formatted text */
+  .picker-display {
+      display: flex;
+      align-items: center;
+      margin-top: 0; /* 已經在 wrapper 設過 margin */
+      height: 40px; /* 與 input 高度一致 */
+      overflow: hidden;
+      color: #888; /* 預設顏色 */
+  }
+
+  /* 真身：透明，蓋在最上面 */
+  .real-picker-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0; /* 完全透明 */
+      z-index: 10; /* 確保在最上層 */
+      cursor: pointer;
+      -webkit-appearance: none;
+  }
+  
+  /* 唯讀模式 */
+  input[readonly], textarea[readonly], .picker-display.readonly-mode {
+      background-color: #f7f7f7;
+      cursor: default;
+      color: #555;
+  }
+
   .btn {
     margin-top:12px; padding:10px 18px; border:none; border-radius:12px; color:#fff; cursor:pointer;
     font-size:16px;
   }
   #addBtn{ background:#4a90e2; } #historyBtn{ background:#f39c12; margin-left:8px; }
 
-  /* 表格容器：可橫向滾動，並在無資料時隱藏（JS 控制顯示） */
+  /* 表格容器 */
   .allTable-div, .table-container {
     width:100%; 
     margin:10px 0 17px 0; 
@@ -105,11 +136,10 @@
     border-radius:20px; 
     background:white;
     display:none;
-    padding: 0; /* 改為 0 */
+    padding: 0; 
     box-sizing: border-box;
   }
 
-  /* 全域 table 預設（一般表格）*/
   table {
     width: 100%;
     border-collapse: collapse;
@@ -117,11 +147,10 @@
     background: transparent;
   }
 
-  /* 針對 .allTable-div 下的 table 強制依內容寬度延伸，超出容器時出現橫向捲動 */
   .allTable-div table {
     width: max-content;
     border-collapse: collapse;
-    min-width: 800px; /* 可視需要調整或移除 */
+    min-width: 800px; 
     font-size: 14px;
     background: transparent;
   }
@@ -141,7 +170,6 @@
   tbody tr:nth-child(even){ background:#f9f9f9; }
   tbody tr:nth-child(odd){ background:#fff; }
 
-  /* 表格圓角處理由外層容器負責 */
   .allTable-div thead tr th:first-child { border-top-left-radius:14px; }
   .allTable-div thead tr th:last-child { border-top-right-radius:14px; }
   .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius:14px; }
@@ -214,17 +242,14 @@
 
     form { padding:14px; }
 
-    input[type="text"], input[type="date"], input[type="time"], textarea { 
+    input[type="text"], textarea, .picker-display { 
       padding:10px; 
       border-radius:10px; }
-    .allTable-div table { min-width:0; width:100%; } /* 在手機上允許表格縮放並出現橫向滾動 */
+    .allTable-div table { min-width:0; width:100%; } 
     th, td { padding:10px 8px;  white-space:normal; }
     .btn, button { padding:10px 14px;  }
-    
-    
   }
 
-  /* 更窄螢幕微調 */
   @media (max-width: 600px) {
     .btn { padding:8px 12px; }
     #editModal > div, #historyModal > div, #pastModal > div { margin:60px auto; padding:12px; }
@@ -250,17 +275,20 @@
   <div class="div-b">
     <h2>輸入內容</h2>
     <form id="dataForm" onsubmit="return false;">
+      
       <label>日期</label>
-      <input type="date" id="date" placeholder="例如(例：2025-10-02)" />
+      <div class="picker-wrapper">
+          <div id="dateDisplay" class="picker-display"></div> <input type="date" id="date" class="real-picker-input" /> </div>
+
       <label>時間</label>
-      <!-- 改為文字輸入並用 class time-input ，由 JS 強制為 24 小時格式 -->
-      <input type="text" id="time" class="time-input" placeholder="24小時制 (HH:MM)" maxlength="5" inputmode="numeric" />
+      <div class="picker-wrapper">
+          <div id="timeDisplay" class="picker-display"></div> <input type="time" id="time" class="real-picker-input" /> </div>
+      
       <label>行程內容</label>
       <input type="text" maxlength="25"  id="event" placeholder="限25字"/>
       <label>備註</label>
       <input type="text"  maxlength="25"  id="note" placeholder="限25字"/>
       
-      <!-- 新增：重複 / 提醒方式 下拉選單 -->
       <label>重複</label>
       <select id="repeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
         <option value="none">不重複</option>
@@ -285,10 +313,8 @@
   
     <h2>即將到來的行程</h2>
 
-    <!-- 新增：無資料時顯示的訊息 -->
     <div id="no-record-msg" class="no-record" >目前尚未有紀錄</div>
 
-    <!-- 所有資料的表格 -->
     <div class="allTable-div">
       <table id="allTable">
         <thead>
@@ -307,24 +333,30 @@
     </div>
   </div>
 
-  <!-- 編輯用 Modal -->
   <div id="editModal">
     <div>
       <button id="closeEditModalBtn" class="close-btn" type="button">&times;</button>
 
       <h3>編輯行程</h3>
       <form id="editForm" onsubmit="return false;">
+        
         <label>日期</label>
-        <input type="date" id="editDate" /><br />
+        <div class="picker-wrapper">
+            <div id="editDateDisplay" class="picker-display"></div>
+            <input type="date" id="editDate" class="real-picker-input" />
+        </div>
+
         <label>時間</label>
-        <!-- 編輯欄位同樣改為文字輸入 -->
-        <input type="text" id="editTime" class="time-input" placeholder="24小時制 (HH:MM)" maxlength="5" inputmode="numeric" /><br />
+        <div class="picker-wrapper">
+            <div id="editTimeDisplay" class="picker-display"></div>
+            <input type="time" id="editTime" class="real-picker-input" />
+        </div>
+
         <label>行程內容</label>
         <input type="text" id="editEvent" /><br />
         <label>備註</label>
         <input type="text" id="editNote" /><br />
 
-        <!-- 新增：編輯用的重複 / 提醒方式 -->
         <label>重複</label>
         <select id="editRepeat" style="width:100%; padding:8px; margin:5px 0 15px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
           <option value="none">不重複</option>
@@ -351,7 +383,6 @@
     </div>
   </div>
 
-  <!-- 過往紀錄 Modal -->
   <div id="historyModal" style="display:none;">
     <div>
       <button id="closeHistoryModalBtn" class="close-btn" type="button">&times;</button>
@@ -360,7 +391,6 @@
     </div>
   </div>
 
-  <!-- 新增：過去時間提示 Modal -->
   <div id="pastModal" style="display:none;">
     <div>
       <button id="closePastModalBtn" class="close-btn" type="button">&times;</button>
@@ -383,6 +413,10 @@
     let userName ="";
     let records = "";
     let currentEditEventId = null;
+
+    // [新增] 初始化日期時間選擇器邏輯
+    initDateTimePickers();
+
     //執行LIFF初始化
     initLiffAndSetProfile();
 
@@ -398,21 +432,11 @@
           return;
         }
         
-        // ✅ 取得 LIFF profile
         const profile = await liff.getProfile();
         userId = profile.userId;
         userName = profile.displayName;
         console.log("LIFF Profile userId:", userId, "userName:", userName);
 
-        // ✅ 取得 accessToken（可傳回後端）
-        const accessToken = liff.getAccessToken();
-        console.log("accessToken:", accessToken);
-
-        // ✅ 解析 ID Token（包含 LINE Login userId）
-        const decoded = liff.getDecodedIDToken();
-        console.log("Decoded ID Token:", decoded);
-
-        // ✅ 顯示畫面
         nameEl.innerText = profile.displayName || "志工";
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
@@ -421,25 +445,74 @@
           avatarEl.style.display = "none";
         }
 
-        //執行資料內容初始化
         loadRecords();
       } catch (err) {
         console.error("LIFF init error:", err);
       }
     }
 
+    // [新增] 日期與時間選擇器監聽與更新函式
+    function initDateTimePickers() {
+        // 綁定日期
+        ['date', 'editDate'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', function() {
+                updateDateDisplay(this.value, id + 'Display');
+            });
+        });
+
+        // 綁定時間
+        ['time', 'editTime'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', function() {
+                updateTimeDisplay(this.value, id + 'Display');
+            });
+        });
+    }
+
+    // 更新日期顯示 (YYYY-MM-DD -> YYYY 年 MM 月 DD 日)
+    function updateDateDisplay(dateValue, displayElementId) {
+        const displayEl = document.getElementById(displayElementId);
+        if (!dateValue) {
+            displayEl.textContent = "";
+            displayEl.style.color = "#888";
+            return;
+        }
+        const [year, month, day] = dateValue.split('-');
+        displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
+        displayEl.style.color = "#222";
+    }
+
+    // 更新時間顯示 (HH:mm -> 上午/下午 HH:mm)
+    function updateTimeDisplay(timeValue, displayElementId) {
+        const displayEl = document.getElementById(displayElementId);
+        if (!timeValue) {
+            displayEl.textContent = "";
+            displayEl.style.color = "#888";
+            return;
+        }
+        const [hourStr, minuteStr] = timeValue.split(':');
+        let hour = parseInt(hourStr);
+        let period = "上午";
+        if (hour >= 12) {
+            period = "下午";
+            if (hour > 12) hour -= 12;
+        }
+        if (hour === 0) hour = 12;
+        const formattedHour = hour.toString().padStart(2, '0');
+        displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
+        displayEl.style.color = "#222";
+    }
+
     //當頭像被點選
     avatarEl.addEventListener("click", () => {
       if (liff.isLoggedIn()) {
-        // 已登入則進入註冊頁面（可改為需要的頁面路徑）
         window.location.href = "../../Login-or-register/index.html";
       } else {
-        // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
         liff.login({ redirectUri: window.location.href });
       }
     });
 
-    //當使用者名稱被點選
     nameEl.addEventListener("click", () => {
       if (!liff.isLoggedIn()) {
         liff.login({ redirectUri: window.location.href });
@@ -455,13 +528,11 @@
         const response =await fetch(GET_SUPABASE_API_URL);
         const result =await response.json();
         console.log("行事曆取得的Record行程資料JSON：/n",result);
-        // 假設 API 回傳格式如題
         const data = result.data || [];
 
-        // 轉換為原本 records 格式
         records = data.map(item => {
           const [date, timeFull] = item.schedule_time.split("T");
-          const time = timeFull.substring(0, 5); // HH:mm 取前 5 碼
+          const time = timeFull.substring(0, 5); 
           return {
             uuid: item.uuid,
             date: date,
@@ -481,96 +552,22 @@
       }
     }
 
-    // 取得現在時間
     function nowDate() { return new Date(); }
 
-    // 將時間字串統一為 24 小時制 HH:MM（接受 "9:00", "09:00", "9:00 AM", "9:00PM" 等）
+    // 舊的轉換函式保留，供後端資料校正使用
     function normalizeTimeTo24(timeStr) {
       if (!timeStr) return "";
       timeStr = String(timeStr).trim();
-      // 若包含 AM/PM，轉換為 24h
-      const ampmMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*([APMapm\.]{2,4})/);
-      if (ampmMatch) {
-        let hh = parseInt(ampmMatch[1], 10);
-        const mm = ampmMatch[2].padStart(2, '0');
-        const ampm = ampmMatch[3].toLowerCase().replace(/\./g, '');
-        if (ampm === 'pm' && hh !== 12) hh += 12;
-        if (ampm === 'am' && hh === 12) hh = 0;
-        return String(hh).padStart(2, '0') + ':' + mm;
-      }
-      // 若為純數字格式 like "9:5" 或 "9:05"
-      const m = timeStr.match(/^(\d{1,2}):(\d{1,2})$/);
-      if (m) {
-        let hh = parseInt(m[1], 10);
-        const mm = String(parseInt(m[2], 10)).padStart(2, '0');
-        hh = Math.max(0, Math.min(23, hh));
-        return String(hh).padStart(2, '0') + ':' + mm;
-      }
-      // 若為純數字 "0905" 或 "905"
-      const numOnly = timeStr.match(/^(\d{3,4})$/);
-      if (numOnly) {
-        const s = numOnly[1].padStart(4,'0');
-        const hh = String(Math.max(0, Math.min(23, parseInt(s.slice(0,2),10)))).padStart(2,'0');
-        const mm = String(Math.max(0, Math.min(59, parseInt(s.slice(2),10)))).padStart(2,'0');
-        return `${hh}:${mm}`;
-      }
-      // 若已是完整 HH:MM:SS，截取前5字
-      const fullMatch = timeStr.match(/^(\d{2}:\d{2}):\d{2}$/);
-      if (fullMatch) return fullMatch[1];
-      return timeStr; // fallback
+      const m = timeStr.match(/^(\d{1,2}):(\d{2})/);
+      if (m) return timeStr.substring(0, 5);
+      return timeStr; 
     }
-
-    // 強制 time-input 使用 24 小時格式：即時格式化輸入（自動加冒號、限制範圍）
-    function attachTimeInputFormatter(selector) {
-      document.querySelectorAll(selector).forEach(el => {
-        // on input: 只保留數字與冒號，若連續輸入 3~4 位數自動插入冒號
-        el.addEventListener('input', (e) => {
-          let v = e.target.value.replace(/[^0-9]/g, '');
-          if (v.length >= 3) {
-            v = v.padStart(4, '0');
-            v = v.slice(0,4);
-            v = v.slice(0,2) + ':' + v.slice(2);
-          } else if (v.length >= 1 && v.length <= 2) {
-            // 如果只有 1-2 位數，暫不插入冒號，但允許顯示
-            v = v;
-          }
-          // 若已包含冒號則格式化成 HH:MM
-          if (v.includes(':')) {
-            const parts = v.split(':');
-            let hh = parseInt(parts[0],10);
-            let mm = parseInt(parts[1] || '0',10);
-            if (isNaN(hh)) hh = 0;
-            if (isNaN(mm)) mm = 0;
-            hh = Math.max(0, Math.min(23, hh));
-            mm = Math.max(0, Math.min(59, mm));
-            e.target.value = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
-          } else {
-            e.target.value = v;
-          }
-        });
-
-        // on blur: 最終校正並填滿為 HH:MM
-        el.addEventListener('blur', (e) => {
-          const formatted = normalizeTimeTo24(e.target.value);
-          e.target.value = formatted;
-        });
-
-        // 若 JS 要填入時間也可使用 normalizeTimeTo24 再賦值
-      });
-    }
-
-    // 於頁面初始化時啟用格式器
-    window.addEventListener('DOMContentLoaded', () => {
-      attachTimeInputFormatter('.time-input');
-    });
     
-    // 解析日期時間
     function parseDateTime(dateStr, timeStr) {
       const t = normalizeTimeTo24(timeStr);
       return new Date(`${dateStr}T${t}:00`);
     }
     
-    // 格式化顯示：重複、提醒
     function formatRepeat(val) {
       switch ((val||'').toString()) {
         case 'daily': return '每天';
@@ -596,7 +593,7 @@
         case 'none': default: return '無';
       }
     }
-    // 渲染未來行程
+
     async function renderAllTable() {
       const tbody = document.querySelector("#allTable tbody");
       tbody.innerHTML = "";
@@ -648,8 +645,8 @@
     // 新增
     document.getElementById("addBtn").addEventListener("click", async () => {
       const date = document.getElementById("date").value;
-      let time = document.getElementById("time").value;
-      time = normalizeTimeTo24(time);
+      let time = document.getElementById("time").value; 
+      // input[type="time"] 自動回傳 24h 格式，無需手動 normalize
       const event = document.getElementById("event").value.trim();
       const note = document.getElementById("note").value.trim();
       const repeat = document.getElementById("repeat").value;
@@ -665,9 +662,12 @@
 
       // 表格重製
       document.getElementById("dataForm").reset();
+      // [新增] 重置假顯示框的文字
+      document.getElementById("dateDisplay").textContent = "";
+      document.getElementById("timeDisplay").textContent = "";
 
       // --- POST 到資料庫 ---
-      let newEventId = null;   // 新增的 event_id
+      let newEventId = null;
 
       try {
         const payload = {
@@ -701,10 +701,9 @@
 
         console.log("🎉 新增成功", result);
 
-        newEventId = result?.data?.event_id; // ← 從 API 回傳取得 eventId
+        newEventId = result?.data?.event_id; 
         if (!newEventId) console.warn("⚠ 無法取得 event_id");
 
-        // --- 重要：不 GET，直接 push 到記憶體 ---
         records.push({
           eventId: newEventId,
           date,
@@ -715,9 +714,8 @@
           reminderMethod: reminder
         });
 
-        renderAllTable(); // 直接渲染即可！
+        renderAllTable();
 
-        // --- 過去時間處理 ---
         if (dt < now) {
           const msgEl = document.getElementById("pastModalMessage");
           msgEl.textContent = `您輸入的資料 (${date} ${time} - ${event}) 已歸到過往紀錄。`;
@@ -737,7 +735,7 @@
       bodyEl.classList.remove('modal-open');
     });
 
-    // 打開編輯 modal（透過 event_id）
+    // 打開編輯 modal
     function openEditModalById(eventId) {
       currentEditEventId = eventId;
       const idx = records.findIndex(r => r.eventId === eventId);
@@ -745,8 +743,17 @@
 
       const record = records[idx];
 
-      document.getElementById("editDate").value = record.date;
-      document.getElementById("editTime").value = normalizeTimeTo24(record.time);
+      const editDateEl = document.getElementById("editDate");
+      const editTimeEl = document.getElementById("editTime");
+
+      // 填入值
+      editDateEl.value = record.date;
+      editTimeEl.value = normalizeTimeTo24(record.time);
+      
+      // [新增] 呼叫更新函式以顯示假文字
+      updateDateDisplay(editDateEl.value, "editDateDisplay");
+      updateTimeDisplay(editTimeEl.value, "editTimeDisplay");
+
       document.getElementById("editEvent").value = record.scheduleNote;
       document.getElementById("editNote").value = record.remark;
       document.getElementById("editRepeat").value = record.repeat || 'none';
@@ -760,7 +767,6 @@
       document.getElementById("deleteEditBtn").onclick = async () => {
         if (!confirm("確定要刪除這筆行程嗎？")) return;
 
-        // 📌 正確 Delete API URL
         const DELETE_API_URL =
           `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${eventId}`;
 
@@ -777,7 +783,6 @@
             return;
           }
 
-          // 📌 成功才從前端移除
           records.splice(idx, 1);
 
           document.getElementById("editModal").style.display = "none";
@@ -807,7 +812,7 @@
 
       const date = document.getElementById("editDate").value;
       let time = document.getElementById("editTime").value;
-      time = normalizeTimeTo24(time);
+      // time = normalizeTimeTo24(time); // type=time 不需要轉
       const schedule_note = document.getElementById("editEvent").value.trim();
       const remark = document.getElementById("editNote").value.trim();
       const repeat = document.getElementById("editRepeat").value;
@@ -871,7 +876,7 @@
       renderAllTable();
     });
 
-    // 檢視過往紀錄（Modal）
+    // 檢視過往紀錄
     document.getElementById("historyBtn").addEventListener("click", () => {
       const now = new Date();
       const pastRecords = records
@@ -937,22 +942,18 @@
       mainWrapper.style.display = 'none';
     });
 
-    // 過去時間提示 Modal 的按鈕處理
     document.getElementById("openHistoryFromPast").addEventListener("click", () => {
-      // 關閉提示 Modal，開啟過往紀錄 Modal（重用現有 handler）
       document.getElementById("pastModal").style.display = "none";
       bodyEl.classList.remove('modal-open');
       document.getElementById("historyBtn").click();
     });
 
-    // 新增：過去時間提示 Modal 的叉叉關閉按鈕
     document.getElementById("closePastModalBtn").addEventListener("click", () => {
       document.getElementById("pastModal").style.display = "none";
       bodyEl.classList.remove('modal-open');
       renderAllTable();
     });
 
-    // 小工具：簡單的 escape，避免插入 html
     function escapeHtml(unsafe) {
       return String(unsafe)
         .replace(/&/g, "&amp;")
