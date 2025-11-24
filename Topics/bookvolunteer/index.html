@@ -766,959 +766,787 @@
   </div>
 
   <script>
-    // custom alert/confirm helpers
+    /* =================================================================
+       1. 全域變數與設定 (Global Config)
+       說明：設定 API URL、LIFF ID 與全域狀態變數
+       ================================================================= */
+    const LIFF_ID = '2008484068-vazlor5r'; 
+    const API_BASE_URL = "https://supabase-api-six.vercel.app";
+    
+    // 全域狀態
+    let volunteers = [];    // 志工資料快取
+    let bookedList = [];    // 預約紀錄快取
+    let userId = "";        // LIFF User ID (預設空，等待登入)
+    let userName = "";      // LIFF User Name
+    let currentEditEventId = ""; 
+    
+    // UI 相關變數
+    let currentIndex = 0;   // 輪播卡片索引
+
+    /* 動態加入 Loading 動畫樣式 */
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }`;
+    document.head.appendChild(style);
+
+
+    /* =================================================================
+       2. UI 輔助工具 (UI Helpers)
+       說明：自定義 Alert 與 Confirm 彈窗
+       ================================================================= */
     function showAlert(message, cb) {
-      const modal = document.getElementById('customModal');
-      document.getElementById('customModalMessage').innerText = message;
-      document.getElementById('customModalCancel').style.display = 'none';
-      const ok = document.getElementById('customModalOk');
-      modal.style.display = 'flex';
-      ok.focus();
-      const okHandler = () => {
-        modal.style.display = 'none';
-        ok.removeEventListener('click', okHandler);
-        if (cb) cb();
-      };
-      ok.addEventListener('click', okHandler);
+        const modal = document.getElementById('customModal');
+        // 若頁面沒有 customModal，fallback 到原生 alert
+        if (!modal) { alert(message); if(cb) cb(); return; }
+        
+        document.getElementById('customModalMessage').innerText = message;
+        document.getElementById('customModalCancel').style.display = 'none';
+        const ok = document.getElementById('customModalOk');
+        modal.style.display = 'flex';
+        ok.focus();
+        
+        const okHandler = () => {
+            modal.style.display = 'none';
+            ok.removeEventListener('click', okHandler);
+            if (cb) cb();
+        };
+        ok.addEventListener('click', okHandler);
     }
 
     function showConfirm(message, onConfirm, onCancel) {
-      const modal = document.getElementById('customModal');
-      document.getElementById('customModalMessage').innerText = message;
-      const ok = document.getElementById('customModalOk');
-      const cancel = document.getElementById('customModalCancel');
-      cancel.style.display = 'inline-block';
-      modal.style.display = 'flex';
-
-      const cleanup = () => {
-        modal.style.display = 'none';
-        ok.removeEventListener('click', okHandler);
-        cancel.removeEventListener('click', cancelHandler);
-      };
-
-      const okHandler = () => { cleanup(); if (onConfirm) onConfirm(); };
-      const cancelHandler = () => { cleanup(); if (onCancel) onCancel(); };
-      ok.addEventListener('click', okHandler);
-      cancel.addEventListener('click', cancelHandler);
-    }
-
-    let volunteers = []; // 全域儲存志工資料
-    let bookedList = [];
-    window.addEventListener("DOMContentLoaded", async () => {
-      const apiUrl = "https://supabase-api-six.vercel.app/volunteers";
-      try {
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error("網路錯誤");
-        const result = await res.json();
-
-        if (!result.success || !Array.isArray(result.data)) {
-          console.error("❌ API 格式錯誤或無資料");
-          return;
+        const modal = document.getElementById('customModal');
+        if (!modal) { 
+            if(confirm(message)) onConfirm(); else onCancel(); 
+            return; 
         }
 
-        // 將 API 資料轉成可用的 volunteers 陣列格式
-        volunteers = result.data.map((v, i) => ({
-          userId:v.volunteer_user_id || "未取得該志工userId",
-          name: v.volunteer_name || "未命名",
-          gender: v.gender || "未填寫",
-          age: v.age || "未提供",
-          tags: Array.isArray(v.personality) ? v.personality : [],
-          // 修正欄位名稱 typo（若 API 欄位不同請調整回正確欄位）
-          desc: v.partner_experience || v.partner_expeienceence || "尚無經驗說明",
-          cover: "c2dfff.jpg", // 暫用隨機封面
-          avatar: v.image_url,
-          available_time: v.available_time || "未提供",
-        }));
+        document.getElementById('customModalMessage').innerText = message;
+        const ok = document.getElementById('customModalOk');
+        const cancel = document.getElementById('customModalCancel');
+        cancel.style.display = 'inline-block';
+        modal.style.display = 'flex';
 
-        console.log("✅ 志工資料載入完成", volunteers);
-       // 綁定「預約查詢」按鈕
-       const showBookingsBtn = document.getElementById('showBookingsBtn');
-       if (showBookingsBtn) {
-         showBookingsBtn.addEventListener('click', (e) => {
-           e.preventDefault();
-           if (typeof showBookings === 'function') {
-             showBookings();
-           } else {
-             console.warn('showBookings 函式不存在');
-           }
-         });
-       }
-      } catch (err) {
-        console.error("⚠️ 志工資料載入失敗：", err);
-      }
-    });
+        const cleanup = () => {
+            modal.style.display = 'none';
+            ok.removeEventListener('click', okHandler);
+            cancel.removeEventListener('click', cancelHandler);
+        };
 
-    
-function toggleCard() {
-  // 取得必要 DOM 參考
-  const container = document.getElementById('cardContainer');
-  const pagination = document.getElementById('pagination');
-  const slider = document.querySelector('.slider-container');
-  const hint = document.getElementById('matchHint');
-
-  if (!container || !pagination || !slider || !hint) {
-    console.warn('toggleCard: 必要 DOM 元素缺失', { container, pagination, slider, hint });
-    showAlert('頁面尚未完全載入或元素遺失，請重新整理後再試。');
-    return;
-  }
-
-  // 欄位定義（顯示名稱用於提示）
-  const fieldDefs = [
-    { id: 'date', name: '日期' },
-    { id: 'time', name: '時間' },
-    { id: 'department', name: '科別' },
-    { id: 'gender', name: '性別' },
-    { id: 'addressFull', name: '完整地址' }
-  ];
-
-  // 移除先前錯誤樣式
-  fieldDefs.forEach(f => { const el = document.getElementById(f.id); if (el) el.classList.remove('invalid'); });
-
-  // 檢查欄位並記錄缺項（同時印出值方便除錯）
-  const missing = [];
-  console.groupCollapsed('toggleCard input values');
-  fieldDefs.forEach(f => {
-    const el = document.getElementById(f.id);
-    const val = el ? String(el.value || '').trim() : '';
-    console.debug(f.name, '=>', JSON.stringify(val));
-    if (!val) {
-      missing.push(f.name);
-      if (el) el.classList.add('invalid');
-    }
-  });
-  console.groupEnd();
-
-  if (missing.length) {
-    // 聚焦第一個缺項並提示
-    const first = fieldDefs.find(f => {
-      const el = document.getElementById(f.id); return el && !String(el.value || '').trim();
-    });
-    if (first) document.getElementById(first.id).focus();
-    showAlert(`請完整輸入欄位（${missing.join('、')}）！`);
-    hint.style.display = "block";
-    hint.innerText = "💡 請補齊上方缺少的欄位後再配對";
-    return;
-  }
-
-  // 取得已驗證的值
-  const date = document.getElementById("date").value.trim();
-  const time = document.getElementById("time").value.trim();
-  const department = document.getElementById("department").value.trim();
-  const gender = document.getElementById("gender").value.trim();
-  const city = document.getElementById("addressFull").value.trim() || '';
-  
-  // 清空上一次結果
-  container.innerHTML = "";
-  pagination.innerHTML = "";
-  slider.style.display = "none";
-
-  // 顯示 loading
-  hint.style.display = "block";
-  hint.innerHTML = `
-    <span class="loader" style="
-      display:inline-block;
-      width:14px;
-      height:14px;
-      border:2px solid #ccc;
-      border-top-color:#0984e3;
-      border-radius:50%;
-      animation:spin 0.8s linear infinite;
-      vertical-align:middle;
-      margin-right:6px;"></span>
-    正在為您尋找配對志工...
-  `;
-
-  // 執行配對（模擬或實際過濾）
-  setTimeout(async () => {
-    hint.innerHTML = "✅ 已找到合適志工！";
-
-    // 1️⃣ 呼叫 match API
-    const MATCH_SUPABASE_API_URL = await fetch("https://supabase-api-six.vercel.app/test", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        elder_user_id: userId,
-        date,
-        time,
-        department,
-        city
-      })
-    });
-
-    const result = await MATCH_SUPABASE_API_URL.json();
-    
-    // 舊版使用性別篩選 
-    //const filtered = volunteers.filter(v => !gender || gender === "皆可" || v.gender === gender);
-
-    // 2️⃣ API 回傳的志工 userId
-    let getConformVolunteers = result.volunteer_user_ids || [];
-    console.log("符合的志工清單ID：", getConformVolunteers);
-
-    const sorted = getConformVolunteers
-      .map(id => volunteers.find(v => v.userId === id))
-      .filter(v => v); // 避免找不到造成 undefined
-
-    slider.style.display = "block";
-    const prevBtnEl = document.getElementById("prevBtn");
-    const nextBtnEl = document.getElementById("nextBtn");
-
-    if (!sorted.length) {
-      if (prevBtnEl) prevBtnEl.style.display = "none";
-      if (nextBtnEl) nextBtnEl.style.display = "none";
-      container.innerHTML = `
-        <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
-          <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;box-shadow:0 6px 18px rgba(0,0,0,0.05);font-size:18px;color:#333;max-width:480px;width:100%;text-align:center;">
-            目前尚未有紀錄
-          </div>
-        </div>
-      `;
-      pagination.innerHTML = "";
-      return;
-    } else {
-      if (prevBtnEl) prevBtnEl.style.display = "";
-      if (nextBtnEl) nextBtnEl.style.display = "";
+        const okHandler = () => { cleanup(); if (onConfirm) onConfirm(); };
+        const cancelHandler = () => { cleanup(); if (onCancel) onCancel(); };
+        
+        ok.addEventListener('click', okHandler);
+        cancel.addEventListener('click', cancelHandler);
     }
 
-    sorted.forEach((v) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="card-inner">
-          <div class="card-cover"></div>
-          <img src="${v.avatar}" class="card-avatar">
-          <div class="card-content">
-            <h2 class="card-title">${v.name}</h2>
-            <div class="tag-list">${v.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-            <p class="card-text">${v.desc}</p>
-            <div class="ratings">
-              <div class="full_heart" style="width:${v.rating || 80}%">❤❤❤❤❤</div>
-            </div>
-            <br>
-            <button class="book-btn" data-name="${v.name}" data-userid="${v.userId}">預約志工</button>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
 
-    setupSlider(sorted.length);
-  }, 600);
-}
+    /* =================================================================
+       3. LIFF 初始化 (LIFF Integration)
+       說明：處理 LINE 登入、取得使用者資料
+       ================================================================= */
+    const avatarEl = document.getElementById("volunteerAvatar");
+    const nameEl = document.getElementById("volunteerName");
 
-// 轉圈動畫
-const style = document.createElement("style");
-style.innerHTML = `
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}`;
-document.head.appendChild(style);
-  // 移除原本的 document.querySelectorAll('.book-btn')... 全域綁定（如果有的話）
-  // 改為事件代理：對 cardContainer 綁定一次 click，處理所有動態產生的 .book-btn
-  (function bindBookingDelegate() {
-  const container = document.getElementById('cardContainer');
-  if (!container) return;
-  container.addEventListener('click', (e) => {
-    const btn = e.target.closest('.book-btn');
-    if (!btn) return;
-    // 按下「預約志工」
-    const name = btn.dataset.name;         // 志工名字
-    const volunteer_user_id = btn.dataset.userid;  // 志工 ID
-    const user = userName || '系統使用者';
-    const dtDate = document.getElementById('date').value;
-    const dtTime = document.getElementById('time').value;
-    const datetime = dtDate + ' ' + dtTime;
-    const departmentVal = document.getElementById('department').value;
-    const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
-    const meetingPlaceVal = meetingEl ? meetingEl.value : '';
-    const addressFullVal = (document.getElementById('addressFull') || {}).value || '';
-    const districtVal = (document.getElementById('districtSelect') || {}).value || '';
-    if (!dtDate || !dtTime) {
-      showAlert('請選擇日期與時間');
-      return;
-    }
-    // 若同一志工、同一時間已被預約
-    if (bookedList.some(b => b.volunteer === name && b.datetime === datetime)) {
-      showAlert(`⚠️ ${name} 已於 ${datetime} 預約過！`);
-      return;
-    }
-
-    const newBooking = {
-      elder_user_id:userId,
-      elder_name:userName,
-      appointment_time:datetime,
-      visit_type: departmentVal,
-      meeting_place: meetingPlaceVal,
-      meeting_address: addressFullVal,
-      volunteer_user_id: volunteer_user_id,
-      volunteer_name: name
-    };
-
-    //call API 存到資料庫
-    fetch('https://supabase-api-six.vercel.app/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newBooking)
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log('預約成功', data);
-    })
-    .catch(err => console.error('預約失敗', err));
-
-    bookedList.push(newBooking);
-    showAlert(`✅ 已成功預約 ${name} 的志工服務！`);
-  });
-})();
-
-
-// 顯示預約紀錄（從 Supabase 讀取最新資料）
-async function showBookings() {
-  if (!userId) {
-      showAlert("⚠️ 請點擊右上方[未登入]，登入您的LINE帳號，確保資料準確取得");
-      return;
-  }
-
-  // 🔥 呼叫 API 取得預約列表
-  try {
-      const res = await fetch(`https://supabase-api-six.vercel.app/appointments/elder/${userId}`);
-      const json = await res.json();
-
-      if (!json.success) {
-          showAlert("讀取預約資料失敗");
-          return;
-      }
-
-      bookedList = json.data; // 直接塞 API 回傳陣列
-  } catch (err) {
-      console.error(err);
-      showAlert("無法連線到伺服器");
-      return;
-  }
-
-  if (bookedList.length === 0) {
-      showAlert("目前尚無預約紀錄！");
-      return;
-  }
-
-  // 🔄 將 API 欄位 mapping 成 table 用的欄位（保持舊程式碼可用）
-  bookedList = bookedList.map(b => ({
-      volunteer: b.volunteer_name,
-      user: b.elder_name || "",
-      datetime: b.appointment_time ? b.appointment_time.replace("T", " ") : "",
-      department: b.visit_type,
-      meetingPlace: b.meeting_place,
-      address: b.meeting_address,
-      event_id:b.event_id
-  }));
-
-  // 建立 overlay 與白色彈窗盒子，表格放在圓角容器內
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-
-  const box = document.createElement('div');
-  box.className = 'modal-box';
-
-  const inner = document.createElement('div');
-  inner.className = 'modal-inner';
-
-  // header + table
-  const title = document.createElement('h3');
-  title.style.textAlign = 'center';
-  title.style.marginTop = '4px';
-  title.innerText = '📋 預約紀錄';
-
-  // 新增右上角叉叉按鈕（與看診資訊風格一致）
-  const topCloseBtn = document.createElement('button');
-  topCloseBtn.className = 'close-btn';
-  topCloseBtn.type = 'button';
-  topCloseBtn.innerHTML = '&times;';
-  topCloseBtn.title = '關閉';
-  inner.appendChild(topCloseBtn);
-  topCloseBtn.addEventListener('click', () => overlay.remove());
-
-  // 使用與行事曆相同的外層容器（allTable-div）包裹 table
-  const tableWrap = document.createElement('div');
-  tableWrap.className = 'modal-table-wrap allTable-div';
-
-  const table = document.createElement('table');
-  table.className = 'modal-table';
-  table.style.width = '100%';
-  table.style.borderCollapse = 'separate';
-  table.style.textAlign = 'center';
-  table.style.fontSize = '14px';
-
-  const thead = document.createElement('thead');
-  // 將「縣市 / 行政區」改為單一「地址」欄
-  thead.innerHTML = `<tr style="background:#74b9ff;color:white;">
-    <th>志工姓名</th>
-    <th>預約人</th>
-    <th>日期時間</th>
-    <th>門診科別</th>
-    <th>見面地點</th>
-    <th>地址</th>
-    <th>操作</th>
-  </tr>`;
-    table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  bookedList.forEach((b) => {
-    const tr = document.createElement('tr');
-    // 將縣市與行政區合併顯示在同一儲存格（中間以 " / " 分隔，若其中一項為空則不加分隔符）
-    const cityDistrict = (b.city || '') + ((b.city && b.district) ? ' / ' : '') + (b.district || '');
-    tr.innerHTML = `
-      <td>${b.volunteer}</td>
-      <td>${b.user}</td>
-      <td>${b.datetime || ''}</td>
-      <td>${b.department || ''}</td>
-      <td>${b.meetingPlace || ''}</td>
-      <td>${b.address || ''}</td>
-      <td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-  tableWrap.appendChild(table);
-
-  // debug pre (hidden)
-  const pre = document.createElement('pre');
-  pre.id = 'debugBookedList';
-  pre.style.display = 'none';
-  pre.style.whiteSpace = 'pre-wrap';
-  pre.style.marginTop = '12px';
-  pre.style.maxHeight = '200px';
-  pre.style.overflow = 'auto';
-  pre.style.background = '#f4f6f8';
-  pre.style.padding = '10px';
-  pre.style.borderRadius = '6px';
-  pre.style.border = '1px solid #e1e6ea';
-  pre.textContent = JSON.stringify(bookedList, null, 2);
-
-  inner.appendChild(title);
-  inner.appendChild(tableWrap);
-  inner.appendChild(pre);
-
-  box.appendChild(inner);
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-
-  // close (右上叉叉已綁定) — 若要額外支援 Esc 關閉：
-  document.addEventListener('keydown', function escHandler(e) {
-    if (e.key === 'Escape') {
-      overlay.remove();
-      document.removeEventListener('keydown', escHandler);
-    }
-  });
-
-  // 綁定取消功能
-  overlay.querySelectorAll('.cancel-btn').forEach(btn => {
-    btn.onclick = async () => {
-      const eventId = btn.dataset.event_id; 
-      if (!eventId || !userId) {
-        showAlert("錯誤：找不到事件 ID 或 UserID");
-        return;
-      }
-
-      const booking = bookedList.find(b => b.event_id === eventId);
-      if (!booking) {
-        showAlert("找不到要取消的預約資料");
-        return;
-      }
-
-      // 彈出確認框
-      showConfirm(`確定要取消預約 ${booking.volunteer} 嗎？`, async () => {
+    async function initLiffAndSetProfile() {
         try {
-          // 🔥 呼叫 DELETE API
-          const res = await fetch(
-            `https://supabase-api-six.vercel.app/appointments/elder/${userId}/${eventId}`,
-            { method: "DELETE" }
-          );
+            await liff.init({ liffId: LIFF_ID });
 
-          const json = await res.json();
-          console.log("DELETE result:", json);
+            if (!liff.isLoggedIn()) {
+                nameEl.innerText = "未登入";
+                avatarEl.style.display = "none";
+                // 測試用：若未登入給予假 ID 方便測試 (上線前請移除或調整邏輯)
+                userId = "test_line_id_002o"; 
+                return;
+            }
 
-          if (!json.success) {
-            showAlert("刪除失敗：" + (json.message || ""));
-            return;
-          }
+            const profile = await liff.getProfile();
+            userId = profile.userId;
+            userName = profile.displayName;
+            console.log("LIFF Profile userId:", userId, "userName:", userName);
 
-          // 前端同步移除
-          const updatedList = bookedList.filter(b => b.event_id !== eventId);
-          bookedList = updatedList;
-
-          // 關閉彈窗並重新刷新
-          overlay.remove();
-          showAlert("已成功取消預約");
-          showBookings();
-
+            nameEl.innerText = profile.displayName || "志工";
+            if (profile.pictureUrl) {
+                avatarEl.src = profile.pictureUrl;
+                avatarEl.style.display = "inline-block";
+            } else {
+                avatarEl.style.display = "none";
+            }
         } catch (err) {
-          console.error(err);
-          showAlert("刪除失敗，請稍後再試。");
+            console.error("LIFF init error:", err);
+            // 發生錯誤時的 Fallback
+            userId = "test_line_id_002o"; 
         }
-      });
-    };
-  });
-}
-
-// === LIFF Integration ===
-let liffProfile = null;
-const LIFF_ID = '2008484068-vazlor5r';
-const avatarEl = document.getElementById("volunteerAvatar");
-const nameEl = document.getElementById("volunteerName");
-//目前先用假資料(待移除)
-let userId = "test_line_id_002o";
-let userName ="";
-
-async function initLiffAndSetProfile() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-
-    if (!liff.isLoggedIn()) {
-      nameEl.innerText = "未登入";
-      avatarEl.style.display = "none";
-      return;
     }
 
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    userName = profile.displayName;
-    console.log("LIFF Profile userId:", userId, "userName:", userName);
+    // 綁定頭像/名稱點擊事件 (登入/跳轉)
+    avatarEl && avatarEl.addEventListener("click", () => {
+        if (liff.isLoggedIn()) {
+            window.location.href = "../../Login-or-register/index.html";
+        } else {
+            liff.login({ redirectUri: window.location.href });
+        }
+    });
 
-    nameEl.innerText = profile.displayName || "志工";
-    if (profile.pictureUrl) {
-      avatarEl.src = profile.pictureUrl;
-      avatarEl.style.display = "inline-block";
-    } else {
-      avatarEl.style.display = "none";
+    nameEl && nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href });
+        } else {
+            alert("已登入：" + (nameEl.innerText || "使用者"));
+        }
+    });
+
+    // 啟動 LIFF
+    initLiffAndSetProfile();
+
+
+    /* =================================================================
+       4. 資料初始化 (Data Initialization)
+       說明：頁面載入後取得志工資料、綁定按鈕
+       ================================================================= */
+    window.addEventListener("DOMContentLoaded", async () => {
+        const apiUrl = `${API_BASE_URL}/volunteers`;
+        try {
+            const res = await fetch(apiUrl);
+            if (!res.ok) throw new Error("網路錯誤");
+            const result = await res.json();
+
+            if (!result.success || !Array.isArray(result.data)) {
+                console.error("❌ API 格式錯誤或無資料");
+                return;
+            }
+
+            // 資料格式轉換
+            volunteers = result.data.map((v) => ({
+                userId: v.volunteer_user_id || "未取得該志工userId",
+                name: v.volunteer_name || "未命名",
+                gender: v.gender || "未填寫",
+                age: v.age || "未提供",
+                tags: Array.isArray(v.personality) ? v.personality : [],
+                desc: v.partner_experience || v.partner_expeienceence || "尚無經驗說明",
+                cover: "c2dfff.jpg", 
+                avatar: v.image_url,
+                available_time: v.available_time || "未提供",
+                rating: 80 // 預設評分
+            }));
+
+            console.log("✅ 志工資料載入完成", volunteers);
+
+            // 綁定「預約查詢」按鈕事件
+            const showBookingsBtn = document.getElementById('showBookingsBtn');
+            if (showBookingsBtn) {
+                showBookingsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (typeof showBookings === 'function') {
+                        showBookings();
+                    } else {
+                        console.warn('showBookings 函式不存在');
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("⚠️ 志工資料載入失敗：", err);
+        }
+    });
+
+
+    /* =================================================================
+       5. 核心功能：配對與搜尋 (Matching & Search)
+       說明：驗證表單 -> 呼叫 API -> 顯示結果 (toggleCard)
+       ================================================================= */
+    function toggleCard() {
+        // DOM 檢查
+        const container = document.getElementById('cardContainer');
+        const pagination = document.getElementById('pagination');
+        const slider = document.querySelector('.slider-container');
+        const hint = document.getElementById('matchHint');
+
+        if (!container || !pagination || !slider || !hint) {
+            console.warn('DOM 元素缺失');
+            showAlert('頁面元素遺失，請重新整理。');
+            return;
+        }
+
+        // 欄位定義與驗證
+        const fieldDefs = [
+            { id: 'date', name: '日期' },
+            { id: 'time', name: '時間' },
+            { id: 'department', name: '科別' },
+            { id: 'gender', name: '性別' },
+            { id: 'addressFull', name: '完整地址' }
+        ];
+
+        // 清除舊錯誤樣式
+        fieldDefs.forEach(f => { 
+            const el = document.getElementById(f.id); 
+            if (el) el.classList.remove('invalid'); 
+        });
+
+        // 檢查必填
+        const missing = [];
+        fieldDefs.forEach(f => {
+            const el = document.getElementById(f.id);
+            const val = el ? String(el.value || '').trim() : '';
+            if (!val) {
+                missing.push(f.name);
+                if (el) el.classList.add('invalid');
+            }
+        });
+
+        if (missing.length) {
+            const first = fieldDefs.find(f => {
+                const el = document.getElementById(f.id);
+                return el && !String(el.value || '').trim();
+            });
+            if (first) document.getElementById(first.id).focus();
+            
+            showAlert(`請完整輸入欄位（${missing.join('、')}）！`);
+            hint.style.display = "block";
+            hint.innerText = "💡 請補齊上方缺少的欄位後再配對";
+            return;
+        }
+
+        // 取得輸入值
+        const date = document.getElementById("date").value.trim();
+        const time = document.getElementById("time").value.trim();
+        const department = document.getElementById("department").value.trim();
+        const gender = document.getElementById("gender").value.trim();
+        const city = document.getElementById("addressFull").value.trim() || '';
+
+        // UI 重置與 Loading
+        container.innerHTML = "";
+        pagination.innerHTML = "";
+        slider.style.display = "none";
+        hint.style.display = "block";
+        hint.innerHTML = `
+            <span class="loader" style="display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:#0984e3;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;"></span>
+            正在為您尋找配對志工...`;
+
+        // 執行配對 API
+        setTimeout(async () => {
+            try {
+                const MATCH_API_URL = `${API_BASE_URL}/test`; // 請確認這是否為正式配對 API 路徑
+                const res = await fetch(MATCH_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        elder_user_id: userId,
+                        date, time, department, city
+                    })
+                });
+
+                const result = await res.json();
+                const matchedIds = result.volunteer_user_ids || [];
+                console.log("符合的志工 ID：", matchedIds);
+
+                // 從快取中篩選出志工物件
+                const sorted = matchedIds
+                    .map(id => volunteers.find(v => v.userId === id))
+                    .filter(v => v);
+
+                hint.innerHTML = sorted.length > 0 ? "✅ 已找到合適志工！" : "⚠️ 暫無符合條件的志工";
+
+                // 顯示結果
+                renderCards(sorted, container, slider, pagination);
+
+            } catch (err) {
+                console.error("配對失敗", err);
+                hint.innerText = "❌ 配對過程發生錯誤，請稍後再試";
+            }
+        }, 600);
     }
-  } catch (err) {
-    console.error("LIFF init error:", err);
-  }
-}
 
-avatarEl.addEventListener("click", () => {
-  if (liff.isLoggedIn()) {
-    // 已登入則進入註冊頁面（可改為需要的頁面路徑）
-    window.location.href = "../../Login-or-register/index.html";
-  } else {
-    // 使用當前頁面作為 redirectUri，適用桌機/平板/手機
-    liff.login({ redirectUri: window.location.href });
-  }
-});
+    // 渲染卡片邏輯
+    function renderCards(list, container, slider, pagination) {
+        slider.style.display = "block";
+        const prevBtnEl = document.getElementById("prevBtn");
+        const nextBtnEl = document.getElementById("nextBtn");
 
-nameEl.addEventListener("click", () => {
-  if (!liff.isLoggedIn()) {
-    liff.login({ redirectUri: window.location.href });
-  } else {
-    alert("已登入：" + (nameEl.innerText || "志工"));
-  }
-});
+        if (!list.length) {
+            if (prevBtnEl) prevBtnEl.style.display = "none";
+            if (nextBtnEl) nextBtnEl.style.display = "none";
+            container.innerHTML = `
+                <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
+                  <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;font-size:18px;color:#333;text-align:center;">
+                    目前無符合條件的志工
+                  </div>
+                </div>`;
+            return;
+        }
 
-initLiffAndSetProfile();
+        if (prevBtnEl) prevBtnEl.style.display = "";
+        if (nextBtnEl) nextBtnEl.style.display = "";
 
-async function saveBookingToSupabase(booking) {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').insert([booking]).select();
-    if (error) throw error;
-    return data && data[0];
-  } catch (e) {
-    console.warn('Supabase insert failed', e);
-    return null;
-  }
-}
+        list.forEach((v) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+                <div class="card-inner">
+                  <div class="card-cover"></div>
+                  <img src="${v.avatar}" class="card-avatar">
+                  <div class="card-content">
+                    <h2 class="card-title">${v.name}</h2>
+                    <div class="tag-list">${v.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                    <p class="card-text">${v.desc}</p>
+                    <div class="ratings">
+                      <div class="full_heart" style="width:${v.rating}%">❤❤❤❤❤</div>
+                    </div>
+                    <br>
+                    <button class="book-btn" data-name="${v.name}" data-userid="${v.userId}">預約志工</button>
+                  </div>
+                </div>`;
+            container.appendChild(card);
+        });
 
-async function fetchBookingsFromSupabase() {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: true });
-    if (error) throw error;
-    return data || [];
-  } catch (e) {
-    console.warn('Supabase fetch failed', e);
-    return null;
-  }
-}
-
-async function deleteBookingFromSupabase(id) {
-  if (!supabaseClient) return null;
-  try {
-    const { data, error } = await supabaseClient.from('bookings').delete().eq('id', id);
-    if (error) throw error;
-    return data;
-  } catch (e) {
-    console.warn('Supabase delete failed', e);
-    return null;
-  }
-}
-
-// 保險機制：在 load 時再綁定一次預約查詢按鈕，並在 console log 點擊事件（方便除錯）
-// window.addEventListener('load', () => {
-//   try {
-//     const sb = document.getElementById('showBookingsBtn');
-//     if (sb) {
-//       sb.addEventListener('click', (e) => {
-//         console.debug('showBookingsBtn clicked (bound listener)');
-//         // 呼叫主函式（保險）
-//         if (typeof showBookings === 'function') showBookings();
-//       });
-//     } else {
-//       console.debug('showBookingsBtn not found on load');
-//     }
-//   } catch (err) {
-//     console.error('綁定 showBookingsBtn 事件失敗', err);
-//   }
-// });
+        setupSlider(list.length);
+    }
 
 
+    /* =================================================================
+       6. 輪播與手勢控制 (Slider & Gestures)
+       ================================================================= */
     function setupSlider(count) {
-      const container = document.getElementById("cardContainer");
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-      currentIndex = 0;
-      container.style.transform = "translateX(0%)";
+        const container = document.getElementById("cardContainer");
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+        currentIndex = 0;
+        container.style.transform = "translateX(0%)";
 
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement("span");
-        dot.classList.add("dot");
-        if( i === 0) dot.classList.add("active");
-        dot.addEventListener("click", () => goToSlide(i, count));
-        pagination.appendChild(dot);
-      }
+        for (let i = 0; i < count; i++) {
+            const dot = document.createElement("span");
+            dot.classList.add("dot");
+            if (i === 0) dot.classList.add("active");
+            dot.addEventListener("click", () => goToSlide(i, count));
+            pagination.appendChild(dot);
+        }
 
-      document.getElementById("prevBtn").onclick = () => goToSlide(currentIndex - 1, count);
-      document.getElementById("nextBtn").onclick = () => goToSlide(currentIndex + 1, count);
-      // 註冊觸控手勢（手機可滑動切換）
-      registerSwipe(container, count);
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        if(prevBtn) prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
+        if(nextBtn) nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
+
+        registerSwipe(container, count);
     }
 
     function goToSlide(index, count) {
-      const container = document.getElementById("cardContainer");
-      const dots = document.querySelectorAll(".dot");
-      if (index < 0) index = count - 1;
-      if (index >= count) index = 0;
-      currentIndex = index;
-      container.style.transform = `translateX(-${index * 100}%)`;
-      dots.forEach(dot => dot.classList.remove("active"));
-      dots[index].classList.add("active");
+        const container = document.getElementById("cardContainer");
+        const dots = document.querySelectorAll(".dot");
+        if (index < 0) index = count - 1;
+        if (index >= count) index = 0;
+        currentIndex = index;
+        container.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach(dot => dot.classList.remove("active"));
+        if(dots[index]) dots[index].classList.add("active");
     }
 
-    // touch swipe 支援
     function registerSwipe(container, count) {
-      let startX = 0;
-      let deltaX = 0;
-      let isMoving = false;
+        let startX = 0;
+        let deltaX = 0;
+        let isMoving = false;
 
-      container.addEventListener('touchstart', (e) => {
-        if (!e.touches || e.touches.length === 0) return;
-        startX = e.touches[0].clientX;
-        isMoving = true;
-      }, { passive: true });
+        container.addEventListener('touchstart', (e) => {
+            if (!e.touches || e.touches.length === 0) return;
+            startX = e.touches[0].clientX;
+            isMoving = true;
+        }, { passive: true });
 
-      container.addEventListener('touchmove', (e) => {
-        if (!isMoving || !e.touches || e.touches.length === 0) return;
-        deltaX = e.touches[0].clientX - startX;
-        // 可視性回饋（輕微位移）
-        container.style.transition = 'none';
-        container.style.transform = `translateX(${ -currentIndex * 100 + (deltaX / container.clientWidth) * 100 }%)`;
-      }, { passive: true });
+        container.addEventListener('touchmove', (e) => {
+            if (!isMoving || !e.touches || e.touches.length === 0) return;
+            deltaX = e.touches[0].clientX - startX;
+            container.style.transition = 'none';
+            container.style.transform = `translateX(${-currentIndex * 100 + (deltaX / container.clientWidth) * 100}%)`;
+        }, { passive: true });
 
-      container.addEventListener('touchend', (e) => {
-        isMoving = false;
-        container.style.transition = 'transform 0.5s ease';
-        if (Math.abs(deltaX) > 40) {
-          if (deltaX < 0) {
-            goToSlide(currentIndex + 1, count);
-          } else {
-            goToSlide(currentIndex - 1, count);
-          }
-        } else {
-          // 還原位置
-          container.style.transform = `translateX(-${currentIndex * 100}%)`;
-        }
-        deltaX = 0;
-      }, { passive: true });
-    }
-
-    
-      //-- Google Maps script 已在 head 中正確載入，移除此行
-  // 目前位置按鈕：嘗試取得裝置定位，成功時暫將座標填進 streetName（若需
-  // 顯示提示訊息的簡易函式
- 
-  // 顯示提示訊息
-    function showAlert(msg) {
-      alert(msg);
-    }
-
-   
-
-    (function() {
-      const btn = document.getElementById('useLocationBtn');
-      // 使用存在的完整地址欄位 id
-      const addressFullEl = document.getElementById('addressFull');
-      const mapWrap = document.getElementById('mapWrap');
-      const mapEl = document.getElementById('map');
-      const mapSearchInput = document.getElementById('mapSearch');
-      let map, marker, geocoder;
-
-      // 若必要元素不存在則不進行
-      if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
-
-      btn.addEventListener('click', () => {
-        // 顯示地圖容器（按鈕按下時一起出現）
-        if (mapSearchInput) mapSearchInput.style.display = 'block';
-        mapWrap.style.display = 'block';
-
-        if (!navigator.geolocation) {
-          showAlert('此裝置不支援取得位置');
-          return;
-        }
-
-        btn.disabled = true;
-        const prevText = btn.innerText;
-        btn.innerText = '定位中...';
-
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const { latitude, longitude } = pos.coords;
-            const userPos = { lat: latitude, lng: longitude };
-
-            // ✅ 建立或更新地圖
-            if (!map) {
-              map = new google.maps.Map(mapEl, {
-                zoom: 15,
-                center: userPos,
-              });
-              marker = new google.maps.Marker({
-                position: userPos,
-                map: map,
-                title: "目前位置",
-              });
-              geocoder = new google.maps.Geocoder();
-
-              // 初始化 SearchBox（Places library 必須已載入）
-              try {
-                if (mapSearchInput && google && google.maps && google.maps.places) {
-                  const searchBox = new google.maps.places.SearchBox(mapSearchInput);
-                  // 當搜尋結果選定後，移動地圖與標記，並更新欄位
-                  searchBox.addListener('places_changed', () => {
-                    const places = searchBox.getPlaces();
-                    if (!places || places.length === 0) return;
-                    const place = places[0];
-                    if (place.geometry && place.geometry.location) {
-                      map.panTo(place.geometry.location);
-                      map.setZoom(17);
-                      marker.setPosition(place.geometry.location);
-                    }
-
-                    // 以 Places API 的 address_components 組出較完整地址（fallback: formatted_address）
-                    const comps = place.address_components || [];
-                    let cityCandidate = '';
-                    let districtCandidate = '';
-                    let route = '';
-                    let street_number = '';
-                    let subpremise = ''; // 門牌附加（如之1、之2、樓）
-                    let sublocality = ''; // 鄰/里/社區等
-                    comps.forEach(c => {
-                      const types = c.types || [];
-                      if (types.includes('administrative_area_level_1') || types.includes('locality')) {
-                        if (!cityCandidate) cityCandidate = c.long_name;
-                      }
-                      if (types.includes('administrative_area_level_2') || types.includes('sublocality') || types.includes('sublocality_level_1') || types.includes('administrative_area_level_3')) {
-                        if (!districtCandidate) districtCandidate = c.long_name;
-                      }
-                      if (types.includes('route')) route = c.long_name;
-                      if (types.includes('street_number')) street_number = c.long_name;
-                      if (types.includes('subpremise')) subpremise = c.long_name;
-                      if (types.includes('sublocality') || types.includes('neighborhood')) {
-                        if (!sublocality) sublocality = c.long_name;
-                      }
-                    });
-
-                    // helper: 在 select 中尋找最接近的 option（by value 或 text）
-                    function findOption(selectEl, name) {
-                      if (!selectEl || !name) return null;
-                      const opts = Array.from(selectEl.options || []);
-                      let found = opts.find(o => (o.value && o.value === name) || (o.text && o.text === name));
-                      if (found) return found;
-                      found = opts.find(o => (o.text && name.indexOf(o.text) !== -1) || (o.text && o.text.indexOf(name) !== -1));
-                      return found || null;
-                    }
-
-                    // 組合完整地址：縣市 行政區 路名 + 號（若有則包含 subpremise）
-                    const parts = [];
-                    if (cityCandidate) parts.push(cityCandidate);
-                    if (districtCandidate) parts.push(districtCandidate);
-                    let streetPart = '';
-                    if (route) streetPart += route;
-                    if (streetPart && street_number) streetPart += ' ' + street_number;
-                    if (streetPart) parts.push(streetPart);
-                    if (subpremise) parts.push(subpremise);
-                    if (!parts.length && place.formatted_address) {
-                      // 如果 address_components 都沒有，但有 formatted_address，則用 formatted_address
-                      parts.push(place.formatted_address);
-                    }
-                    // 另外把 sublocality 等附加資訊加到結尾（如有）
-                    if (sublocality) parts.push(sublocality);
-
-                    const assembled = parts.join(' ').trim();
-
-                    // 寫入欄位（優先使用組合結果，若空則使用 formatted_address）
-                    if (addressFullEl) addressFullEl.value = assembled || (place.formatted_address || '');
-
-                    // 嘗試同步縣市/區下拉（若頁面有）
-                    const citySelectEl = document.getElementById('citySelect');
-                    const districtSelectEl = document.getElementById('districtSelect');
-                    if (cityCandidate && citySelectEl) {
-                      let match = findOption(citySelectEl, cityCandidate);
-                      if (!match) {
-                        const opt = document.createElement('option');
-                        opt.value = cityCandidate;
-                        opt.textContent = cityCandidate;
-                        citySelectEl.appendChild(opt);
-                        match = opt;
-                      }
-                      citySelectEl.value = match.value;
-                      citySelectEl.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                    // 稍候 (change 事件可能重製 district)，故用 setTimeout 同步 district
-                    setTimeout(() => {
-                      if (districtCandidate && districtSelectEl) {
-                        let matchD = findOption(districtSelectEl, districtCandidate);
-                        if (!matchD) {
-                          const optD = document.createElement('option');
-                          optD.value = districtCandidate;
-                          optD.textContent = districtCandidate;
-                          districtSelectEl.appendChild(optD);
-                          matchD = optD;
-                        }
-                        districtSelectEl.value = matchD.value;
-                      }
-                    }, 120);
-                  });
-                }
-              } catch (e) {
-                console.debug('初始化 SearchBox 失敗', e);
-              }
-
+        container.addEventListener('touchend', (e) => {
+            isMoving = false;
+            container.style.transition = 'transform 0.5s ease';
+            if (Math.abs(deltaX) > 40) {
+                if (deltaX < 0) goToSlide(currentIndex + 1, count);
+                else goToSlide(currentIndex - 1, count);
             } else {
-              map.setCenter(userPos);
-              marker.setPosition(userPos);
+                container.style.transform = `translateX(-${currentIndex * 100}%)`;
+            }
+            deltaX = 0;
+        }, { passive: true });
+    }
+
+
+    /* =================================================================
+       7. 預約功能 (Booking Logic)
+       說明：處理「預約志工」點擊事件、API 寫入
+       ================================================================= */
+    (function bindBookingDelegate() {
+        const container = document.getElementById('cardContainer');
+        if (!container) return;
+
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('.book-btn');
+            if (!btn) return;
+
+            // 收集預約資料
+            const volName = btn.dataset.name;
+            const volId = btn.dataset.userid;
+            const dtDate = document.getElementById('date').value;
+            const dtTime = document.getElementById('time').value;
+            const datetime = `${dtDate} ${dtTime}`;
+            const departmentVal = document.getElementById('department').value;
+            const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
+            const meetingPlaceVal = meetingEl ? meetingEl.value : '';
+            const addressFullVal = (document.getElementById('addressFull') || {}).value || '';
+
+            if (!dtDate || !dtTime) {
+                showAlert('請選擇日期與時間');
+                return;
             }
 
-            // 若地圖存在且 Google Maps API 可用，觸發 resize 以確保正確渲染
-            try {
-              if (window.google && google.maps && google.maps.event && map) {
-                google.maps.event.trigger(map, 'resize');
-                // 再次設定中心，避免因 resize 而偏移
-                map.setCenter(userPos);
-              }
-            } catch (e) {
-              console.debug('google.maps.event.trigger failed', e);
+            // 前端重複檢查
+            if (bookedList.some(b => b.volunteer === volName && b.datetime === datetime)) {
+                showAlert(`⚠️ ${volName} 已於 ${datetime} 預約過！`);
+                return;
             }
 
-            // ✅ 呼叫 Google Geocoding API 反查地址
-            geocoder.geocode({ location: userPos, }, (results, status) => {
-              // 預設先清空欄位（若無偵測到就保持空白）
-              const citySelectEl = document.getElementById('citySelect');
-              const districtSelectEl = document.getElementById('districtSelect');
-              const laneEl = document.getElementById('lane');
-              const alleyEl = document.getElementById('alley');
-              const numberEl = document.getElementById('number');
-              const floorEl = document.getElementById('floor');
-              if (citySelectEl) citySelectEl.value = '';
-              if (districtSelectEl) {
-                districtSelectEl.innerHTML = '<option value=\"\" disabled selected>請先選縣市</option>';
-              }
-              if (addressFullEl) addressFullEl.value = '';
-              if (laneEl) laneEl.value = '';
-              if (alleyEl) alleyEl.value = '';
-              if (numberEl) numberEl.value = '';
-              if (floorEl) floorEl.value = '';
+            const newBooking = {
+                elder_user_id: userId,
+                elder_name: userName,
+                appointment_time: datetime,
+                visit_type: departmentVal,
+                meeting_place: meetingPlaceVal,
+                meeting_address: addressFullVal,
+                volunteer_user_id: volId,
+                volunteer_name: volName
+            };
 
-              if (status === "OK" && results && results.length) {
-                const r = results[0];
-                const comps = r.address_components || [];
-                let cityCandidate = '';
-                let districtCandidate = '';
-                let route = '';
-                let street_number = '';
-                comps.forEach(c => {
-                  const types = c.types || [];
-                  if (types.includes('administrative_area_level_1') || types.includes('locality')) {
-                    if (!cityCandidate) cityCandidate = c.long_name;
-                  }
-                  if (types.includes('administrative_area_level_2') || types.includes('sublocality') || types.includes('sublocality_level_1') || types.includes('administrative_area_level_3')) {
-                    if (!districtCandidate) districtCandidate = c.long_name;
-                  }
-                  if (types.includes('route')) route = c.long_name;
-                  if (types.includes('street_number')) street_number = c.long_name;
+            // Call API
+            fetch(`${API_BASE_URL}/appointments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newBooking)
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('預約成功', data);
+                // 為了顯示方便，稍微轉換格式 push 到 bookedList
+                bookedList.push({
+                    volunteer: volName,
+                    user: userName,
+                    datetime: datetime,
+                    department: departmentVal,
+                    meetingPlace: meetingPlaceVal,
+                    address: addressFullVal,
+                    event_id: data.data ? data.data.event_id : null // 假設 API 回傳結構
                 });
-
-                // helper: 在 select 中尋找最接近的 option（by value 或 text）
-                function findOption(selectEl, name) {
-                  if (!selectEl || !name) return null;
-                  const opts = Array.from(selectEl.options || []);
-                  let found = opts.find(o => (o.value && o.value === name) || (o.text && o.text === name));
-                  if (found) return found;
-                  found = opts.find(o => (o.text && name.indexOf(o.text) !== -1) || (o.text && o.text.indexOf(name) !== -1));
-                  return found || null;
-                }
-
-                // 組合並填入完整地址欄（簡單拼接，可依需求調整格式）
-                const parts = [];
-                const cityTxt = cityCandidate || '';
-                const districtTxt = districtCandidate || '';
-                const routeTxt = route || '';
-                const numberTxt = street_number || '';
-                if (cityTxt) parts.push(cityTxt);
-                if (districtTxt) parts.push(districtTxt);
-                if (routeTxt) parts.push(routeTxt + (numberTxt ? (' ' + numberTxt) : ''));
-                const fullAddr = parts.join(' ');
-                if (addressFullEl) addressFullEl.value = fullAddr || (r.formatted_address || '');
-                if (citySelectEl && cityTxt) {
-                  let match = findOption(citySelectEl, cityTxt);
-                  if (!match) {
-                    const opt = document.createElement('option');
-                    opt.value = cityTxt;
-                    opt.textContent = cityTxt;
-                    citySelectEl.appendChild(opt);
-                    match = opt;
-                  }
-                  citySelectEl.value = match.value;
-                  citySelectEl.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                if (districtSelectEl && districtTxt) {
-                  let matchD = findOption(districtSelectEl, districtTxt);
-                  if (!matchD) {
-                    const optD = document.createElement('option');
-                    optD.value = districtTxt;
-                    optD.textContent = districtTxt;
-                    districtSelectEl.appendChild(optD);
-                    matchD = optD;
-                  }
-                  districtSelectEl.value = matchD.value;
-                }
-
-              } else {
-                // 若無結果，維持所有欄位為空白並顯示座標或訊息
-                if (addressFullEl) addressFullEl.value = `lat:${latitude.toFixed(6)}, lng:${longitude.toFixed(6)}`;
-                showAlert('無法取得詳細地址，已顯示座標，其餘欄位保留空白');
-                btn.disabled = false;
-                btn.innerText = prevText;
-              }
+                showAlert(`✅ 已成功預約 ${volName} 的志工服務！`);
+            })
+            .catch(err => {
+                console.error('預約失敗', err);
+                showAlert('預約請求失敗，請稍後再試');
             });
-          },
-          (err) => {
-            console.error('geolocation error', err);
-            showAlert('取得位置失敗：' + (err.message || '請確認瀏覽器定位權限'));
-            btn.disabled = false;
-            btn.innerText = prevText;
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
-     })();
-  </script>
+        });
+    })();
+
+
+    /* =================================================================
+       8. 預約查詢與管理 (Booking History & Management)
+       說明：顯示預約列表 Modal、執行取消預約
+       ================================================================= */
+    async function showBookings() {
+        if (!userId) {
+            showAlert("⚠️ 請先登入 LINE 帳號以取得資料");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/appointments/elder/${userId}`);
+            const json = await res.json();
+
+            if (!json.success) {
+                showAlert("讀取預約資料失敗");
+                return;
+            }
+
+            // 格式轉換以符合表格顯示
+            bookedList = json.data.map(b => ({
+                volunteer: b.volunteer_name,
+                user: b.elder_name || "",
+                datetime: b.appointment_time ? b.appointment_time.replace("T", " ") : "",
+                department: b.visit_type,
+                meetingPlace: b.meeting_place,
+                address: b.meeting_address,
+                event_id: b.event_id,
+                city: b.city,
+                district: b.district
+            }));
+
+        } catch (err) {
+            console.error(err);
+            showAlert("無法連線到伺服器");
+            return;
+        }
+
+        if (bookedList.length === 0) {
+            showAlert("目前尚無預約紀錄！");
+            return;
+        }
+
+        createBookingModal();
+    }
+
+    function createBookingModal() {
+        // 建立 Modal 結構
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        
+        const box = document.createElement('div');
+        box.className = 'modal-box';
+        
+        const inner = document.createElement('div');
+        inner.className = 'modal-inner';
+
+        // 標題與關閉鈕
+        const title = document.createElement('h3');
+        title.style.textAlign = 'center';
+        title.innerText = '📋 預約紀錄';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => overlay.remove();
+        inner.appendChild(closeBtn);
+
+        // 表格容器 (使用 RWD 樣式 class: allTable-div)
+        const tableWrap = document.createElement('div');
+        tableWrap.className = 'modal-table-wrap allTable-div';
+
+        const table = document.createElement('table');
+        table.className = 'modal-table';
+        
+        // 表頭
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr style="background:#74b9ff;color:white;">
+                <th>志工姓名</th>
+                <th>日期時間</th>
+                <th>科別</th>
+                <th>見面地點</th>
+                <th>地址</th>
+                <th>操作</th>
+            </tr>`;
+        table.appendChild(thead);
+
+        // 表身
+        const tbody = document.createElement('tbody');
+        bookedList.forEach((b) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${b.volunteer}</td>
+                <td>${b.datetime}</td>
+                <td>${b.department}</td>
+                <td>${b.meetingPlace}</td>
+                <td>${b.address || ''}</td>
+                <td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+
+        inner.appendChild(title);
+        inner.appendChild(tableWrap);
+        box.appendChild(inner);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        // 綁定取消按鈕
+        bindCancelButtons(overlay);
+    }
+
+    function bindCancelButtons(overlay) {
+        overlay.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const eventId = btn.dataset.event_id;
+                const booking = bookedList.find(b => b.event_id === eventId);
+                
+                if (!booking) { showAlert("資料異常，找不到該預約"); return; }
+
+                showConfirm(`確定要取消與 ${booking.volunteer} 的預約嗎？`, async () => {
+                    try {
+                        const res = await fetch(
+                            `${API_BASE_URL}/appointments/elder/${userId}/${eventId}`,
+                            { method: "DELETE" }
+                        );
+                        const json = await res.json();
+
+                        if (!json.success) {
+                            showAlert("刪除失敗：" + (json.message || ""));
+                            return;
+                        }
+
+                        // 成功後移除 Modal 並刷新
+                        overlay.remove();
+                        showAlert("已成功取消預約");
+                        showBookings();
+
+                    } catch (err) {
+                        console.error(err);
+                        showAlert("刪除失敗，請稍後再試。");
+                    }
+                });
+            };
+        });
+    }
+
+
+    /* =================================================================
+       9. 地圖與定位功能 (Map & Geolocation)
+       說明：包含 Google Maps 初始化、取得目前位置、反查地址
+       ================================================================= */
+    (function initMapFeature() {
+        const btn = document.getElementById('useLocationBtn');
+        const addressFullEl = document.getElementById('addressFull');
+        const mapWrap = document.getElementById('mapWrap');
+        const mapEl = document.getElementById('map');
+        const mapSearchInput = document.getElementById('mapSearch');
+        let map, marker, geocoder;
+
+        if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
+
+        btn.addEventListener('click', () => {
+            // 顯示地圖
+            if (mapSearchInput) mapSearchInput.style.display = 'block';
+            mapWrap.style.display = 'block';
+
+            if (!navigator.geolocation) {
+                showAlert('此裝置不支援取得位置');
+                return;
+            }
+
+            btn.disabled = true;
+            const prevText = btn.innerText;
+            btn.innerText = '定位中...';
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    const userPos = { lat: latitude, lng: longitude };
+
+                    // 初始化地圖 (僅執行一次)
+                    if (!map) {
+                        map = new google.maps.Map(mapEl, {
+                            zoom: 15,
+                            center: userPos,
+                        });
+                        marker = new google.maps.Marker({
+                            position: userPos,
+                            map: map,
+                            title: "目前位置",
+                        });
+                        geocoder = new google.maps.Geocoder();
+
+                        // 初始化 Places SearchBox
+                        initSearchBox(map, marker, addressFullEl);
+                    } else {
+                        map.setCenter(userPos);
+                        marker.setPosition(userPos);
+                    }
+
+                    // 確保地圖渲染正確
+                    if (window.google && google.maps && map) {
+                        google.maps.event.trigger(map, 'resize');
+                        map.setCenter(userPos);
+                    }
+
+                    // 反查地址並填入欄位
+                    geocodePosition(userPos, addressFullEl, btn, prevText, geocoder);
+                },
+                (err) => {
+                    console.error('geolocation error', err);
+                    showAlert('取得位置失敗：' + (err.message || '請確認權限'));
+                    btn.disabled = false;
+                    btn.innerText = prevText;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
+
+        // 內部 Helper: 初始化搜尋框
+        function initSearchBox(map, marker, addressEl) {
+            try {
+                if (mapSearchInput && google.maps.places) {
+                    const searchBox = new google.maps.places.SearchBox(mapSearchInput);
+                    searchBox.addListener('places_changed', () => {
+                        const places = searchBox.getPlaces();
+                        if (!places || !places.length) return;
+                        
+                        const place = places[0];
+                        if (place.geometry && place.geometry.location) {
+                            map.panTo(place.geometry.location);
+                            map.setZoom(17);
+                            marker.setPosition(place.geometry.location);
+                            
+                            // 更新地址欄位
+                            if (addressEl) addressEl.value = place.formatted_address || '';
+                            // 這裡可選擇是否要再呼叫 parseAddressComponents 解析詳細縣市
+                        }
+                    });
+                }
+            } catch (e) {
+                console.debug('SearchBox init failed', e);
+            }
+        }
+
+        // 內部 Helper: 反查座標與填寫表單
+        function geocodePosition(pos, addressEl, btn, btnText, geocoder) {
+            geocoder.geocode({ location: pos }, (results, status) => {
+                if (status === "OK" && results && results.length) {
+                    const r = results[0];
+                    parseAddressComponents(r);
+                    if (addressEl) addressEl.value = r.formatted_address; // 簡易填入，若需細分可參考下方 helper
+                } else {
+                    if (addressEl) addressEl.value = `lat:${pos.lat.toFixed(6)}, lng:${pos.lng.toFixed(6)}`;
+                    showAlert('無法取得詳細地址，已填入座標');
+                }
+                btn.disabled = false;
+                btn.innerText = btnText;
+            });
+        }
+
+        // 內部 Helper: 解析 Google 地址元件並填入下拉選單 (City/District)
+        function parseAddressComponents(result) {
+            const comps = result.address_components || [];
+            let city = '', district = '', route = '', number = '';
+
+            comps.forEach(c => {
+                const t = c.types;
+                if (t.includes('administrative_area_level_1') || t.includes('locality')) city = c.long_name;
+                if (t.includes('administrative_area_level_2') || t.includes('sublocality')) district = c.long_name;
+                if (t.includes('route')) route = c.long_name;
+                if (t.includes('street_number')) number = c.long_name;
+            });
+
+            // 自動選取下拉選單 (Helper)
+            function setSelect(id, value) {
+                const el = document.getElementById(id);
+                if (!el || !value) return;
+                // 模糊比對選項
+                for(let opt of el.options) {
+                    if(opt.value === value || opt.text.includes(value)) {
+                        el.value = opt.value;
+                        el.dispatchEvent(new Event('change')); // 觸發連動
+                        return;
+                    }
+                }
+                // 若無選項則動態新增 (視需求)
+                const newOpt = new Option(value, value);
+                el.add(newOpt);
+                el.value = value;
+            }
+
+            setSelect('citySelect', city);
+            setTimeout(() => setSelect('districtSelect', district), 100);
+        }
+    })();
+</script>
 </body>
 </html>
