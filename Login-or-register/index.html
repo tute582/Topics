@@ -272,9 +272,9 @@
   <label class="required">性別</label>
   <select name="gender" required>
     <option value="">請選擇</option>
-    <option value="male">男性</option>
-    <option value="female">女性</option>
-    <option value="other">其他</option>
+    <option value="男性">男性</option>
+    <option value="女性">女性</option>
+    <option value="其他">其他</option>
   </select>
 
   <label class="required">地址</label>
@@ -323,9 +323,9 @@
   <label class="required">性別</label>
   <select name="gender" required>
     <option value="">請選擇</option>
-    <option value="male">男性</option>
-    <option value="female">女性</option>
-    <option value="other">其他</option>
+    <option value="男性">男性</option>
+    <option value="女性">女性</option>
+    <option value="其他">其他</option>
   </select>
 
   <label class="required">地址</label>
@@ -362,6 +362,9 @@
 <script>
   // ====== LIFF 設定：把 YOUR_LIFF_ID 換成你的 LIFF ID ======
   const LIFF_ID = "2008484068-7D5BLKZK";
+  let userId = "";
+  let userName ="";
+  
   // 導覽列與表單的頭像元素
   const navAvatar = document.getElementById("volunteerAvatar");
   const nameEl = document.getElementById("volunteerName");
@@ -374,6 +377,9 @@
 
     // ✅ 抓取 LINE 使用者資料
     const profile = await liff.getProfile();
+    userId = profile.userId;
+    userName = profile.displayName;
+    console.log("LIFF Profile userId:", userId, "userName:", userName);
 
     // ✅ 設定頭像（兩個地方同步）
     avatarUrl = profile?.pictureUrl || "default-avatar.png";
@@ -426,33 +432,53 @@
   }
 
   // 志工表單送出
-  document.getElementById("volunteerForm").addEventListener("submit", function(e) {
+  document.getElementById("volunteerForm").addEventListener("submit",async function(e) {
     e.preventDefault();
     const form = e.target;
     // 取得已選取的服務特質
     const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
     .map(tag => tag.textContent.trim());
 
-    const data = {
-      avatar: document.getElementById("avatarPreview").src,
-      volunteerId: form.elements["volunteerId"].value.trim(),
-      name: form.elements["name"].value.trim(),
+    const payload = {
+      image_url: document.getElementById("avatarPreview").src,
+      vcode: form.elements["volunteerId"].value.trim(),
+      volunteer_user_id: userId,
+      volunteer_name: form.elements["name"].value.trim(),
       email: form.elements["email"].value.trim(),
       phone: form.elements["phone"].value.trim(),
       birthday: form.elements["birthday"].value,
       gender: form.elements["gender"].value,
       address: form.elements["address"].value.trim(),
-      // 若表單沒有 skills 欄位，安全回傳空字串
-      skills: form.elements["skills"] ? form.elements["skills"].value.trim() : "",
-      tags: selectedTags,  // ← 這一行要有！
-      desc: document.getElementById("vDesc")?.value.trim() || ""
+      partner_experience: document.getElementById("vDesc")?.value.trim() || "",
+      personality: selectedTags
     };
-    localStorage.setItem("lastVolunteer", JSON.stringify(data));
-    window.location.href = encodeURI("志工資料顯示.html");
+    
+    try {
+      // ⬇️ 呼叫 API
+      const res = await fetch("https://supabase-api-six.vercel.app/volunteers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      console.log("API 回應:", result);
+
+      if (!result.success) {
+        alert("❌ 志工資料新增失敗：" + (result.message || "未知錯誤"));
+        return;
+      }
+
+      localStorage.setItem("userId", userId);
+      window.location.href = encodeURI("志工資料顯示.html");
+    } catch (err) {
+      console.error("API 錯誤", err);
+      alert("❌ 無法連線到伺服器，請稍後再試");
+    }
   });
 
   // 長輩表單送出
-  document.getElementById("seniorForm").addEventListener("submit", function(e) {
+  document.getElementById("seniorForm").addEventListener("submit",async function(e) {
     e.preventDefault();
     const form = e.target;
     
@@ -460,75 +486,96 @@
     const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
     .map(tag => tag.textContent.trim());
 
-    const data = {
-      avatar: document.getElementById("avatarPreview").src,
-      name: form.elements["name"].value.trim(),
+    const payload = {
+      image_url: document.getElementById("avatarPreview").src,
+      elder_user_id: userId,
+      elder_name: form.elements["name"].value.trim(),
       phone: form.elements["phone"].value.trim(),
       birthday: form.elements["birthday"].value,
       gender: form.elements["gender"].value,
       address: form.elements["address"].value.trim(),
-      emergencyContact: form.elements["emergencyContact"].value.trim(),
-      healthNote: form.elements["healthNote"].value.trim(),
-      tags: selectedTags,  // ← 這一行要有！
+      emergency_contact: form.elements["emergencyContact"].value.trim(),
+      health_note: form.elements["healthNote"].value.trim(),
+      preference_tags: selectedTags,
     };
-    const seniors = JSON.parse(localStorage.getItem("seniors") || "[]");
-    seniors.push(data);
-    localStorage.setItem("seniors", JSON.stringify(seniors));
-    window.location.href = encodeURI("長輩資料顯示.html");
-  });
-  // 取得 Modal 與關閉按鈕
-const modal = document.getElementById('modal');
-const closeModal = document.getElementById('closeModal');
 
-// 顯示 Modal（例如當超過 6 個標籤時）
-function showModal() {
-  modal.style.display = 'flex';
-  setTimeout(() => modal.classList.add('show'), 10); // 觸發 CSS 過渡
-}
+    try {
+      // ⬇️ 呼叫 API
+      const res = await fetch("https://supabase-api-six.vercel.app/elders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-// 關閉 Modal
-function hideModal() {
-  modal.classList.remove('show'); // 移除淡入效果
-  setTimeout(() => modal.style.display = 'none', 300); // 等動畫完成再隱藏
-}
+      const result = await res.json();
+      console.log("API 回應:", result);
 
-// 點擊 ✖ 關閉
-closeModal.addEventListener('click', hideModal);
-
-// 點擊 Modal 外層關閉
-window.addEventListener('click', e => {
-  if (e.target === modal) hideModal();
-});
-
-// 按 Esc 鍵關閉
-window.addEventListener('keydown', e => {
-  if (e.key === "Escape" && modal.style.display === 'flex') {
-    hideModal();
-  }
-});
-
-// ===== 點擊切換「選中」狀態，限制最多 6 個 =====
-const maxSelect = 6;
-
-function setupTags(tagContainerId) {
-  const container = document.getElementById(tagContainerId);
-  container.addEventListener('click', e => {
-    if (e.target.classList.contains('tag')) {
-      const selectedCount = container.querySelectorAll('.tag.selected').length;
-      if (e.target.classList.contains('selected')) {
-        e.target.classList.remove('selected');
-      } else if (selectedCount < maxSelect) {
-        e.target.classList.add('selected');
-      } else {
-        // 顯示 Modal 提示
-        showModal();
+      if (!result.success) {
+        alert("❌ 長者資料新增失敗：" + (result.message || "未知錯誤"));
+        return;
       }
+
+      localStorage.setItem("userId", userId);
+      window.location.href = encodeURI("長輩資料顯示.html");
+    } catch (err) {
+      console.error("API 錯誤", err);
+      alert("❌ 無法連線到伺服器，請稍後再試");
     }
   });
-}
 
-setupTags('volunteerTags');
-setupTags('seniorTags');
+  // 取得 Modal 與關閉按鈕
+  const modal = document.getElementById('modal');
+  const closeModal = document.getElementById('closeModal');
+
+  // 顯示 Modal（例如當超過 6 個標籤時）
+  function showModal() {
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10); // 觸發 CSS 過渡
+  }
+
+  // 關閉 Modal
+  function hideModal() {
+    modal.classList.remove('show'); // 移除淡入效果
+    setTimeout(() => modal.style.display = 'none', 300); // 等動畫完成再隱藏
+  }
+
+  // 點擊 ✖ 關閉
+  closeModal.addEventListener('click', hideModal);
+
+  // 點擊 Modal 外層關閉
+  window.addEventListener('click', e => {
+    if (e.target === modal) hideModal();
+  });
+
+  // 按 Esc 鍵關閉
+  window.addEventListener('keydown', e => {
+    if (e.key === "Escape" && modal.style.display === 'flex') {
+      hideModal();
+    }
+  });
+
+  // ===== 點擊切換「選中」狀態，限制最多 6 個 =====
+  const maxSelect = 6;
+
+  function setupTags(tagContainerId) {
+    const container = document.getElementById(tagContainerId);
+    container.addEventListener('click', e => {
+      if (e.target.classList.contains('tag')) {
+        const selectedCount = container.querySelectorAll('.tag.selected').length;
+        if (e.target.classList.contains('selected')) {
+          e.target.classList.remove('selected');
+        } else if (selectedCount < maxSelect) {
+          e.target.classList.add('selected');
+        } else {
+          // 顯示 Modal 提示
+          showModal();
+        }
+      }
+    });
+  }
+
+  setupTags('volunteerTags');
+  setupTags('seniorTags');
 
 </script>
 </body>
