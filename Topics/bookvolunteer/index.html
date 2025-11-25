@@ -738,6 +738,43 @@
     // [新增] 初始化選擇器監聽
     initDateTimePickers();
 
+    // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
+    setDateTimeConstraints();
+
+    function setDateTimeConstraints() {
+        const dateEl = document.getElementById('date');
+        const timeEl = document.getElementById('time');
+        if (!dateEl) return;
+
+        const pad = (n) => String(n).padStart(2, '0');
+
+        function todayStr() {
+            const now = new Date();
+            return now.toISOString().slice(0,10);
+        }
+
+        // 設定 date 的最小值為今天
+        dateEl.min = todayStr();
+
+        function adjustTimeMin() {
+            if (!timeEl) return;
+            const now = new Date();
+            if (dateEl.value === todayStr()) {
+                // 若選今天，時間最小為現在（往後一分鐘），避免使用者選過去時間
+                const hh = pad(now.getHours());
+                const mm = pad(now.getMinutes() + 1);
+                timeEl.min = `${hh}:${mm}`;
+            } else {
+                timeEl.min = '';
+            }
+        }
+
+        // 初始微調（若已選今天）
+        adjustTimeMin();
+        // 當使用者變更日期時調整 time.min
+        dateEl.addEventListener('change', adjustTimeMin);
+    }
+
     /* =================================================================
        [新增] 日期與時間選擇器邏輯
        ================================================================= */
@@ -1173,6 +1210,15 @@
                 return;
             }
 
+            // 檢查是否為未來時間（若不是則阻止預約）
+            const appt = new Date(`${dtDate}T${dtTime}`);
+            if (isNaN(appt.getTime()) || appt.getTime() <= Date.now()) {
+                showAlert('請選擇未來的日期與時間，現在時間或過去的時間無法預約');
+                // 將焦點移到時間欄位以便修正
+                document.getElementById('time').focus();
+                return;
+            }
+            
             if (bookedList.some(b => b.volunteer === volName && b.datetime === datetime)) {
                 showAlert(`⚠️ ${volName} 已於 ${datetime} 預約過！`);
                 return;
