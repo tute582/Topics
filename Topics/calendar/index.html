@@ -179,22 +179,31 @@
 
     /* =========================================
        6. 表格樣式 (Tables)
-       ========================================= */
+   ========================================= */
     .allTable-div, .table-container {
       width: 100%; 
       margin: 10px 0 17px 0; 
-      overflow-x: auto; 
+      overflow-x: auto; /* 保持水平捲動 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       border: none; border-radius: 20px; 
-      background: white; display: none;
+      background: white; 
+      display: none; 
       padding: 0; box-sizing: border-box;
     }
 
-    table { width: 100%; border-collapse: collapse; font-size: 14px; background: transparent; }
+    table { 
+      width: 100%; /* 表格預設填滿父容器 */
+      border-collapse: collapse; 
+      font-size: 14px; 
+      background: transparent; 
+    }
     
-    /* 確保表格有最小寬度以觸發捲動 */
-    .allTable-div table { width: max-content; min-width: 800px; }
+    /* 確保表格有最小寬度以觸發捲動 (已移除 width: max-content;) */
+    .allTable-div table { 
+      min-width: 800px; 
+      /* 注意：此處已不再覆蓋 table { width: 100%; } */
+    }
 
     th, td {
       padding: 10px; text-align: center; 
@@ -211,8 +220,14 @@
     /* 表格圓角處理 */
     .allTable-div thead tr th:first-child { border-top-left-radius: 14px; }
     .allTable-div thead tr th:last-child { border-top-right-radius: 14px; }
-    .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius: 14px; }
-    .allTable-div tbody tr:last-child td:last-child { border-bottom-right-radius: 14px; }
+    .allTable-div tbody tr:last-child td:first-child { 
+        border-bottom-left-radius: 14px; 
+        /* 由於 sticky header 的影響，建議移除此處的圓角以保持一致性。若堅持保留，請確保所有單元格都有邊框。 */
+    }
+    .allTable-div tbody tr:last-child td:last-child { 
+        border-bottom-right-radius: 14px; 
+        /* 同上，建議移除或測試確認效果 */
+    }
 
     .no-record { text-align: center; color: #888; font-size: 18px; margin: 20px 0; }
 
