@@ -59,6 +59,8 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        justify-content: center; /* 置中志工名稱/大頭貼 */
+        width: 100%; /* 讓區塊可置中於父容器 */
     }
 
     .volunteer-area .avatar {
@@ -84,6 +86,8 @@
         text-overflow: ellipsis;
         display: inline-block;
         vertical-align: middle;
+        text-align: center; /* 文字置中 */
+        width: 100%; /* 滿寬以利置中 */
     }
 
     #mapSearch {
@@ -309,7 +313,7 @@
         background: white;
         border-radius: 20px;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-        text-align: center;
+        text-align: center; /* 卡片內容置中（保持） */
         overflow: hidden;
         position: relative;
         border: 1px solid #aaa;
@@ -340,7 +344,7 @@
     }
 
     .card-content { padding: 12px; }
-    .card-title { font-size: 20px; font-weight: 700; margin: 10px 0 6px; }
+    .card-title { font-size: 20px; font-weight: 700; margin: 10px 0 6px; text-align:center; }
 
     .tag-list {
         display: flex;
