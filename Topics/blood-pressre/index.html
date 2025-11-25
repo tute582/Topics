@@ -50,7 +50,7 @@
     }
 
     /* =========================================
-       3. 表單與輸入區 (Form & Inputs) - [已修改為垂直排列]
+       3. 表單與輸入區 (Form & Inputs)
        ========================================= */
     .div-b {
       width: 100%; margin:15px 0 0 0;
@@ -66,49 +66,47 @@
 
     .title { margin: 5px 0 15px 0; font-size: 26px; }
 
-    /* --- [修改重點] 表單列設定為垂直排列 --- */
+    /* 表單列垂直排列設定 */
     .form-row {
       display: flex; 
-      flex-direction: column; /* 垂直排列 */
-      align-items: stretch;   /* 拉伸填滿寬度 */
-      margin-bottom: 20px;    /* 增加底部間距 */
+      flex-direction: column; 
+      align-items: stretch;   
+      margin-bottom: 20px;    
     }
     
     .form-row label {
-      width: 100%;            /* 標題佔滿一行 */
+      width: 100%;            
       text-align: left; 
       font-weight: bold;
-      margin-bottom: 8px;     /* 標題與輸入框的距離 */
+      margin-bottom: 8px;     
       font-size: 16px;
     }
     
     /* 輸入框通用樣式 */
     .form-row input, .picker-display {
-      width: 100%;            /* 輸入框佔滿寬度 */
+      width: 100%;            
       padding: 10px;
       border-radius: 6px; border: 1px solid #ccc;
-      background: #fff; min-height: 42px; /*稍微加高一點比較好點選*/
+      background: #fff; min-height: 42px;
       font-size: 16px;
     }
 
-    /* --- Picker Hack: 自定義日期/時間顯示 --- */
+    /* Picker Hack: 自定義日期/時間顯示 */
     .picker-wrapper {
       position: relative; 
       display: flex;
-      width: 100%; /* 確保 wrapper 填滿容器 */
+      width: 100%; 
     }
-    /* 顯示層 */
     .picker-display {
       display: flex; align-items: center; margin: 0; width: 100%;
       overflow: hidden; color: #888; 
     }
-    /* 互動層 */
     .real-picker-input {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       opacity: 0; z-index: 10; cursor: pointer; -webkit-appearance: none;
     }
 
-    /* 日期圖示 */
+    /* 上方輸入區：日期圖示 (靠右) */
     #dateDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
@@ -117,7 +115,7 @@
         padding-right: 40px;
     }
 
-    /* 時間圖示 */
+    /* 上方輸入區：時間圖示 (靠右) */
     #timeDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
@@ -126,7 +124,6 @@
         padding-right: 40px;
     }
 
-    /* 覆蓋原本對 date-row/time-row 的特殊設定，使其也統一垂直排列 */
     .form-row.date-row, .form-row.time-row { 
         flex-wrap: wrap; 
         flex-direction: column; 
@@ -150,7 +147,7 @@
     .error { color: red; } .loading { color: gray; }
 
     /* =========================================
-       4. 日期範圍選擇器
+       4. 日期範圍選擇器 (修正重點)
        ========================================= */
     .range-picker-wrap {
       display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%;
@@ -158,10 +155,22 @@
     .range-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
     .date-range-wrapper { position: relative; display: inline-block; width: 100%; }
+    
+    /* 左側圖示 */
     .date-range-wrapper::before {
-      content: "📅"; position: absolute; left: 8px; top: 8px; font-size: 18px; pointer-events: none;
+      content: "📅"; position: absolute; left: 10px; top: 10px; font-size: 18px; pointer-events: none;
     }
-    .date-range-input { padding-left: 32px; width: 100%; padding: 8px 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    
+    /* [修正] 日期範圍輸入框樣式 */
+    .date-range-input { 
+      width: 100%; 
+      padding: 8px 12px;    /* 上下 8px, 右 12px */
+      padding-left: 40px;   /* 強制左邊留 40px 給圖示 */
+      font-size: 16px; 
+      border: 1px solid #ccc; 
+      border-radius: 4px; 
+      min-height: 40px;
+    }
 
     .range-quick-btn {
       background: #f6f8fa; border: 1px solid #dfe4e8; padding: 6px 10px;
@@ -206,12 +215,11 @@
        6. 響應式設計 (RWD Breakpoints)
        ========================================= */
     @media (max-width: 768px) {
-      form { width: 95%; padding: 20px; } /* 手機版邊距稍微縮小 */
+      form { width: 95%; padding: 20px; }
       canvas { height: 220px !important; max-height: 320px; }
     }
 
     @media (max-width: 420px) {
-      /* 手機版原本已經是垂直的，這裡只需微調 */
       .chart-container { padding: 8px 14px; }
       canvas { height: 240px !important; padding: 16px !important; }
       .flatpickr-calendar { width: calc(100% - 32px) !important; left: 16px !important; right: 16px !important; }
@@ -501,7 +509,6 @@
       viewEndDateStr = endStr;
 
       if (viewRangeEl && typeof flatpickr === 'function') {
-        let defaultDateArray = null;
         
         if (records && records.length) {
             const times = records.filter(r => r.recorded_time).map(r => new Date(r.recorded_time));
