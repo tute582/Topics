@@ -183,8 +183,8 @@
     .allTable-div, .table-container {
       width: 100%; 
       margin: 10px 0 17px 0; 
-      overflow-x: auto; 
-      overflow-y: auto;
+      /* 容器保留圓角與邊框，實際捲動交給內部 .table-scroll */
+      overflow: hidden;
       -webkit-overflow-scrolling: touch;
       
       /* --- 關鍵修改 START --- */
@@ -199,6 +199,15 @@
       box-sizing: border-box;
     }
 
+    /* 內層捲動區塊：負責水平/垂直捲動，不會影響外層圓角 */
+    .allTable-div .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      max-height: 420px; /* 可視區高度，超過就垂直捲動；視需求調整 */
+    }
+    
     table { 
       width: 100%; /* 表格預設填滿父容器 */
       border-collapse: collapse; 
@@ -209,7 +218,6 @@
     /* 確保表格有最小寬度以觸發捲動 (已移除 width: max-content;) */
     .allTable-div table { 
       min-width: 800px; 
-      /* 注意：此處已不再覆蓋 table { width: 100%; } */
     }
 
     th, td {
@@ -362,20 +370,23 @@
     <div id="no-record-msg" class="no-record" >目前尚未有紀錄</div>
 
     <div class="allTable-div">
-      <table id="allTable">
-        <thead>
-          <tr>
-          <th>日期</th>
-          <th>時間</th>
-          <th>行程內容</th>
-          <th>備註</th>
-          <th>重複</th>
-          <th>提醒類型</th>
-          <th>操作</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <!-- table-scroll 保留圓角外框但讓表格可自由捲動 -->
+      <div class="table-scroll">
+        <table id="allTable">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>時間</th>
+              <th>行程內容</th>
+              <th>備註</th>
+              <th>重複</th>
+              <th>提醒類型</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
