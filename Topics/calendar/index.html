@@ -183,13 +183,20 @@
     .allTable-div, .table-container {
       width: 100%; 
       margin: 10px 0 17px 0; 
-      overflow-x: auto; /* 保持水平捲動 */
+      overflow-x: auto; 
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      border: none; border-radius: 20px; 
+      
+      /* --- 關鍵修改 START --- */
+      border: 1px solid #e6e6e6; /* 將邊框設定移到容器上 */
+      border-radius: 14px;      /* 將圓角設定移到容器上 */
+      overflow: hidden;         /* 確保內容被裁切以顯示圓角 */
+      /* --- 關鍵修改 END --- */
+
       background: white; 
       display: none; 
-      padding: 0; box-sizing: border-box;
+      padding: 0; 
+      box-sizing: border-box;
     }
 
     table { 
