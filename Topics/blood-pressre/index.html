@@ -382,6 +382,21 @@
 
     // 初始化自定義日期/時間選擇器
     initDateTimePickers();
+    // 設定日期上限為今天（不可選未來）
+    setDateMax();
+
+    function setDateMax() {
+      const dateEl = document.getElementById('date');
+      if (!dateEl) return;
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      dateEl.max = todayStr;
+      // 若已存在值且大於 today，修正為 today
+      if (dateEl.value && dateEl.value > todayStr) dateEl.value = todayStr;
+    }
 
     /* =================================================================
        2. LIFF 初始化
@@ -620,6 +635,13 @@
     form.onsubmit = async (e) => {
       e.preventDefault();
       const dateVal = document.getElementById("date").value;
+      // 防呆：若為未來日期則阻止送出
+      const dateEl = document.getElementById('date');
+      if (dateVal && dateEl && dateEl.max && dateVal > dateEl.max) {
+        alert('日期不可為未來，請選擇今天或以前的日期。');
+        dateEl.focus();
+        return;
+      }
       const timeVal = document.getElementById("time") ? document.getElementById("time").value : '';
       const systolic = parseInt(document.getElementById("systolic").value);
       const diastolic = parseInt(document.getElementById("diastolic").value);
