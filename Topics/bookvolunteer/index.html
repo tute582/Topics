@@ -1345,8 +1345,7 @@
                 <th>志工姓名</th>
                 <th>日期時間</th>
                 <th>科別</th>
-                <th>見面地點</th>
-                <th>地址</th>
+                <th>見面地址</th>
                 <th>操作</th>
             </tr>`;
         table.appendChild(thead);
@@ -1378,7 +1377,6 @@
                 <td>${b.volunteer}</td>
                 <td>${b.datetime}</td>
                 <td>${b.department}</td>
-                <td>${b.meetingPlace}</td>
                 <td>${b.address || ''}</td>
                 ${actionCell}
             `;
