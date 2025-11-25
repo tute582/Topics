@@ -111,17 +111,29 @@
     /* =========================================
        3. 主要表單區 (Main Form)
        ========================================= */
+    /* 滿版（全寬）表單樣式 */
     form {
-        width: 90%;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 18px 20px;
         background: white;
-        border-radius: 12px;
-        border: 1px solid #aaa;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid #e6e6e6;
         position: relative;
+        box-sizing: border-box;
     }
 
+    /* 內容內部維持 max-width 以便在大螢幕閱讀性仍佳（若要整行延展可移除） */
+    .form-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+ 
     .title {
         align-self: flex-start;
         margin: 8px 0 8px 25px; 
@@ -283,14 +295,16 @@
     /* =========================================
        4. 卡片與輪播 (Cards & Slider)
        ========================================= */
+    /* 輪播改為滿版，內容保持置中 */
     .slider-container {
         position: relative;
         width: 100%;
-        max-width: 900px;
-        margin: 0 auto;
+        max-width: 100%;
+        margin: 0;
         overflow: hidden;
-        display: none; 
-        padding: 16px 80px; 
+        display: none;
+        padding: 16px 20px;
+        box-sizing: border-box;
     }
 
     .card-container {
@@ -309,14 +323,15 @@
 
     .card-inner {
         width: 100%;
-        max-width: 480px;
+        max-width: 720px; /* 卡片最大寬度，超出會置中 */
         background: white;
-        border-radius: 20px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-        text-align: center; /* 卡片內容置中（保持） */
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        text-align: center;
         overflow: hidden;
         position: relative;
-        border: 1px solid #aaa;
+        border: 1px solid #e6e6e6;
+        margin: 0 auto;
     }
 
     .card-cover {
@@ -432,12 +447,14 @@
         animation: fadeIn 0.3s ease-in-out;
     }
 
+    /* 彈窗寬度改為相對於畫面（大螢幕維持適中） */
     .modal-box {
-        width: 100%;
-        max-width: 920px;
+        width: 96%;
+        max-width: 1100px;
         padding: 18px;
+        box-sizing: border-box;
     }
-
+ 
     .modal-inner {
         background: #ffffff;
         border-radius: 14px;
@@ -503,23 +520,24 @@
     /* =========================================
        6. 通用表格容器
        ========================================= */
-    .allTable-div {
-        width: 100%;
-        margin: 5px 0;
-        -webkit-overflow-scrolling: touch;
-        border: 1px solid #aaa;
-        border-radius: 20px;
-        background-color: white;
-        display: block;
-        overflow-x: auto;
-        padding: 0;
-    }
+     .allTable-div {
+         width: 100%;
+         margin: 5px 0;
+         -webkit-overflow-scrolling: touch;
+         border: 1px solid #aaa;
+         border-radius: 20px;
+         background-color: white;
+         display: block;
+         overflow-x: auto;
+         padding: 0;
+     }
 
+    /* 表格撐滿容器，小螢幕水平滾動 */
     .allTable-div table {
         width: 100%;
         border-collapse: collapse;
         border-spacing: 0;
-        min-width: 800px; 
+        min-width: 0;
         margin: 0;
         border: none;
     }
