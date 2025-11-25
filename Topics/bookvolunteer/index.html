@@ -913,7 +913,6 @@
             if (!liff.isLoggedIn()) {
                 nameEl.innerText = "未登入";
                 avatarEl.style.display = "none";
-                userId = "test_line_id_002o"; 
                 return;
             }
 
@@ -929,6 +928,21 @@
             } else {
                 avatarEl.style.display = "none";
             }
+
+            // 檢查後端是否有這個userId註冊
+            fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+            .then(res => res.json())
+            .then(result => {
+                if (!result.success) {
+                // API 判定不存在 / 驗證失敗 → 導回登入頁面
+                window.location.href = "../../Login-or-register/index.html";
+                }
+            })
+            .catch(err => {
+                console.error("身分檢查 API 錯誤：", err);
+                // API 出錯也視為無效身分
+                window.location.href = "../../Login-or-register/index.html";
+            });
         } catch (err) {
             console.error("LIFF init error:", err);
             userId = "test_line_id_002o"; 
