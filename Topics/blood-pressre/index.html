@@ -142,7 +142,23 @@
     button:disabled { background-color: #ccc; }
     
     /* AI 建議區塊 */
-    #advice-output { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    /* AI 建議：標題與按鈕同列，說明與建議內容另起一行 */
+    #advice-output {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+    /* 在 AI 區塊內的標題減少 margin，避免推到下一行 */
+    #advice-output .title { margin: 6px 0; font-size: 20px; }
+    /* 讓按鈕與標題同行（會跟在標題後面）；若要靠右可改為 margin-left: auto */
+    #advice-output #advice-button { margin-left: 8px; }
+    /* 說明文字與建議內容佔滿一整列 */
+    #advice-output p[style], #advice-text { width: 100%; }
     #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; line-height: 1.5; }
     .error { color: red; } .loading { color: gray; }
 
@@ -315,14 +331,14 @@
     <canvas id="bpChart" width="380" height="250"></canvas>
   </div>
 
-  <div id="advice-output" style=" display:flex; width:100%; margin:8px 0; padding:0 16px 12px;flex-wrap:wrap;">
-    <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議</h2>
-    <button id="advice-button" type="button">產生AI建議</button>
-    <p style="font-size: 12px; color: #f43838; width: 100%; margin-top:5px;">
-        <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
-      </p>
-    <p id="advice-text" style="width:100%;"></p>
-  </div>
+  <div id="advice-output">
+     <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議</h2>
+     <button id="advice-button" type="button">產生 AI 建議</button>
+     <p style="font-size: 12px; color: #f43838; width: 100%; margin-top:5px;">
+         <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
+       </p>
+     <p id="advice-text" style="width:100%;"></p>
+   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
