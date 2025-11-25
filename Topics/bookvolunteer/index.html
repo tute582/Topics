@@ -1299,29 +1299,49 @@
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
+
+        // helper: 判斷是否為過去的預約（true = 已過期）
+        function isPastDatetime(dtString) {
+            if (!dtString) return false;
+            // 嘗試建立日期物件，若原格式為 "YYYY-MM-DD HH:mm..."，嘗試轉成 ISO
+            let d = new Date(dtString);
+            if (isNaN(d)) {
+                // 將空格改為 T 再試一次
+                const iso = dtString.replace(' ', 'T');
+                d = new Date(iso);
+            }
+            if (isNaN(d)) return false;
+            return d.getTime() < Date.now();
+        }
+
         bookedList.forEach((b) => {
             const tr = document.createElement('tr');
+            const expired = isPastDatetime(b.datetime);
+            const actionCell = expired
+                ? `<td style="color:#999;">已過期</td>`
+                : `<td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>`;
+
             tr.innerHTML = `
                 <td>${b.volunteer}</td>
                 <td>${b.datetime}</td>
                 <td>${b.department}</td>
                 <td>${b.meetingPlace}</td>
                 <td>${b.address || ''}</td>
-                <td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
+                ${actionCell}
             `;
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        tableWrap.appendChild(table);
+             tbody.appendChild(tr);
+         });
+         table.appendChild(tbody);
+         tableWrap.appendChild(table);
 
-        inner.appendChild(title);
-        inner.appendChild(tableWrap);
-        box.appendChild(inner);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
+         inner.appendChild(title);
+         inner.appendChild(tableWrap);
+         box.appendChild(inner);
+         overlay.appendChild(box);
+         document.body.appendChild(overlay);
 
-        bindCancelButtons(overlay);
-    }
+         bindCancelButtons(overlay);
+     }
 
     function bindCancelButtons(overlay) {
         overlay.querySelectorAll('.cancel-btn').forEach(btn => {
