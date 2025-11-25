@@ -331,6 +331,10 @@
     const noRecordMsg = document.getElementById('no-record-msg');
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
+    // AI 建議 DOM（新增：用於顯示/隱藏與啟用/停用按鈕）
+    const adviceOutput = document.getElementById('advice-output');
+    const adviceButton = document.getElementById('advice-button');
+    const adviceText = document.getElementById('advice-text');
 
     // 狀態變數
     let userId = "";
@@ -347,6 +351,9 @@
     if (chartContainer) chartContainer.style.display = 'none';
     if (tableContainer) tableContainer.style.display = 'none';
     if (noRecordMsg) noRecordMsg.style.display = 'none';
+    // AI 建議初始隱藏並停用按鈕（若 DOM 存在）
+    if (adviceOutput) adviceOutput.style.display = 'none';
+    if (adviceButton) adviceButton.disabled = true;
 
     // 初始化自定義日期/時間選擇器
     initDateTimePickers();
@@ -764,13 +771,19 @@
       // 控制 UI 顯示
       if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
-
+      // AI 建議區塊與按鈕：無資料時隱藏並停用，有資料時顯示並啟用
+     if (adviceOutput) adviceOutput.style.display = hasViewRecords ? '' : 'none';
+     if (adviceButton) adviceButton.disabled = !hasViewRecords;
+ 
       table.innerHTML = "";
       if (!hasViewRecords) {
         if (chart) { chart.destroy(); chart = null; }
         if (chartContainer) chartContainer.style.display = 'none';
         if (tableContainer) tableContainer.style.display = 'none';
         if (noRecordMsg) noRecordMsg.style.display = 'block';
+        // 確保 AI 建議隱藏（額外保險）
+        if (adviceOutput) adviceOutput.style.display = 'none';
+        if (adviceButton) adviceButton.disabled = true;
         return;
       }
       
@@ -892,9 +905,6 @@
     /* =================================================================
        8. AI 建議功能
        ================================================================= */
-    const adviceButton = document.getElementById('advice-button');
-    const adviceText = document.getElementById('advice-text');
-
     adviceButton.addEventListener('click', getAIAdvice);
 
     async function getAIAdvice() {
