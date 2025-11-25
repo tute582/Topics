@@ -665,27 +665,10 @@
 
     </select>
 
-    <label>志工性別</label>
-    <select id="gender" class="form-select">
-      <option value="" disabled selected>請選擇性別</option>
-      <option value="皆可">皆可</option>
-      <option value="男性">男性</option>
-      <option value="女性">女性</option>
-    </select>
-
-    <label>見面地點</label>
-    <div class="meeting-box">
-      <div class="radio-group" aria-label="見面地點">
-        <label><input type="radio" name="meetingPlace" value="家門口" checked><span>家門口</span></label>
-        <label><input type="radio" name="meetingPlace" value="醫院入口"><span>醫院/診所入口</span></label>
-        <label><input type="radio" name="meetingPlace" value="其他"><span>其他</span></label>
-      </div>
-    </div>
-
   <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
-    <label style="font-weight:600;margin:0;">完整地址</label>
+    <label style="font-weight:600;margin:0;">見面地址</label>
     <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;">目前位置</button>
-  </div>
+    <label style="border-radius:10px;color:#616161;font-size:16px;">💡可以透過搜尋醫院地址或地點</label></div>
   <div id="mapWrap" style="display:none; position:relative; width:100%; height:250px; margin-top:12px; border-radius:8px; overflow:hidden;">
     <input id="mapSearch" type="text"
       placeholder="搜尋地點或地址"
@@ -695,7 +678,7 @@
    </div>
 
   <div style="margin-top:10px;">
-    <input id="addressFull" type="text" placeholder="請輸入完整地址（或按「目前位置」自動填入）"
+    <input id="addressFull" type="text" placeholder="請輸入見面地址（或按「目前位置」自動填入）"
            style="width:100%;padding:10px;border-radius:10px;border:1px solid #888;background:#fff;color:#222;font-size:16px;box-sizing:border-box;">
   </div>
 
@@ -975,8 +958,7 @@
             { id: 'date', name: '日期' },
             { id: 'time', name: '時間' },
             { id: 'department', name: '科別' },
-            { id: 'gender', name: '性別' },
-            { id: 'addressFull', name: '完整地址' }
+            { id: 'addressFull', name: '見面地址' }
         ];
 
         fieldDefs.forEach(f => { 
@@ -1010,7 +992,6 @@
         const date = document.getElementById("date").value.trim();
         const time = document.getElementById("time").value.trim();
         const department = document.getElementById("department").value.trim();
-        const gender = document.getElementById("gender").value.trim();
         const city = document.getElementById("addressFull").value.trim() || '';
 
         container.innerHTML = "";
@@ -1318,29 +1299,49 @@
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
+
+        // helper: 判斷是否為過去的預約（true = 已過期）
+        function isPastDatetime(dtString) {
+            if (!dtString) return false;
+            // 嘗試建立日期物件，若原格式為 "YYYY-MM-DD HH:mm..."，嘗試轉成 ISO
+            let d = new Date(dtString);
+            if (isNaN(d)) {
+                // 將空格改為 T 再試一次
+                const iso = dtString.replace(' ', 'T');
+                d = new Date(iso);
+            }
+            if (isNaN(d)) return false;
+            return d.getTime() < Date.now();
+        }
+
         bookedList.forEach((b) => {
             const tr = document.createElement('tr');
+            const expired = isPastDatetime(b.datetime);
+            const actionCell = expired
+                ? `<td style="color:#999;">已過期</td>`
+                : `<td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>`;
+
             tr.innerHTML = `
                 <td>${b.volunteer}</td>
                 <td>${b.datetime}</td>
                 <td>${b.department}</td>
                 <td>${b.meetingPlace}</td>
                 <td>${b.address || ''}</td>
-                <td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>
+                ${actionCell}
             `;
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        tableWrap.appendChild(table);
+             tbody.appendChild(tr);
+         });
+         table.appendChild(tbody);
+         tableWrap.appendChild(table);
 
-        inner.appendChild(title);
-        inner.appendChild(tableWrap);
-        box.appendChild(inner);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
+         inner.appendChild(title);
+         inner.appendChild(tableWrap);
+         box.appendChild(inner);
+         overlay.appendChild(box);
+         document.body.appendChild(overlay);
 
-        bindCancelButtons(overlay);
-    }
+         bindCancelButtons(overlay);
+     }
 
     function bindCancelButtons(overlay) {
         overlay.querySelectorAll('.cancel-btn').forEach(btn => {
