@@ -987,10 +987,14 @@
       if (pastRecords.length === 0) {
         historyContent.innerHTML = '<p style="text-align:center;">目前沒有過往紀錄</p>';
       } else {
+        // 建立外層容器（與主表格一致，內層 .table-scroll 負責滾動）
         const tableWrapper = document.createElement('div');
-        tableWrapper.style.display = "block";
         tableWrapper.className = 'allTable-div';
+        tableWrapper.style.display = 'block';
         tableWrapper.style.margin = '10px auto';
+
+        const scrollWrap = document.createElement('div');
+        scrollWrap.className = 'table-scroll';
 
         const table = document.createElement('table');
         table.id = 'historyTable';
@@ -1019,7 +1023,8 @@
         });
 
         table.appendChild(tbody);
-        tableWrapper.appendChild(table);
+        scrollWrap.appendChild(table);
+        tableWrapper.appendChild(scrollWrap);
         historyContent.appendChild(tableWrapper);
       }
 
