@@ -119,6 +119,28 @@
       color: #888;
     }
 
+    /* =========================================
+      [新增] 日期與時間的圖示設定
+      說明：因為 input 變透明了，我們要把圖示畫在底下的 display div 上
+      ========================================= */
+
+    /* 日期圖示 (日曆 SVG) */
+    #dateDisplay {
+        background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center; /* 靠右對齊 */
+        background-size: 20px 20px; /* 圖示大小 */
+        padding-right: 40px; /* 右邊留出空間給 icon，避免文字蓋到 */
+    }
+
+    /* 時間圖示 (時鐘 SVG) */
+    #timeDisplay {
+        background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px 20px;
+        padding-right: 40px;
+    }
     /* 互動層：透明的原生輸入框，層級最高 */
     .real-picker-input {
       position: absolute;
