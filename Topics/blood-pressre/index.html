@@ -23,7 +23,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* 保持唯讀欄位為白底 (覆蓋瀏覽器預設灰底) */
+    /* 保持唯讀欄位為白底 */
     input[readonly], textarea[readonly] {
       background-color: white; cursor: default;
     }
@@ -39,7 +39,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     }
     
-    /* 志工頭像與名稱區域 */
     .volunteer-area { display: flex; align-items: center; gap: 8px; }
     .volunteer-area .avatar {
       width: 36px; height: 36px; border-radius: 50%; 
@@ -54,65 +53,69 @@
        3. 表單與輸入區 (Form & Inputs)
        ========================================= */
     .div-b {
-      width: 100%; /*max-width: 900px;*/ margin:15px 0 0 0;
+      width: 100%; margin:15px 0 0 0;
       box-sizing: border-box; padding: 0 25px;
     }
 
     form {
-      width: 100%; /*max-width: 820px;*/
+      width: 100%;
       background: #fff; padding: 30px;
       border-radius: 12px; border: 1px solid #aaa;
       margin: 12px auto 20px;
     }
 
-    .title { margin: 5px 0; font-size: 26px; }
+    .title { margin: 5px 0 15px 0; font-size: 26px; }
 
-    /* 表單列設定 */
+    /* 表單列垂直排列設定 */
     .form-row {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 12px; flex-wrap: wrap;
+      display: flex; 
+      flex-direction: column; 
+      align-items: stretch;   
+      margin-bottom: 20px;    
     }
+    
     .form-row label {
-      width: 140px; min-width: 100px; text-align: left; font-weight: 600;
+      width: 100%;            
+      text-align: left; 
+      font-weight: bold;
+      margin-bottom: 8px;     
+      font-size: 16px;
     }
     
     /* 輸入框通用樣式 */
     .form-row input, .picker-display {
-      flex: 1 1 auto; min-width: 0; padding: 8px;
+      width: 100%;            
+      padding: 10px;
       border-radius: 6px; border: 1px solid #ccc;
-      background: #fff; min-height: 38px;
+      background: #fff; min-height: 42px;
+      font-size: 16px;
     }
 
-    /* --- [關鍵樣式] Picker Hack: 自定義日期/時間顯示 --- */
+    /* Picker Hack: 自定義日期/時間顯示 */
     .picker-wrapper {
-      position: relative; flex: 1 1 auto; display: flex;
+      position: relative; 
+      display: flex;
+      width: 100%; 
     }
-    /* 顯示層 (假的 input，負責顯示格式化文字) */
     .picker-display {
       display: flex; align-items: center; margin: 0; width: 100%;
-      overflow: hidden; color: #888; /* 預設淺灰 */
+      overflow: hidden; color: #888; 
     }
-    /* 互動層 (真的 input，透明並覆蓋在上方) */
     .real-picker-input {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       opacity: 0; z-index: 10; cursor: pointer; -webkit-appearance: none;
     }
 
-    /* =========================================
-   [新增] 日期與時間的圖示設定
-   說明：因為 input 變透明了，我們要把圖示畫在底下的 display div 上
-   ========================================= */
-
-    /* 日期圖示 (日曆 SVG) */
+    /* 上方輸入區：日期圖示 (靠右) */
     #dateDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 12px center; /* 靠右對齊 */
-        background-size: 20px 20px; /* 圖示大小 */
-        padding-right: 40px; /* 右邊留出空間給 icon，避免文字蓋到 */
+        background-position: right 12px center;
+        background-size: 20px 20px;
+        padding-right: 40px;
     }
 
-    /* 時間圖示 (時鐘 SVG) */
+    /* 上方輸入區：時間圖示 (靠右) */
     #timeDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
@@ -121,25 +124,30 @@
         padding-right: 40px;
     }
 
-    /* 日期與時間列的特殊排列 (強制不換行) */
-    .form-row.date-row, .form-row.time-row { flex-wrap: nowrap; align-items: center; }
-    .form-row.date-row label, .form-row.time-row label { width: auto; min-width: 80px; margin-right: 8px; }
+    .form-row.date-row, .form-row.time-row { 
+        flex-wrap: wrap; 
+        flex-direction: column; 
+    }
+    .form-row.date-row label, .form-row.time-row label { 
+        width: 100%; 
+        margin-right: 0; 
+    }
 
     /* 按鈕樣式 */
     button {
       background-color: #4a90e2; color: white; margin: 0 10px 0 0;
-      padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer;
+      padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;
     }
     button:hover { background-color: #3a78c6; }
     button:disabled { background-color: #ccc; }
     
     /* AI 建議區塊 */
     #advice-output { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
+    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; line-height: 1.5; }
     .error { color: red; } .loading { color: gray; }
 
     /* =========================================
-       4. 日期範圍選擇器 (Range Picker)
+       4. 日期範圍選擇器 (修正重點)
        ========================================= */
     .range-picker-wrap {
       display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%;
@@ -147,22 +155,34 @@
     .range-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
     .date-range-wrapper { position: relative; display: inline-block; width: 100%; }
+    
+    /* 左側圖示 */
     .date-range-wrapper::before {
-      content: "📅"; position: absolute; left: 8px; top: 8px; font-size: 18px; pointer-events: none;
+      content: "📅"; position: absolute; left: 10px; top: 10px; font-size: 18px; pointer-events: none;
     }
-    .date-range-input { padding-left: 32px; width: 100%; padding: 8px 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    
+    /* [修正] 日期範圍輸入框樣式 */
+    .date-range-input { 
+      width: 100%; 
+      padding: 8px 12px;    /* 上下 8px, 右 12px */
+      padding-left: 40px;   /* 強制左邊留 40px 給圖示 */
+      font-size: 16px; 
+      border: 1px solid #ccc; 
+      border-radius: 4px; 
+      min-height: 40px;
+    }
 
     .range-quick-btn {
       background: #f6f8fa; border: 1px solid #dfe4e8; padding: 6px 10px;
-      border-radius: 6px; cursor: pointer; color: #222;
+      border-radius: 6px; cursor: pointer; color: #222; font-size: 14px;
     }
     .range-quick-btn.active { background: #4a90e2; color: #fff; border-color: #3a78c6; }
 
     /* =========================================
-       5. 資料表格與圖表 (Table & Chart)
+       5. 資料表格與圖表
        ========================================= */
     .allTable-div {
-      width: 100%;/* max-width: 820px;*/ margin: 5px 0;
+      width: 100%; margin: 5px 0;
       -webkit-overflow-scrolling: touch;
       border: 1px solid #aaa; border-radius: 16px;
       background-color: white; display: block; overflow-x: auto; padding: 0;
@@ -177,12 +197,11 @@
     .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
 
     .delete-btn {
-      background-color: #e74c3c; padding: 4px 8px; border-radius: 6px; border: none; color: white; cursor: pointer;
+      background-color: #e74c3c; padding: 4px 8px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 12px;
     }
 
-    /* 圖表 RWD 設定 */
     .chart-container {
-      width: 100%; /*max-width: 820px;*/ margin: 8px 0 30px 0; padding: 0 12px;
+      width: 100%; margin: 8px 0 30px 0; padding: 0 12px;
     }
     canvas {
       margin-top: 12px; background: #f3f0f0; padding: 10px;
@@ -196,21 +215,13 @@
        6. 響應式設計 (RWD Breakpoints)
        ========================================= */
     @media (max-width: 768px) {
-      form { width: 95%; padding: 16px; }
-      .form-row label { width: 110px; font-size: 20px; }
+      form { width: 95%; padding: 20px; }
       canvas { height: 220px !important; max-height: 320px; }
     }
 
     @media (max-width: 420px) {
-      .form-row { flex-direction: column; align-items: stretch; }
-      /* 日期時間在手機版強制橫向 */
-      .form-row.date-row, .form-row.time-row { flex-direction: row !important; }
-      .form-row.date-row label, .form-row.time-row label { width: auto !important; }
-      
       .chart-container { padding: 8px 14px; }
       canvas { height: 240px !important; padding: 16px !important; }
-      
-      /* Flatpickr 手機版樣式修正 */
       .flatpickr-calendar { width: calc(100% - 32px) !important; left: 16px !important; right: 16px !important; }
     }
   </style>
@@ -258,7 +269,7 @@
         <input type="number" id="diastolic" placeholder="例如 80" required>
       </div>
       
-      <div style="display:flex;justify-content:flex-start;">
+      <div style="display:flex;justify-content:flex-start; margin-top: 10px;">
         <button id="submit" type="submit" class="primary-btn">新增紀錄</button>
       </div>
     </form>
@@ -308,10 +319,10 @@
   <div id="advice-output" style=" display:flex; width:100%; margin:8px 0; padding:0 16px 12px;flex-wrap:wrap;">
     <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議：</h2>
     <button id="advice-button" type="button">產生AI建議</button>
-    <p style="font-size: 12px; color: #f43838;">
+    <p style="font-size: 12px; color: #f43838; width: 100%; margin-top:5px;">
         <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
       </p>
-    <p id="advice-text"></p>
+    <p id="advice-text" style="width:100%;"></p>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -320,7 +331,7 @@
     /* =================================================================
        1. 全域變數與設定
        ================================================================= */
-    const LIFF_ID = "2008484068-DEJL7363"; // 替換為您的 LIFF ID
+    const LIFF_ID = "2008484068-DEJL7363"; 
 
     // DOM 元素
     const form = document.getElementById("bpForm");
@@ -331,7 +342,7 @@
     const noRecordMsg = document.getElementById('no-record-msg');
     const avatarEl = document.getElementById("volunteerAvatar");
     const nameEl = document.getElementById("volunteerName");
-    // AI 建議 DOM（新增：用於顯示/隱藏與啟用/停用按鈕）
+    // AI 建議 DOM
     const adviceOutput = document.getElementById('advice-output');
     const adviceButton = document.getElementById('advice-button');
     const adviceText = document.getElementById('advice-text');
@@ -344,14 +355,13 @@
     let viewEndDateStr = null; 
     let viewDays = null;
     let chart;
-    let fp = null; // Flatpickr 實例
+    let fp = null; 
     let userSelectedRange = false;
 
-    // 初始化 UI 狀態 (隱藏表格與圖表)
+    // 初始化 UI 狀態
     if (chartContainer) chartContainer.style.display = 'none';
     if (tableContainer) tableContainer.style.display = 'none';
     if (noRecordMsg) noRecordMsg.style.display = 'none';
-    // AI 建議初始隱藏並停用按鈕（若 DOM 存在）
     if (adviceOutput) adviceOutput.style.display = 'none';
     if (adviceButton) adviceButton.disabled = true;
 
@@ -359,8 +369,7 @@
     initDateTimePickers();
 
     /* =================================================================
-       2. LIFF 初始化 (LIFF Integration)
-       說明：連接 LINE，取得 User ID 與 Profile
+       2. LIFF 初始化
        ================================================================= */
     async function initLiffAndSetProfile() {
       try {
@@ -389,7 +398,6 @@
       }
     }
 
-    // 綁定 LIFF 登入事件
     avatarEl.addEventListener("click", () => {
       if (typeof liff !== 'undefined' && liff.isLoggedIn && liff.isLoggedIn()) {
         window.location.href = "../../Login-or-register/index.html";
@@ -413,18 +421,13 @@
     /* =================================================================
        3. 資料初始化 (SupabaseAPI)
        ================================================================= */
-    // [Read] 載入資料函式 (IIFE)
     (async function loadRecords() {
-      // call supabase GET API
-      const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}`  //取得某位長者血壓紀錄
+      const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}` 
       try {
         const response = await fetch(GET_SUPABASE_API_URL);
         const result = await response.json();
 
         if (result.success && Array.isArray(result.data)) {
-          console.log("API loaded data:", result.data);
-
-          // 轉換格式 → 你的 records 陣列格式
           records = result.data.map(r => ({
             uuid: r.uuid,
             elder_user_id: r.elder_user_id,
@@ -452,7 +455,6 @@
     /* =================================================================
        4. UI 互動邏輯：Picker Hack & View Controls
        ================================================================= */
-    // 日期時間選擇器初始化
     function initDateTimePickers() {
         const dateInput = document.getElementById("date");
         dateInput.addEventListener("input", function() {
@@ -465,7 +467,6 @@
         });
     }
 
-    // 更新日期顯示文字
     function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
@@ -478,7 +479,6 @@
         displayEl.style.color = "#222";
     }
 
-    // 更新時間顯示文字
     function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
@@ -499,33 +499,26 @@
         displayEl.style.color = "#222";
     }
 
-    // 初始化視圖控制器 (日期範圍篩選)
     function initViewControlsAndRender() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
       const viewRangeEl = document.getElementById('dateRange');
       
-      // 預設顯示最近 7 天
       const today = new Date();
       const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       viewEndDateStr = endStr;
 
-      // Flatpickr 設定
       if (viewRangeEl && typeof flatpickr === 'function') {
-        let defaultDateArray = null;
         
-        // 若 records 有資料，預設選取全部範圍，或根據邏輯調整
         if (records && records.length) {
             const times = records.filter(r => r.recorded_time).map(r => new Date(r.recorded_time));
             if (times.length) {
               const maxD = new Date(Math.max.apply(null, times));
-              // 若資料中有更晚的日期，更新結束日
               const eStr = `${maxD.getFullYear()}-${String(maxD.getMonth()+1).padStart(2,'0')}-${String(maxD.getDate()).padStart(2,'0')}`;
               viewEndDateStr = eStr; 
             }
         }
 
-        // 設定 Flatpickr
         fp = flatpickr(viewRangeEl, {
           locale: "zh_tw",
           mode: "range",
@@ -539,7 +532,6 @@
             userSelectedRange = true;
             const s = selectedDates[0];
             const e = selectedDates[1] || selectedDates[0];
-            // 計算天數差
             viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
             
             const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
@@ -551,14 +543,13 @@
         });
       }
 
-      // 快速選擇按鈕邏輯 (7天, 30天, 本月...)
       const quickOptions = [
         { key: '7', label: '最近 7 天' },
         { key: '30', label: '最近 30 天' },
         { key: 'thisMonth', label: '本月' },
         { key: 'lastMonth', label: '上個月' }
       ];
-      let currentQuickIndex = 0; // 預設 "最近 7 天"
+      let currentQuickIndex = 0;
 
       function applyQuick(rangeKey) {
         const t = new Date();
@@ -586,7 +577,6 @@
         }
       }
 
-      // 綁定快速切換按鈕
       document.getElementById('rangePrev').addEventListener('click', () => {
         currentQuickIndex = (currentQuickIndex - 1 + quickOptions.length) % quickOptions.length;
         applyQuick(quickOptions[currentQuickIndex].key);
@@ -596,7 +586,6 @@
         applyQuick(quickOptions[currentQuickIndex].key);
       });
 
-      // 初次渲染檢查
       const viewRecords = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
       if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
@@ -607,15 +596,12 @@
         return;
       }
       
-      // 初次執行預設 (最近 7 天)
       applyQuick('7'); 
     }
 
     /* =================================================================
-       5. 資料 CRUD 功能 (Create, Delete)
+       5. 資料 CRUD 功能
        ================================================================= */
-    
-    // [Create] 表單送出
     form.onsubmit = async (e) => {
       e.preventDefault();
       const dateVal = document.getElementById("date").value;
@@ -624,7 +610,6 @@
       const diastolic = parseInt(document.getElementById("diastolic").value);
       const status = getStatus(systolic, diastolic);
 
-      // 組合時間字串
       let recorded_time;
       if (dateVal) {
         recorded_time = timeVal ? new Date(`${dateVal}T${timeVal}`).toISOString() : new Date(dateVal).toISOString();
@@ -632,7 +617,6 @@
         recorded_time = new Date().toISOString();
       }
 
-      const volunteerNameEl = document.getElementById('volunteerName');
       const payload = {
         elder_user_id: userId,
         elder_name: userName,
@@ -641,13 +625,11 @@
         recorded_time: recorded_time
       };
 
-      // 先寫入前端讓 UI 即時反應
       const tempRecord = { uuid: null, systolic, diastolic, recorded_time, status };
       records.push(tempRecord);
       renderTable();
       renderChart();
 
-      //Call Supabase POST API
       const POST_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre` 
       try {
         const response = await fetch(POST_SUPABASE_API_URL, {
@@ -660,8 +642,6 @@
 
         if (result.success && result.data) {
           const saved = result.data;
-
-          // 更新 records 最後一筆（剛插入的）
           records[records.length - 1] = {
             uuid: saved.uuid,
             elder_user_id: saved.elder_user_id,
@@ -686,12 +666,10 @@
         console.error("API POST 錯誤：", err);
       }
 
-      // 重置表單
       form.reset();
       clearInputs(); 
     };
 
-    // 清空輸入欄位與顯示文字
     function clearInputs() {
         document.getElementById('date').value = '';
         document.getElementById('time').value = '';
@@ -701,12 +679,10 @@
         document.getElementById("timeDisplay").textContent = "";
     }
 
-    // [Delete] 刪除紀錄
     async function deleteRecord(event_id) {
       const ok = confirm("確定要刪除這筆血壓紀錄嗎？");
       if (!ok) return;
 
-      // call Supabase DELETE API
       try {
         const DELETE_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}/${event_id}` 
         const response = await fetch(DELETE_SUPABASE_API_URL, { method: "DELETE" });
@@ -714,7 +690,6 @@
       } catch (err) {
         console.error("API DELETE 錯誤：", err);
       }
-      // 從 records 移除
       const newRecords = records.filter(r => r.event_id !== event_id);
       records = newRecords;
 
@@ -725,27 +700,22 @@
     /* =================================================================
        6. 輔助函式與邏輯
        ================================================================= */
-    
-    // 判斷血壓狀態
     function getStatus(systolic, diastolic) {
       if (systolic < 90 || diastolic < 60) return "偏低";
       if (systolic > 140 || diastolic > 90) return "偏高";
       return "正常";
     }
 
-    // 取得目前篩選範圍內的紀錄
     function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
       if (days === null || typeof days === 'undefined') {
-        // 若無天數限制，顯示全部
         return records.map((r, idx) => ({ ...r, _allIndex: idx }))
           .filter(r => r.recorded_time) 
           .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
       }
-      // 計算開始日期
       const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
       const start = new Date(end);
       start.setDate(end.getDate() - (days - 1));
-      start.setHours(0,0,0,0); // 設定為當天起始
+      start.setHours(0,0,0,0); 
 
       return records
         .map((r, idx) => ({ ...r, _allIndex: idx }))
@@ -760,20 +730,16 @@
     /* =================================================================
        7. 視覺化渲染 (Table & Chart)
        ================================================================= */
-    
-    // 渲染表格
     function renderTable() {
       const viewControlsEl = document.getElementById('viewControls');
       const viewNoteEl = document.getElementById('viewNote');
       const view = getViewRecords(viewDays, viewEndDateStr);
       const hasViewRecords = Array.isArray(view) && view.length > 0;
 
-      // 控制 UI 顯示
       if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
       if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
-      // AI 建議區塊與按鈕：無資料時隱藏並停用，有資料時顯示並啟用
-     if (adviceOutput) adviceOutput.style.display = hasViewRecords ? '' : 'none';
-     if (adviceButton) adviceButton.disabled = !hasViewRecords;
+      if (adviceOutput) adviceOutput.style.display = hasViewRecords ? '' : 'none';
+      if (adviceButton) adviceButton.disabled = !hasViewRecords;
  
       table.innerHTML = "";
       if (!hasViewRecords) {
@@ -781,7 +747,6 @@
         if (chartContainer) chartContainer.style.display = 'none';
         if (tableContainer) tableContainer.style.display = 'none';
         if (noRecordMsg) noRecordMsg.style.display = 'block';
-        // 確保 AI 建議隱藏（額外保險）
         if (adviceOutput) adviceOutput.style.display = 'none';
         if (adviceButton) adviceButton.disabled = true;
         return;
@@ -791,7 +756,6 @@
       if (tableContainer) tableContainer.style.display = '';
       if (chartContainer) chartContainer.style.display = '';
 
-      // 產生表格行
       view.forEach((r) => {
         let dateTimeStr = '';
         if (r.recorded_time) {
@@ -813,7 +777,6 @@
       });
     }
 
-    // 渲染 Chart.js 圖表
     function renderChart() {
       const view = getViewRecords(viewDays, viewEndDateStr);
       if (!view || view.length === 0) {
@@ -829,7 +792,6 @@
 
       if (chart) chart.destroy();
 
-      // 正常範圍參考線資料
       const bandSystolicLower = labels.map(() => 90);
       const bandSystolicUpper = labels.map(() => 140);
       const bandDiastolicLower = labels.map(() => 60);
@@ -840,12 +802,10 @@
         data: {
           labels: labels,
           datasets: [
-            // 背景色帶區塊 (正常範圍)
             { label: '收縮壓正常下限', data: bandSystolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)' },
             { label: '收縮壓正常上限', data: bandSystolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)', fill: '-1' },
             { label: '舒張壓正常下限', data: bandDiastolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)' },
             { label: '舒張壓正常上限', data: bandDiastolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)', fill: '-1' },
-            // 實際數據線
             { label: "收縮壓 (高壓)", data: systolicData, borderColor: "rgb(255, 99, 132)", backgroundColor: 'rgba(255,99,132,0.12)', tension: 0.2, fill: false, pointRadius: 3 },
             { label: "舒張壓 (低壓)", data: diastolicData, borderColor: "rgb(54, 162, 235)", backgroundColor: 'rgba(54,162,235,0.12)', tension: 0.2, fill: false, pointRadius: 3 }
           ]
@@ -864,11 +824,9 @@
         }
       });
       
-      // 套用響應式圖表設定
       applyResponsiveChartOptions(chart);
     }
 
-    // 圖表響應式調整邏輯 (根據螢幕寬度調整字體、Padding)
     function applyResponsiveChartOptions(ch) {
         if (!ch) return;
         const w = window.innerWidth;
@@ -886,7 +844,6 @@
         try { ch.update(); } catch (e) {}
     }
 
-    // 監聽視窗大小改變以重繪圖表 (Debounce 防抖動)
     function debounce(fn, delay = 120) {
       let t;
       return function(...args) {
@@ -913,7 +870,7 @@
         adviceButton.disabled = true; 
       
         try {
-            const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; // AI 建議 API
+            const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; 
             const response = await fetch(BACKEND_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
