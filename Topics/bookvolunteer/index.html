@@ -934,8 +934,11 @@
             .then(res => res.json())
             .then(result => {
                 if (!result.success) {
-                // API 判定不存在 / 驗證失敗 → 導回登入頁面
-                window.location.href = "../../Login-or-register/index.html";
+                    alert("首次使用請先進行註冊個人資料。將為您導入註冊頁面，點擊「確定」前往登入頁面。");
+                    // API 判定不存在 / 驗證失敗 → 導回登入頁面
+                    window.location.href = "../../Login-or-register/index.html";
+                } else {
+                    console.log("登入角色 role：",result.role);
                 }
             })
             .catch(err => {
