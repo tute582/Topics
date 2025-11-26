@@ -1,326 +1,379 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>志工管理系統 Volunteer Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>志工管理系統 Volunteer Dashboard</title>
 
-<!-- FullCalendar CDN -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <!-- FullCalendar CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-<style>
-  body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    background: #f7f9fb;
-    margin: 0;
-    padding: 0;
-  }
+    <style>
+      body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background: #f7f9fb;
+        margin: 0;
+        padding: 0;
+      }
 
+      .dashboard {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        padding: 30px;
+      }
 
-  .dashboard {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-    padding: 30px;
-  }
+      /* 志工卡片 */
+      .card {
+        width: 340px;
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        position: relative;
+      }
 
-  /* 志工卡片 */
-  .card {
-    width: 340px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    overflow: hidden;
-    position: relative;
-  }
+      .card-cover {
+        width: 100%;
+        height: 150px;
+        background-color: #c2dfff;
+      }
 
-  .card-cover {
-    width: 100%;
-    height: 150px;
-    background-color: #c2dfff;
-  }
+      .card-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid rgb(94, 131, 252);
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        object-fit: cover;
+      }
 
-  .card-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid rgb(94, 131, 252);
-    position: absolute;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    object-fit: cover;
-  }
+      .card-content {
+        padding: 70px 20px 40px;
+        text-align: center;
+      }
 
-  .card-content {
-    padding: 70px 20px 40px;
-    text-align: center;
-  }
+      .card-title {
+        font-size: 1.3em;
+        margin-top: 20px; /* 調整靠近頭像 */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
 
-  .card-title {
-    font-size: 1.3em;
-    margin-top: 20px; /* 調整靠近頭像 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-  }
+      .special {
+        background: #ffeaa7;
+        color: #2d3436;
+        padding: 2px 10px 6px;
+        border-radius: 10px;
+        font-size: 0.8em;
+      }
 
-  .special {
-    background: #ffeaa7;
-    color: #2d3436;
-    padding: 2px 10px 6px;
-    border-radius: 10px;
-    font-size: 0.8em;
-  }
+      .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
 
-  .card-tags {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
+      .card-tags .tag {
+        background-color: #e9f5ff;
+        color: #007bff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+      }
 
-  .card-tags .tag {
-    background-color: #e9f5ff;
-    color: #007bff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85em;
-  }
+      .card-text {
+        margin-top: 10px;
+        color: #636e72;
+      }
 
-  .card-text {
-    margin-top: 10px;
-    color: #636e72;
-  }
+      /* 日曆 */
+      .calendar-container {
+        flex-grow: 1;
+        min-width: 400px;
+        max-width: 800px;
+        background-color: #fff;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
 
-  /* 日曆 */
-  .calendar-container {
-    flex-grow: 1;
-    min-width: 400px;
-    max-width: 800px;
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 20px;
-  }
+      /* 彈窗 */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .modal {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      }
+      .modal button {
+        margin: 5px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .modal .confirm {
+        background: #4a90e2;
+        color: white;
+      }
+      .modal .cancel {
+        background: #aaa;
+        color: white;
+      }
 
-  /* 彈窗 */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 9999;
-  }
-  .modal {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-  }
-  .modal button {
-    margin: 5px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .modal .confirm { background: #4a90e2; color: white; }
-  .modal .cancel { background: #aaa; color: white; }
+      /* 導覽列 */
+      .nav-1 {
+        display: flex; /* 水平排列內容 */
+        /* font-weight: 500;*/
+        align-items: center; /* 垂直置中 */
+        justify-content: space-between; /* 兩端對齊：左/右 */
+        padding: 10px 25px; /* 右側保留內距，左側移除讓內容靠近頁邊 */
+        position: sticky; /* 滾動時吸附上方 */
+        top: 0; /* 吸附頂部 */
+        z-index: 1001; /* 保證在其他元素之上 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        left: 0;
+        right: 0;
+        color: black;
+        background-color: white;
+        box-sizing: border-box; /* 確保padding不會超出寬度 */
+        border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+      }
 
-  /* 導覽列 */
-  .nav-1{
-    display: flex;                 /* 水平排列內容 */
-   /* font-weight: 500;*/
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 1001;                 /* 保證在其他元素之上 */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    left: 0;
-    right: 0;
-    color: black;
-    background-color: white;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
-  }
-
-  @media screen and (max-width: 768px) {
-    .dashboard { flex-direction: column; align-items: center; }
-    .calendar-container { width: 95%; }
-  }
-</style>
-</head>
-<body>
-<!-- 導覽列 -->
-<nav class="nav-1" >
-  <div>
-    <h1 style="margin:0; font-size: 28px;">志工管理系統</h1>
-  </div>
-
-  <div style="display:flex; align-items:center;">
-    <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
-      </span>
-    </h1>
-  </div>
-</nav>
-
-<section class="dashboard">
-  <!-- 志工資訊卡 -->
-  <div class="card">
-    <div class="card-cover"></div>
-    <img class="card-avatar" src="https://i.pravatar.cc/150?img=32" alt="頭像">
-    <div class="card-content">
-      <h2 class="card-title">
-        <span id="cardName">王小明</span>
-        <span class="special">醫護證照</span>
-      </h2>
-      <div class="card-tags">
-        <span class="tag">親切</span>
-        <span class="tag">細心</span>
-        <span class="tag">熱心助人</span>
+      @media screen and (max-width: 768px) {
+        .dashboard {
+          flex-direction: column;
+          align-items: center;
+        }
+        .calendar-container {
+          width: 95%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 導覽列 -->
+    <nav class="nav-1">
+      <div>
+        <h1 style="margin: 0; font-size: 28px">志工管理系統</h1>
       </div>
-      <p class="card-text">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
-    </div>
-  </div>
 
-  <!-- 日曆 -->
-  <div class="calendar-container">
-    <div id="calendar"></div>
-  </div>
-</section>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >未登入</span
+            >
+          </span>
+        </h1>
+      </div>
+    </nav>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const calendarEl = document.getElementById('calendar');
-  let batchMode = false;
-  let cancelMode = false;
-  let selectedDates = [];
+    <section class="dashboard">
+      <!-- 志工資訊卡 -->
+      <div class="card">
+        <div class="card-cover"></div>
+        <img
+          class="card-avatar"
+          src="https://i.pravatar.cc/150?img=32"
+          alt="頭像"
+        />
+        <div class="card-content">
+          <h2 class="card-title">
+            <span id="cardName">王小明</span>
+            <span class="special">醫護證照</span>
+          </h2>
+          <div class="card-tags">
+            <span class="tag">親切</span>
+            <span class="tag">細心</span>
+            <span class="tag">熱心助人</span>
+          </div>
+          <p class="card-text">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
+        </div>
+      </div>
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    initialDate: '2025-10-01',
-    selectable: true,
-    locale: 'zh-tw',
-    headerToolbar: {
-      left: 'prev,next today batchButton cancelButton',
-      center: 'title',
-      right: ''
-    },
-    customButtons: {
-      batchButton: {
-        text: '批量模式',
-        click: function () {
-          // 離開取消模式時清除顏色
-          if (cancelMode) clearSelectionColors();
-          cancelMode = false;
-          batchMode = !batchMode;
-          updateButtonStates();
+      <!-- 日曆 -->
+      <div class="calendar-container">
+        <div id="calendar"></div>
+      </div>
+    </section>
 
-          // 離開批量模式 -> 出現時段選擇彈窗
-          if (!batchMode && selectedDates.length > 0) {
-            showBatchTimeModal();
-          }
-        }
-      },
-      cancelButton: {
-        text: '批量取消',
-        click: function () {
-          // 離開批量模式時清除顏色
-          if (batchMode) clearSelectionColors();
-          batchMode = false;
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const calendarEl = document.getElementById("calendar");
+        let batchMode = false;
+        let cancelMode = false;
+        let selectedDates = [];
 
-          // 如果已經在取消模式，第二次點擊 → 確認取消
-          if (cancelMode && selectedDates.length > 0) {
-            if (confirm(`確定要批量取消這 ${selectedDates.length} 天的服務時段嗎？`)) {
-              selectedDates.forEach(dateStr => {
-                calendar.getEvents().forEach(event => {
-                  if (event.startStr === dateStr) {
-                    event.remove();
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          initialDate: "2025-10-01",
+          selectable: true,
+          locale: "zh-tw",
+          headerToolbar: {
+            left: "prev,next today batchButton cancelButton",
+            center: "title",
+            right: "",
+          },
+          customButtons: {
+            batchButton: {
+              text: "批量模式",
+              click: function () {
+                // 離開取消模式時清除顏色
+                if (cancelMode) clearSelectionColors();
+                cancelMode = false;
+                batchMode = !batchMode;
+                updateButtonStates();
+
+                // 離開批量模式 -> 出現時段選擇彈窗
+                if (!batchMode && selectedDates.length > 0) {
+                  showBatchTimeModal();
+                }
+              },
+            },
+            cancelButton: {
+              text: "批量取消",
+              click: function () {
+                // 離開批量模式時清除顏色
+                if (batchMode) clearSelectionColors();
+                batchMode = false;
+
+                // 如果已經在取消模式，第二次點擊 → 確認取消
+                if (cancelMode && selectedDates.length > 0) {
+                  if (
+                    confirm(
+                      `確定要批量取消這 ${selectedDates.length} 天的服務時段嗎？`
+                    )
+                  ) {
+                    selectedDates.forEach((dateStr) => {
+                      calendar.getEvents().forEach((event) => {
+                        if (event.startStr === dateStr) {
+                          event.remove();
+                        }
+                      });
+                    });
+                    alert(`❌ 已批量取消 ${selectedDates.length} 天服務時段`);
                   }
-                });
-              });
-              alert(`❌ 已批量取消 ${selectedDates.length} 天服務時段`);
+                  selectedDates = [];
+                  clearSelectionColors();
+                  cancelMode = false;
+                  updateButtonStates();
+                } else {
+                  // 第一次點擊進入取消模式
+                  cancelMode = true;
+                  updateButtonStates();
+                }
+              },
+            },
+          },
+          dateClick: function (info) {
+            if (batchMode) {
+              toggleDateSelection(
+                info.dateStr,
+                info.dayEl,
+                "#ffeaa7",
+                "#f39c12"
+              );
+            } else if (cancelMode) {
+              handleBatchCancelSelection(info.dateStr, info.dayEl);
+            } else {
+              showTimeSlotModal(info.dateStr);
             }
-            selectedDates = [];
-            clearSelectionColors();
-            cancelMode = false;
-            updateButtonStates();
+          },
+          eventClick: function (info) {
+            if (
+              !cancelMode &&
+              confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)
+            ) {
+              info.event.remove();
+              alert("❌ 已取消該服務時段");
+            }
+          },
+          events: [
+            { title: "可服務 上午", start: "2025-10-10", color: "#4f8a8b" },
+            { title: "可服務 下午", start: "2025-10-15", color: "#74b9ff" },
+          ],
+        });
+
+        calendar.render();
+
+        // 更新按鈕狀態顏色
+        function updateButtonStates() {
+          const batchBtn = document.querySelector(".fc-batchButton-button");
+          const cancelBtn = document.querySelector(".fc-cancelButton-button");
+
+          batchBtn.style.backgroundColor = batchMode ? "#f39c12" : "#6c757d";
+          batchBtn.style.borderColor = batchMode ? "#f39c12" : "#6c757d";
+          batchBtn.style.color = "white";
+
+          cancelBtn.style.backgroundColor = cancelMode ? "#d63031" : "#6c757d";
+          cancelBtn.style.borderColor = cancelMode ? "#d63031" : "#6c757d";
+          cancelBtn.style.color = "white";
+        }
+
+        // 批量選擇顏色切換
+        function toggleDateSelection(dateStr, dayEl, bgColor, borderColor) {
+          const isSelected = selectedDates.includes(dateStr);
+          if (isSelected) {
+            selectedDates = selectedDates.filter((d) => d !== dateStr);
+            dayEl.style.backgroundColor = "";
+            dayEl.style.border = "";
           } else {
-            // 第一次點擊進入取消模式
-            cancelMode = true;
-            updateButtonStates();
+            selectedDates.push(dateStr);
+            dayEl.style.backgroundColor = bgColor;
+            dayEl.style.border = `2px solid ${borderColor}`;
           }
         }
-      }
-    },
-    dateClick: function (info) {
-      if (batchMode) {
-        toggleDateSelection(info.dateStr, info.dayEl, '#ffeaa7', '#f39c12');
-      } else if (cancelMode) {
-        handleBatchCancelSelection(info.dateStr, info.dayEl);
-      } else {
-        showTimeSlotModal(info.dateStr);
-      }
-    },
-    eventClick: function (info) {
-      if (!cancelMode && confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)) {
-        info.event.remove();
-        alert('❌ 已取消該服務時段');
-      }
-    },
-    events: [
-      { title: '可服務 上午', start: '2025-10-10', color: '#4f8a8b' },
-      { title: '可服務 下午', start: '2025-10-15', color: '#74b9ff' }
-    ]
-  });
 
-  calendar.render();
-
-  // 更新按鈕狀態顏色
-  function updateButtonStates() {
-    const batchBtn = document.querySelector('.fc-batchButton-button');
-    const cancelBtn = document.querySelector('.fc-cancelButton-button');
-
-    batchBtn.style.backgroundColor = batchMode ? '#f39c12' : '#6c757d';
-    batchBtn.style.borderColor = batchMode ? '#f39c12' : '#6c757d';
-    batchBtn.style.color = 'white';
-
-    cancelBtn.style.backgroundColor = cancelMode ? '#d63031' : '#6c757d';
-    cancelBtn.style.borderColor = cancelMode ? '#d63031' : '#6c757d';
-    cancelBtn.style.color = 'white';
-  }
-
-  // 批量選擇顏色切換
-  function toggleDateSelection(dateStr, dayEl, bgColor, borderColor) {
-    const isSelected = selectedDates.includes(dateStr);
-    if (isSelected) {
-      selectedDates = selectedDates.filter(d => d !== dateStr);
-      dayEl.style.backgroundColor = '';
-      dayEl.style.border = '';
-    } else {
-      selectedDates.push(dateStr);
-      dayEl.style.backgroundColor = bgColor;
-      dayEl.style.border = `2px solid ${borderColor}`;
-    }
-  }
-
-  // 單一天選擇
-  function showTimeSlotModal(dateStr) {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
+        // 單一天選擇
+        function showTimeSlotModal(dateStr) {
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+          overlay.innerHTML = `
       <div class="modal">
         <h3>選擇 ${dateStr} 的可服務時段</h3>
         <button class="confirm" data-time="上午">上午 (09:00–12:00)</button>
@@ -330,29 +383,36 @@ document.addEventListener('DOMContentLoaded', function () {
         <button class="cancel">取消</button>
       </div>
     `;
-    document.body.appendChild(overlay);
+          document.body.appendChild(overlay);
 
-    overlay.querySelectorAll('.confirm').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const time = btn.dataset.time;
-        calendar.addEvent({
-          title: `可服務 ${time}`,
-          start: dateStr,
-          color: time === '上午' ? '#4f8a8b' : time === '下午' ? '#74b9ff' : '#f6b93b'
-        });
-        overlay.remove();
-        alert(`✅ 已新增 ${dateStr} 的 ${time} 可服務時段`);
-      });
-    });
+          overlay.querySelectorAll(".confirm").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const time = btn.dataset.time;
+              calendar.addEvent({
+                title: `可服務 ${time}`,
+                start: dateStr,
+                color:
+                  time === "上午"
+                    ? "#4f8a8b"
+                    : time === "下午"
+                    ? "#74b9ff"
+                    : "#f6b93b",
+              });
+              overlay.remove();
+              alert(`✅ 已新增 ${dateStr} 的 ${time} 可服務時段`);
+            });
+          });
 
-    overlay.querySelector('.cancel').addEventListener('click', () => overlay.remove());
-  }
+          overlay
+            .querySelector(".cancel")
+            .addEventListener("click", () => overlay.remove());
+        }
 
-  // 批量模式：新增
-  function showBatchTimeModal() {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
+        // 批量模式：新增
+        function showBatchTimeModal() {
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+          overlay.innerHTML = `
       <div class="modal">
         <h3>為 ${selectedDates.length} 天選擇可服務時段</h3>
         <button class="confirm" data-time="上午">上午 (09:00–12:00)</button>
@@ -362,102 +422,110 @@ document.addEventListener('DOMContentLoaded', function () {
         <button class="cancel">取消</button>
       </div>
     `;
-    document.body.appendChild(overlay);
+          document.body.appendChild(overlay);
 
-    overlay.querySelectorAll('.confirm').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const time = btn.dataset.time;
-        selectedDates.forEach(dateStr => {
-          calendar.addEvent({
-            title: `可服務 ${time}`,
-            start: dateStr,
-            color: time === '上午' ? '#4f8a8b' : time === '下午' ? '#74b9ff' : '#f6b93b'
+          overlay.querySelectorAll(".confirm").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const time = btn.dataset.time;
+              selectedDates.forEach((dateStr) => {
+                calendar.addEvent({
+                  title: `可服務 ${time}`,
+                  start: dateStr,
+                  color:
+                    time === "上午"
+                      ? "#4f8a8b"
+                      : time === "下午"
+                      ? "#74b9ff"
+                      : "#f6b93b",
+                });
+              });
+              calendar.refetchEvents();
+              clearSelectionColors();
+              selectedDates = [];
+              overlay.remove();
+              alert(`✅ 已批量新增 ${time} 可服務時段`);
+            });
           });
-        });
-        calendar.refetchEvents();
-        clearSelectionColors();
-        selectedDates = [];
-        overlay.remove();
-        alert(`✅ 已批量新增 ${time} 可服務時段`);
+
+          overlay.querySelector(".cancel").addEventListener("click", () => {
+            overlay.remove();
+            clearSelectionColors();
+            selectedDates = [];
+          });
+        }
+
+        // 批量取消模式：僅能點有預約的日期
+        function handleBatchCancelSelection(dateStr, dayEl) {
+          const hasEvent = calendar
+            .getEvents()
+            .some((e) => e.startStr === dateStr);
+          if (!hasEvent) return; // 沒有預約的不讓點
+
+          toggleDateSelection(dateStr, dayEl, "#fab1a0", "#d63031");
+        }
+
+        // 清除所有選取顏色
+        function clearSelectionColors() {
+          document.querySelectorAll(".fc-daygrid-day").forEach((day) => {
+            day.style.backgroundColor = "";
+            day.style.border = "";
+          });
+        }
       });
-    });
 
-    overlay.querySelector('.cancel').addEventListener('click', () => {
-      overlay.remove();
-      clearSelectionColors();
-      selectedDates = [];
-    });
-  }
-
-  // 批量取消模式：僅能點有預約的日期
-  function handleBatchCancelSelection(dateStr, dayEl) {
-    const hasEvent = calendar.getEvents().some(e => e.startStr === dateStr);
-    if (!hasEvent) return; // 沒有預約的不讓點
-
-    toggleDateSelection(dateStr, dayEl, '#fab1a0', '#d63031');
-  }
-
-  // 清除所有選取顏色
-  function clearSelectionColors() {
-    document.querySelectorAll('.fc-daygrid-day').forEach(day => {
-      day.style.backgroundColor = '';
-      day.style.border = '';
-    });
-  }
-});
-
- /* ==============================
+      /* ==============================
    ✅ LIFF 初始化
    ============================== */
-const LIFF_ID = "2008228534-R8763A2n";
-const avatarEl = document.getElementById("volunteerAvatar");
-const nameEl = document.getElementById("volunteerName");
+      const LIFF_ID = "2008228534-R8763A2n";
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
 
-async function initLiffAndSetProfile() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
+      async function initLiffAndSetProfile() {
+        try {
+          await liff.init({ liffId: LIFF_ID });
 
-    if (!liff.isLoggedIn()) {
-      nameEl.innerText = "未登入";
-      avatarEl.style.display = "none";
-      return;
-    }
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
+          }
 
-    const profile = await liff.getProfile();
-    nameEl.innerText = profile.displayName || "志工";
-    if (profile.pictureUrl) {
-      avatarEl.src = profile.pictureUrl;
-      avatarEl.style.display = "inline-block";
-    } else {
-      avatarEl.style.display = "none";
-    }
-  } catch (err) {
-    console.error("LIFF init error:", err);
-  }
-}
+          const profile = await liff.getProfile();
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+        } catch (err) {
+          console.error("LIFF init error:", err);
+        }
+      }
 
-avatarEl.addEventListener("click", () => {
-  if (liff.isLoggedIn()) {
-    window.location.href = "index.html";
-  } else {
-    liff.login({
-      redirectUri: "https://tute582.github.io/Topics/Login-or-register/index.html"
-    });
-  }
-});
+      avatarEl.addEventListener("click", () => {
+        if (liff.isLoggedIn()) {
+          window.location.href = "index.html";
+        } else {
+          liff.login({
+            redirectUri:
+              "https://tute582.github.io/Topics/Login-or-register/index.html",
+          });
+        }
+      });
 
-nameEl.addEventListener("click", () => {
-  if (!liff.isLoggedIn()) {
-    liff.login({
-      redirectUri: "https://tute582.github.io/Topics/Login-or-register/index.html"
-    });
-  } else {
-    alert("已登入：" + (nameEl.innerText || "志工"));
-  }
-});
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({
+            redirectUri:
+              "https://tute582.github.io/Topics/Login-or-register/index.html",
+          });
+        } else {
+          alert("已登入：" + (nameEl.innerText || "志工"));
+        }
+      });
 
-initLiffAndSetProfile();
-</script>
-
-</body>
+      initLiffAndSetProfile();
+    </script>
+  </body>
 </html>

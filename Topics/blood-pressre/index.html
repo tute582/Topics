@@ -1,67 +1,77 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>血壓紀錄</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>血壓紀錄</title>
 
-  <style>
-    /* =========================================
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+
+    <style>
+      /* =========================================
        1. 全域與基礎設定 (Global & Reset)
        ========================================= */
-    body {
-      font-family: "Arial", sans-serif;
-      background: #ffffff; 
-      margin: 0; padding: 0;
-      box-sizing: border-box;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Arial", sans-serif;
+        background: #ffffff;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    /* 保持唯讀欄位為白底 */
-    input[readonly], textarea[readonly] {
-      background-color: white; cursor: default;
-    }
+      /* 保持唯讀欄位為白底 */
+      input[readonly],
+      textarea[readonly] {
+        background-color: white;
+        cursor: default;
+      }
 
-     /* =========================================
+      /* =========================================
        2. 頂部導覽列 (Navigation)
        ========================================= */
-    .nav-1 {
+      .nav-1 {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 10px 22px;
-        position: sticky; 
+        position: sticky;
         top: 0;
         left: 0;
         right: 0;
-        z-index: 1001; 
+        z-index: 1001;
         width: 100%;
         color: black;
         background-color: white;
         border-bottom: 1px solid #ddd;
-    }
+      }
 
-    .nav-1 h1 {
+      .nav-1 h1 {
         margin: 0;
         font-size: 20px;
         line-height: 1;
-    }
+      }
 
-    .volunteer-area {
+      .volunteer-area {
         display: flex;
         align-items: center;
         gap: 8px;
         justify-content: center; /* 置中志工名稱/大頭貼 */
         width: 100%; /* 讓區塊可置中於父容器 */
-    }
+      }
 
-    .volunteer-area .avatar {
+      .volunteer-area .avatar {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -69,16 +79,16 @@
         border: 2px solid #0984e3;
         display: inline-block;
         flex: 0 0 40px;
-    }
+      }
 
-    .volunteer-area #volunteerName {
+      .volunteer-area #volunteerName {
         cursor: pointer;
         padding: 4px 8px;
         border-radius: 6px;
         background: transparent;
         font-size: 18px;
         color: #222;
-        max-width: 220px; 
+        max-width: 220px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -86,9 +96,9 @@
         vertical-align: middle;
         text-align: center; /* 文字置中 */
         width: 100%; /* 滿寬以利置中 */
-    }
+      }
 
-    #mapSearch {
+      #mapSearch {
         display: none;
         width: calc(100% - 32px);
         max-width: 820px;
@@ -99,765 +109,1016 @@
         background: #fff;
         font-size: 16px;
         outline: none;
-    }
+      }
 
-    #mapSearch:focus {
+      #mapSearch:focus {
         border-color: #0984e3;
         box-shadow: 0 4px 12px rgba(9, 132, 227, 0.08);
-    }
-    /* =========================================
+      }
+      /* =========================================
        3. 表單與輸入區 (Form & Inputs)
        ========================================= */
-    .div-b {
-      width: 100%; margin:15px 0 0 0;
-      box-sizing: border-box; padding: 0 25px;
-    }
+      .div-b {
+        width: 100%;
+        margin: 15px 0 0 0;
+        box-sizing: border-box;
+        padding: 0 25px;
+      }
 
-    form {
-      width: 100%;
-      background: #fff; padding: 30px;
-      border-radius: 12px; border: 1px solid #aaa;
-      margin: 12px auto 20px;
-    }
+      form {
+        width: 100%;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #aaa;
+        margin: 12px auto 20px;
+      }
 
-    .title { margin: 5px 0 15px 0; font-size: 26px; }
+      .title {
+        margin: 5px 0 15px 0;
+        font-size: 26px;
+      }
 
-    /* 表單列垂直排列設定 */
-    .form-row {
-      display: flex; 
-      flex-direction: column; 
-      align-items: stretch;   
-      margin-bottom: 20px;    
-    }
-    
-    .form-row label {
-      width: 100%;            
-      text-align: left; 
-      font-weight: bold;
-      margin-bottom: 8px;     
-      font-size: 16px;
-    }
-    
-    /* 輸入框通用樣式 */
-    .form-row input, .picker-display {
-      width: 100%;            
-      padding: 10px;
-      border-radius: 6px; border: 1px solid #ccc;
-      background: #fff; min-height: 42px;
-      font-size: 16px;
-    }
+      /* 表單列垂直排列設定 */
+      .form-row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 20px;
+      }
 
-    /* Picker Hack: 自定義日期/時間顯示 */
-    .picker-wrapper {
-      position: relative; 
-      display: flex;
-      width: 100%; 
-    }
-    .picker-display {
-      display: flex; align-items: center; margin: 0; width: 100%;
-      overflow: hidden; color: #888; 
-    }
-    .real-picker-input {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; z-index: 10; cursor: pointer; -webkit-appearance: none;
-    }
+      .form-row label {
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
 
-    /* 上方輸入區：日期圖示 (靠右) */
-    #dateDisplay {
+      /* 輸入框通用樣式 */
+      .form-row input,
+      .picker-display {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #fff;
+        min-height: 42px;
+        font-size: 16px;
+      }
+
+      /* Picker Hack: 自定義日期/時間顯示 */
+      .picker-wrapper {
+        position: relative;
+        display: flex;
+        width: 100%;
+      }
+      .picker-display {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+        color: #888;
+      }
+      .real-picker-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        z-index: 10;
+        cursor: pointer;
+        -webkit-appearance: none;
+      }
+
+      /* 上方輸入區：日期圖示 (靠右) */
+      #dateDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-size: 20px 20px;
         padding-right: 40px;
-    }
+      }
 
-    /* 上方輸入區：時間圖示 (靠右) */
-    #timeDisplay {
+      /* 上方輸入區：時間圖示 (靠右) */
+      #timeDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-size: 20px 20px;
         padding-right: 40px;
-    }
+      }
 
-    .form-row.date-row, .form-row.time-row { 
-        flex-wrap: wrap; 
-        flex-direction: column; 
-    }
-    .form-row.date-row label, .form-row.time-row label { 
-        width: 100%; 
-        margin-right: 0; 
-    }
+      .form-row.date-row,
+      .form-row.time-row {
+        flex-wrap: wrap;
+        flex-direction: column;
+      }
+      .form-row.date-row label,
+      .form-row.time-row label {
+        width: 100%;
+        margin-right: 0;
+      }
 
-    /* 按鈕樣式 */
-    button {
-      background-color: #4a90e2; color: white; margin: 0 10px 0 0;
-      padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;
-    }
-    button:hover { background-color: #3a78c6; }
-    button:disabled { background-color: #ccc; }
-    
-    /* AI 建議區塊 */
-    /* AI 建議：標題與按鈕同列，說明與建議內容另起一行 */
-    #advice-output {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      margin-top: 20px;
-      border-top: 1px solid #eee;
-      padding: 12px 16px;
-      flex-wrap: wrap;
-    }
-    /* 在 AI 區塊內的標題減少 margin，避免推到下一行 */
-    #advice-output .title { margin: 6px 0; font-size: 20px; }
-    /* 讓按鈕與標題同行（會跟在標題後面）；若要靠右可改為 margin-left: auto */
-    #advice-output #advice-button { margin-left: 8px; }
-    /* 說明文字與建議內容佔滿一整列 */
-    #advice-output p[style], #advice-text { width: 100%; }
-    #advice-text { min-height: 50px; background-color: #f9f9f9; padding: 10px; border-radius: 4px; line-height: 1.5; }
-    .error { color: red; } .loading { color: gray; }
+      /* 按鈕樣式 */
+      button {
+        background-color: #4a90e2;
+        color: white;
+        margin: 0 10px 0 0;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #3a78c6;
+      }
+      button:disabled {
+        background-color: #ccc;
+      }
 
-    /* =========================================
+      /* AI 建議區塊 */
+      /* AI 建議：標題與按鈕同列，說明與建議內容另起一行 */
+      #advice-output {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding: 12px 16px;
+        flex-wrap: wrap;
+      }
+      /* 在 AI 區塊內的標題減少 margin，避免推到下一行 */
+      #advice-output .title {
+        margin: 6px 0;
+        font-size: 20px;
+      }
+      /* 讓按鈕與標題同行（會跟在標題後面）；若要靠右可改為 margin-left: auto */
+      #advice-output #advice-button {
+        margin-left: 8px;
+      }
+      /* 說明文字與建議內容佔滿一整列 */
+      #advice-output p[style],
+      #advice-text {
+        width: 100%;
+      }
+      #advice-text {
+        min-height: 50px;
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 4px;
+        line-height: 1.5;
+      }
+      .error {
+        color: red;
+      }
+      .loading {
+        color: gray;
+      }
+
+      /* =========================================
        4. 日期範圍選擇器 (修正重點)
        ========================================= */
-    .range-picker-wrap {
-      display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%;
-    }
-    .range-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    
-    .date-range-wrapper { position: relative; display: inline-block; width: 100%; }
-    
-    /* 左側圖示 */
-    .date-range-wrapper::before {
-      content: "📅"; position: absolute; left: 10px; top: 10px; font-size: 18px; pointer-events: none;
-    }
-    
-    /* [修正] 日期範圍輸入框樣式 */
-    .date-range-input { 
-      width: 100%; 
-      padding: 8px 12px;    /* 上下 8px, 右 12px */
-      padding-left: 40px;   /* 強制左邊留 40px 給圖示 */
-      font-size: 16px; 
-      border: 1px solid #ccc; 
-      border-radius: 4px; 
-      min-height: 40px;
-    }
+      .range-picker-wrap {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+      }
+      .range-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
 
-    .range-quick-btn {
-      background: #f6f8fa; border: 1px solid #dfe4e8; padding: 6px 10px;
-      border-radius: 6px; cursor: pointer; color: #222; font-size: 14px;
-    }
-    .range-quick-btn.active { background: #4a90e2; color: #fff; border-color: #3a78c6; }
+      .date-range-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
 
-    /* =========================================
+      /* 左側圖示 */
+      .date-range-wrapper::before {
+        content: "📅";
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        font-size: 18px;
+        pointer-events: none;
+      }
+
+      /* [修正] 日期範圍輸入框樣式 */
+      .date-range-input {
+        width: 100%;
+        padding: 8px 12px; /* 上下 8px, 右 12px */
+        padding-left: 40px; /* 強制左邊留 40px 給圖示 */
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        min-height: 40px;
+      }
+
+      .range-quick-btn {
+        background: #f6f8fa;
+        border: 1px solid #dfe4e8;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #222;
+        font-size: 14px;
+      }
+      .range-quick-btn.active {
+        background: #4a90e2;
+        color: #fff;
+        border-color: #3a78c6;
+      }
+
+      /* =========================================
        5. 資料表格與圖表
        ========================================= */
-    .allTable-div {
-      width: 100%; margin: 5px 0;
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid #aaa; border-radius: 16px;
-      background-color: white; display: block; overflow-x: auto; padding: 0;
-    }
-    .allTable-div table {
-      width: 100%; border-collapse: collapse; min-width: 720px; margin: 0;
-    }
-    .allTable-div th, .allTable-div td {
-      padding: 12px 10px; text-align: center; border: 1px solid #ddd; white-space: nowrap; font-size: 14px;
-    }
-    .allTable-div th { background-color: #fafafa; position: sticky; top: 0; z-index: 2; }
-    .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
+      .allTable-div {
+        width: 100%;
+        margin: 5px 0;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #aaa;
+        border-radius: 16px;
+        background-color: white;
+        display: block;
+        overflow-x: auto;
+        padding: 0;
+      }
+      .allTable-div table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 720px;
+        margin: 0;
+      }
+      .allTable-div th,
+      .allTable-div td {
+        padding: 12px 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+        white-space: nowrap;
+        font-size: 14px;
+      }
+      .allTable-div th {
+        background-color: #fafafa;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .allTable-div tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
 
-    .delete-btn {
-      background-color: #e74c3c; padding: 4px 8px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 12px;
-    }
+      .delete-btn {
+        background-color: #e74c3c;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 12px;
+      }
 
-    .chart-container {
-      width: 100%; margin: 8px 0 30px 0; padding: 0 12px;
-    }
-    canvas {
-      margin-top: 12px; background: #f3f0f0; padding: 10px;
-      border-radius: 12px; border: 1px solid #aaa;
-      width: 100% !important; height: auto !important; display: block;
-    }
+      .chart-container {
+        width: 100%;
+        margin: 8px 0 30px 0;
+        padding: 0 12px;
+      }
+      canvas {
+        margin-top: 12px;
+        background: #f3f0f0;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #aaa;
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+      }
 
-    .no-record { text-align: center; color: #888; font-size: 18px; margin: 20px 0; display: none; }
+      .no-record {
+        text-align: center;
+        color: #888;
+        font-size: 18px;
+        margin: 20px 0;
+        display: none;
+      }
 
-    /* =========================================
+      /* =========================================
        6. 響應式設計 (RWD Breakpoints)
        ========================================= */
-    @media (max-width: 768px) {
-      form { width: 95%; padding: 20px; }
-      canvas { height: 220px !important; max-height: 320px; }
-    }
+      @media (max-width: 768px) {
+        form {
+          width: 95%;
+          padding: 20px;
+        }
+        canvas {
+          height: 220px !important;
+          max-height: 320px;
+        }
+      }
 
-    @media (max-width: 420px) {
-      .chart-container { padding: 8px 14px; }
-      canvas { height: 240px !important; padding: 16px !important; }
-      .flatpickr-calendar { width: calc(100% - 32px) !important; left: 16px !important; right: 16px !important; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 420px) {
+        .chart-container {
+          padding: 8px 14px;
+        }
+        canvas {
+          height: 240px !important;
+          padding: 16px !important;
+        }
+        .flatpickr-calendar {
+          width: calc(100% - 32px) !important;
+          left: 16px !important;
+          right: 16px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav-1">
+      <div><h1 style="margin: 0; font-size: 28px">血壓紀錄</h1></div>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="../bookvolunteer/default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+                display: none;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >載入中</span
+            >
+          </span>
+        </h1>
+      </div>
+    </nav>
 
-  <nav class="nav-1">
-    <div><h1 style="margin:0; font-size: 28px;">血壓紀錄</h1></div>
-    <div style="display:flex; align-items:center;">
-      <h1 style="margin:0; text-align:right;">
-      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;display:none;">
-         <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:26px;">載入中</span>
-        </span>
-      </h1>
-    </div>
-  </nav>
+    <div class="div-b">
+      <h1 class="title">輸入內容</h1>
 
-  <div class="div-b">
-    <h1 class="title">輸入內容</h1>
-    
-    <form id="bpForm">
-      <div class="form-row date-row">
-        <label for="date">日期</label>
-        <div class="picker-wrapper">
+      <form id="bpForm">
+        <div class="form-row date-row">
+          <label for="date">日期</label>
+          <div class="picker-wrapper">
             <div id="dateDisplay" class="picker-display"></div>
-            <input type="date" id="date" class="real-picker-input" required>
+            <input type="date" id="date" class="real-picker-input" required />
+          </div>
         </div>
-      </div>
 
-      <div class="form-row time-row">
-        <label for="time">時間</label>
-        <div class="picker-wrapper">
+        <div class="form-row time-row">
+          <label for="time">時間</label>
+          <div class="picker-wrapper">
             <div id="timeDisplay" class="picker-display"></div>
-            <input type="time" id="time" class="real-picker-input" required>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label for="systolic">收縮壓（高壓）</label>
-        <input type="number" id="systolic" placeholder="例如 120" required>
-      </div>
-      <div class="form-row">
-        <label for="diastolic">舒張壓（低壓）</label>
-        <input type="number" id="diastolic" placeholder="例如 80" required>
-      </div>
-      
-      <div style="display:flex;justify-content:flex-start; margin-top: 10px;">
-        <button id="submit" type="submit" class="primary-btn">新增紀錄</button>
-      </div>
-    </form>
-
-    <div id="viewControls" style="width:100%;margin:8px 0 4px; padding:0; display:none;">
-      <div class="range-picker-wrap">
-        <h2 class="title" style="font-size:20px; margin:6px 0;">日期範圍</h2>
-        <div class="range-controls" style="flex-direction:column; align-items:stretch; gap:8px;">
-          <div class="date-range-wrapper" style="width:100%;">
-            <input id="dateRange" class="date-range-input" placeholder="開始日期 - 結束日期" style="width:100%;"/>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
-            <button id="rangePrev" class="range-quick-btn" type="button">‹</button>
-            <span id="rangeLabel" style="min-width:160px; display:inline-block; text-align:center; padding:8px; border:1px solid #ccc; border-radius:6px; background:#fff;">最近 7 天</span>
-            <button id="rangeNext" class="range-quick-btn" type="button">›</button>
+            <input type="time" id="time" class="real-picker-input" required />
           </div>
         </div>
-        <div id="no-record-msg" class="no-record" style="display:none;">目前尚未有紀錄</div>
+
+        <div class="form-row">
+          <label for="systolic">收縮壓（高壓）</label>
+          <input type="number" id="systolic" placeholder="例如 120" required />
+        </div>
+        <div class="form-row">
+          <label for="diastolic">舒張壓（低壓）</label>
+          <input type="number" id="diastolic" placeholder="例如 80" required />
+        </div>
+
+        <div
+          style="display: flex; justify-content: flex-start; margin-top: 10px"
+        >
+          <button id="submit" type="submit" class="primary-btn">
+            新增紀錄
+          </button>
+        </div>
+      </form>
+
+      <div
+        id="viewControls"
+        style="width: 100%; margin: 8px 0 4px; padding: 0; display: none"
+      >
+        <div class="range-picker-wrap">
+          <h2 class="title" style="font-size: 20px; margin: 6px 0">日期範圍</h2>
+          <div
+            class="range-controls"
+            style="flex-direction: column; align-items: stretch; gap: 8px"
+          >
+            <div class="date-range-wrapper" style="width: 100%">
+              <input
+                id="dateRange"
+                class="date-range-input"
+                placeholder="開始日期 - 結束日期"
+                style="width: 100%"
+              />
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 6px;
+              "
+            >
+              <button id="rangePrev" class="range-quick-btn" type="button">
+                ‹
+              </button>
+              <span
+                id="rangeLabel"
+                style="
+                  min-width: 160px;
+                  display: inline-block;
+                  text-align: center;
+                  padding: 8px;
+                  border: 1px solid #ccc;
+                  border-radius: 6px;
+                  background: #fff;
+                "
+                >最近 7 天</span
+              >
+              <button id="rangeNext" class="range-quick-btn" type="button">
+                ›
+              </button>
+            </div>
+          </div>
+          <div id="no-record-msg" class="no-record" style="display: none">
+            目前尚未有紀錄
+          </div>
+        </div>
+      </div>
+      <div
+        id="viewNote"
+        style="
+          width: 100%;
+          margin: 0 0 8px;
+          padding: 0 0 8px;
+          color: #666;
+          font-size: 13px;
+          display: none;
+        "
+      >
+        預設顯示最近 7 天（包含結束日），可自行調整結束日與天數。
+      </div>
+
+      <div class="allTable-div">
+        <table>
+          <thead>
+            <tr>
+              <th>日期/時間</th>
+              <th>收縮壓</th>
+              <th>狀態</th>
+              <th>舒張壓</th>
+              <th>狀態</th>
+              <th>刪除</th>
+            </tr>
+          </thead>
+          <tbody id="recordTable"></tbody>
+        </table>
       </div>
     </div>
-    <div id="viewNote" style="width:100%; margin:0 0 8px; padding:0 0 8px; color:#666; font-size:13px; display:none;">
-      預設顯示最近 7 天（包含結束日），可自行調整結束日與天數。
+
+    <div class="chart-container">
+      <canvas id="bpChart" width="380" height="250"></canvas>
     </div>
 
-    <div class="allTable-div">
-      <table>
-        <thead>
-          <tr>
-            <th>日期/時間</th>
-            <th>收縮壓</th>
-            <th>狀態</th>
-            <th>舒張壓</th>
-            <th>狀態</th>
-            <th>刪除</th>
-          </tr>
-        </thead>
-        <tbody id="recordTable"></tbody>
-      </table>
+    <div id="advice-output">
+      <h2 class="title" style="font-size: 20px; margin: 6px 0">AI 建議</h2>
+      <button id="advice-button" type="button">產生 AI 建議</button>
+      <p style="font-size: 12px; color: #f43838; width: 100%; margin-top: 5px">
+        <strong>免責聲明：</strong>本站提供的 AI
+        建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
+      </p>
+      <p id="advice-text" style="width: 100%"></p>
     </div>
-  </div>
 
-  <div class="chart-container">
-    <canvas id="bpChart" width="380" height="250"></canvas>
-  </div>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <div id="advice-output">
-     <h2 class="title" style="font-size:20px; margin:6px 0;">AI 建議</h2>
-     <button id="advice-button" type="button">產生 AI 建議</button>
-     <p style="font-size: 12px; color: #f43838; width: 100%; margin-top:5px;">
-         <strong>免責聲明：</strong>本站提供的 AI 建議僅供參考，不能取代專業醫療診斷。所有健康決策，請務必諮詢您的醫生或專業醫療人員。
-       </p>
-     <p id="advice-text" style="width:100%;"></p>
-   </div>
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  
-  <script>
-    /* =================================================================
+    <script>
+      /* =================================================================
        1. 全域變數與設定
        ================================================================= */
-    const LIFF_ID = "2008484068-DEJL7363"; 
+      const LIFF_ID = "2008484068-DEJL7363";
 
-    // DOM 元素
-    const form = document.getElementById("bpForm");
-    const table = document.getElementById("recordTable");
-    const ctx = document.getElementById("bpChart").getContext("2d");
-    const chartContainer = document.querySelector('.chart-container');
-    const tableContainer = document.querySelector('.allTable-div');
-    const noRecordMsg = document.getElementById('no-record-msg');
-    const avatarEl = document.getElementById("volunteerAvatar");
-    const nameEl = document.getElementById("volunteerName");
-    // AI 建議 DOM
-    const adviceOutput = document.getElementById('advice-output');
-    const adviceButton = document.getElementById('advice-button');
-    const adviceText = document.getElementById('advice-text');
+      // DOM 元素
+      const form = document.getElementById("bpForm");
+      const table = document.getElementById("recordTable");
+      const ctx = document.getElementById("bpChart").getContext("2d");
+      const chartContainer = document.querySelector(".chart-container");
+      const tableContainer = document.querySelector(".allTable-div");
+      const noRecordMsg = document.getElementById("no-record-msg");
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
+      // AI 建議 DOM
+      const adviceOutput = document.getElementById("advice-output");
+      const adviceButton = document.getElementById("advice-button");
+      const adviceText = document.getElementById("advice-text");
 
-    // 狀態變數
-    let userId = "";
-    let userName = null;
-    let liffProfile = null;
-    let records = []; 
-    let viewEndDateStr = null; 
-    let viewDays = null;
-    let chart;
-    let fp = null; 
-    let userSelectedRange = false;
+      // 狀態變數
+      let userId = "";
+      let userName = null;
+      let liffProfile = null;
+      let records = [];
+      let viewEndDateStr = null;
+      let viewDays = null;
+      let chart;
+      let fp = null;
+      let userSelectedRange = false;
 
-    // 初始化 UI 狀態
-    if (chartContainer) chartContainer.style.display = 'none';
-    if (tableContainer) tableContainer.style.display = 'none';
-    if (noRecordMsg) noRecordMsg.style.display = 'none';
-    if (adviceOutput) adviceOutput.style.display = 'none';
-    if (adviceButton) adviceButton.disabled = true;
+      // 初始化 UI 狀態
+      if (chartContainer) chartContainer.style.display = "none";
+      if (tableContainer) tableContainer.style.display = "none";
+      if (noRecordMsg) noRecordMsg.style.display = "none";
+      if (adviceOutput) adviceOutput.style.display = "none";
+      if (adviceButton) adviceButton.disabled = true;
 
-    // 初始化自定義日期/時間選擇器
-    initDateTimePickers();
-    // 設定日期上限為今天（不可選未來）
-    setDateMax();
+      // 初始化自定義日期/時間選擇器
+      initDateTimePickers();
+      // 設定日期上限為今天（不可選未來）
+      setDateMax();
 
-    function setDateMax() {
-      const dateEl = document.getElementById('date');
-      if (!dateEl) return;
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const todayStr = `${yyyy}-${mm}-${dd}`;
-      dateEl.max = todayStr;
-      // 若已存在值且大於 today，修正為 today
-      if (dateEl.value && dateEl.value > todayStr) dateEl.value = todayStr;
-    }
+      function setDateMax() {
+        const dateEl = document.getElementById("date");
+        if (!dateEl) return;
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        dateEl.max = todayStr;
+        // 若已存在值且大於 today，修正為 today
+        if (dateEl.value && dateEl.value > todayStr) dateEl.value = todayStr;
+      }
 
-    /* =================================================================
+      /* =================================================================
        2. LIFF 初始化
        ================================================================= */
-    async function initLiffAndSetProfile() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
+      async function initLiffAndSetProfile() {
+        try {
+          await liff.init({ liffId: LIFF_ID });
 
-        if (!liff.isLoggedIn()) {
-          nameEl.innerText = "未登入";
-          avatarEl.style.display = "none";
-          return;
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
+          }
+
+          const profile = await liff.getProfile();
+          userId = profile.userId;
+          userName = profile.displayName;
+          console.log("LIFF Profile userId:", userId, "userName:", userName);
+
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+        } catch (err) {
+          console.error("LIFF init error:", err);
         }
+      }
 
-        const profile = await liff.getProfile();
-        userId = profile.userId;
-        userName = profile.displayName;
-        console.log("LIFF Profile userId:", userId, "userName:", userName);
-
-        nameEl.innerText = profile.displayName || "志工";
-        if (profile.pictureUrl) {
-          avatarEl.src = profile.pictureUrl;
-          avatarEl.style.display = "inline-block";
+      avatarEl.addEventListener("click", () => {
+        if (
+          typeof liff !== "undefined" &&
+          liff.isLoggedIn &&
+          liff.isLoggedIn()
+        ) {
+          window.location.href = "../../Login-or-register/index.html";
+        } else if (typeof liff !== "undefined" && liff.login) {
+          liff.login({ redirectUri: window.location.href });
         } else {
-          avatarEl.style.display = "none";
+          alert("無法使用 LINE 登入");
         }
-      } catch (err) {
-        console.error("LIFF init error:", err);
-      }
-    }
+      });
 
-    avatarEl.addEventListener("click", () => {
-      if (typeof liff !== 'undefined' && liff.isLoggedIn && liff.isLoggedIn()) {
-        window.location.href = "../../Login-or-register/index.html";
-      } else if (typeof liff !== 'undefined' && liff.login) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert('無法使用 LINE 登入');
-      }
-    });
+      nameEl.addEventListener("click", () => {
+        if (
+          typeof liff !== "undefined" &&
+          liff.isLoggedIn &&
+          !liff.isLoggedIn()
+        ) {
+          liff.login({ redirectUri: window.location.href });
+        } else {
+          alert("已登入：" + (nameEl.innerText || "志工"));
+        }
+      });
 
-    nameEl.addEventListener("click", () => {
-      if (typeof liff !== 'undefined' && liff.isLoggedIn && !liff.isLoggedIn()) {
-        liff.login({ redirectUri: window.location.href });
-      } else {
-        alert("已登入：" + (nameEl.innerText || "志工"));
-      }
-    });
+      initLiffAndSetProfile();
 
-    initLiffAndSetProfile();
-
-    /* =================================================================
+      /* =================================================================
        3. 資料初始化 (SupabaseAPI)
        ================================================================= */
-    (async function loadRecords() {
-      const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}` 
-      try {
-        const response = await fetch(GET_SUPABASE_API_URL);
-        const result = await response.json();
+      (async function loadRecords() {
+        const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}`;
+        try {
+          const response = await fetch(GET_SUPABASE_API_URL);
+          const result = await response.json();
 
-        if (result.success && Array.isArray(result.data)) {
-          records = result.data.map(r => ({
-            uuid: r.uuid,
-            elder_user_id: r.elder_user_id,
-            elder_name: r.elder_name,
-            systolic: r.systolic,
-            diastolic: r.diastolic,
-            recorded_time: r.recorded_time,
-            status: getStatus(r.systolic, r.diastolic),
-            created_at: r.created_at,
-            remarks: r.remarks,
-            pulse: r.pulse,
-            event_id: r.event_id
-          }));
+          if (result.success && Array.isArray(result.data)) {
+            records = result.data.map((r) => ({
+              uuid: r.uuid,
+              elder_user_id: r.elder_user_id,
+              elder_name: r.elder_name,
+              systolic: r.systolic,
+              diastolic: r.diastolic,
+              recorded_time: r.recorded_time,
+              status: getStatus(r.systolic, r.diastolic),
+              created_at: r.created_at,
+              remarks: r.remarks,
+              pulse: r.pulse,
+              event_id: r.event_id,
+            }));
 
-          initViewControlsAndRender();
-          return;
-        } else {
-          console.warn("API did not return success", result);
+            initViewControlsAndRender();
+            return;
+          } else {
+            console.warn("API did not return success", result);
+          }
+        } catch (e) {
+          console.error("Fetch API error:", e);
         }
-      } catch (e) {
-        console.error("Fetch API error:", e);
-      }
-    })();
+      })();
 
-    /* =================================================================
+      /* =================================================================
        4. UI 互動邏輯：Picker Hack & View Controls
        ================================================================= */
-    function initDateTimePickers() {
+      function initDateTimePickers() {
         const dateInput = document.getElementById("date");
-        dateInput.addEventListener("input", function() {
-            updateDateDisplay(this.value, "dateDisplay");
+        dateInput.addEventListener("input", function () {
+          updateDateDisplay(this.value, "dateDisplay");
         });
 
         const timeInput = document.getElementById("time");
-        timeInput.addEventListener("input", function() {
-            updateTimeDisplay(this.value, "timeDisplay");
+        timeInput.addEventListener("input", function () {
+          updateTimeDisplay(this.value, "timeDisplay");
         });
-    }
+      }
 
-    function updateDateDisplay(dateValue, displayElementId) {
+      function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
-            displayEl.textContent = ""; 
-            displayEl.style.color = "#888";
-            return;
+          displayEl.textContent = "";
+          displayEl.style.color = "#888";
+          return;
         }
-        const [year, month, day] = dateValue.split('-');
+        const [year, month, day] = dateValue.split("-");
         displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
         displayEl.style.color = "#222";
-    }
+      }
 
-    function updateTimeDisplay(timeValue, displayElementId) {
+      function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
-            displayEl.textContent = ""; 
-            displayEl.style.color = "#888";
-            return;
+          displayEl.textContent = "";
+          displayEl.style.color = "#888";
+          return;
         }
-        const [hourStr, minuteStr] = timeValue.split(':');
+        const [hourStr, minuteStr] = timeValue.split(":");
         let hour = parseInt(hourStr);
         let period = "上午";
         if (hour >= 12) {
-            period = "下午";
-            if (hour > 12) hour -= 12;
+          period = "下午";
+          if (hour > 12) hour -= 12;
         }
         if (hour === 0) hour = 12;
-        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedHour = hour.toString().padStart(2, "0");
         displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
         displayEl.style.color = "#222";
-    }
+      }
 
-    function initViewControlsAndRender() {
-      const viewControlsEl = document.getElementById('viewControls');
-      const viewNoteEl = document.getElementById('viewNote');
-      const viewRangeEl = document.getElementById('dateRange');
-      
-      const today = new Date();
-      const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-      viewEndDateStr = endStr;
+      function initViewControlsAndRender() {
+        const viewControlsEl = document.getElementById("viewControls");
+        const viewNoteEl = document.getElementById("viewNote");
+        const viewRangeEl = document.getElementById("dateRange");
 
-      if (viewRangeEl && typeof flatpickr === 'function') {
-        
-        if (records && records.length) {
-            const times = records.filter(r => r.recorded_time).map(r => new Date(r.recorded_time));
+        const today = new Date();
+        const endStr = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        viewEndDateStr = endStr;
+
+        if (viewRangeEl && typeof flatpickr === "function") {
+          if (records && records.length) {
+            const times = records
+              .filter((r) => r.recorded_time)
+              .map((r) => new Date(r.recorded_time));
             if (times.length) {
               const maxD = new Date(Math.max.apply(null, times));
-              const eStr = `${maxD.getFullYear()}-${String(maxD.getMonth()+1).padStart(2,'0')}-${String(maxD.getDate()).padStart(2,'0')}`;
-              viewEndDateStr = eStr; 
+              const eStr = `${maxD.getFullYear()}-${String(
+                maxD.getMonth() + 1
+              ).padStart(2, "0")}-${String(maxD.getDate()).padStart(2, "0")}`;
+              viewEndDateStr = eStr;
             }
+          }
+
+          fp = flatpickr(viewRangeEl, {
+            locale: "zh_tw",
+            mode: "range",
+            dateFormat: "Y/m/d",
+            onChange: function (selectedDates, dateStr, instance) {
+              if (!selectedDates || selectedDates.length === 0) {
+                userSelectedRange = false;
+                viewDays = null;
+                viewEndDateStr = null;
+                renderTable();
+                renderChart();
+                return;
+              }
+              userSelectedRange = true;
+              const s = selectedDates[0];
+              const e = selectedDates[1] || selectedDates[0];
+              viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+
+              const y2 = e.getFullYear(),
+                m2 = String(e.getMonth() + 1).padStart(2, "0"),
+                d2 = String(e.getDate()).padStart(2, "0");
+              viewEndDateStr = `${y2}-${m2}-${d2}`;
+
+              renderTable();
+              renderChart();
+            },
+          });
         }
 
-        fp = flatpickr(viewRangeEl, {
-          locale: "zh_tw",
-          mode: "range",
-          dateFormat: "Y/m/d",
-          onChange: function(selectedDates, dateStr, instance) {
-            if (!selectedDates || selectedDates.length === 0) {
-              userSelectedRange = false; viewDays = null; viewEndDateStr = null;
-              renderTable(); renderChart();
-              return;
-            }
-            userSelectedRange = true;
-            const s = selectedDates[0];
-            const e = selectedDates[1] || selectedDates[0];
-            viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-            
-            const y2 = e.getFullYear(), m2 = String(e.getMonth()+1).padStart(2,'0'), d2 = String(e.getDate()).padStart(2,'0');
-            viewEndDateStr = `${y2}-${m2}-${d2}`;
-            
-            renderTable();
-            renderChart();
+        const quickOptions = [
+          { key: "7", label: "最近 7 天" },
+          { key: "30", label: "最近 30 天" },
+          { key: "thisMonth", label: "本月" },
+          { key: "lastMonth", label: "上個月" },
+        ];
+        let currentQuickIndex = 0;
+
+        function applyQuick(rangeKey) {
+          const t = new Date();
+          let s, e;
+          if (rangeKey === "7" || rangeKey === "30") {
+            const days = parseInt(rangeKey, 10);
+            e = new Date();
+            s = new Date();
+            s.setDate(e.getDate() - (days - 1));
+          } else if (rangeKey === "thisMonth") {
+            s = new Date(t.getFullYear(), t.getMonth(), 1);
+            e = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+          } else if (rangeKey === "lastMonth") {
+            s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+            e = new Date(t.getFullYear(), t.getMonth(), 0);
           }
+
+          if (fp) {
+            fp.setDate([s, e], true, "Y-m-d");
+            const opt = quickOptions.find((o) => o.key === rangeKey);
+            if (opt) {
+              currentQuickIndex = quickOptions.indexOf(opt);
+              document.getElementById("rangeLabel").textContent = opt.label;
+            }
+          }
+        }
+
+        document.getElementById("rangePrev").addEventListener("click", () => {
+          currentQuickIndex =
+            (currentQuickIndex - 1 + quickOptions.length) % quickOptions.length;
+          applyQuick(quickOptions[currentQuickIndex].key);
         });
-      }
+        document.getElementById("rangeNext").addEventListener("click", () => {
+          currentQuickIndex = (currentQuickIndex + 1) % quickOptions.length;
+          applyQuick(quickOptions[currentQuickIndex].key);
+        });
 
-      const quickOptions = [
-        { key: '7', label: '最近 7 天' },
-        { key: '30', label: '最近 30 天' },
-        { key: 'thisMonth', label: '本月' },
-        { key: 'lastMonth', label: '上個月' }
-      ];
-      let currentQuickIndex = 0;
+        const viewRecords = getViewRecords(viewDays, viewEndDateStr);
+        const hasViewRecords =
+          Array.isArray(viewRecords) && viewRecords.length > 0;
+        if (viewControlsEl)
+          viewControlsEl.style.display =
+            hasViewRecords || userSelectedRange ? "flex" : "none";
+        if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? "" : "none";
 
-      function applyQuick(rangeKey) {
-        const t = new Date();
-        let s, e;
-        if (rangeKey === '7' || rangeKey === '30') {
-          const days = parseInt(rangeKey, 10);
-          e = new Date();
-          s = new Date();
-          s.setDate(e.getDate() - (days - 1));
-        } else if (rangeKey === 'thisMonth') {
-          s = new Date(t.getFullYear(), t.getMonth(), 1);
-          e = new Date(t.getFullYear(), t.getMonth() + 1, 0);
-        } else if (rangeKey === 'lastMonth') {
-          s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
-          e = new Date(t.getFullYear(), t.getMonth(), 0);
+        if (!hasViewRecords) {
+          if (noRecordMsg) noRecordMsg.style.display = "block";
+          return;
         }
-        
-        if (fp) {
-          fp.setDate([s, e], true, "Y-m-d");
-          const opt = quickOptions.find(o => o.key === rangeKey);
-          if (opt) {
-             currentQuickIndex = quickOptions.indexOf(opt);
-             document.getElementById('rangeLabel').textContent = opt.label;
-          }
-        }
+
+        applyQuick("7");
       }
 
-      document.getElementById('rangePrev').addEventListener('click', () => {
-        currentQuickIndex = (currentQuickIndex - 1 + quickOptions.length) % quickOptions.length;
-        applyQuick(quickOptions[currentQuickIndex].key);
-      });
-      document.getElementById('rangeNext').addEventListener('click', () => {
-        currentQuickIndex = (currentQuickIndex + 1) % quickOptions.length;
-        applyQuick(quickOptions[currentQuickIndex].key);
-      });
-
-      const viewRecords = getViewRecords(viewDays, viewEndDateStr);
-      const hasViewRecords = Array.isArray(viewRecords) && viewRecords.length > 0;
-      if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
-      if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
-      
-      if (!hasViewRecords) {
-        if (noRecordMsg) noRecordMsg.style.display = 'block';
-        return;
-      }
-      
-      applyQuick('7'); 
-    }
-
-    /* =================================================================
+      /* =================================================================
        5. 資料 CRUD 功能
        ================================================================= */
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const dateVal = document.getElementById("date").value;
-      // 防呆：若為未來日期則阻止送出
-      const dateEl = document.getElementById('date');
-      if (dateVal && dateEl && dateEl.max && dateVal > dateEl.max) {
-        alert('日期不可為未來，請選擇今天或以前的日期。');
-        dateEl.focus();
-        return;
-      }
-      const timeVal = document.getElementById("time") ? document.getElementById("time").value : '';
-      const systolic = parseInt(document.getElementById("systolic").value);
-      const diastolic = parseInt(document.getElementById("diastolic").value);
-      const status = getStatus(systolic, diastolic);
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const dateVal = document.getElementById("date").value;
+        // 防呆：若為未來日期則阻止送出
+        const dateEl = document.getElementById("date");
+        if (dateVal && dateEl && dateEl.max && dateVal > dateEl.max) {
+          alert("日期不可為未來，請選擇今天或以前的日期。");
+          dateEl.focus();
+          return;
+        }
+        const timeVal = document.getElementById("time")
+          ? document.getElementById("time").value
+          : "";
+        const systolic = parseInt(document.getElementById("systolic").value);
+        const diastolic = parseInt(document.getElementById("diastolic").value);
+        const status = getStatus(systolic, diastolic);
 
-      let recorded_time;
-      if (dateVal) {
-        recorded_time = timeVal ? new Date(`${dateVal}T${timeVal}`).toISOString() : new Date(dateVal).toISOString();
-      } else {
-        recorded_time = new Date().toISOString();
-      }
+        let recorded_time;
+        if (dateVal) {
+          recorded_time = timeVal
+            ? new Date(`${dateVal}T${timeVal}`).toISOString()
+            : new Date(dateVal).toISOString();
+        } else {
+          recorded_time = new Date().toISOString();
+        }
 
-      const payload = {
-        elder_user_id: userId,
-        elder_name: userName,
-        systolic: systolic,
-        diastolic: diastolic,
-        recorded_time: recorded_time
+        const payload = {
+          elder_user_id: userId,
+          elder_name: userName,
+          systolic: systolic,
+          diastolic: diastolic,
+          recorded_time: recorded_time,
+        };
+
+        const tempRecord = {
+          uuid: null,
+          systolic,
+          diastolic,
+          recorded_time,
+          status,
+        };
+        records.push(tempRecord);
+        renderTable();
+        renderChart();
+
+        const POST_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre`;
+        try {
+          const response = await fetch(POST_SUPABASE_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json();
+
+          if (result.success && result.data) {
+            const saved = result.data;
+            records[records.length - 1] = {
+              uuid: saved.uuid,
+              elder_user_id: saved.elder_user_id,
+              elder_name: saved.elder_name,
+              systolic: saved.systolic,
+              diastolic: saved.diastolic,
+              recorded_time: saved.recorded_time,
+              status: getStatus(saved.systolic, saved.diastolic),
+              created_at: saved.created_at,
+              remarks: saved.remarks || null,
+              pulse: saved.pulse || null,
+              event_id: saved.event_id || null,
+            };
+
+            renderTable();
+            renderChart();
+          } else {
+            console.warn("後端回應錯誤：", result);
+          }
+        } catch (err) {
+          console.error("API POST 錯誤：", err);
+        }
+
+        form.reset();
+        clearInputs();
       };
 
-      const tempRecord = { uuid: null, systolic, diastolic, recorded_time, status };
-      records.push(tempRecord);
-      renderTable();
-      renderChart();
-
-      const POST_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre` 
-      try {
-        const response = await fetch(POST_SUPABASE_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (result.success && result.data) {
-          const saved = result.data;
-          records[records.length - 1] = {
-            uuid: saved.uuid,
-            elder_user_id: saved.elder_user_id,
-            elder_name: saved.elder_name,
-            systolic: saved.systolic,
-            diastolic: saved.diastolic,
-            recorded_time: saved.recorded_time,
-            status: getStatus(saved.systolic, saved.diastolic),
-            created_at: saved.created_at,
-            remarks: saved.remarks || null,
-            pulse: saved.pulse || null,
-            event_id: saved.event_id || null
-          };
-
-          renderTable();
-          renderChart();
-        } else {
-          console.warn("後端回應錯誤：", result);
-        }
-
-      } catch (err) {
-        console.error("API POST 錯誤：", err);
-      }
-
-      form.reset();
-      clearInputs(); 
-    };
-
-    function clearInputs() {
-        document.getElementById('date').value = '';
-        document.getElementById('time').value = '';
-        document.getElementById('systolic').value = '';
-        document.getElementById('diastolic').value = '';
+      function clearInputs() {
+        document.getElementById("date").value = "";
+        document.getElementById("time").value = "";
+        document.getElementById("systolic").value = "";
+        document.getElementById("diastolic").value = "";
         document.getElementById("dateDisplay").textContent = "";
         document.getElementById("timeDisplay").textContent = "";
-    }
-
-    async function deleteRecord(event_id) {
-      const ok = confirm("確定要刪除這筆血壓紀錄嗎？");
-      if (!ok) return;
-
-      try {
-        const DELETE_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}/${event_id}` 
-        const response = await fetch(DELETE_SUPABASE_API_URL, { method: "DELETE" });
-
-      } catch (err) {
-        console.error("API DELETE 錯誤：", err);
       }
-      const newRecords = records.filter(r => r.event_id !== event_id);
-      records = newRecords;
 
-      renderTable();
-      renderChart();
-    }
+      async function deleteRecord(event_id) {
+        const ok = confirm("確定要刪除這筆血壓紀錄嗎？");
+        if (!ok) return;
 
-    /* =================================================================
+        try {
+          const DELETE_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}/${event_id}`;
+          const response = await fetch(DELETE_SUPABASE_API_URL, {
+            method: "DELETE",
+          });
+        } catch (err) {
+          console.error("API DELETE 錯誤：", err);
+        }
+        const newRecords = records.filter((r) => r.event_id !== event_id);
+        records = newRecords;
+
+        renderTable();
+        renderChart();
+      }
+
+      /* =================================================================
        6. 輔助函式與邏輯
        ================================================================= */
-    function getStatus(systolic, diastolic) {
-      if (systolic < 90 || diastolic < 60) return "偏低";
-      if (systolic > 140 || diastolic > 90) return "偏高";
-      return "正常";
-    }
-
-    function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
-      if (days === null || typeof days === 'undefined') {
-        return records.map((r, idx) => ({ ...r, _allIndex: idx }))
-          .filter(r => r.recorded_time) 
-          .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
+      function getStatus(systolic, diastolic) {
+        if (systolic < 90 || diastolic < 60) return "偏低";
+        if (systolic > 140 || diastolic > 90) return "偏高";
+        return "正常";
       }
-      const end = endDateStrLocal ? new Date(endDateStrLocal + 'T23:59:59.999') : new Date();
-      const start = new Date(end);
-      start.setDate(end.getDate() - (days - 1));
-      start.setHours(0,0,0,0); 
 
-      return records
-        .map((r, idx) => ({ ...r, _allIndex: idx }))
-        .filter(r => {
-          if (!r.recorded_time) return false;
-          const d = new Date(r.recorded_time);
-          return d >= start && d <= end;
-        })
-        .sort((a, b) => new Date(a.recorded_time) - new Date(b.recorded_time));
-    }
+      function getViewRecords(days = 7, endDateStrLocal = viewEndDateStr) {
+        if (days === null || typeof days === "undefined") {
+          return records
+            .map((r, idx) => ({ ...r, _allIndex: idx }))
+            .filter((r) => r.recorded_time)
+            .sort(
+              (a, b) => new Date(a.recorded_time) - new Date(b.recorded_time)
+            );
+        }
+        const end = endDateStrLocal
+          ? new Date(endDateStrLocal + "T23:59:59.999")
+          : new Date();
+        const start = new Date(end);
+        start.setDate(end.getDate() - (days - 1));
+        start.setHours(0, 0, 0, 0);
 
-    /* =================================================================
+        return records
+          .map((r, idx) => ({ ...r, _allIndex: idx }))
+          .filter((r) => {
+            if (!r.recorded_time) return false;
+            const d = new Date(r.recorded_time);
+            return d >= start && d <= end;
+          })
+          .sort(
+            (a, b) => new Date(a.recorded_time) - new Date(b.recorded_time)
+          );
+      }
+
+      /* =================================================================
        7. 視覺化渲染 (Table & Chart)
        ================================================================= */
-    function renderTable() {
-      const viewControlsEl = document.getElementById('viewControls');
-      const viewNoteEl = document.getElementById('viewNote');
-      const view = getViewRecords(viewDays, viewEndDateStr);
-      const hasViewRecords = Array.isArray(view) && view.length > 0;
+      function renderTable() {
+        const viewControlsEl = document.getElementById("viewControls");
+        const viewNoteEl = document.getElementById("viewNote");
+        const view = getViewRecords(viewDays, viewEndDateStr);
+        const hasViewRecords = Array.isArray(view) && view.length > 0;
 
-      if (viewControlsEl) viewControlsEl.style.display = (hasViewRecords || userSelectedRange) ? 'flex' : 'none';
-      if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? '' : 'none';
-      if (adviceOutput) adviceOutput.style.display = hasViewRecords ? '' : 'none';
-      if (adviceButton) adviceButton.disabled = !hasViewRecords;
- 
-      table.innerHTML = "";
-      if (!hasViewRecords) {
-        if (chart) { chart.destroy(); chart = null; }
-        if (chartContainer) chartContainer.style.display = 'none';
-        if (tableContainer) tableContainer.style.display = 'none';
-        if (noRecordMsg) noRecordMsg.style.display = 'block';
-        if (adviceOutput) adviceOutput.style.display = 'none';
-        if (adviceButton) adviceButton.disabled = true;
-        return;
-      }
-      
-      if (noRecordMsg) noRecordMsg.style.display = 'none';
-      if (tableContainer) tableContainer.style.display = '';
-      if (chartContainer) chartContainer.style.display = '';
+        if (viewControlsEl)
+          viewControlsEl.style.display =
+            hasViewRecords || userSelectedRange ? "flex" : "none";
+        if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? "" : "none";
+        if (adviceOutput)
+          adviceOutput.style.display = hasViewRecords ? "" : "none";
+        if (adviceButton) adviceButton.disabled = !hasViewRecords;
 
-      view.forEach((r) => {
-        let dateTimeStr = '';
-        if (r.recorded_time) {
-          const d = new Date(r.recorded_time);
-          const datePart = d.toLocaleDateString();
-          const timePart = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          dateTimeStr = `${datePart} ${timePart}`;
+        table.innerHTML = "";
+        if (!hasViewRecords) {
+          if (chart) {
+            chart.destroy();
+            chart = null;
+          }
+          if (chartContainer) chartContainer.style.display = "none";
+          if (tableContainer) tableContainer.style.display = "none";
+          if (noRecordMsg) noRecordMsg.style.display = "block";
+          if (adviceOutput) adviceOutput.style.display = "none";
+          if (adviceButton) adviceButton.disabled = true;
+          return;
         }
-        const row = `
+
+        if (noRecordMsg) noRecordMsg.style.display = "none";
+        if (tableContainer) tableContainer.style.display = "";
+        if (chartContainer) chartContainer.style.display = "";
+
+        view.forEach((r) => {
+          let dateTimeStr = "";
+          if (r.recorded_time) {
+            const d = new Date(r.recorded_time);
+            const datePart = d.toLocaleDateString();
+            const timePart = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            dateTimeStr = `${datePart} ${timePart}`;
+          }
+          const row = `
           <tr data-idx="${r._allIndex}">
             <td>${dateTimeStr}</td>
             <td>${r.systolic}</td>
@@ -866,127 +1127,186 @@
             <td>${r.status}</td>
             <td><button class="delete-btn" onclick="deleteRecord('${r.event_id}')">刪除</button></td>
           </tr>`;
-        table.innerHTML += row;
-      });
-    }
-
-    function renderChart() {
-      const view = getViewRecords(viewDays, viewEndDateStr);
-      if (!view || view.length === 0) {
-        if (chart) { chart.destroy(); chart = null; }
-        if (chartContainer) chartContainer.style.display = 'none';
-        return;
+          table.innerHTML += row;
+        });
       }
-      if (chartContainer) chartContainer.style.display = '';
 
-      const labels = view.map(r => r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : '');
-      const systolicData = view.map(r => Number(r.systolic) || 0);
-      const diastolicData = view.map(r => Number(r.diastolic) || 0);
-
-      if (chart) chart.destroy();
-
-      const bandSystolicLower = labels.map(() => 90);
-      const bandSystolicUpper = labels.map(() => 140);
-      const bandDiastolicLower = labels.map(() => 60);
-      const bandDiastolicUpper = labels.map(() => 90);
-
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: labels,
-          datasets: [
-            { label: '收縮壓正常下限', data: bandSystolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)' },
-            { label: '收縮壓正常上限', data: bandSystolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(144, 238, 144, 0.5)', fill: '-1' },
-            { label: '舒張壓正常下限', data: bandDiastolicLower, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)' },
-            { label: '舒張壓正常上限', data: bandDiastolicUpper, borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(255, 190, 159, 0.7)', fill: '-1' },
-            { label: "收縮壓 (高壓)", data: systolicData, borderColor: "rgb(255, 99, 132)", backgroundColor: 'rgba(255,99,132,0.12)', tension: 0.2, fill: false, pointRadius: 3 },
-            { label: "舒張壓 (低壓)", data: diastolicData, borderColor: "rgb(54, 162, 235)", backgroundColor: 'rgba(54,162,235,0.12)', tension: 0.2, fill: false, pointRadius: 3 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          layout: { padding: { left: 14, right: 14, top: 12, bottom: 12 } },
-          plugins: {
-            legend: { position: "top", labels: { padding: 12 } },
-            title: { display: true, text: "血壓變化圖", padding: { top: 6, bottom: 6 } }
-          },
-          scales: {
-            y: { beginAtZero: false, title: { display: true, text: "mmHg" } },
-            x: { title: { display: true, text: "日期" }, ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } }
+      function renderChart() {
+        const view = getViewRecords(viewDays, viewEndDateStr);
+        if (!view || view.length === 0) {
+          if (chart) {
+            chart.destroy();
+            chart = null;
           }
+          if (chartContainer) chartContainer.style.display = "none";
+          return;
         }
-      });
-      
-      applyResponsiveChartOptions(chart);
-    }
+        if (chartContainer) chartContainer.style.display = "";
 
-    function applyResponsiveChartOptions(ch) {
+        const labels = view.map((r) =>
+          r.recorded_time ? new Date(r.recorded_time).toLocaleDateString() : ""
+        );
+        const systolicData = view.map((r) => Number(r.systolic) || 0);
+        const diastolicData = view.map((r) => Number(r.diastolic) || 0);
+
+        if (chart) chart.destroy();
+
+        const bandSystolicLower = labels.map(() => 90);
+        const bandSystolicUpper = labels.map(() => 140);
+        const bandDiastolicLower = labels.map(() => 60);
+        const bandDiastolicUpper = labels.map(() => 90);
+
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "收縮壓正常下限",
+                data: bandSystolicLower,
+                borderWidth: 0,
+                pointRadius: 0,
+                backgroundColor: "rgba(144, 238, 144, 0.5)",
+              },
+              {
+                label: "收縮壓正常上限",
+                data: bandSystolicUpper,
+                borderWidth: 0,
+                pointRadius: 0,
+                backgroundColor: "rgba(144, 238, 144, 0.5)",
+                fill: "-1",
+              },
+              {
+                label: "舒張壓正常下限",
+                data: bandDiastolicLower,
+                borderWidth: 0,
+                pointRadius: 0,
+                backgroundColor: "rgba(255, 190, 159, 0.7)",
+              },
+              {
+                label: "舒張壓正常上限",
+                data: bandDiastolicUpper,
+                borderWidth: 0,
+                pointRadius: 0,
+                backgroundColor: "rgba(255, 190, 159, 0.7)",
+                fill: "-1",
+              },
+              {
+                label: "收縮壓 (高壓)",
+                data: systolicData,
+                borderColor: "rgb(255, 99, 132)",
+                backgroundColor: "rgba(255,99,132,0.12)",
+                tension: 0.2,
+                fill: false,
+                pointRadius: 3,
+              },
+              {
+                label: "舒張壓 (低壓)",
+                data: diastolicData,
+                borderColor: "rgb(54, 162, 235)",
+                backgroundColor: "rgba(54,162,235,0.12)",
+                tension: 0.2,
+                fill: false,
+                pointRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { left: 14, right: 14, top: 12, bottom: 12 } },
+            plugins: {
+              legend: { position: "top", labels: { padding: 12 } },
+              title: {
+                display: true,
+                text: "血壓變化圖",
+                padding: { top: 6, bottom: 6 },
+              },
+            },
+            scales: {
+              y: { beginAtZero: false, title: { display: true, text: "mmHg" } },
+              x: {
+                title: { display: true, text: "日期" },
+                ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 },
+              },
+            },
+          },
+        });
+
+        applyResponsiveChartOptions(chart);
+      }
+
+      function applyResponsiveChartOptions(ch) {
         if (!ch) return;
         const w = window.innerWidth;
         if (w <= 420) {
           ch.options.plugins.legend.labels.boxWidth = 12;
           ch.options.scales.x.ticks.maxRotation = 25;
-          ctx.canvas.style.height = '240px';
+          ctx.canvas.style.height = "240px";
         } else if (w <= 768) {
           ch.options.plugins.legend.labels.boxWidth = 14;
           ch.options.scales.x.ticks.maxRotation = 35;
-          ctx.canvas.style.height = '280px';
+          ctx.canvas.style.height = "280px";
         } else {
-          ctx.canvas.style.height = '320px';
+          ctx.canvas.style.height = "320px";
         }
-        try { ch.update(); } catch (e) {}
-    }
-
-    function debounce(fn, delay = 120) {
-      let t;
-      return function(...args) {
-        clearTimeout(t);
-        t = setTimeout(() => fn.apply(this, args), delay);
-      };
-    }
-    const onResize = debounce(() => {
-      if (chart) {
-        applyResponsiveChartOptions(chart);
-        chart.resize();
+        try {
+          ch.update();
+        } catch (e) {}
       }
-    }, 150);
-    window.addEventListener('resize', onResize);
 
-    /* =================================================================
+      function debounce(fn, delay = 120) {
+        let t;
+        return function (...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+      const onResize = debounce(() => {
+        if (chart) {
+          applyResponsiveChartOptions(chart);
+          chart.resize();
+        }
+      }, 150);
+      window.addEventListener("resize", onResize);
+
+      /* =================================================================
        8. AI 建議功能
        ================================================================= */
-    adviceButton.addEventListener('click', getAIAdvice);
+      adviceButton.addEventListener("click", getAIAdvice);
 
-    async function getAIAdvice() {
+      async function getAIAdvice() {
         adviceText.innerHTML = "AI 建議產生中，請稍候...";
         adviceText.className = "loading";
-        adviceButton.disabled = true; 
-      
+        adviceButton.disabled = true;
+
         try {
-            const BACKEND_API_URL = "https://supabase-api-six.vercel.app/getAdvice"; 
-            const response = await fetch(BACKEND_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ elder_user_id: userId })
-            });
+          const BACKEND_API_URL =
+            "https://supabase-api-six.vercel.app/getAdvice";
+          const response = await fetch(BACKEND_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ elder_user_id: userId }),
+          });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `伺服器錯誤: ${response.status}`);
-            }
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.error || `伺服器錯誤: ${response.status}`
+            );
+          }
 
-            const data = await response.json(); 
-            adviceText.innerHTML = data.advice; 
-            adviceText.className = ""; 
-
+          const data = await response.json();
+          adviceText.innerHTML = data.advice;
+          adviceText.className = "";
         } catch (error) {
-            console.error('API 呼叫失敗:', error);
-            adviceText.innerHTML = `無法取得建議：${error.message}`;
-            adviceText.className = "error";
+          console.error("API 呼叫失敗:", error);
+          adviceText.innerHTML = `無法取得建議：${error.message}`;
+          adviceText.className = "error";
         } finally {
-            adviceButton.disabled = false;
+          adviceButton.disabled = false;
         }
-    }
-  </script>
-</body>
+      }
+    </script>
+  </body>
 </html>
