@@ -978,7 +978,7 @@
 
       let volunteers = [];
       let bookedList = [];
-      let userId = "";
+      let userId = "test_line_id_002o";
       let userName = "";
       let currentEditEventId = "";
       let identify = "未註冊";
@@ -1197,10 +1197,23 @@
         }
       }
 
+      //大頭貼跳傳頁面設定
       avatarEl &&
         avatarEl.addEventListener("click", () => {
           if (liff.isLoggedIn()) {
-            window.location.href = "../../Login-or-register/index.html";
+            switch (identify) {
+              case "志工":
+                window.location.href =
+                  "../../Login-or-register/志工資料顯示.html";
+                break;
+              case "長者":
+                window.location.href =
+                  "../../Login-or-register/長輩資料顯示.html";
+                break;
+              default:
+                // "未註冊" 或 undefined 都導往登入
+                window.location.href = "../../Login-or-register/index.html";
+            }
           } else {
             liff.login({ redirectUri: window.location.href });
           }
@@ -1329,7 +1342,11 @@
 
         setTimeout(async () => {
           try {
-            const MATCH_API_URL = `${API_BASE_URL}/test`;
+            const MATCH_API_URL = `${API_BASE_URL}/match`;
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: city }); // 地址 ➜ 經緯度
+            const { lat, lng } = await getLatLngFromAddress(city, geocoder);
+            console.log("顯示地址轉換成經緯度的經緯度資訊：", lat, lng);
             const res = await fetch(MATCH_API_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -1338,7 +1355,7 @@
                 date,
                 time,
                 department,
-                city,
+                location: { lat, lng },
               }),
             });
 
@@ -1361,6 +1378,22 @@
             hint.innerText = "❌ 配對過程發生錯誤，請稍後再試";
           }
         }, 600);
+      }
+
+      function getLatLngFromAddress(address, geocoder) {
+        return new Promise((resolve, reject) => {
+          geocoder.geocode({ address: address }, (results, status) => {
+            if (status === "OK" && results.length > 0) {
+              const location = results[0].geometry.location;
+              resolve({
+                lat: location.lat(),
+                lng: location.lng(),
+              });
+            } else {
+              reject("地址轉換失敗：" + status);
+            }
+          });
+        });
       }
 
       function renderCards(list, container, slider, pagination) {
