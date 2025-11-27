@@ -10,27 +10,28 @@
       /* =========================================
        1. 全域與基礎設定 (Global & Reset)
        ========================================= */
-      body {
+    * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
-        font-family: "Noto Sans TC", sans-serif;
-        background-color: #ffffff;
+      }
+      body {
+        font-family: "Arial", sans-serif;
+        padding: 0;
+        background: #ffffff;
         color: #222;
-        box-sizing: border-box;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      h1 {
-        text-align: center;
-        margin: 10px 0;
       }
 
       h2 {
-        text-align: left;
-        margin: 20px 0;
+        margin: 5px 0;
+        font-size: 24px;
+        display: inline-block;
+        padding: 0 5px;
+      }
+      h3 {
+        margin: 0;
+        text-align: center;
+        font-size: 20px;
       }
 
      /* =========================================
@@ -677,10 +678,10 @@
   <body>
     <nav class="nav-1">
       <div>
-        <h1 style="margin: 0; font-size: 28px">預約志工</h1>
+        <h2 style="margin: 0; font-size: 28px">預約志工</h1>
       </div>
       <div style="display: flex; align-items: center">
-        <h1 style="margin: 0; text-align: right">
+        <h2 style="margin: 0; text-align: right">
           <span
             class="volunteer-area"
             style="display: flex; align-items: center; gap: 8px"
@@ -710,7 +711,7 @@
       </div>
     </nav>
 
-    <h1 class="title" style="font-size: 24px">輸入內容</h1>
+    <h2 class="title" style="font-size: 24px">輸入內容</h1>
     <form id="dataForm"onsubmit="return false;">
       <label
         >日期
@@ -857,7 +858,7 @@
       <button id="showBookingsBtn" type="button">預約查詢</button>
     </form>
 
-    <h2 class="title" style="font-size: 24px">志工資訊</h2>
+    <h3 class="title" style="font-size: 24px">志工資訊</h2>
     <p
       id="matchHint"
       style="text-align: center; margin-top: 16px; color: #555; font-size: 16px"
