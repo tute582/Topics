@@ -1175,6 +1175,7 @@
       avatarEl &&
         avatarEl.addEventListener("click", () => {
           if (liff.isLoggedIn()) {
+            localStorage.setItem("fromPage", "blood-pressre");
             switch (identify) {
               case "志工":
                 window.location.href =

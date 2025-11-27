@@ -739,17 +739,15 @@
           fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
             .then((res) => res.json())
             .then((result) => {
-              if (!result.success) 
-              { 
+              if (!result.success) {
                 // 無效身分，導向註冊頁面
-                alert(
-                  "第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。"
-                );
+                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
                 window.location.href = "../../Login-or-register/index.html";
               } else {
                 // 已註冊，取得身分
                 let identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
+                localStorage.setItem("fromPage", "blood-pressre");
                 switch (identify) {
                   case "志工":
                     window.location.href =

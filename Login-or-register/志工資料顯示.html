@@ -1,219 +1,266 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>志工資料顯示</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>志工資料顯示</title>
 
-  <style>
-    /* ======== 基本頁面樣式 ======== */
-    body {
-      font-family: "Arial", sans-serif;
-      background: #f4f6f8;  /* 淡灰背景 */
-      margin: 0;
-      padding: 0;
-    }
+    <style>
+      /* ======== 基本頁面樣式 ======== */
+      body {
+        font-family: "Arial", sans-serif;
+        background: #f4f6f8; /* 淡灰背景 */
+        margin: 0;
+        padding: 0;
+      }
 
-    /* ======== 卡片外觀設定 ======== */
-    .card {
-      max-width: 720px; /* 最大寬度 */
-      margin: 24px auto; /* 置中 */
-      background: #fff;  /* 白底 */
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08); /* 陰影 */
-      text-align: center;
-    }
+      /* ======== 卡片外觀設定 ======== */
+      .card {
+        max-width: 720px; /* 最大寬度 */
+        margin: 24px auto; /* 置中 */
+        background: #fff; /* 白底 */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* 陰影 */
+        text-align: center;
+      }
 
-    h1 {
-      margin: 0 0 0 0;
-      font-size: 28px;
-    }
+      h1 {
+        margin: 0 0 0 0;
+        font-size: 28px;
+      }
 
-    /* ======== 頭像樣式 ======== */
-    .avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;  /* 圓形頭像 */
-      object-fit: cover;   /* 等比例裁切 */
-      border: 3px solid #0078d4; /* 藍色外框 */
-      margin-bottom: 0px;
-    }
+      /* ======== 頭像樣式 ======== */
+      .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%; /* 圓形頭像 */
+        object-fit: cover; /* 等比例裁切 */
+        border: 3px solid #0078d4; /* 藍色外框 */
+        margin-bottom: 0px;
+      }
 
-    /* ======== 個人資料清單 (dt/dd) ======== */
-    dl {
-      display: grid;  /* 使用grid分成兩欄 */
-      grid-template-columns: 140px 1fr; /* 左欄標題 右欄內容 */
-      gap: 8px 16px;  /* 行間與欄間距 */
-      text-align: left;
-      margin-top: 10px;
-    }
-    dt {
-      font-weight: 700;
-      color: #333;
-    }
-    dd {
-      margin: 0;
-      color: #222;
-      word-break: break-word; /* 自動換行防止溢出 */
-    }
+      /* ======== 個人資料清單 (dt/dd) ======== */
+      dl {
+        display: grid; /* 使用grid分成兩欄 */
+        grid-template-columns: 140px 1fr; /* 左欄標題 右欄內容 */
+        gap: 8px 16px; /* 行間與欄間距 */
+        text-align: left;
+        margin-top: 10px;
+      }
+      dt {
+        font-weight: 700;
+        color: #333;
+      }
+      dd {
+        margin: 0;
+        color: #222;
+        word-break: break-word; /* 自動換行防止溢出 */
+      }
 
-    /* ======== 返回按鈕 ======== */
-    .back {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 8px 14px;
-      background: #0078d4;
-      color: #fff;
-      border-radius: 6px;
-      text-decoration: none;
-    }
+      /* ======== 返回按鈕 ======== */
+      .back {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 8px 14px;
+        background: #0078d4;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+      }
 
-    /* ======== 無資料提示文字 ======== */
-    .empty {
-      color: #666;
-    }
+      /* ======== 無資料提示文字 ======== */
+      .empty {
+        color: #666;
+      }
 
-    .tag-display {
-    display: inline-block;
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-    border-radius: 12px;
-    padding: 4px 10px;
-    margin: 4px 6px 0 0;
-    font-size: 14px;
-    white-space: nowrap;
-    }
+      .tag-display {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+        border-radius: 12px;
+        padding: 4px 10px;
+        margin: 4px 6px 0 0;
+        font-size: 14px;
+        white-space: nowrap;
+      }
 
+      /* ======== 導覽列樣式 ======== */
+      .nav-1 {
+        display: flex; /* 水平排列內容 */
+        font-weight: bold;
+        align-items: center; /* 垂直置中 */
+        justify-content: space-between; /* 左右兩邊對齊 */
+        padding: 10px 25px;
+        position: sticky; /* 滾動時固定頂端 */
+        top: 0;
+        z-index: 1001; /* 保持在最上層 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        left: 0;
+        right: 0;
+        color: black;
+        background-color: white;
+        box-sizing: border-box; /* 避免padding撐爆 */
+        border-bottom: 1px solid #ddd; /* 下邊界線 */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ======== 導覽列區塊 ======== -->
+    <nav class="nav-1">
+      <div>
+        <h1>志工個人資料</h1>
+      </div>
 
-    /* ======== 導覽列樣式 ======== */
-    .nav-1 {
-      display: flex;                 /* 水平排列內容 */
-      font-weight: bold;
-      align-items: center;           /* 垂直置中 */
-      justify-content: space-between;/* 左右兩邊對齊 */
-      padding: 10px 25px;
-      position: sticky;              /* 滾動時固定頂端 */
-      top: 0;
-      z-index: 1001;                 /* 保持在最上層 */
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 100%;
-      left: 0;
-      right: 0;
-      color: black;
-      background-color: white;
-      box-sizing: border-box;        /* 避免padding撐爆 */
-      border-bottom: 1px solid #ddd; /* 下邊界線 */
-    }
-  </style>
-</head>
-<body>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <!-- 導覽列頭像（小尺寸） -->
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+              "
+            />
+            <!-- 志工名稱或登入提示 -->
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer"
+              >未登入</span
+            >
+          </span>
+        </h1>
+      </div>
+    </nav>
 
-  <!-- ======== 導覽列區塊 ======== -->
-  <nav class="nav-1">
-    <div>
-      <h1>志工個人資料</h1>
+    <!-- ======== 主卡片內容區 ======== -->
+    <div class="card">
+      <!-- 大頭貼（主要展示） -->
+      <img
+        id="avatar"
+        class="avatar"
+        src="default-avatar.png"
+        alt="使用者頭像"
+      />
+      <!-- 志工詳細資料將動態插入此處 -->
+      <div id="content"></div>
+      <!-- 返回原本頁面按鈕 -->
+      <a id="backBtn" class="back">回到原頁面</a>
     </div>
 
-    <div style="display:flex; align-items:center;">
-      <h1 style="margin:0; text-align:right;">
-        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-          <!-- 導覽列頭像（小尺寸） -->
-          <img id="volunteerAvatar" class="avatar" 
-               src="default-avatar.png" alt="avatar"
-               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-          <!-- 志工名稱或登入提示 -->
-          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer;">未登入</span>
-        </span>
-      </h1>
-    </div>
-  </nav>
+    <!-- ======== JavaScript 資料載入區 ======== -->
+    <script>
+      // 取得 HTML 元素
+      const content = document.getElementById("content"); // 顯示詳細資料的容器
+      const avatarPreview = document.getElementById("avatar"); // 卡片頭像
+      const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
+      const volunteerName = document.getElementById("volunteerName"); // 導覽列名稱
 
-  <!-- ======== 主卡片內容區 ======== -->
-  <div class="card">
-    <!-- 大頭貼（主要展示） -->
-    <img id="avatar" class="avatar" src="default-avatar.png" alt="使用者頭像">
-    <!-- 志工詳細資料將動態插入此處 -->
-    <div id="content"></div>
-    <!-- 返回預約志工頁面連結 -->
-    <a class="back" href="../../Topics/Topics/bookvolunteer/index.html">回到預約志工頁面</a>
-  </div>
+      // 從 localStorage 取得上次儲存的志工資料
+      const userId = localStorage.getItem("userId");
+      console.log("取得的userId：", userId);
 
-  <!-- ======== JavaScript 資料載入區 ======== -->
-  <script>
-    // 取得 HTML 元素
-    const content = document.getElementById('content');           // 顯示詳細資料的容器
-    const avatarPreview = document.getElementById("avatar");      // 卡片頭像
-    const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
-    const volunteerName = document.getElementById("volunteerName");// 導覽列名稱
+      // 顯示 loading（可選）
+      content.innerHTML = `<p>資料載入中...</p>`;
 
-    // 從 localStorage 取得上次儲存的志工資料
-    const userId = localStorage.getItem('userId');
-    console.log("取得的userId：",userId)
-    
-    // 顯示 loading（可選）
-    content.innerHTML = `<p>資料載入中...</p>`;
+      // 如果沒有 userId
+      if (!userId) {
+        content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
+      } else {
+        // 使用 fetch 從 API 取得資料
+        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
+          .then((res) => res.json())
+          .then((result) => {
+            // API 回傳失敗
+            if (!result.success || !result.data) {
+              content.innerHTML = '<p class="empty">找不到使用者資料。</p>';
+              return;
+            }
 
-    // 如果沒有 userId
-    if (!userId) {
-      content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
-    } else {
-      // 使用 fetch 從 API 取得資料
-      fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
-        .then(res => res.json())
-        .then(result => {
+            const d = result.data; // 資料物件
 
-          // API 回傳失敗
-          if (!result.success || !result.data) {
-            content.innerHTML = '<p class="empty">找不到使用者資料。</p>';
-            return;
-          }
+            /* ======== 頭像處理 ======== */
+            const avatarUrl =
+              d.image_url && d.image_url.trim() !== ""
+                ? d.image_url
+                : "default-avatar.png";
 
-          const d = result.data; // 資料物件
+            if (avatarPreview) avatarPreview.src = avatarUrl;
+            if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
+            if (avatar) avatar.src = avatarUrl;
 
-          /* ======== 頭像處理 ======== */
-          const avatarUrl = d.image_url && d.image_url.trim() !== ""
-            ? d.image_url
-            : "default-avatar.png";
+            /* ======== 設定名稱 ======== */
+            if (volunteerName)
+              volunteerName.textContent = d.volunteer_name || "未登入";
 
-          if (avatarPreview) avatarPreview.src = avatarUrl;
-          if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
-          if (avatar) avatar.src = avatarUrl;
-
-          /* ======== 設定名稱 ======== */
-          if (volunteerName) volunteerName.textContent = d.volunteer_name || "未登入";
-
-          /* ======== 顯示詳細資料 ======== */
-          const html = `
+            /* ======== 顯示詳細資料 ======== */
+            const html = `
             <dl>
-              <dt>志工代碼</dt><dd>${d.vcode || ''}</dd>
-              <dt>姓名</dt><dd>${d.volunteer_name || ''}</dd>
-              <dt>電子郵件Email</dt><dd>${d.email || ''}</dd>
-              <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
-              <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
-              <dt>性別</dt><dd>${d.gender || ''}</dd>
-              <dt>地址</dt><dd>${d.address || ''}</dd>
-              <dt>簡介</dt><dd>${d.partner_experience || '—'}</dd>
+              <dt>志工代碼</dt><dd>${d.vcode || ""}</dd>
+              <dt>姓名</dt><dd>${d.volunteer_name || ""}</dd>
+              <dt>電子郵件Email</dt><dd>${d.email || ""}</dd>
+              <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
+              <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
+              <dt>性別</dt><dd>${d.gender || ""}</dd>
+              <dt>地址</dt><dd>${d.address || ""}</dd>
+              <dt>簡介</dt><dd>${d.partner_experience || "—"}</dd>
 
               <dt>服務特質</dt>
               <dd>
                 ${
                   Array.isArray(d.personality)
-                    ? d.personality.map(tag => `<span class="tag-display">${tag}</span>`).join('')
-                    : '—'
+                    ? d.personality
+                        .map((tag) => `<span class="tag-display">${tag}</span>`)
+                        .join("")
+                    : "—"
                 }
               </dd>
             </dl>
           `;
 
-          content.innerHTML = html;
-        })
-        .catch(err => {
-          content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
-          console.error("API Error:", err);
-        });
-    }
-  </script>
-</body>
+            content.innerHTML = html;
+          })
+          .catch((err) => {
+            content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
+            console.error("API Error:", err);
+          });
+      }
+
+      // 讀取先前儲存的來源頁面
+      const fromPage = localStorage.getItem("fromPage");
+      // 設定跳轉頁面
+      let targetUrl = "../../Topics/Topics/bookvolunteer/index.html";
+      switch (fromPage) {
+        case "blood-pressure":
+          targetUrl = "../../Topics/Topics/blood-pressure/index.html";
+          break;
+        case "bookvolunteer":
+          targetUrl = "../../Topics/Topics/bookvolunteer/index.html";
+          break;
+        case "calendar":
+          targetUrl = "../../Topics/Topics/calendar/index.html";
+          break;
+        case "record-information":
+          targetUrl = "../../Topics/Topics/record-information/index.html";
+          break;
+      }
+
+      //點選返回按鈕
+      const backBtn = document.getElementById("backBtn");
+      backBtn.href = targetUrl;
+    </script>
+  </body>
 </html>

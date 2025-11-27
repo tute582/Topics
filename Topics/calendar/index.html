@@ -1141,6 +1141,7 @@
                 // 已註冊，取得身分
                 let identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
+                localStorage.setItem("fromPage", "blood-pressre");
                 switch (identify) {
                   case "志工":
                     window.location.href =
