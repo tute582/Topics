@@ -33,64 +33,46 @@
         margin: 20px 0;
       }
 
-      /* =========================================
-       2. 頂部導覽列 (Navigation)
+     /* =========================================
+       2. 導覽列樣式 (Navigation)
        ========================================= */
       .nav-1 {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 22px;
+        padding: 10px 25px;
         position: sticky;
         top: 0;
-        left: 0;
-        right: 0;
         z-index: 1001;
         width: 100%;
-        color: black;
-        background-color: white;
+        background: #fff;
         border-bottom: 1px solid #ddd;
       }
 
       .nav-1 h1 {
         margin: 0;
-        font-size: 20px;
-        line-height: 1;
+        font-size: 28px;
       }
 
+      /* 志工頭像區域 */
       .volunteer-area {
         display: flex;
         align-items: center;
         gap: 8px;
-        justify-content: center; /* 置中志工名稱/大頭貼 */
-        width: 100%; /* 讓區塊可置中於父容器 */
       }
-
       .volunteer-area .avatar {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #0984e3;
-        display: inline-block;
-        flex: 0 0 40px;
+        border: 1px solid #ddd;
+        display: none;
       }
-
       .volunteer-area #volunteerName {
         cursor: pointer;
         padding: 4px 8px;
         border-radius: 6px;
-        background: transparent;
         font-size: 18px;
-        color: #222;
-        max-width: 220px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        display: inline-block;
-        vertical-align: middle;
-        text-align: center; /* 文字置中 */
-        width: 100%; /* 滿寬以利置中 */
       }
 
       #mapSearch {
@@ -116,20 +98,17 @@
        ========================================= */
       /* 滿版（全寬）表單樣式 */
       form {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 18px 20px;
-        background: white;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-        border-top: none;
-        border-bottom: 1px solid #e6e6e6;
-        position: relative;
-        box-sizing: border-box;
+        margin: 10px 0;
+        padding: 18px;
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid #ccc;
       }
-
+      label {
+              display: block;
+              margin-top: 0;
+              font-size: 20px;
+            }
       /* 內容內部維持 max-width 以便在大螢幕閱讀性仍佳（若要整行延展可移除） */
       .form-inner {
         max-width: 1100px;
@@ -142,13 +121,6 @@
         margin: 8px 0 8px 25px;
         text-align: left;
         font-size: 24px;
-      }
-
-      label {
-        display: block;
-        margin-top: 10px;
-        font-weight: 600;
-        font-size: 20px;
       }
 
       /* --- 通用輸入欄位樣式 --- */
@@ -739,7 +711,7 @@
     </nav>
 
     <h1 class="title" style="font-size: 24px">輸入內容</h1>
-    <form id="dataForm">
+    <form id="dataForm"onsubmit="return false;">
       <label
         >日期
         <div class="picker-wrapper">
