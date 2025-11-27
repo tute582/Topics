@@ -683,6 +683,7 @@
           const profile = await liff.getProfile();
           userId = profile.userId;
           userName = profile.displayName;
+          localStorage.setItem("userId", userId);
           console.log("LIFF Profile userId:", userId, "userName:", userName);
 
           nameEl.innerText = profile.displayName || "志工";
