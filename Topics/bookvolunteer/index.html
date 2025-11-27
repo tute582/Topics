@@ -1,69 +1,72 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>志工資訊卡</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<style>
-    /* =========================================
+  <head>
+    <title>志工資訊卡</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <style>
+      /* =========================================
        1. 全域與基礎設定 (Global & Reset)
        ========================================= */
-    body {
+      body {
         margin: 0;
         padding: 0;
         font-family: "Noto Sans TC", sans-serif;
         background-color: #ffffff;
         color: #222;
         box-sizing: border-box;
-    }
+      }
 
-    * {
+      * {
         box-sizing: border-box;
-    }
+      }
 
-    h1 {
+      h1 {
         text-align: center;
         margin: 10px 0;
-    }
+      }
 
-    h2 {
+      h2 {
         text-align: left;
         margin: 20px 0;
-    }
+      }
 
-    /* =========================================
+      /* =========================================
        2. 頂部導覽列 (Navigation)
        ========================================= */
-    .nav-1 {
+      .nav-1 {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 10px 22px;
-        position: sticky; 
+        position: sticky;
         top: 0;
         left: 0;
         right: 0;
-        z-index: 1001; 
+        z-index: 1001;
         width: 100%;
         color: black;
         background-color: white;
         border-bottom: 1px solid #ddd;
-    }
+      }
 
-    .nav-1 h1 {
+      .nav-1 h1 {
         margin: 0;
         font-size: 20px;
         line-height: 1;
-    }
+      }
 
-    .volunteer-area {
+      .volunteer-area {
         display: flex;
         align-items: center;
         gap: 8px;
         justify-content: center; /* 置中志工名稱/大頭貼 */
         width: 100%; /* 讓區塊可置中於父容器 */
-    }
+      }
 
-    .volunteer-area .avatar {
+      .volunteer-area .avatar {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -71,16 +74,16 @@
         border: 2px solid #0984e3;
         display: inline-block;
         flex: 0 0 40px;
-    }
+      }
 
-    .volunteer-area #volunteerName {
+      .volunteer-area #volunteerName {
         cursor: pointer;
         padding: 4px 8px;
         border-radius: 6px;
         background: transparent;
         font-size: 18px;
         color: #222;
-        max-width: 220px; 
+        max-width: 220px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -88,9 +91,9 @@
         vertical-align: middle;
         text-align: center; /* 文字置中 */
         width: 100%; /* 滿寬以利置中 */
-    }
+      }
 
-    #mapSearch {
+      #mapSearch {
         display: none;
         width: calc(100% - 32px);
         max-width: 820px;
@@ -101,18 +104,18 @@
         background: #fff;
         font-size: 16px;
         outline: none;
-    }
+      }
 
-    #mapSearch:focus {
+      #mapSearch:focus {
         border-color: #0984e3;
         box-shadow: 0 4px 12px rgba(9, 132, 227, 0.08);
-    }
+      }
 
-    /* =========================================
+      /* =========================================
        3. 主要表單區 (Main Form)
        ========================================= */
-    /* 滿版（全寬）表單樣式 */
-    form {
+      /* 滿版（全寬）表單樣式 */
+      form {
         width: 100%;
         max-width: 100%;
         margin: 0;
@@ -125,35 +128,35 @@
         border-bottom: 1px solid #e6e6e6;
         position: relative;
         box-sizing: border-box;
-    }
+      }
 
-    /* 內容內部維持 max-width 以便在大螢幕閱讀性仍佳（若要整行延展可移除） */
-    .form-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      box-sizing: border-box;
-    }
- 
-    .title {
+      /* 內容內部維持 max-width 以便在大螢幕閱讀性仍佳（若要整行延展可移除） */
+      .form-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+
+      .title {
         align-self: flex-start;
-        margin: 8px 0 8px 25px; 
+        margin: 8px 0 8px 25px;
         text-align: left;
         font-size: 24px;
-    }
+      }
 
-    label {
+      label {
         display: block;
         margin-top: 10px;
         font-weight: 600;
         font-size: 20px;
-    }
+      }
 
-    /* --- 通用輸入欄位樣式 --- */
-    input[type="text"],
-    textarea,
-    select,
-    #editModal input,
-    .picker-display { 
+      /* --- 通用輸入欄位樣式 --- */
+      input[type="text"],
+      textarea,
+      select,
+      #editModal input,
+      .picker-display {
         width: 100%;
         padding: 10px;
         margin: 5px 0;
@@ -163,51 +166,51 @@
         background-color: #ffffff;
         color: #222;
         box-sizing: border-box;
-        min-height: 44px; 
+        min-height: 44px;
         height: 44px;
-        line-height: 22px; 
-    }
+        line-height: 22px;
+      }
 
-    /* --- 日期與時間選擇器結構 --- */
-    .picker-wrapper {
+      /* --- 日期與時間選擇器結構 --- */
+      .picker-wrapper {
         position: relative;
         width: 100%;
         margin: 5px 0;
-        height: 44px; 
-    }
+        height: 44px;
+      }
 
-    /* 替身 (顯示文字用) */
-    .picker-display {
+      /* 替身 (顯示文字用) */
+      .picker-display {
         display: flex;
-        align-items: center; 
-        margin: 0; 
-        position: absolute; 
+        align-items: center;
+        margin: 0;
+        position: absolute;
         top: 0;
         left: 0;
-        z-index: 1; 
-        color: #888; 
+        z-index: 1;
+        color: #888;
         overflow: hidden;
-    }
+      }
 
-    /* [關鍵新增] 將圖示設定在假顯示框上 */
-    #dateDisplay {
+      /* [關鍵新增] 將圖示設定在假顯示框上 */
+      #dateDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-size: 20px 20px;
         padding-right: 44px; /* 留位給 icon */
-    }
+      }
 
-    #timeDisplay {
+      #timeDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-size: 20px 20px;
         padding-right: 44px; /* 留位給 icon */
-    }
+      }
 
-    /* 真身 (實際功能用) - 透明覆蓋 */
-    .real-picker-input {
+      /* 真身 (實際功能用) - 透明覆蓋 */
+      .real-picker-input {
         position: absolute;
         top: 0;
         left: 0;
@@ -219,27 +222,27 @@
         -webkit-appearance: none;
         margin: 0;
         padding: 0;
-    }
+      }
 
-    /* --- 單選按鈕群組 (Radio Group) --- */
-    .meeting-box {
+      /* --- 單選按鈕群組 (Radio Group) --- */
+      .meeting-box {
         width: 100%;
         border: 1px solid #e3e8ef;
         background: #fbfdff;
         padding: 8px;
         border-radius: 12px;
         margin-top: 6px;
-    }
+      }
 
-    .radio-group {
+      .radio-group {
         display: flex;
         gap: 12px;
         align-items: center;
-    }
+      }
 
-    .radio-group label {
+      .radio-group label {
         display: flex;
-        flex: 1 1 0; 
+        flex: 1 1 0;
         justify-content: center;
         align-items: center;
         gap: 8px;
@@ -251,31 +254,37 @@
         font-weight: 500;
         font-size: 18px;
         transition: all 0.12s;
-    }
+      }
 
-    .radio-group label span {
+      .radio-group label span {
         display: inline-block;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
+      }
 
-    .radio-group input[type="radio"] { margin-right: 6px; }
+      .radio-group input[type="radio"] {
+        margin-right: 6px;
+      }
 
-    .radio-group label:has(input:checked) {
-        background: linear-gradient(90deg, rgba(9, 132, 227, 0.06), rgba(9, 132, 227, 0.03));
+      .radio-group label:has(input:checked) {
+        background: linear-gradient(
+          90deg,
+          rgba(9, 132, 227, 0.06),
+          rgba(9, 132, 227, 0.03)
+        );
         border-color: rgba(9, 132, 227, 0.18);
         box-shadow: 0 4px 10px rgba(9, 132, 227, 0.04);
         transform: translateY(-1px);
-    }
-    
-    .radio-group input[type="radio"]:checked + span {
+      }
+
+      .radio-group input[type="radio"]:checked + span {
         font-weight: 600;
         color: #0b66c3;
-    }
+      }
 
-    /* --- 通用按鈕 --- */
-    button {
+      /* --- 通用按鈕 --- */
+      button {
         display: inline-block;
         margin: 12px 6px 0 0;
         padding: 10px 18px;
@@ -288,15 +297,17 @@
         transition: background 0.3s;
         position: relative;
         z-index: 3;
-    }
+      }
 
-    button:hover { background-color: #357abd; }
+      button:hover {
+        background-color: #357abd;
+      }
 
-    /* =========================================
+      /* =========================================
        4. 卡片與輪播 (Cards & Slider)
        ========================================= */
-    /* 輪播改為滿版，內容保持置中 */
-    .slider-container {
+      /* 輪播改為滿版，內容保持置中 */
+      .slider-container {
         position: relative;
         width: 100%;
         max-width: 100%;
@@ -305,23 +316,23 @@
         display: none;
         padding: 16px 20px;
         box-sizing: border-box;
-    }
+      }
 
-    .card-container {
+      .card-container {
         display: flex;
         transition: transform 0.5s ease;
         width: 100%;
-    }
+      }
 
-    .card {
-        flex: 0 0 100%; 
+      .card {
+        flex: 0 0 100%;
         display: flex;
         justify-content: center;
         align-items: center;
         padding: 10px;
-    }
+      }
 
-    .card-inner {
+      .card-inner {
         width: 100%;
         max-width: 720px; /* 卡片最大寬度，超出會置中 */
         background: white;
@@ -332,21 +343,22 @@
         position: relative;
         border: 1px solid #e6e6e6;
         margin: 0 auto;
-    }
+      }
 
-    .card-cover {
+      .card-cover {
         width: 100%;
         height: 150px;
         background: #c2dfff;
         object-fit: cover;
         position: absolute;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         border-top-left-radius: 20px;
         border-top-right-radius: 20px;
         z-index: 0;
-    }
+      }
 
-    .card-avatar {
+      .card-avatar {
         width: 100px;
         height: 100px;
         border-radius: 50%;
@@ -356,44 +368,52 @@
         z-index: 1;
         position: relative;
         background: #fff;
-    }
+      }
 
-    .card-content { padding: 12px; }
-    .card-title { font-size: 20px; font-weight: 700; margin: 10px 0 6px; text-align:center; }
+      .card-content {
+        padding: 12px;
+      }
+      .card-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 10px 0 6px;
+        text-align: center;
+      }
 
-    .tag-list {
+      .tag-list {
         display: flex;
         justify-content: center;
         flex-wrap: wrap;
         gap: 6px;
         margin-bottom: 8px;
-    }
+      }
 
-    .tag {
+      .tag {
         background: #e5f3ef;
         padding: 4px 10px;
         border-radius: 12px;
         font-size: 14px;
-    }
+      }
 
-    .ratings {
+      .ratings {
         position: relative;
         display: inline-block;
         color: #ddd;
         font-size: 24px;
-    }
+      }
 
-    .full_heart {
+      .full_heart {
         position: absolute;
-        left: 0; top: 0;
+        left: 0;
+        top: 0;
         white-space: nowrap;
         overflow: hidden;
         color: #e63946;
-    }
+      }
 
-    .arrow {
+      .arrow {
         position: absolute;
-        top: 50%; 
+        top: 50%;
         transform: translateY(-50%);
         font-size: 2rem;
         border: none;
@@ -411,62 +431,77 @@
         z-index: 50;
         opacity: 0.95;
         transition: background 0.2s, transform 0.2s;
-    }
+      }
 
-    .arrow.left { left: 16px; top: 45%; }
-    .arrow.right { right: 16px; top: 45%; }
-    
-    .arrow:hover {
+      .arrow.left {
+        left: 16px;
+        top: 45%;
+      }
+      .arrow.right {
+        right: 16px;
+        top: 45%;
+      }
+
+      .arrow:hover {
         background: #0056b3;
         transform: translateY(-50%) scale(1.05);
-    }
+      }
 
-    .pagination { text-align: center; margin-top: 10px; }
-    .dot {
-        height: 12px; width: 12px;
+      .pagination {
+        text-align: center;
+        margin-top: 10px;
+      }
+      .dot {
+        height: 12px;
+        width: 12px;
         margin: 0 4px;
         background-color: #bbb;
         border-radius: 50%;
         display: inline-block;
         cursor: pointer;
-    }
-    .dot.active { background-color: #333; }
+      }
+      .dot.active {
+        background-color: #333;
+      }
 
-    /* =========================================
+      /* =========================================
        5. 彈跳視窗與模組 (Modal)
        ========================================= */
-    .modal-overlay {
+      .modal-overlay {
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.45); 
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.45);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 999;
         animation: fadeIn 0.3s ease-in-out;
-    }
+      }
 
-    /* 彈窗寬度改為相對於畫面（大螢幕維持適中） */
-    .modal-box {
+      /* 彈窗寬度改為相對於畫面（大螢幕維持適中） */
+      .modal-box {
         width: 96%;
         max-width: 1100px;
         padding: 18px;
         box-sizing: border-box;
-    }
- 
-    .modal-inner {
+      }
+
+      .modal-inner {
         background: #ffffff;
         border-radius: 14px;
         padding: 18px;
         box-shadow: 0 6px 28px rgba(0, 0, 0, 0.18);
         color: #222;
         position: relative;
-    }
+      }
 
-    .modal-inner .close-btn {
+      .modal-inner .close-btn {
         position: absolute;
-        top: 10px; right: 10px;
+        top: 10px;
+        right: 10px;
         background: transparent;
         border: none;
         font-size: 30px;
@@ -475,38 +510,43 @@
         padding: 5px 10px;
         transition: transform 0.18s;
         z-index: 30;
-    }
-    .modal-inner .close-btn:hover {
+      }
+      .modal-inner .close-btn:hover {
         background-color: #e74c3c;
         color: white;
         transform: scale(1.06);
-    }
+      }
 
-    .modal-table-wrap {
+      .modal-table-wrap {
         background: #fff;
         border-radius: 12px;
         overflow: hidden;
-    }
+      }
 
-    .modal-table {
+      .modal-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
         border: 1px solid #aaa;
         border-radius: 20px;
         overflow: hidden;
-    }
+      }
 
-    .modal-table th, .modal-table td {
+      .modal-table th,
+      .modal-table td {
         padding: 12px 14px;
         font-size: 16px;
         border: none;
         color: black !important;
-    }
-    .modal-table th { background-color: #f9f9f9; }
-    .modal-table tr:nth-child(even) { background-color: #ffffff; }
+      }
+      .modal-table th {
+        background-color: #f9f9f9;
+      }
+      .modal-table tr:nth-child(even) {
+        background-color: #ffffff;
+      }
 
-    #closeModalBtn {
+      #closeModalBtn {
         background: #0984e3;
         color: #fff;
         border: none;
@@ -515,546 +555,783 @@
         margin: 14px auto 0;
         cursor: pointer;
         display: block;
-    }
+      }
 
-    /* =========================================
+      /* =========================================
        6. 通用表格容器
        ========================================= */
-     .allTable-div {
-         width: 100%;
-         margin: 5px 0;
-         -webkit-overflow-scrolling: touch;
-         border: 1px solid #aaa;
-         border-radius: 20px;
-         background-color: white;
-         display: block;
-         overflow-x: auto;
-         padding: 0;
-     }
+      .allTable-div {
+        width: 100%;
+        margin: 5px 0;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #aaa;
+        border-radius: 20px;
+        background-color: white;
+        display: block;
+        overflow-x: auto;
+        padding: 0;
+      }
 
-    /* 表格撐滿容器，小螢幕水平滾動 */
-    .allTable-div table {
+      /* 表格撐滿容器，小螢幕水平滾動 */
+      .allTable-div table {
         width: 100%;
         border-collapse: collapse;
         border-spacing: 0;
         min-width: 0;
         margin: 0;
         border: none;
-    }
+      }
 
-    .allTable-div th,
-    .allTable-div td {
+      .allTable-div th,
+      .allTable-div td {
         padding: 12px 10px;
         text-align: center;
         border: 1px solid #e6e6e6;
         white-space: nowrap;
         font-size: 14px;
-    }
+      }
 
-    .allTable-div th {
+      .allTable-div th {
         background-color: #f9f9f9;
         position: sticky;
         top: 0;
         z-index: 2;
         border-top: none;
-    }
+      }
 
-    .allTable-div thead tr th:first-child { border-top-left-radius: 18px; }
-    .allTable-div thead tr th:last-child { border-top-right-radius: 18px; }
-    .allTable-div tbody tr:last-child td:first-child { border-bottom-left-radius: 18px; }
-    .allTable-div tbody tr:last-child td:last-child { border-bottom-right-radius: 18px; }
+      .allTable-div thead tr th:first-child {
+        border-top-left-radius: 18px;
+      }
+      .allTable-div thead tr th:last-child {
+        border-top-right-radius: 18px;
+      }
+      .allTable-div tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 18px;
+      }
+      .allTable-div tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 18px;
+      }
 
-    .allTable-div tbody tr:nth-child(even) { background-color: #f9f9f9; }
-    .allTable-div tbody tr:nth-child(odd) { background-color: #ffffff; }
+      .allTable-div tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .allTable-div tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+      }
 
-    /* =========================================
+      /* =========================================
        7. 響應式微調
        ========================================= */
-    @media (max-width: 768px) {
-        .allTable-div table { min-width: 0; width: 100%; }
-    }
+      @media (max-width: 768px) {
+        .allTable-div table {
+          min-width: 0;
+          width: 100%;
+        }
+      }
 
-    @media (max-width: 600px) {
-        #mapSearch { width: 100%; margin: 8px 0 6px; }
-        
+      @media (max-width: 600px) {
+        #mapSearch {
+          width: 100%;
+          margin: 8px 0 6px;
+        }
+
         input[type="text"],
         select,
         .picker-display {
-            font-size: 16px;
-            padding: 10px;
-            height: 44px;
+          font-size: 16px;
+          padding: 10px;
+          height: 44px;
         }
-        
-        .picker-wrapper { height: 44px; }
 
-        .arrow { width: 72px; height: 72px; font-size: 28px; }
-        .slider-container { padding: 12px 40px; }
-        .arrow.left { left: 12px; }
-        .arrow.right { right: 12px; }
+        .picker-wrapper {
+          height: 44px;
+        }
 
-        .allTable-div table { min-width: 700px; }
+        .arrow {
+          width: 72px;
+          height: 72px;
+          font-size: 28px;
+        }
+        .slider-container {
+          padding: 12px 40px;
+        }
+        .arrow.left {
+          left: 12px;
+        }
+        .arrow.right {
+          right: 12px;
+        }
+
+        .allTable-div table {
+          min-width: 700px;
+        }
 
         .radio-group {
-            flex-direction: column;
-            gap: 10px;
-            align-items: stretch;
+          flex-direction: column;
+          gap: 10px;
+          align-items: stretch;
         }
         .radio-group label {
-            justify-content: flex-start;
-            padding: 14px;
-            min-height: 48px;
+          justify-content: flex-start;
+          padding: 14px;
+          min-height: 48px;
         }
         .radio-group label:has(input:checked) {
-            transform: none; 
+          transform: none;
         }
-        
+
         #map {
-            width: 100%;
-            height: 400px;
-            margin-top: 12px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          width: 100%;
+          height: 400px;
+          margin-top: 12px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-    }
+      }
 
-    @keyframes spin { 
-        from { transform: rotate(0deg); } 
-        to { transform: rotate(360deg); } 
-    }
-</style>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVrR-lyE2cD6vbcnryZocfdX-c6fRzuWQ&libraries=places"></script>
-</head>
-<body>
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVrR-lyE2cD6vbcnryZocfdX-c6fRzuWQ&libraries=places"></script>
+  </head>
+  <body>
+    <nav class="nav-1">
+      <div>
+        <h1 style="margin: 0; font-size: 28px">預約志工</h1>
+      </div>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+                display: none;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >載入中</span
+            >
+          </span>
+        </h1>
+      </div>
+    </nav>
 
-  <nav class="nav-1">
-    <div>
-      <h1 style="margin: 0; font-size: 28px;">預約志工</h1>
-    </div>
-    <div style="display:flex; align-items:center;">
-      <h1 style="margin:0; text-align:right;">
-        <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-          <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar"
-               style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;display:none;">
-          <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size:26px;">載入中</span>
-        </span>
-      </h1>
-    </div>
-  </nav>
-
-<h1 class="title" style="font-size: 24px;"> 輸入內容</h1>
-  <form id="dataForm">
-    
-    <label>日期
+    <h1 class="title" style="font-size: 24px">輸入內容</h1>
+    <form id="dataForm">
+      <label
+        >日期
         <div class="picker-wrapper">
-            <div id="dateDisplay" class="picker-display"></div>
-            <input type="date" id="date" class="real-picker-input">
+          <div id="dateDisplay" class="picker-display"></div>
+          <input type="date" id="date" class="real-picker-input" />
         </div>
-    </label>
+      </label>
 
-    <label>時間
+      <label
+        >時間
         <div class="picker-wrapper">
-            <div id="timeDisplay" class="picker-display"></div>
-            <input type="time" id="time" class="real-picker-input">
+          <div id="timeDisplay" class="picker-display"></div>
+          <input type="time" id="time" class="real-picker-input" />
         </div>
-    </label>
+      </label>
 
-    <label>門診科別</label>
-    <select id="department" class="form-select">
-      <option value="" disabled selected>請選擇科別</option>
-      <optgroup label="內科">
-        <option value="一般內科">一般內科</option>
-        <option value="心臟內科">心臟內科</option>
-        <option value="呼吸胸腔內科">呼吸胸腔內科</option>
-        <option value="腎臟內科">腎臟內科</option>
-        <option value="胃腸肝膽內科">胃腸肝膽內科</option>
-        <option value="感染科">感染科</option>
-        <option value="神經內科">神經內科</option>
-      </optgroup>
-      <optgroup label="外科">
-        <option value="一般外科">一般外科</option>
-        <option value="心臟血管外科">心臟血管外科</option>
-        <option value="胸腔外科">胸腔外科</option>
-        <option value="神經外科">神經外科</option>
-        <option value="骨科">骨科</option>
-        <option value="小兒外科">小兒外科</option>
-        <option value="泌尿外科">泌尿外科</option>
-        <option value="大腸直腸外科">大腸直腸外科</option>
-      </optgroup>
-      <optgroup label="診所">
-      <option value="診所">診所</option>
+      <label>門診科別</label>
+      <select id="department" class="form-select">
+        <option value="" disabled selected>請選擇科別</option>
+        <optgroup label="內科">
+          <option value="一般內科">一般內科</option>
+          <option value="心臟內科">心臟內科</option>
+          <option value="呼吸胸腔內科">呼吸胸腔內科</option>
+          <option value="腎臟內科">腎臟內科</option>
+          <option value="胃腸肝膽內科">胃腸肝膽內科</option>
+          <option value="感染科">感染科</option>
+          <option value="神經內科">神經內科</option>
+        </optgroup>
+        <optgroup label="外科">
+          <option value="一般外科">一般外科</option>
+          <option value="心臟血管外科">心臟血管外科</option>
+          <option value="胸腔外科">胸腔外科</option>
+          <option value="神經外科">神經外科</option>
+          <option value="骨科">骨科</option>
+          <option value="小兒外科">小兒外科</option>
+          <option value="泌尿外科">泌尿外科</option>
+          <option value="大腸直腸外科">大腸直腸外科</option>
+        </optgroup>
+        <optgroup label="診所">
+          <option value="診所">診所</option>
+        </optgroup>
+      </select>
 
-    </select>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 10px;
+          flex-wrap: wrap;
+        "
+      >
+        <label style="font-weight: 600; margin: 0">見面地址</label>
+        <button
+          type="button"
+          id="useLocationBtn"
+          style="
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #0984e3;
+            background: #0984e3;
+            color: #fff;
+            cursor: pointer;
+          "
+        >
+          目前位置
+        </button>
+      </div>
+      <div
+        id="viewNote"
+        style="
+          width: 100%;
+          margin: 0 0 8px;
+          padding: 0 0 8px;
+          color: #666;
+          font-size: 13px;
+        "
+      >
+        (可以透過搜尋醫院地址或地點)
+      </div>
+      <div
+        id="mapWrap"
+        style="
+          display: none;
+          position: relative;
+          width: 100%;
+          height: 250px;
+          margin-top: 12px;
+          border-radius: 8px;
+          overflow: hidden;
+        "
+      >
+        <input
+          id="mapSearch"
+          type="text"
+          placeholder="搜尋地點或地址"
+          autocomplete="off"
+          style="
+            position: absolute;
+            left: 18px;
+            right: auto;
+            top: 56px;
+            transform: none;
+            z-index: 999;
+            width: 220px;
+            max-width: 45%;
+            height: 36px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            font-size: 14px;
+            outline: none;
+            display: none;
+          "
+        />
+        <div
+          id="map"
+          style="width: 100%; height: 100%; border-radius: 8px"
+        ></div>
+      </div>
 
-  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
-    <label style="font-weight:600;margin:0;">見面地址</label>
-    <button type="button" id="useLocationBtn" style="padding:8px 12px;border-radius:8px;border:1px solid #0984e3;background:#0984e3;color:#fff;cursor:pointer;">目前位置</button>
-  </div>
-  <div id="viewNote" style="width:100%; margin:0 0 8px; padding:0 0 8px; color:#666; font-size:13px; ">
-    (可以透過搜尋醫院地址或地點)
-  </div>
-  <div id="mapWrap" style="display:none; position:relative; width:100%; height:250px; margin-top:12px; border-radius:8px; overflow:hidden;">
-    <input id="mapSearch" type="text"
-      placeholder="搜尋地點或地址"
-      autocomplete="off"
-      style="position:absolute;left:18px;right:auto;top:56px;transform:none;z-index:999;width:220px;max-width:45%;height:36px;padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);box-shadow:0 6px 16px rgba(0,0,0,0.10);background:#fff;font-size:14px;outline:none;display:none;">
-    <div id="map" style="width:100%; height:100%; border-radius:8px;"></div>
-   </div>
+      <div style="margin-top: 10px">
+        <input
+          id="addressFull"
+          type="text"
+          placeholder="請輸入見面地址（或按「目前位置」自動填入）"
+          style="
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #888;
+            background: #fff;
+            color: #222;
+            font-size: 16px;
+            box-sizing: border-box;
+          "
+        />
+      </div>
 
-  <div style="margin-top:10px;">
-    <input id="addressFull" type="text" placeholder="請輸入見面地址（或按「目前位置」自動填入）"
-           style="width:100%;padding:10px;border-radius:10px;border:1px solid #888;background:#fff;color:#222;font-size:16px;box-sizing:border-box;">
-  </div>
+      <button type="button" onclick="toggleCard()">配對</button>
+      <button id="showBookingsBtn" type="button">預約查詢</button>
+    </form>
 
-  <button type="button" onclick="toggleCard()">配對</button>
-  <button id="showBookingsBtn" type="button">預約查詢</button>
-  </form>
+    <h2 class="title" style="font-size: 24px">志工資訊</h2>
+    <p
+      id="matchHint"
+      style="text-align: center; margin-top: 16px; color: #555; font-size: 16px"
+    >
+      💡 輸入資料即可出現配對志工
+    </p>
+    <div
+      id="matchHint"
+      style="
+        text-align: center;
+        margin-top: 10px;
+        font-size: 15px;
+        color: #666;
+        display: none;
+      "
+    >
+      🌀 輸入資料即可出現配對志工...
+    </div>
 
-  <h2 class="title" style="font-size: 24px;">志工資訊</h2>
-<p id="matchHint" style="text-align:center;margin-top:16px;color:#555;font-size:16px;">
-  💡 輸入資料即可出現配對志工
-</p>
-  <div id="matchHint" 
-      style="text-align:center;margin-top:10px;font-size:15px;color:#666;display:none;">
-    🌀 輸入資料即可出現配對志工...
-  </div>
+    <div class="slider-container">
+      <div class="card-container" id="cardContainer"></div>
+      <button class="arrow left" id="prevBtn">❮</button>
+      <button class="arrow right" id="nextBtn">❯</button>
+      <div class="pagination" id="pagination"></div>
+    </div>
 
-  <div class="slider-container">
-    <div class="card-container" id="cardContainer"></div>
-    <button class="arrow left" id="prevBtn">❮</button>
-    <button class="arrow right" id="nextBtn">❯</button>
-    <div class="pagination" id="pagination"></div>
-  </div>
-
-  <div id="customModal" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,0.95);justify-content:center;align-items:center;z-index:2000;">
-    <div id="customModalContent" style="background:white;padding:18px;border-radius:12px;min-width:260px;max-width:90%;box-shadow:0 6px 24px rgba(0,0,0,0.2);text-align:center;">
-      <div id="customModalMessage" style="margin-bottom:12px;color:#333;"></div>
-      <div style="display:flex;gap:12px;justify-content:center;">
-        <button id="customModalOk" style="background:#0984e3;color:white;padding:8px 12px;border-radius:6px;border:none;">確定</button>
-        <button id="customModalCancel" style="display:none;background:#ccc;padding:8px 12px;border-radius:6px;border:none;">取消</button>
+    <div
+      id="customModal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.95);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+      "
+    >
+      <div
+        id="customModalContent"
+        style="
+          background: white;
+          padding: 18px;
+          border-radius: 12px;
+          min-width: 260px;
+          max-width: 90%;
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+          text-align: center;
+        "
+      >
+        <div
+          id="customModalMessage"
+          style="margin-bottom: 12px; color: #333"
+        ></div>
+        <div style="display: flex; gap: 12px; justify-content: center">
+          <button
+            id="customModalOk"
+            style="
+              background: #0984e3;
+              color: white;
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: none;
+            "
+          >
+            確定
+          </button>
+          <button
+            id="customModalCancel"
+            style="
+              display: none;
+              background: #ccc;
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: none;
+            "
+          >
+            取消
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    /* =================================================================
+    <script>
+      /* =================================================================
        1. 全域變數與設定 (Global Config)
        ================================================================= */
-    const LIFF_ID = '2008484068-vazlor5r'; 
-    const API_BASE_URL = "https://supabase-api-six.vercel.app";
-    
-    let volunteers = [];    
-    let bookedList = [];    
-    let userId = "";        
-    let userName = "";      
-    let currentEditEventId = ""; 
-    
-    let currentIndex = 0;   
+      const LIFF_ID = "2008484068-vazlor5r";
+      const API_BASE_URL = "https://supabase-api-six.vercel.app";
 
-    const style = document.createElement("style");
-    style.innerHTML = `
+      let volunteers = [];
+      let bookedList = [];
+      let userId = "test_line_id_002o";
+      let userName = "";
+      let currentEditEventId = "";
+      let identify = "未註冊";
+
+      let currentIndex = 0;
+
+      const style = document.createElement("style");
+      style.innerHTML = `
       @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }`;
-    document.head.appendChild(style);
+      document.head.appendChild(style);
 
-    // [新增] 初始化選擇器監聽
-    initDateTimePickers();
+      // [新增] 初始化選擇器監聽
+      initDateTimePickers();
 
-    // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
-    setDateTimeConstraints();
+      // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
+      setDateTimeConstraints();
 
-    function setDateTimeConstraints() {
-        const dateEl = document.getElementById('date');
-        const timeEl = document.getElementById('time');
+      function setDateTimeConstraints() {
+        const dateEl = document.getElementById("date");
+        const timeEl = document.getElementById("time");
         if (!dateEl) return;
 
-        const pad = (n) => String(n).padStart(2, '0');
+        const pad = (n) => String(n).padStart(2, "0");
 
         function todayStr() {
-            const now = new Date();
-            return now.toISOString().slice(0,10);
+          const now = new Date();
+          return now.toISOString().slice(0, 10);
         }
 
         // 設定 date 的最小值為今天
         dateEl.min = todayStr();
 
         function adjustTimeMin() {
-            if (!timeEl) return;
-            const now = new Date();
-            if (dateEl.value === todayStr()) {
-                // 若選今天，時間最小為現在（往後一分鐘），避免使用者選過去時間
-                const hh = pad(now.getHours());
-                const mm = pad(now.getMinutes() + 1);
-                timeEl.min = `${hh}:${mm}`;
-            } else {
-                timeEl.min = '';
-            }
+          if (!timeEl) return;
+          const now = new Date();
+          if (dateEl.value === todayStr()) {
+            // 若選今天，時間最小為現在（往後一分鐘），避免使用者選過去時間
+            const hh = pad(now.getHours());
+            const mm = pad(now.getMinutes() + 1);
+            timeEl.min = `${hh}:${mm}`;
+          } else {
+            timeEl.min = "";
+          }
         }
 
         // 初始微調（若已選今天）
         adjustTimeMin();
         // 當使用者變更日期時調整 time.min
-        dateEl.addEventListener('change', adjustTimeMin);
-    }
+        dateEl.addEventListener("change", adjustTimeMin);
+      }
 
-    /* =================================================================
+      /* =================================================================
        [新增] 日期與時間選擇器邏輯
        ================================================================= */
-    function initDateTimePickers() {
+      function initDateTimePickers() {
         // 日期欄位監聽
         const dateInput = document.getElementById("date");
-        dateInput.addEventListener("input", function() {
-            updateDateDisplay(this.value, "dateDisplay");
+        dateInput.addEventListener("input", function () {
+          updateDateDisplay(this.value, "dateDisplay");
         });
 
         // 時間欄位監聽
         const timeInput = document.getElementById("time");
-        timeInput.addEventListener("input", function() {
-            updateTimeDisplay(this.value, "timeDisplay");
+        timeInput.addEventListener("input", function () {
+          updateTimeDisplay(this.value, "timeDisplay");
         });
-    }
+      }
 
-    // 格式化日期顯示：YYYY-MM-DD -> YYYY 年 MM 月 DD 日
-    function updateDateDisplay(dateValue, displayElementId) {
+      // 格式化日期顯示：YYYY-MM-DD -> YYYY 年 MM 月 DD 日
+      function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!dateValue) {
-            displayEl.textContent = ""; 
-            displayEl.style.color = "#888";
-            return;
+          displayEl.textContent = "";
+          displayEl.style.color = "#888";
+          return;
         }
-        const [year, month, day] = dateValue.split('-');
+        const [year, month, day] = dateValue.split("-");
         displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
         displayEl.style.color = "#222";
-    }
+      }
 
-    // 格式化時間顯示：HH:mm -> 上午/下午 HH:mm
-    function updateTimeDisplay(timeValue, displayElementId) {
+      // 格式化時間顯示：HH:mm -> 上午/下午 HH:mm
+      function updateTimeDisplay(timeValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
         if (!timeValue) {
-            displayEl.textContent = ""; 
-            displayEl.style.color = "#888";
-            return;
+          displayEl.textContent = "";
+          displayEl.style.color = "#888";
+          return;
         }
-        const [hourStr, minuteStr] = timeValue.split(':');
+        const [hourStr, minuteStr] = timeValue.split(":");
         let hour = parseInt(hourStr);
         let period = "上午";
         if (hour >= 12) {
-            period = "下午";
-            if (hour > 12) hour -= 12;
+          period = "下午";
+          if (hour > 12) hour -= 12;
         }
         if (hour === 0) hour = 12;
-        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedHour = hour.toString().padStart(2, "0");
         displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
         displayEl.style.color = "#222";
-    }
+      }
 
-
-    /* =================================================================
+      /* =================================================================
        2. UI 輔助工具 (UI Helpers)
        ================================================================= */
-    function showAlert(message, cb) {
-        const modal = document.getElementById('customModal');
-        if (!modal) { alert(message); if(cb) cb(); return; }
-        
-        document.getElementById('customModalMessage').innerText = message;
-        document.getElementById('customModalCancel').style.display = 'none';
-        const ok = document.getElementById('customModalOk');
-        modal.style.display = 'flex';
-        ok.focus();
-        
-        const okHandler = () => {
-            modal.style.display = 'none';
-            ok.removeEventListener('click', okHandler);
-            if (cb) cb();
-        };
-        ok.addEventListener('click', okHandler);
-    }
-
-    function showConfirm(message, onConfirm, onCancel) {
-        const modal = document.getElementById('customModal');
-        if (!modal) { 
-            if(confirm(message)) onConfirm(); else onCancel(); 
-            return; 
+      function showAlert(message, cb) {
+        const modal = document.getElementById("customModal");
+        if (!modal) {
+          alert(message);
+          if (cb) cb();
+          return;
         }
 
-        document.getElementById('customModalMessage').innerText = message;
-        const ok = document.getElementById('customModalOk');
-        const cancel = document.getElementById('customModalCancel');
-        cancel.style.display = 'inline-block';
-        modal.style.display = 'flex';
+        document.getElementById("customModalMessage").innerText = message;
+        document.getElementById("customModalCancel").style.display = "none";
+        const ok = document.getElementById("customModalOk");
+        modal.style.display = "flex";
+        ok.focus();
+
+        const okHandler = () => {
+          modal.style.display = "none";
+          ok.removeEventListener("click", okHandler);
+          if (cb) cb();
+        };
+        ok.addEventListener("click", okHandler);
+      }
+
+      function showConfirm(message, onConfirm, onCancel) {
+        const modal = document.getElementById("customModal");
+        if (!modal) {
+          if (confirm(message)) onConfirm();
+          else onCancel();
+          return;
+        }
+
+        document.getElementById("customModalMessage").innerText = message;
+        const ok = document.getElementById("customModalOk");
+        const cancel = document.getElementById("customModalCancel");
+        cancel.style.display = "inline-block";
+        modal.style.display = "flex";
 
         const cleanup = () => {
-            modal.style.display = 'none';
-            ok.removeEventListener('click', okHandler);
-            cancel.removeEventListener('click', cancelHandler);
+          modal.style.display = "none";
+          ok.removeEventListener("click", okHandler);
+          cancel.removeEventListener("click", cancelHandler);
         };
 
-        const okHandler = () => { cleanup(); if (onConfirm) onConfirm(); };
-        const cancelHandler = () => { cleanup(); if (onCancel) onCancel(); };
-        
-        ok.addEventListener('click', okHandler);
-        cancel.addEventListener('click', cancelHandler);
-    }
+        const okHandler = () => {
+          cleanup();
+          if (onConfirm) onConfirm();
+        };
+        const cancelHandler = () => {
+          cleanup();
+          if (onCancel) onCancel();
+        };
 
+        ok.addEventListener("click", okHandler);
+        cancel.addEventListener("click", cancelHandler);
+      }
 
-    /* =================================================================
+      /* =================================================================
        3. LIFF 初始化 (LIFF Integration)
        ================================================================= */
-    const avatarEl = document.getElementById("volunteerAvatar");
-    const nameEl = document.getElementById("volunteerName");
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
 
-    async function initLiffAndSetProfile() {
+      async function initLiffAndSetProfile() {
         try {
-            await liff.init({ liffId: LIFF_ID });
+          await liff.init({ liffId: LIFF_ID });
 
-            if (!liff.isLoggedIn()) {
-                nameEl.innerText = "未登入";
-                avatarEl.style.display = "none";
-                userId = "test_line_id_002o"; 
-                return;
-            }
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
+          }
 
-            const profile = await liff.getProfile();
-            userId = profile.userId;
-            userName = profile.displayName;
-            console.log("LIFF Profile userId:", userId, "userName:", userName);
+          const profile = await liff.getProfile();
+          userId = profile.userId;
+          userName = profile.displayName;
+          localStorage.setItem("userId", userId);
+          console.log("LIFF Profile userId:", userId, "userName:", userName);
 
-            nameEl.innerText = profile.displayName || "志工";
-            if (profile.pictureUrl) {
-                avatarEl.src = profile.pictureUrl;
-                avatarEl.style.display = "inline-block";
-            } else {
-                avatarEl.style.display = "none";
-            }
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+
+          // 檢查後端是否有這個userId註冊
+          fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+            .then((res) => res.json())
+            .then((result) => {
+              if (!result.success) {
+                alert(
+                  "首次使用請先進行註冊個人資料。將為您導入註冊頁面，點擊「確定」前往登入頁面。"
+                );
+                // API 判定不存在 / 驗證失敗 → 導回登入頁面
+                window.location.href = "../../Login-or-register/index.html";
+              } else {
+                identify = result.role; //回傳文字(志工或長者)
+                console.log("登入角色 role：", result.role);
+              }
+            })
+            .catch((err) => {
+              console.error("身分檢查 API 錯誤：", err);
+              // API 出錯也視為無效身分
+              window.location.href = "../../Login-or-register/index.html";
+            });
         } catch (err) {
-            console.error("LIFF init error:", err);
-            userId = "test_line_id_002o"; 
+          console.error("LIFF init error:", err);
+          userId = "test_line_id_002o";
         }
-    }
+      }
 
-    avatarEl && avatarEl.addEventListener("click", () => {
-        if (liff.isLoggedIn()) {
-            window.location.href = "../../Login-or-register/index.html";
-        } else {
+      //大頭貼跳傳頁面設定
+      avatarEl &&
+        avatarEl.addEventListener("click", () => {
+          if (liff.isLoggedIn()) {
+            switch (identify) {
+              case "志工":
+                window.location.href =
+                  "../../Login-or-register/志工資料顯示.html";
+                break;
+              case "長者":
+                window.location.href =
+                  "../../Login-or-register/長輩資料顯示.html";
+                break;
+              default:
+                // "未註冊" 或 undefined 都導往登入
+                window.location.href = "../../Login-or-register/index.html";
+            }
+          } else {
             liff.login({ redirectUri: window.location.href });
-        }
-    });
+          }
+        });
 
-    nameEl && nameEl.addEventListener("click", () => {
-        if (!liff.isLoggedIn()) {
+      nameEl &&
+        nameEl.addEventListener("click", () => {
+          if (!liff.isLoggedIn()) {
             liff.login({ redirectUri: window.location.href });
-        } else {
+          } else {
             alert("已登入：" + (nameEl.innerText || "使用者"));
-        }
-    });
+          }
+        });
 
-    initLiffAndSetProfile();
+      initLiffAndSetProfile();
 
-
-    /* =================================================================
+      /* =================================================================
        4. 資料初始化 (Data Initialization)
        ================================================================= */
-    window.addEventListener("DOMContentLoaded", async () => {
+      window.addEventListener("DOMContentLoaded", async () => {
         const apiUrl = `${API_BASE_URL}/volunteers`;
         try {
-            const res = await fetch(apiUrl);
-            if (!res.ok) throw new Error("網路錯誤");
-            const result = await res.json();
+          const res = await fetch(apiUrl);
+          if (!res.ok) throw new Error("網路錯誤");
+          const result = await res.json();
 
-            if (!result.success || !Array.isArray(result.data)) {
-                console.error("❌ API 格式錯誤或無資料");
-                return;
-            }
+          if (!result.success || !Array.isArray(result.data)) {
+            console.error("❌ API 格式錯誤或無資料");
+            return;
+          }
 
-            volunteers = result.data.map((v) => ({
-                userId: v.volunteer_user_id || "未取得該志工userId",
-                name: v.volunteer_name || "未命名",
-                gender: v.gender || "未填寫",
-                age: v.age || "未提供",
-                tags: Array.isArray(v.personality) ? v.personality : [],
-                desc: v.partner_experience || v.partner_expeienceence || "尚無經驗說明",
-                cover: "c2dfff.jpg", 
-                avatar: v.image_url,
-                available_time: v.available_time || "未提供",
-                rating: 80 
-            }));
+          volunteers = result.data.map((v) => ({
+            userId: v.volunteer_user_id || "未取得該志工userId",
+            name: v.volunteer_name || "未命名",
+            gender: v.gender || "未填寫",
+            age: v.age || "未提供",
+            tags: Array.isArray(v.personality) ? v.personality : [],
+            desc:
+              v.partner_experience || v.partner_expeienceence || "",
+            cover: "c2dfff.jpg",
+            avatar: v.image_url,
+            available_time: v.available_time || "未提供",
+            rating: 80,
+          }));
 
-            console.log("✅ 志工資料載入完成", volunteers);
+          console.log("✅ 志工資料載入完成", volunteers);
 
-            const showBookingsBtn = document.getElementById('showBookingsBtn');
-            if (showBookingsBtn) {
-                showBookingsBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (typeof showBookings === 'function') {
-                        showBookings();
-                    } else {
-                        console.warn('showBookings 函式不存在');
-                    }
-                });
-            }
+          const showBookingsBtn = document.getElementById("showBookingsBtn");
+          if (showBookingsBtn) {
+            showBookingsBtn.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (typeof showBookings === "function") {
+                showBookings();
+              } else {
+                console.warn("showBookings 函式不存在");
+              }
+            });
+          }
         } catch (err) {
-            console.error("⚠️ 志工資料載入失敗：", err);
+          console.error("⚠️ 志工資料載入失敗：", err);
         }
-    });
+      });
 
-
-    /* =================================================================
+      /* =================================================================
        5. 核心功能：配對與搜尋 (Matching & Search)
        ================================================================= */
-    function toggleCard() {
-        const container = document.getElementById('cardContainer');
-        const pagination = document.getElementById('pagination');
-        const slider = document.querySelector('.slider-container');
-        const hint = document.getElementById('matchHint');
+      function toggleCard() {
+        const container = document.getElementById("cardContainer");
+        const pagination = document.getElementById("pagination");
+        const slider = document.querySelector(".slider-container");
+        const hint = document.getElementById("matchHint");
 
         if (!container || !pagination || !slider || !hint) {
-            console.warn('DOM 元素缺失');
-            showAlert('頁面元素遺失，請重新整理。');
-            return;
+          console.warn("DOM 元素缺失");
+          showAlert("頁面元素遺失，請重新整理。");
+          return;
         }
 
         const fieldDefs = [
-            { id: 'date', name: '日期' },
-            { id: 'time', name: '時間' },
-            { id: 'department', name: '科別' },
-            { id: 'addressFull', name: '見面地址' }
+          { id: "date", name: "日期" },
+          { id: "time", name: "時間" },
+          { id: "department", name: "科別" },
+          { id: "addressFull", name: "見面地址" },
         ];
 
-        fieldDefs.forEach(f => { 
-            const el = document.getElementById(f.id); 
-            if (el) el.classList.remove('invalid'); 
+        fieldDefs.forEach((f) => {
+          const el = document.getElementById(f.id);
+          if (el) el.classList.remove("invalid");
         });
 
         const missing = [];
-        fieldDefs.forEach(f => {
-            const el = document.getElementById(f.id);
-            const val = el ? String(el.value || '').trim() : '';
-            if (!val) {
-                missing.push(f.name);
-                if (el) el.classList.add('invalid');
-            }
+        fieldDefs.forEach((f) => {
+          const el = document.getElementById(f.id);
+          const val = el ? String(el.value || "").trim() : "";
+          if (!val) {
+            missing.push(f.name);
+            if (el) el.classList.add("invalid");
+          }
         });
 
         if (missing.length) {
-            const first = fieldDefs.find(f => {
-                const el = document.getElementById(f.id);
-                return el && !String(el.value || '').trim();
-            });
-            if (first) document.getElementById(first.id).focus();
-            
-            showAlert(`請完整輸入欄位（${missing.join('、')}）！`);
-            hint.style.display = "block";
-            hint.innerText = "💡 請補齊上方缺少的欄位後再配對";
-            return;
+          const first = fieldDefs.find((f) => {
+            const el = document.getElementById(f.id);
+            return el && !String(el.value || "").trim();
+          });
+          if (first) document.getElementById(first.id).focus();
+
+          showAlert(`請完整輸入欄位（${missing.join("、")}）！`);
+          hint.style.display = "block";
+          hint.innerText = "💡 請補齊上方缺少的欄位後再配對";
+          return;
         }
 
         const date = document.getElementById("date").value.trim();
         const time = document.getElementById("time").value.trim();
         const department = document.getElementById("department").value.trim();
-        const city = document.getElementById("addressFull").value.trim() || '';
+        const city = document.getElementById("addressFull").value.trim() || "";
 
         container.innerHTML = "";
         pagination.innerHTML = "";
@@ -1065,85 +1342,115 @@
             正在為您尋找配對志工...`;
 
         setTimeout(async () => {
-            try {
-                const MATCH_API_URL = `${API_BASE_URL}/test`; 
-                const res = await fetch(MATCH_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        elder_user_id: userId,
-                        date, time, department, city
-                    })
-                });
+          try {
+            const MATCH_API_URL = `${API_BASE_URL}/match`;
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: city }); // 地址 ➜ 經緯度
+            const { lat, lng } = await getLatLngFromAddress(city, geocoder);
+            console.log("顯示地址轉換成經緯度的經緯度資訊：", lat, lng);
+            const res = await fetch(MATCH_API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                elder_user_id: userId,
+                date,
+                time,
+                department,
+                location: { lat, lng },
+              }),
+            });
 
-                const result = await res.json();
-                const matchedIds = result.volunteer_user_ids || [];
-                console.log("符合的志工 ID：", matchedIds);
+            const result = await res.json();
+            const matchedIds = result.volunteer_user_ids || [];
+            console.log("符合的志工 ID：", matchedIds);
 
-                const sorted = matchedIds
-                    .map(id => volunteers.find(v => v.userId === id))
-                    .filter(v => v);
+            const sorted = matchedIds
+              .map((id) => volunteers.find((v) => v.userId === id))
+              .filter((v) => v);
 
-                hint.innerHTML = sorted.length > 0 ? "✅ 已找到合適志工！" : "⚠️ 暫無符合條件的志工";
+            hint.innerHTML =
+              sorted.length > 0
+                ? "✅ 已找到合適志工！"
+                : "⚠️ 暫無符合條件的志工";
 
-                renderCards(sorted, container, slider, pagination);
-
-            } catch (err) {
-                console.error("配對失敗", err);
-                hint.innerText = "❌ 配對過程發生錯誤，請稍後再試";
-            }
+            renderCards(sorted, container, slider, pagination);
+          } catch (err) {
+            console.error("配對失敗", err);
+            hint.innerText = "❌ 配對過程發生錯誤，請稍後再試";
+          }
         }, 600);
-    }
+      }
 
-    function renderCards(list, container, slider, pagination) {
+      function getLatLngFromAddress(address, geocoder) {
+        return new Promise((resolve, reject) => {
+          geocoder.geocode({ address: address }, (results, status) => {
+            if (status === "OK" && results.length > 0) {
+              const location = results[0].geometry.location;
+              resolve({
+                lat: location.lat(),
+                lng: location.lng(),
+              });
+            } else {
+              reject("地址轉換失敗：" + status);
+            }
+          });
+        });
+      }
+
+      function renderCards(list, container, slider, pagination) {
         slider.style.display = "block";
         const prevBtnEl = document.getElementById("prevBtn");
         const nextBtnEl = document.getElementById("nextBtn");
 
         if (!list.length) {
-            if (prevBtnEl) prevBtnEl.style.display = "none";
-            if (nextBtnEl) nextBtnEl.style.display = "none";
-            container.innerHTML = `
+          if (prevBtnEl) prevBtnEl.style.display = "none";
+          if (nextBtnEl) nextBtnEl.style.display = "none";
+          container.innerHTML = `
                 <div class="card" style="flex:0 0 100%;display:flex;justify-content:center;align-items:center;padding:24px;">
                   <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e6e6e6;font-size:18px;color:#333;text-align:center;">
                     目前無符合條件的志工
                   </div>
                 </div>`;
-            return;
+          return;
         }
 
         if (prevBtnEl) prevBtnEl.style.display = "";
         if (nextBtnEl) nextBtnEl.style.display = "";
 
         list.forEach((v) => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
                 <div class="card-inner">
                   <div class="card-cover"></div>
                   <img src="${v.avatar}" class="card-avatar">
                   <div class="card-content">
                     <h2 class="card-title">${v.name}</h2>
-                    <div class="tag-list">${v.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                    <div class="tag-list">${v.tags
+                      .map((tag) => `<span class="tag">${tag}</span>`)
+                      .join("")}</div>
                     <p class="card-text">${v.desc}</p>
                     <div class="ratings">
-                      <div class="full_heart" style="width:${v.rating}%">❤❤❤❤❤</div>
+                      <div class="full_heart" style="width:${
+                        v.rating
+                      }%">❤❤❤❤❤</div>
                     </div>
                     <br>
-                    <button class="book-btn" data-name="${v.name}" data-userid="${v.userId}">預約志工</button>
+                    <button class="book-btn" data-name="${
+                      v.name
+                    }" data-userid="${v.userId}">預約志工</button>
                   </div>
                 </div>`;
-            container.appendChild(card);
+          container.appendChild(card);
         });
 
         setupSlider(list.length);
-    }
+      }
 
-
-    /* =================================================================
+      /* =================================================================
        6. 輪播與手勢控制 (Slider & Gestures)
        ================================================================= */
-    function setupSlider(count) {
+      function setupSlider(count) {
         const container = document.getElementById("cardContainer");
         const pagination = document.getElementById("pagination");
         pagination.innerHTML = "";
@@ -1151,213 +1458,235 @@
         container.style.transform = "translateX(0%)";
 
         for (let i = 0; i < count; i++) {
-            const dot = document.createElement("span");
-            dot.classList.add("dot");
-            if (i === 0) dot.classList.add("active");
-            dot.addEventListener("click", () => goToSlide(i, count));
-            pagination.appendChild(dot);
+          const dot = document.createElement("span");
+          dot.classList.add("dot");
+          if (i === 0) dot.classList.add("active");
+          dot.addEventListener("click", () => goToSlide(i, count));
+          pagination.appendChild(dot);
         }
 
         const prevBtn = document.getElementById("prevBtn");
         const nextBtn = document.getElementById("nextBtn");
-        if(prevBtn) prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
-        if(nextBtn) nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
+        if (prevBtn) prevBtn.onclick = () => goToSlide(currentIndex - 1, count);
+        if (nextBtn) nextBtn.onclick = () => goToSlide(currentIndex + 1, count);
 
         registerSwipe(container, count);
-    }
+      }
 
-    function goToSlide(index, count) {
+      function goToSlide(index, count) {
         const container = document.getElementById("cardContainer");
         const dots = document.querySelectorAll(".dot");
         if (index < 0) index = count - 1;
         if (index >= count) index = 0;
         currentIndex = index;
         container.style.transform = `translateX(-${index * 100}%)`;
-        dots.forEach(dot => dot.classList.remove("active"));
-        if(dots[index]) dots[index].classList.add("active");
-    }
+        dots.forEach((dot) => dot.classList.remove("active"));
+        if (dots[index]) dots[index].classList.add("active");
+      }
 
-    function registerSwipe(container, count) {
+      function registerSwipe(container, count) {
         let startX = 0;
         let deltaX = 0;
         let isMoving = false;
 
-        container.addEventListener('touchstart', (e) => {
+        container.addEventListener(
+          "touchstart",
+          (e) => {
             if (!e.touches || e.touches.length === 0) return;
             startX = e.touches[0].clientX;
             isMoving = true;
-        }, { passive: true });
+          },
+          { passive: true }
+        );
 
-        container.addEventListener('touchmove', (e) => {
+        container.addEventListener(
+          "touchmove",
+          (e) => {
             if (!isMoving || !e.touches || e.touches.length === 0) return;
             deltaX = e.touches[0].clientX - startX;
-            container.style.transition = 'none';
-            container.style.transform = `translateX(${-currentIndex * 100 + (deltaX / container.clientWidth) * 100}%)`;
-        }, { passive: true });
+            container.style.transition = "none";
+            container.style.transform = `translateX(${
+              -currentIndex * 100 + (deltaX / container.clientWidth) * 100
+            }%)`;
+          },
+          { passive: true }
+        );
 
-        container.addEventListener('touchend', (e) => {
+        container.addEventListener(
+          "touchend",
+          (e) => {
             isMoving = false;
-            container.style.transition = 'transform 0.5s ease';
+            container.style.transition = "transform 0.5s ease";
             if (Math.abs(deltaX) > 40) {
-                if (deltaX < 0) goToSlide(currentIndex + 1, count);
-                else goToSlide(currentIndex - 1, count);
+              if (deltaX < 0) goToSlide(currentIndex + 1, count);
+              else goToSlide(currentIndex - 1, count);
             } else {
-                container.style.transform = `translateX(-${currentIndex * 100}%)`;
+              container.style.transform = `translateX(-${currentIndex * 100}%)`;
             }
             deltaX = 0;
-        }, { passive: true });
-    }
+          },
+          { passive: true }
+        );
+      }
 
-
-    /* =================================================================
+      /* =================================================================
        7. 預約功能 (Booking Logic)
        ================================================================= */
-    (function bindBookingDelegate() {
-        const container = document.getElementById('cardContainer');
+      (function bindBookingDelegate() {
+        const container = document.getElementById("cardContainer");
         if (!container) return;
 
-        container.addEventListener('click', (e) => {
-            const btn = e.target.closest('.book-btn');
-            if (!btn) return;
+        container.addEventListener("click", (e) => {
+          const btn = e.target.closest(".book-btn");
+          if (!btn) return;
 
-            const volName = btn.dataset.name;
-            const volId = btn.dataset.userid;
-            const dtDate = document.getElementById('date').value;
-            const dtTime = document.getElementById('time').value;
-            const datetime = `${dtDate} ${dtTime}`;
-            const departmentVal = document.getElementById('department').value;
-            const meetingEl = document.querySelector('input[name="meetingPlace"]:checked');
-            const meetingPlaceVal = meetingEl ? meetingEl.value : '';
-            const addressFullVal = (document.getElementById('addressFull') || {}).value || '';
+          const volName = btn.dataset.name;
+          const volId = btn.dataset.userid;
+          const dtDate = document.getElementById("date").value;
+          const dtTime = document.getElementById("time").value;
+          const datetime = `${dtDate} ${dtTime}`;
+          const departmentVal = document.getElementById("department").value;
+          const meetingEl = document.querySelector(
+            'input[name="meetingPlace"]:checked'
+          );
+          const meetingPlaceVal = meetingEl ? meetingEl.value : "";
+          const addressFullVal =
+            (document.getElementById("addressFull") || {}).value || "";
 
-            if (!dtDate || !dtTime) {
-                showAlert('請選擇日期與時間');
-                return;
-            }
+          if (!dtDate || !dtTime) {
+            showAlert("請選擇日期與時間");
+            return;
+          }
 
-            // 檢查是否為未來時間（若不是則阻止預約）
-            const appt = new Date(`${dtDate}T${dtTime}`);
-            if (isNaN(appt.getTime()) || appt.getTime() <= Date.now()) {
-                showAlert('請選擇未來的日期與時間，現在時間或過去的時間無法預約');
-                // 將焦點移到時間欄位以便修正
-                document.getElementById('time').focus();
-                return;
-            }
-            
-            if (bookedList.some(b => b.volunteer === volName && b.datetime === datetime)) {
-                showAlert(`⚠️ ${volName} 已於 ${datetime} 預約過！`);
-                return;
-            }
+          // 檢查是否為未來時間（若不是則阻止預約）
+          const appt = new Date(`${dtDate}T${dtTime}`);
+          if (isNaN(appt.getTime()) || appt.getTime() <= Date.now()) {
+            showAlert("請選擇未來的日期與時間，現在時間或過去的時間無法預約");
+            // 將焦點移到時間欄位以便修正
+            document.getElementById("time").focus();
+            return;
+          }
 
-            const newBooking = {
-                elder_user_id: userId,
-                elder_name: userName,
-                appointment_time: datetime,
-                visit_type: departmentVal,
-                meeting_place: meetingPlaceVal,
-                meeting_address: addressFullVal,
-                volunteer_user_id: volId,
-                volunteer_name: volName
-            };
+          if (
+            bookedList.some(
+              (b) => b.volunteer === volName && b.datetime === datetime
+            )
+          ) {
+            showAlert(`⚠️ ${volName} 已於 ${datetime} 預約過！`);
+            return;
+          }
 
-            fetch(`${API_BASE_URL}/appointments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newBooking)
+          const newBooking = {
+            elder_user_id: userId,
+            elder_name: userName,
+            appointment_time: datetime,
+            visit_type: departmentVal,
+            meeting_place: meetingPlaceVal,
+            meeting_address: addressFullVal,
+            volunteer_user_id: volId,
+            volunteer_name: volName,
+          };
+
+          fetch(`${API_BASE_URL}/appointments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newBooking),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log("預約成功", data);
+              bookedList.push({
+                volunteer: volName,
+                user: userName,
+                datetime: datetime,
+                department: departmentVal,
+                meetingPlace: meetingPlaceVal,
+                address: addressFullVal,
+                event_id: data.data ? data.data.event_id : null,
+              });
+              showAlert(`✅ 已成功預約 ${volName} 的志工服務！`);
             })
-            .then(res => res.json())
-            .then(data => {
-                console.log('預約成功', data);
-                bookedList.push({
-                    volunteer: volName,
-                    user: userName,
-                    datetime: datetime,
-                    department: departmentVal,
-                    meetingPlace: meetingPlaceVal,
-                    address: addressFullVal,
-                    event_id: data.data ? data.data.event_id : null 
-                });
-                showAlert(`✅ 已成功預約 ${volName} 的志工服務！`);
-            })
-            .catch(err => {
-                console.error('預約失敗', err);
-                showAlert('預約請求失敗，請稍後再試');
+            .catch((err) => {
+              console.error("預約失敗", err);
+              showAlert("預約請求失敗，請稍後再試");
             });
         });
-    })();
+      })();
 
-
-    /* =================================================================
+      /* =================================================================
        8. 預約查詢與管理 (Booking History & Management)
        ================================================================= */
-    async function showBookings() {
+      async function showBookings() {
         if (!userId) {
-            showAlert("⚠️ 請先登入 LINE 帳號以取得資料");
-            return;
+          showAlert("⚠️ 請先登入 LINE 帳號以取得資料");
+          return;
         }
 
         try {
-            const res = await fetch(`${API_BASE_URL}/appointments/elder/${userId}`);
-            const json = await res.json();
+          const res = await fetch(
+            `${API_BASE_URL}/appointments/elder/${userId}`
+          );
+          const json = await res.json();
 
-            if (!json.success) {
-                showAlert("讀取預約資料失敗");
-                return;
-            }
-
-            bookedList = json.data.map(b => ({
-                volunteer: b.volunteer_name,
-                user: b.elder_name || "",
-                datetime: b.appointment_time ? b.appointment_time.replace("T", " ") : "",
-                department: b.visit_type,
-                meetingPlace: b.meeting_place,
-                address: b.meeting_address,
-                event_id: b.event_id,
-                city: b.city,
-                district: b.district
-            }));
-
-        } catch (err) {
-            console.error(err);
-            showAlert("無法連線到伺服器");
+          if (!json.success) {
+            showAlert("讀取預約資料失敗");
             return;
+          }
+
+          bookedList = json.data.map((b) => ({
+            volunteer: b.volunteer_name,
+            user: b.elder_name || "",
+            datetime: b.appointment_time
+              ? b.appointment_time.replace("T", " ")
+              : "",
+            department: b.visit_type,
+            meetingPlace: b.meeting_place,
+            address: b.meeting_address,
+            event_id: b.event_id,
+            city: b.city,
+            district: b.district,
+          }));
+        } catch (err) {
+          console.error(err);
+          showAlert("無法連線到伺服器");
+          return;
         }
 
         if (bookedList.length === 0) {
-            showAlert("目前尚無預約紀錄！");
-            return;
+          showAlert("目前尚無預約紀錄！");
+          return;
         }
 
         createBookingModal();
-    }
+      }
 
-    function createBookingModal() {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        
-        const box = document.createElement('div');
-        box.className = 'modal-box';
-        
-        const inner = document.createElement('div');
-        inner.className = 'modal-inner';
+      function createBookingModal() {
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
 
-        const title = document.createElement('h3');
-        title.style.textAlign = 'center';
-        title.innerText = '📋 預約紀錄';
+        const box = document.createElement("div");
+        box.className = "modal-box";
 
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'close-btn';
-        closeBtn.innerHTML = '&times;';
+        const inner = document.createElement("div");
+        inner.className = "modal-inner";
+
+        const title = document.createElement("h3");
+        title.style.textAlign = "center";
+        title.innerText = "📋 預約紀錄";
+
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "close-btn";
+        closeBtn.innerHTML = "&times;";
         closeBtn.onclick = () => overlay.remove();
         inner.appendChild(closeBtn);
 
-        const tableWrap = document.createElement('div');
-        tableWrap.className = 'modal-table-wrap allTable-div';
+        const tableWrap = document.createElement("div");
+        tableWrap.className = "modal-table-wrap allTable-div";
 
-        const table = document.createElement('table');
-        table.className = 'modal-table';
-        
-        const thead = document.createElement('thead');
+        const table = document.createElement("table");
+        table.className = "modal-table";
+
+        const thead = document.createElement("thead");
         thead.innerHTML = `
             <tr style="background:#74b9ff;color:white;">
                 <th>志工姓名</th>
@@ -1368,220 +1697,241 @@
             </tr>`;
         table.appendChild(thead);
 
-        const tbody = document.createElement('tbody');
+        const tbody = document.createElement("tbody");
 
         // helper: 判斷是否為過去的預約（true = 已過期）
         function isPastDatetime(dtString) {
-            if (!dtString) return false;
-            // 嘗試建立日期物件，若原格式為 "YYYY-MM-DD HH:mm..."，嘗試轉成 ISO
-            let d = new Date(dtString);
-            if (isNaN(d)) {
-                // 將空格改為 T 再試一次
-                const iso = dtString.replace(' ', 'T');
-                d = new Date(iso);
-            }
-            if (isNaN(d)) return false;
-            return d.getTime() < Date.now();
+          if (!dtString) return false;
+          // 嘗試建立日期物件，若原格式為 "YYYY-MM-DD HH:mm..."，嘗試轉成 ISO
+          let d = new Date(dtString);
+          if (isNaN(d)) {
+            // 將空格改為 T 再試一次
+            const iso = dtString.replace(" ", "T");
+            d = new Date(iso);
+          }
+          if (isNaN(d)) return false;
+          return d.getTime() < Date.now();
         }
 
         bookedList.forEach((b) => {
-            const tr = document.createElement('tr');
-            const expired = isPastDatetime(b.datetime);
-            const actionCell = expired
-                ? `<td style="color:#999;">已完成</td>`
-                : `<td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>`;
+          const tr = document.createElement("tr");
+          const expired = isPastDatetime(b.datetime);
+          const actionCell = expired
+            ? `<td style="color:#999;">已完成</td>`
+            : `<td><button class="cancel-btn" data-event_id="${b.event_id}" style="background:#d63031;color:white;border:none;padding:6px 10px;border-radius:6px;">取消</button></td>`;
 
-            tr.innerHTML = `
+          tr.innerHTML = `
                 <td>${b.volunteer}</td>
                 <td>${b.datetime}</td>
                 <td>${b.department}</td>
-                <td>${b.address || ''}</td>
+                <td>${b.address || ""}</td>
                 ${actionCell}
             `;
-             tbody.appendChild(tr);
-         });
-         table.appendChild(tbody);
-         tableWrap.appendChild(table);
-
-         inner.appendChild(title);
-         inner.appendChild(tableWrap);
-         box.appendChild(inner);
-         overlay.appendChild(box);
-         document.body.appendChild(overlay);
-
-         bindCancelButtons(overlay);
-     }
-
-    function bindCancelButtons(overlay) {
-        overlay.querySelectorAll('.cancel-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const eventId = btn.dataset.event_id;
-                const booking = bookedList.find(b => b.event_id === eventId);
-                
-                if (!booking) { showAlert("資料異常，找不到該預約"); return; }
-
-                showConfirm(`確定要取消與 ${booking.volunteer} 的預約嗎？`, async () => {
-                    try {
-                        const res = await fetch(
-                            `${API_BASE_URL}/appointments/elder/${userId}/${eventId}`,
-                            { method: "DELETE" }
-                        );
-                        const json = await res.json();
-
-                        if (!json.success) {
-                            showAlert("刪除失敗：" + (json.message || ""));
-                            return;
-                        }
-
-                        overlay.remove();
-                        showAlert("已成功取消預約");
-                        showBookings();
-
-                    } catch (err) {
-                        console.error(err);
-                        showAlert("刪除失敗，請稍後再試。");
-                    }
-                });
-            };
+          tbody.appendChild(tr);
         });
-    }
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
 
+        inner.appendChild(title);
+        inner.appendChild(tableWrap);
+        box.appendChild(inner);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
 
-    /* =================================================================
+        bindCancelButtons(overlay);
+      }
+
+      function bindCancelButtons(overlay) {
+        overlay.querySelectorAll(".cancel-btn").forEach((btn) => {
+          btn.onclick = async () => {
+            const eventId = btn.dataset.event_id;
+            const booking = bookedList.find((b) => b.event_id === eventId);
+
+            if (!booking) {
+              showAlert("資料異常，找不到該預約");
+              return;
+            }
+
+            showConfirm(
+              `確定要取消與 ${booking.volunteer} 的預約嗎？`,
+              async () => {
+                try {
+                  const res = await fetch(
+                    `${API_BASE_URL}/appointments/elder/${userId}/${eventId}`,
+                    { method: "DELETE" }
+                  );
+                  const json = await res.json();
+
+                  if (!json.success) {
+                    showAlert("刪除失敗：" + (json.message || ""));
+                    return;
+                  }
+
+                  overlay.remove();
+                  showAlert("已成功取消預約");
+                  showBookings();
+                } catch (err) {
+                  console.error(err);
+                  showAlert("刪除失敗，請稍後再試。");
+                }
+              }
+            );
+          };
+        });
+      }
+
+      /* =================================================================
        9. 地圖與定位功能 (Map & Geolocation)
        ================================================================= */
-    (function initMapFeature() {
-        const btn = document.getElementById('useLocationBtn');
-        const addressFullEl = document.getElementById('addressFull');
-        const mapWrap = document.getElementById('mapWrap');
-        const mapEl = document.getElementById('map');
-        const mapSearchInput = document.getElementById('mapSearch');
+      (function initMapFeature() {
+        const btn = document.getElementById("useLocationBtn");
+        const addressFullEl = document.getElementById("addressFull");
+        const mapWrap = document.getElementById("mapWrap");
+        const mapEl = document.getElementById("map");
+        const mapSearchInput = document.getElementById("mapSearch");
         let map, marker, geocoder;
 
         if (!btn || !addressFullEl || !mapWrap || !mapEl) return;
 
-        btn.addEventListener('click', () => {
-            if (mapSearchInput) mapSearchInput.style.display = 'block';
-            mapWrap.style.display = 'block';
+        btn.addEventListener("click", () => {
+          if (mapSearchInput) mapSearchInput.style.display = "block";
+          mapWrap.style.display = "block";
 
-            if (!navigator.geolocation) {
-                showAlert('此裝置不支援取得位置');
-                return;
-            }
+          if (!navigator.geolocation) {
+            showAlert("此裝置不支援取得位置");
+            return;
+          }
 
-            btn.disabled = true;
-            const prevText = btn.innerText;
-            btn.innerText = '定位中...';
+          btn.disabled = true;
+          const prevText = btn.innerText;
+          btn.innerText = "定位中...";
 
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const { latitude, longitude } = pos.coords;
-                    const userPos = { lat: latitude, lng: longitude };
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              const userPos = { lat: latitude, lng: longitude };
 
-                    if (!map) {
-                        map = new google.maps.Map(mapEl, {
-                            zoom: 15,
-                            center: userPos,
-                        });
-                        marker = new google.maps.Marker({
-                            position: userPos,
-                            map: map,
-                            title: "目前位置",
-                        });
-                        geocoder = new google.maps.Geocoder();
+              if (!map) {
+                map = new google.maps.Map(mapEl, {
+                  zoom: 15,
+                  center: userPos,
+                });
+                marker = new google.maps.Marker({
+                  position: userPos,
+                  map: map,
+                  title: "目前位置",
+                });
+                geocoder = new google.maps.Geocoder();
 
-                        initSearchBox(map, marker, addressFullEl);
-                    } else {
-                        map.setCenter(userPos);
-                        marker.setPosition(userPos);
-                    }
+                initSearchBox(map, marker, addressFullEl);
+              } else {
+                map.setCenter(userPos);
+                marker.setPosition(userPos);
+              }
 
-                    if (window.google && google.maps && map) {
-                        google.maps.event.trigger(map, 'resize');
-                        map.setCenter(userPos);
-                    }
+              if (window.google && google.maps && map) {
+                google.maps.event.trigger(map, "resize");
+                map.setCenter(userPos);
+              }
 
-                    geocodePosition(userPos, addressFullEl, btn, prevText, geocoder);
-                },
-                (err) => {
-                    console.error('geolocation error', err);
-                    showAlert('取得位置失敗：' + (err.message || '請確認權限'));
-                    btn.disabled = false;
-                    btn.innerText = prevText;
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
+              geocodePosition(userPos, addressFullEl, btn, prevText, geocoder);
+            },
+            (err) => {
+              console.error("geolocation error", err);
+              showAlert("取得位置失敗：" + (err.message || "請確認權限"));
+              btn.disabled = false;
+              btn.innerText = prevText;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
         });
 
         function initSearchBox(map, marker, addressEl) {
-            try {
-                if (mapSearchInput && google.maps.places) {
-                    const searchBox = new google.maps.places.SearchBox(mapSearchInput);
-                    searchBox.addListener('places_changed', () => {
-                        const places = searchBox.getPlaces();
-                        if (!places || !places.length) return;
-                        
-                        const place = places[0];
-                        if (place.geometry && place.geometry.location) {
-                            map.panTo(place.geometry.location);
-                            map.setZoom(17);
-                            marker.setPosition(place.geometry.location);
-                            
-                            if (addressEl) addressEl.value = place.formatted_address || '';
-                        }
-                    });
+          try {
+            if (mapSearchInput && google.maps.places) {
+              const searchBox = new google.maps.places.SearchBox(
+                mapSearchInput
+              );
+              searchBox.addListener("places_changed", () => {
+                const places = searchBox.getPlaces();
+                if (!places || !places.length) return;
+
+                const place = places[0];
+                if (place.geometry && place.geometry.location) {
+                  map.panTo(place.geometry.location);
+                  map.setZoom(17);
+                  marker.setPosition(place.geometry.location);
+
+                  if (addressEl)
+                    addressEl.value = place.formatted_address || "";
                 }
-            } catch (e) {
-                console.debug('SearchBox init failed', e);
+              });
             }
+          } catch (e) {
+            console.debug("SearchBox init failed", e);
+          }
         }
 
         function geocodePosition(pos, addressEl, btn, btnText, geocoder) {
-            geocoder.geocode({ location: pos }, (results, status) => {
-                if (status === "OK" && results && results.length) {
-                    const r = results[0];
-                    parseAddressComponents(r);
-                    if (addressEl) addressEl.value = r.formatted_address; 
-                } else {
-                    if (addressEl) addressEl.value = `lat:${pos.lat.toFixed(6)}, lng:${pos.lng.toFixed(6)}`;
-                    showAlert('無法取得詳細地址，已填入座標');
-                }
-                btn.disabled = false;
-                btn.innerText = btnText;
-            });
+          geocoder.geocode({ location: pos }, (results, status) => {
+            if (status === "OK" && results && results.length) {
+              const r = results[0];
+              parseAddressComponents(r);
+              if (addressEl) addressEl.value = r.formatted_address;
+            } else {
+              if (addressEl)
+                addressEl.value = `lat:${pos.lat.toFixed(
+                  6
+                )}, lng:${pos.lng.toFixed(6)}`;
+              showAlert("無法取得詳細地址，已填入座標");
+            }
+            btn.disabled = false;
+            btn.innerText = btnText;
+          });
         }
 
         function parseAddressComponents(result) {
-            const comps = result.address_components || [];
-            let city = '', district = '', route = '', number = '';
+          const comps = result.address_components || [];
+          let city = "",
+            district = "",
+            route = "",
+            number = "";
 
-            comps.forEach(c => {
-                const t = c.types;
-                if (t.includes('administrative_area_level_1') || t.includes('locality')) city = c.long_name;
-                if (t.includes('administrative_area_level_2') || t.includes('sublocality')) district = c.long_name;
-                if (t.includes('route')) route = c.long_name;
-                if (t.includes('street_number')) number = c.long_name;
-            });
+          comps.forEach((c) => {
+            const t = c.types;
+            if (
+              t.includes("administrative_area_level_1") ||
+              t.includes("locality")
+            )
+              city = c.long_name;
+            if (
+              t.includes("administrative_area_level_2") ||
+              t.includes("sublocality")
+            )
+              district = c.long_name;
+            if (t.includes("route")) route = c.long_name;
+            if (t.includes("street_number")) number = c.long_name;
+          });
 
-            function setSelect(id, value) {
-                const el = document.getElementById(id);
-                if (!el || !value) return;
-                for(let opt of el.options) {
-                    if(opt.value === value || opt.text.includes(value)) {
-                        el.value = opt.value;
-                        el.dispatchEvent(new Event('change')); 
-                        return;
-                    }
-                }
-                const newOpt = new Option(value, value);
-                el.add(newOpt);
-                el.value = value;
+          function setSelect(id, value) {
+            const el = document.getElementById(id);
+            if (!el || !value) return;
+            for (let opt of el.options) {
+              if (opt.value === value || opt.text.includes(value)) {
+                el.value = opt.value;
+                el.dispatchEvent(new Event("change"));
+                return;
+              }
             }
+            const newOpt = new Option(value, value);
+            el.add(newOpt);
+            el.value = value;
+          }
 
-            setSelect('citySelect', city);
-            setTimeout(() => setSelect('districtSelect', district), 100);
+          setSelect("citySelect", city);
+          setTimeout(() => setSelect("districtSelect", district), 100);
         }
-    })();
-</script>
-</body>
+      })();
+    </script>
+  </body>
 </html>

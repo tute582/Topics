@@ -139,8 +139,8 @@
     <!-- 這裡放使用者詳細資料 -->
     <div id="content"></div>
 
-    <!-- 返回註冊頁按鈕 -->
-    <a class="back" href="index.html">回到填寫頁</a>
+    <!-- 返回預約志工頁面按鈕 -->
+    <a class="back" href="../../Topics/Topics/bookvolunteer/index.html">回到預約志工頁面</a>
   </div>
 
   <!-- JavaScript 區域 -->
@@ -151,55 +151,68 @@
     const volunteerAvatar = document.getElementById('volunteerAvatar'); // 卡片大頭像
     const raw = localStorage.getItem('seniors');                    // 從 localStorage 取資料（JSON 字串）
 
-    // 檢查 localStorage 是否有資料
-    if (!raw) {
-      // 沒有資料的情況
-      content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
+    // 從 localStorage 取得上次儲存的志工資料
+    const userId = localStorage.getItem('userId');
+    console.log("取得的userId：",userId)
+    
+    // 顯示 loading（可選）
+    content.innerHTML = `<p>資料載入中...</p>`;
+    
+    if (!userId) {
+      content.innerHTML = '<p class="empty">尚未登入，無法取得資料。</p>';
     } else {
-      try {
-        // 將 JSON 字串轉為物件陣列
-        const list = JSON.parse(raw);
+      // 呼叫 Elder API
+      fetch(`https://supabase-api-six.vercel.app/elders/${userId}`)
+        .then(res => res.json())
+        .then(result => {
 
-        // 取出最後一筆資料（最新填寫者）
-        const d = list[list.length - 1];
+          // API 回傳失敗
+          if (!result.success || !result.data) {
+            content.innerHTML = '<p class="empty">找不到長輩資料。</p>';
+            return;
+          }
 
-        // 若沒有上傳頭像，使用預設圖
-        const photo = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
+          const d = result.data;
 
-        // 導覽列頭像、卡片頭像都顯示這張圖
-        avatar.src = photo;
-        volunteerAvatar.src = photo;
+          /* ======== 頭像 ======== */
+          const avatarUrl = d.image_url && d.image_url.trim() !== ""
+            ? d.image_url
+            : "default-avatar.png";
 
-        // 導覽列名稱顯示長輩姓名（若無則顯示未登入）
-        volunteerName.textContent = d.name || "未登入";
+          avatar.src = avatarUrl;           // 主卡頭像
+          volunteerAvatar.src = avatarUrl;  // 導覽列小頭像
 
-        // 建立要顯示的個人資料 HTML 結構
-        const html = `
-      <dl>
-        <dt>姓名</dt><dd>${d.name || ''}</dd>
-        <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
-        <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
-        <dt>性別</dt><dd>${d.gender || ''}</dd>
-        <dt>地址</dt><dd>${d.address || ''}</dd>
-        <dt>緊急聯絡人</dt><dd>${d.emergencyContact || ''}</dd>
-        <dt>健康狀況備註</dt><dd>${d.healthNote || ''}</dd>
-        <dt>個性特質</dt>
-        <dd>${
-          Array.isArray(d.tags)
-            ? d.tags.map(tag => `<span class="tag-display">${tag}</span>`).join('')
-            : (d.tags || '')
-        }</dd>
-      </dl>
-    `;
+          /* ======== 名稱顯示 ======== */
+          volunteerName.textContent = d.elder_name || "未登入";
 
-        // 插入網頁中顯示
-        content.innerHTML = html;
+          /* ======== 顯示個人資料 ======== */
+          const html = `
+            <dl>
+              <dt>姓名</dt><dd>${d.elder_name || ''}</dd>
+              <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
+              <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
+              <dt>性別</dt><dd>${d.gender === 'male' ? '男性' : d.gender === 'female' ? '女性' : ''}</dd>
+              <dt>地址</dt><dd>${d.address || ''}</dd>
+              <dt>緊急聯絡人</dt><dd>${d.emergency_contact || '—'}</dd>
+              <dt>健康備註</dt><dd>${d.health_note || '—'}</dd>
 
-      } catch (e) {
-        // JSON 解析錯誤處理
-        console.error("資料解析錯誤:", e);
-        content.innerHTML = '<p class="empty">資料解析錯誤。</p>';
-      }
+              <dt>個性特質</dt>
+              <dd>
+                ${
+                  Array.isArray(d.preference_tags)
+                    ? d.preference_tags.map(tag => `<span class="tag-display">${tag}</span>`).join('')
+                    : '—'
+                }
+              </dd>
+            </dl>
+          `;
+
+          content.innerHTML = html;
+        })
+        .catch(error => {
+          console.error("API 錯誤:", error);
+          content.innerHTML = '<p class="empty">無法連線到伺服器。</p>';
+        });
     }
   </script>
 </body>

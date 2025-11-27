@@ -136,8 +136,8 @@
     <img id="avatar" class="avatar" src="default-avatar.png" alt="使用者頭像">
     <!-- 志工詳細資料將動態插入此處 -->
     <div id="content"></div>
-    <!-- 返回填寫頁面連結 -->
-    <a class="back" href="index.html">回到填寫頁</a>
+    <!-- 返回預約志工頁面連結 -->
+    <a class="back" href="../../Topics/Topics/bookvolunteer/index.html">回到預約志工頁面</a>
   </div>
 
   <!-- ======== JavaScript 資料載入區 ======== -->
@@ -149,55 +149,70 @@
     const volunteerName = document.getElementById("volunteerName");// 導覽列名稱
 
     // 從 localStorage 取得上次儲存的志工資料
-    const raw = localStorage.getItem('lastVolunteer');
+    const userId = localStorage.getItem('userId');
+    console.log("取得的userId：",userId)
+    
+    // 顯示 loading（可選）
+    content.innerHTML = `<p>資料載入中...</p>`;
 
-    // 若沒有資料
-    if (!raw) {
+    // 如果沒有 userId
+    if (!userId) {
       content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
     } else {
-      try {
-        // 將 JSON 字串轉回物件
-        const d = JSON.parse(raw); // 單一物件格式
+      // 使用 fetch 從 API 取得資料
+      fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
+        .then(res => res.json())
+        .then(result => {
 
-        /* ======== 設定頭像 ======== */
-        const avatarUrl = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-        if (avatarPreview) avatarPreview.src = avatarUrl;   // 主卡片頭像
-        if (volunteerAvatar) volunteerAvatar.src = avatarUrl; // 導覽列小頭像
+          // API 回傳失敗
+          if (!result.success || !result.data) {
+            content.innerHTML = '<p class="empty">找不到使用者資料。</p>';
+            return;
+          }
 
-        /* ======== 設定名稱 ======== */
-        if (volunteerName) volunteerName.textContent = d.name || "未登入";
+          const d = result.data; // 資料物件
 
-        /* ======== 顯示詳細資料 ======== */
-        avatar.src = d.avatar && d.avatar.trim() !== "" ? d.avatar : "default-avatar.png";
-        const html = `
-          <dl>
-            <dt>志工代碼</dt><dd>${d.volunteerId || ''}</dd>
-            <dt>姓名</dt><dd>${d.name || ''}</dd>
-            <dt>電子郵件Email</dt><dd>${d.email || ''}</dd>
-            <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
-            <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
-            <dt>性別</dt><dd>${d.gender || ''}</dd>
-            <dt>地址</dt><dd>${d.address || ''}</dd>
-            <dt>簡介</dt><dd>${d.desc || ''}</dd>
-            <dt>服務特質</dt>
-            <dd>
-              ${
-                Array.isArray(d.tags)
-                  ? d.tags.map(tag => `<span class="tag-display">${tag}</span>`).join('')
-                  : (d.tags || '')
-              }
-            </dd>
+          /* ======== 頭像處理 ======== */
+          const avatarUrl = d.image_url && d.image_url.trim() !== ""
+            ? d.image_url
+            : "default-avatar.png";
 
-          </dl>
-        `;
-        // 將產生好的 HTML 插入網頁中
-        content.innerHTML = html;
+          if (avatarPreview) avatarPreview.src = avatarUrl;
+          if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
+          if (avatar) avatar.src = avatarUrl;
 
-      } catch (e) {
-        // 若 JSON 格式錯誤或解析失敗
-        content.innerHTML = '<p class="empty">資料解析錯誤。</p>';
-        console.error(e);
-      }
+          /* ======== 設定名稱 ======== */
+          if (volunteerName) volunteerName.textContent = d.volunteer_name || "未登入";
+
+          /* ======== 顯示詳細資料 ======== */
+          const html = `
+            <dl>
+              <dt>志工代碼</dt><dd>${d.vcode || ''}</dd>
+              <dt>姓名</dt><dd>${d.volunteer_name || ''}</dd>
+              <dt>電子郵件Email</dt><dd>${d.email || ''}</dd>
+              <dt>連絡電話</dt><dd>${d.phone || ''}</dd>
+              <dt>出生年月日</dt><dd>${d.birthday || ''}</dd>
+              <dt>性別</dt><dd>${d.gender || ''}</dd>
+              <dt>地址</dt><dd>${d.address || ''}</dd>
+              <dt>簡介</dt><dd>${d.partner_experience || '—'}</dd>
+
+              <dt>服務特質</dt>
+              <dd>
+                ${
+                  Array.isArray(d.personality)
+                    ? d.personality.map(tag => `<span class="tag-display">${tag}</span>`).join('')
+                    : '—'
+                }
+              </dd>
+            </dl>
+          `;
+
+          content.innerHTML = html;
+        })
+        .catch(err => {
+          content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
+          console.error("API Error:", err);
+        });
     }
   </script>
 </body>
