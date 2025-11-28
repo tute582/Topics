@@ -214,11 +214,7 @@
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${
-                d.gender === "male"
-                  ? "男性"
-                  : d.gender === "female"
-                  ? "女性"
-                  : ""
+                d.gender === "男性" ? "男性" : d.gender === "女性" ? "女性" : ""
               }</dd>
               <dt>地址</dt><dd>${d.address || ""}</dd>
               <dt>緊急聯絡人</dt><dd>${d.emergency_contact || "—"}</dd>
