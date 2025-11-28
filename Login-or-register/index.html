@@ -1,634 +1,617 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <!-- 響應式，讓手機可正確縮放 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>申請資料填寫</title>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-      padding: 0;
-    }
-     /* 瀏覽列 */
-    .nav-1{
-    display: flex;                 /* 水平排列內容 */
-    align-items: center;           /* 垂直置中 */
-    justify-content: space-between;/* 兩端對齊：左/右 */
-    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
-    position: sticky;              /* 滾動時吸附上方 */
-    top: 0;                        /* 吸附頂部 */
-    z-index: 2000;                 /* 保證在其他元素之上 */
-    background-color: #fff;
-    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
-    width: 100%;
-    left: 0;
-    right: 0;
-    box-sizing: border-box; /* 確保padding不會超出寬度 */
-    }
-
-    /* ✅ 正確獨立出 container */
-    .container {
-      max-width: 700px;
-      margin: 40px auto;
-      background-color: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-  
-   /* 頭像樣式 */
-    #avatarPreview {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #0984e3;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      display: block;       /* 讓圖片成為區塊元素 */
-      margin: 0 auto;       /* 水平置中 */
-    }
-
-    #avatarPreview:hover {
-      transform: scale(1.05);
-    }
-    h1{
-      margin: 0;  
-      padding: 0;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    form.form-section label {
-      display:block;
-      width: 100%;
-      margin-top: 15px;
-
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #888;
-      border-radius: 10px;
-      box-sizing: border-box;
-    }
-    input[type="text"],
-    textarea,
-    .picker-display {
-      /* 確保手機上文字大小 */
-      font-size: 16px;
-    }
-
-    .picker-wrapper {
-        position: relative;
-        width: 100%;
-        margin-top: 5px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>申請資料填寫</title>
+    <style>
+      /* ===== 基礎設定 ===== */
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 0;
+        color: #333;
       }
 
-    .button-group {
-      margin-top: 25px;
-      display: flex;
-      justify-content: center; /* 置中按鈕 */
-      gap: 12px; /* 按鈕間距 */
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .submit-btn {
-      background-color: #0078d4;
-      color: white;
-    }
-    /* 已移除儲存按鈕樣式 */
-    form.form-section {
-      display: none;
-      margin-top: 20px;
-    }
-    form.form-section.active {
-      display: block;
-    }
-    .section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap; /* 自動換行 */
-      gap: 8px; /* 標籤間距 */
-      margin-top: 6px;
-    }
-    .tag {
-      display: inline-block; /* 只包住文字 */
-      padding: 6px 12px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      background: #f8f9fa;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap; /* 防止文字斷行 */
-   }
-    .tag.selected {
-      background: #0078d4;
-      color: white;
-      border-color: #0078d4;
-    }
-
-    /* 必填欄位星號樣式 */
-    label.required::after{
-      content: " *";
-      color: #e53935;
-      margin-left: 4px;
-      font-weight: 600;
-    }
-
-    /* 響應式設計 */
-    @media (max-width: 600px) {
-      
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        padding: 0;
       }
 
-    form.form-section input,
-    form.form-section select,
-    form.form-section textarea {
-      width:100% ;
-      padding: 8px;
-      margin-top:5px;
-      border-radius:10px;
-      border:1px solid #888;
-      font-size:14px;
-      box-sizing:border-box;
-      background-color: white; /* 主表單預設白底 */
-      color: #222;
-    }
-   /* ===== Modal 樣式 ===== */
-  .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 999; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: transform 0.3s ease; /* 平滑動畫 */
-  }
-  .modal-content {
-    background-color: white;
-    padding: 20px 30px;
-    border-radius: 10px;
-    text-align: center;
-    position: relative;
-    min-width: 250px;
-  }
-  .modal.show {
-  opacity: 1;
-}
-  /* Modal 關閉按鈕 (X) */
-  #closeModal {
-  background-color: white;       /* 原本白色 */
-  border: none;        /* 邊框 */
-  color: #555;                   /* 字體灰色 */
-  font-size: 20px;
-  position: absolute;
-  top: 10px;
-  right: 12px;                   /* 右上角 */
-  cursor: pointer;
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: all 0.3s ease;
-  font-weight: 700;
-  z-index: 1000;
-}
-
-/* 懸停或觸控時變紅色 */
-  #closeModal:hover,
-  #closeModal:active {
-  background-color: #e74c3c;     /* 紅色背景 */
-  border-color: #c0392b;         /* 深紅邊框 */
-  color: white;                  /* 字體白色 */
-  transform: scale(1.1);          /* 輕微放大 */
-}
-
-
-  </style>
-</head>
-<body>
-<!-- 導覽列 -->
-<nav class="nav-1">
-  <div style="display:flex; align-items:center; gap:12px;">
-    <h1 style="margin:0; font-size: 28px;">申請資料填寫</h1>
-  </div>
-
-  <div style="display:flex; align-items:center;">
-  <h1 style="margin:0; text-align:right;">
-    <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
-      <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" 
-           style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
-      <span id="volunteerName" style="font-size:28px; color:#333; font-weight:bold;">未登入</span>
-    </span>
-  </h1>
-</div>
-</nav>
-
-  <div class="container">
-    <img id="avatarPreview" src="default-avatar.png" alt="頭像預覽" >
-    
-    <!-- ===== Modal 提示框 ===== -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <span id="closeModal" class="close" title="按 Esc 或點我關閉">&times;</span>
-        <p>最多只能選 6 個特質</p>
-      </div>
-    </div>
-
-  <!-- ✅ 這裡應該在 container 裡 -->
-    <label for="role" class="required">申請身分</label>
-    <select id="role" name="role" onchange="toggleForm()" required>
-      <option value="">請選擇</option>
-      <option value="volunteer">志工</option>
-      <option value="senior">長輩</option>
-    </select>
-
-<!-- 志工表單 -->
-<form id="volunteerForm" class="form-section">
-  <h3>志工資料填寫</h3>
-
-  <label class="required">志工代碼</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="volunteerId" required />
-  </div>
-
-  <label class="required">姓名</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="name" required />
-  </div>
-
-  <label class="required">電子郵件Email</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="email" name="email" required />
-  </div>
-
-  <label class="required">連絡電話</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="tel" name="phone" required />
-  </div>
-
-  <label class="required">出生年月日</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="date" name="birthday" required />
-  </div>
-
-  <label class="required">性別</label>
-  <select name="gender" required>
-    <option value="">請選擇</option>
-    <option value="男性">男性</option>
-    <option value="女性">女性</option>
-    <option value="其他">其他</option>
-  </select>
-
-  <label class="required">地址</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="address" required />
-  </div>
-
-  <label>簡介：</label>
-  <textarea id="vDesc" rows="3"></textarea>
-
-  <label>服務特質（可多選，最多6個）</label>
-  <div class="tags" id="volunteerTags">
-    <div class="tag">熱心助人</div>
-    <div class="tag">有耐心</div>
-    <div class="tag">善於傾聽</div>
-    <div class="tag">責任感強</div>
-    <div class="tag">樂觀開朗</div>
-    <div class="tag">細心謹慎</div>
-    <div class="tag">尊重他人</div>
-    <div class="tag">富有同理心</div>
-    <div class="tag">親切友善</div>
-    <div class="tag">善於溝通</div>
-    <div class="tag">守時負責</div>
-    <div class="tag">尊重他人</div>
-    <div class="tag">注重細節</div>
-    <div class="tag">樂於服務</div>
-    <div class="tag">願意傾聽意見</div>
-  </div>
-
-  <div class="button-group">
-    <button type="submit" class="submit-btn">送出</button>
-  </div>
-</form>
-
-<!-- 長輩表單（統一樣式） -->
-<form id="seniorForm" class="form-section">
-  <h3>長輩資料填寫</h3>
-
-  <label class="required">姓名</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="name" required />
-  </div>
-
-  <label class="required">連絡電話</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="tel" name="phone" required />
-  </div>
-
-  <label class="required">出生年月日</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="date" name="birthday" required />
-  </div>
-
-  <label class="required">性別</label>
-  <select name="gender" required>
-    <option value="">請選擇</option>
-    <option value="男性">男性</option>
-    <option value="女性">女性</option>
-    <option value="其他">其他</option>
-  </select>
-
-  <label class="required">地址</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="address" required />
-  </div>
-
-  <label class="required">緊急聯絡人</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="text" name="emergencyContact" required />
-  </div>
-
-  <label class="required">緊急聯絡人電話</label>
-  <div class="picker-wrapper">
-    <div id="dateDisplay" class="picker-display"></div>
-  <input type="tel" name="emergencyContactPhone" required />
-  </div>
-
-  <label>健康狀況備註</label>
-  <textarea name="healthNote" rows="3"></textarea>
-
-  <label>個性特質（可多選，最多6個）</label>
-  <div class="tags" id="seniorTags">
-    <div class="tag">樂觀開朗</div>
-    <div class="tag">溫和親切</div>
-    <div class="tag">幽默風趣</div>
-    <div class="tag">熱愛生活</div>
-    <div class="tag">勤儉持家</div>
-    <div class="tag">關心家人</div>
-    <div class="tag">樂於助人</div>
-    <div class="tag">喜歡聊天</div>
-    <div class="tag">愛運動</div>
-    <div class="tag">生活規律</div>
-  </div>
-
-  <div class="button-group">
-    <button type="submit" class="submit-btn">送出</button>
-  </div>
-</form>
-
-  <!-- 載入 LIFF SDK -->
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-  // ====== LIFF 設定：把 YOUR_LIFF_ID 換成你的 LIFF ID ======
-  const LIFF_ID = "2008484068-7D5BLKZK";
-  let userId = "";
-  let userName ="";
-  
-  // 導覽列與表單的頭像元素
-  const navAvatar = document.getElementById("volunteerAvatar");
-  const nameEl = document.getElementById("volunteerName");
-  const avatarEl = document.getElementById("avatarPreview");
-
-  async function initLiffAndLoadAvatar() {
-  try {
-    // 初始化 LIFF
-    await liff.init({ liffId: LIFF_ID });
-
-    // ✅ 抓取 LINE 使用者資料
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    userName = profile.displayName;
-    console.log("LIFF Profile userId:", userId, "userName:", userName);
-
-    // ✅ 設定頭像（兩個地方同步）
-    avatarUrl = profile?.pictureUrl || "default-avatar.png";
-    if (avatarEl) avatarEl.src = avatarUrl;
-    if (navAvatar) navAvatar.src = avatarUrl;
-
-    // ✅ 設定使用者名稱（導覽列右側）
-    
-    if (nameEl) {
-      nameEl.textContent = profile.displayName || "LINE 使用者";
-    }
-
-  } catch (err) {
-    console.warn("⚠️ LIFF 初始化或抓取資料失敗，改用預設頭像", err);
-    if (avatarEl) avatarEl.src = "default-avatar.png";
-    if (navAvatar) navAvatar.src = "default-avatar.png";
-    if (nameEl) nameEl.textContent = "未登入";
-  }
-}
-
-  nameEl.addEventListener("click", () => {
-    if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: window.location.href });
-    } else {
-      alert("已登入：" + (nameEl.innerText || "志工"));
-    }
-  });
-
-  // ✅ 頁面載入後執行
-  document.addEventListener("DOMContentLoaded", initLiffAndLoadAvatar);
-
-  // 上傳圖片預覽
-  function previewImage(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    document.getElementById("avatarPreview").src = url;
-  }
-
-  // 表單切換
-  function toggleForm() {
-    const role = document.getElementById("role").value;
-    document.getElementById("volunteerForm").classList.remove("active");
-    document.getElementById("seniorForm").classList.remove("active");
-    if (role === "volunteer") {
-      document.getElementById("volunteerForm").classList.add("active");
-    } else if (role === "senior") {
-      document.getElementById("seniorForm").classList.add("active");
-    }
-  }
-
-  // 志工表單送出
-  document.getElementById("volunteerForm").addEventListener("submit",async function(e) {
-    e.preventDefault();
-    const form = e.target;
-    // 取得已選取的服務特質
-    const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
-    .map(tag => tag.textContent.trim());
-
-    const payload = {
-      image_url: document.getElementById("avatarPreview").src,
-      vcode: form.elements["volunteerId"].value.trim(),
-      volunteer_user_id: userId,
-      volunteer_name: form.elements["name"].value.trim(),
-      email: form.elements["email"].value.trim(),
-      phone: form.elements["phone"].value.trim(),
-      birthday: form.elements["birthday"].value,
-      gender: form.elements["gender"].value,
-      address: form.elements["address"].value.trim(),
-      partner_experience: document.getElementById("vDesc")?.value.trim() || "",
-      personality: selectedTags
-    };
-    
-    try {
-      // ⬇️ 呼叫 API
-      const res = await fetch("https://supabase-api-six.vercel.app/volunteers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await res.json();
-      console.log("API 回應:", result);
-
-      if (!result.success) {
-        alert("❌ 志工資料新增失敗：" + (result.message || "未知錯誤"));
-        return;
+      /* ===== 導覽列 (Navbar) ===== */
+      .nav-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 2000;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
 
-      localStorage.setItem("userId", userId);
-      window.location.href = encodeURI("志工資料顯示.html");
-    } catch (err) {
-      console.error("API 錯誤", err);
-      alert("❌ 無法連線到伺服器，請稍後再試");
-    }
-  });
-
-  // 長輩表單送出
-  document.getElementById("seniorForm").addEventListener("submit",async function(e) {
-    e.preventDefault();
-    const form = e.target;
-    
-    // 取得已選取的服務特質
-    const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
-    .map(tag => tag.textContent.trim());
-
-    const payload = {
-      image_url: document.getElementById("avatarPreview").src,
-      elder_user_id: userId,
-      elder_name: form.elements["name"].value.trim(),
-      phone: form.elements["phone"].value.trim(),
-      birthday: form.elements["birthday"].value,
-      gender: form.elements["gender"].value,
-      address: form.elements["address"].value.trim(),
-      emergency_contact: form.elements["emergencyContact"].value.trim(),
-      emergency_contact_phone: form.elements["emergencyContactPhone"].value,
-      health_note: form.elements["healthNote"].value.trim(),
-      preference_tags: selectedTags,
-    };
-
-    try {
-      // ⬇️ 呼叫 API
-      const res = await fetch("https://supabase-api-six.vercel.app/elders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await res.json();
-      console.log("API 回應:", result);
-
-      if (!result.success) {
-        alert("❌ 長者資料新增失敗：" + (result.message || "未知錯誤"));
-        return;
+      .nav-title h1 {
+        font-size: 24px;
       }
 
-      localStorage.setItem("userId", userId);
-      window.location.href = encodeURI("長輩資料顯示.html");
-    } catch (err) {
-      console.error("API 錯誤", err);
-      alert("❌ 無法連線到伺服器，請稍後再試");
-    }
-  });
+      .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
 
-  // 取得 Modal 與關閉按鈕
-  const modal = document.getElementById('modal');
-  const closeModal = document.getElementById('closeModal');
+      .nav-user img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #0984e3;
+      }
 
-  // 顯示 Modal（例如當超過 6 個標籤時）
-  function showModal() {
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10); // 觸發 CSS 過渡
-  }
+      .nav-user span {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+      }
 
-  // 關閉 Modal
-  function hideModal() {
-    modal.classList.remove('show'); // 移除淡入效果
-    setTimeout(() => modal.style.display = 'none', 300); // 等動畫完成再隱藏
-  }
+      /* ===== 主要容器 (Container) ===== */
+      .container {
+        max-width: 700px;
+        margin: 40px auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
 
-  // 點擊 ✖ 關閉
-  closeModal.addEventListener('click', hideModal);
-
-  // 點擊 Modal 外層關閉
-  window.addEventListener('click', e => {
-    if (e.target === modal) hideModal();
-  });
-
-  // 按 Esc 鍵關閉
-  window.addEventListener('keydown', e => {
-    if (e.key === "Escape" && modal.style.display === 'flex') {
-      hideModal();
-    }
-  });
-
-  // ===== 點擊切換「選中」狀態，限制最多 6 個 =====
-  const maxSelect = 6;
-
-  function setupTags(tagContainerId) {
-    const container = document.getElementById(tagContainerId);
-    container.addEventListener('click', e => {
-      if (e.target.classList.contains('tag')) {
-        const selectedCount = container.querySelectorAll('.tag.selected').length;
-        if (e.target.classList.contains('selected')) {
-          e.target.classList.remove('selected');
-        } else if (selectedCount < maxSelect) {
-          e.target.classList.add('selected');
-        } else {
-          // 顯示 Modal 提示
-          showModal();
+      /* 手機版調整 */
+      @media (max-width: 600px) {
+        .container {
+          margin: 20px 10px;
+          padding: 20px;
+        }
+        .nav-title h1 {
+          font-size: 20px;
         }
       }
-    });
-  }
 
-  setupTags('volunteerTags');
-  setupTags('seniorTags');
+      /* ===== 頭像預覽 ===== */
+      #avatarPreview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #0984e3;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        display: block;
+        margin: 0 auto 20px auto;
+      }
 
-</script>
-</body>
+      #avatarPreview:hover {
+        transform: scale(1.05);
+      }
+
+      /* ===== 表單元件 ===== */
+      form.form-section {
+        display: none; /* 預設隱藏 */
+        margin-top: 20px;
+        animation: fadeIn 0.5s;
+      }
+
+      form.form-section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      label {
+        display: block;
+        width: 100%;
+        margin-top: 15px;
+        font-weight: 500;
+      }
+
+      /* 必填星號 */
+      label.required::after {
+        content: " *";
+        color: #e53935;
+        margin-left: 4px;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 16px; /* 防止 iOS 縮放 */
+        background-color: #fff;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #0984e3;
+        outline: none;
+      }
+
+      .picker-wrapper {
+        position: relative;
+        width: 100%;
+      }
+
+      /* ===== 標籤 (Tags) ===== */
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .tag {
+        padding: 6px 14px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        user-select: none;
+      }
+
+      .tag:hover {
+        background-color: #e9ecef;
+      }
+
+      .tag.selected {
+        background: #0078d4;
+        color: white;
+        border-color: #0078d4;
+      }
+
+      /* ===== 按鈕 ===== */
+      .button-group {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .submit-btn {
+        padding: 12px 40px;
+        border: none;
+        border-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        background-color: #0078d4;
+        color: white;
+        transition: background-color 0.3s;
+      }
+
+      .submit-btn:hover {
+        background-color: #005a9e;
+      }
+
+      /* ===== Modal (提示框) ===== */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal.show {
+        opacity: 1;
+      }
+
+      .modal-content {
+        background-color: white;
+        padding: 25px 40px;
+        border-radius: 10px;
+        text-align: center;
+        position: relative;
+        min-width: 250px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Modal 關閉按鈕 */
+      #closeModal {
+        background-color: transparent;
+        border: none;
+        color: #999;
+        font-size: 24px;
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+
+      #closeModal:hover {
+        color: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <div class="nav-title">
+        <h1>申請資料填寫</h1>
+      </div>
+      <div class="nav-user" id="navUserProfile">
+        <img id="volunteerAvatar" src="default-avatar.png" alt="avatar" />
+        <span id="volunteerName">未登入</span>
+      </div>
+    </nav>
+
+    <div class="container">
+      <img
+        id="avatarPreview"
+        src="default-avatar.png"
+        alt="頭像預覽"
+        title="點擊更換圖片（示意功能）"
+      />
+
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <span id="closeModal" title="關閉">&times;</span>
+          <p style="font-size: 18px; font-weight: bold">最多只能選 6 個特質</p>
+        </div>
+      </div>
+
+      <label for="role" class="required">申請身分</label>
+      <select id="role" name="role" onchange="toggleForm()" required>
+        <option value="">請選擇</option>
+        <option value="volunteer">志工</option>
+        <option value="senior">長輩</option>
+      </select>
+
+      <form id="volunteerForm" class="form-section">
+        <h3>志工資料填寫</h3>
+
+        <label class="required">志工代碼</label>
+        <input type="text" name="volunteerId" required />
+
+        <label class="required">姓名</label>
+        <input type="text" name="name" required />
+
+        <label class="required">電子郵件 Email</label>
+        <input type="email" name="email" required />
+
+        <label class="required">連絡電話</label>
+        <input type="tel" name="phone" required />
+
+        <label class="required">出生年月日</label>
+        <input type="date" name="birthday" required />
+
+        <label class="required">性別</label>
+        <select name="gender" required>
+          <option value="">請選擇</option>
+          <option value="男性">男性</option>
+          <option value="女性">女性</option>
+          <option value="其他">其他</option>
+        </select>
+
+        <label class="required">地址</label>
+        <input type="text" name="address" required />
+
+        <label>簡介與經驗</label>
+        <textarea id="vDesc" rows="3"></textarea>
+
+        <label>服務特質（可多選，最多6個）</label>
+        <div class="tags" id="volunteerTags">
+          <div class="tag">熱心助人</div>
+          <div class="tag">有耐心</div>
+          <div class="tag">善於傾聽</div>
+          <div class="tag">責任感強</div>
+          <div class="tag">樂觀開朗</div>
+          <div class="tag">細心謹慎</div>
+          <div class="tag">尊重他人</div>
+          <div class="tag">富有同理心</div>
+          <div class="tag">親切友善</div>
+          <div class="tag">善於溝通</div>
+          <div class="tag">守時負責</div>
+          <div class="tag">注重細節</div>
+          <div class="tag">樂於服務</div>
+          <div class="tag">願意傾聽意見</div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="submit-btn">送出</button>
+        </div>
+      </form>
+
+      <form id="seniorForm" class="form-section">
+        <h3>長輩資料填寫</h3>
+
+        <label class="required">姓名</label>
+        <input type="text" name="name" required />
+
+        <label class="required">連絡電話</label>
+        <input type="tel" name="phone" required />
+
+        <label class="required">出生年月日</label>
+        <input type="date" name="birthday" required />
+
+        <label class="required">性別</label>
+        <select name="gender" required>
+          <option value="">請選擇</option>
+          <option value="男性">男性</option>
+          <option value="女性">女性</option>
+          <option value="其他">其他</option>
+        </select>
+
+        <label class="required">地址</label>
+        <input type="text" name="address" required />
+
+        <label class="required">緊急聯絡人</label>
+        <input type="text" name="emergencyContact" required />
+
+        <label class="required">緊急聯絡人電話</label>
+        <input type="tel" name="emergencyContactPhone" required />
+
+        <label>健康狀況備註</label>
+        <textarea name="healthNote" rows="3"></textarea>
+
+        <label>個性特質（可多選，最多6個）</label>
+        <div class="tags" id="seniorTags">
+          <div class="tag">樂觀開朗</div>
+          <div class="tag">溫和親切</div>
+          <div class="tag">幽默風趣</div>
+          <div class="tag">熱愛生活</div>
+          <div class="tag">勤儉持家</div>
+          <div class="tag">關心家人</div>
+          <div class="tag">樂於助人</div>
+          <div class="tag">喜歡聊天</div>
+          <div class="tag">愛運動</div>
+          <div class="tag">生活規律</div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="submit-btn">送出</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <script>
+      // ====== 全域變數與設定 ======
+      const LIFF_ID = "2008484068-7D5BLKZK";
+      const API_BASE_URL = "https://supabase-api-six.vercel.app";
+      let userId = "";
+      let userName = "";
+
+      // DOM 元素
+      const navAvatar = document.getElementById("volunteerAvatar");
+      const navNameEl = document.getElementById("volunteerName");
+      const navUserProfile = document.getElementById("navUserProfile");
+      const avatarPreviewEl = document.getElementById("avatarPreview");
+      const modal = document.getElementById("modal");
+      const closeModal = document.getElementById("closeModal");
+      const maxSelect = 6;
+
+      // ====== 1. LIFF 初始化與登入 ======
+      async function initLiff() {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+
+          // 檢查是否登入
+          if (!liff.isLoggedIn()) {
+            console.log("使用者未登入");
+            return;
+          }
+
+          const profile = await liff.getProfile();
+          userId = profile.userId;
+          userName = profile.displayName;
+          console.log("LIFF Profile:", userId, userName);
+
+          // 更新 UI
+          updateUserInfoUI(profile);
+        } catch (err) {
+          console.warn("⚠️ LIFF 初始化失敗或無法取得資料", err);
+        }
+      }
+
+      function updateUserInfoUI(profile) {
+        const avatarUrl = profile.pictureUrl || "default-avatar.png";
+        const displayName = profile.displayName || "LINE 使用者";
+
+        if (avatarPreviewEl) avatarPreviewEl.src = avatarUrl;
+        if (navAvatar) navAvatar.src = avatarUrl;
+        if (navNameEl) navNameEl.textContent = displayName;
+      }
+
+      // 點擊導覽列使用者名稱的行為
+      navUserProfile.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+        } else {
+          alert("目前已登入：" + userName);
+        }
+      });
+
+      // 頁面載入執行
+      document.addEventListener("DOMContentLoaded", initLiff);
+
+      // ====== 2. 介面互動邏輯 ======
+
+      // 表單切換
+      function toggleForm() {
+        const role = document.getElementById("role").value;
+        document.getElementById("volunteerForm").classList.remove("active");
+        document.getElementById("seniorForm").classList.remove("active");
+
+        if (role === "volunteer") {
+          document.getElementById("volunteerForm").classList.add("active");
+        } else if (role === "senior") {
+          document.getElementById("seniorForm").classList.add("active");
+        }
+      }
+      // 讓 toggleForm 變成全域可呼叫
+      window.toggleForm = toggleForm;
+
+      // 圖片預覽 (保留功能，若有 input type="file" 呼叫此函式)
+      function previewImage(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        document.getElementById("avatarPreview").src = url;
+      }
+
+      // Modal 控制
+      function showModal() {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("show"), 10);
+      }
+
+      function hideModal() {
+        modal.classList.remove("show");
+        setTimeout(() => (modal.style.display = "none"), 300);
+      }
+
+      closeModal.addEventListener("click", hideModal);
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") hideModal();
+      });
+
+      // 標籤選取邏輯 (最多 6 個)
+      function setupTags(containerId) {
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } else {
+              showModal(); // 超過限制顯示提示
+            }
+          }
+        });
+      }
+
+      setupTags("volunteerTags");
+      setupTags("seniorTags");
+
+      // 取得選取的標籤文字陣列
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
+
+      // ====== 3. 表單送出 (API 呼叫) ======
+
+      // 通用 POST 函式
+      async function postData(endpoint, payload, redirectPage, errorMsgPrefix) {
+        try {
+          const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await res.json();
+          console.log("API Response:", result);
+
+          if (!result.success) {
+            alert(
+              `❌ ${errorMsgPrefix}失敗：` + (result.message || "未知錯誤")
+            );
+            return;
+          }
+
+          // 成功後處理
+          localStorage.setItem("userId", userId);
+          window.location.href = encodeURI(redirectPage);
+        } catch (err) {
+          console.error("API Error", err);
+          alert("❌ 無法連線到伺服器，請稍後再試");
+        }
+      }
+
+      // 志工表單送出
+      document
+        .getElementById("volunteerForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const form = e.target;
+
+          const payload = {
+            image_url: avatarPreviewEl.src,
+            vcode: form.elements["volunteerId"].value.trim(),
+            volunteer_user_id: userId,
+            volunteer_name: form.elements["name"].value.trim(),
+            email: form.elements["email"].value.trim(),
+            phone: form.elements["phone"].value.trim(),
+            birthday: form.elements["birthday"].value,
+            gender: form.elements["gender"].value,
+            address: form.elements["address"].value.trim(),
+            partner_experience:
+              document.getElementById("vDesc")?.value.trim() || "",
+            personality: getSelectedTags("volunteerTags"),
+          };
+
+          postData("/volunteers", payload, "志工資料顯示.html", "志工資料新增");
+        });
+
+      // 長輩表單送出
+      document
+        .getElementById("seniorForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const form = e.target;
+
+          const payload = {
+            image_url: avatarPreviewEl.src,
+            elder_user_id: userId,
+            elder_name: form.elements["name"].value.trim(),
+            phone: form.elements["phone"].value.trim(),
+            birthday: form.elements["birthday"].value,
+            gender: form.elements["gender"].value,
+            address: form.elements["address"].value.trim(),
+            emergency_contact: form.elements["emergencyContact"].value.trim(),
+            emergency_contact_phone:
+              form.elements["emergencyContactPhone"].value,
+            health_note: form.elements["healthNote"].value.trim(),
+            preference_tags: getSelectedTags("seniorTags"),
+          };
+
+          postData("/elders", payload, "長輩資料顯示.html", "長者資料新增");
+        });
+    </script>
+  </body>
 </html>
