@@ -77,6 +77,20 @@
       border-radius: 10px;
       box-sizing: border-box;
     }
+    input[type="text"],
+    textarea,
+    .picker-display {
+      /* 確保手機上文字大小 */
+      font-size: 16px;
+      padding: 10px;
+    }
+
+    .picker-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 5px;
+      }
+
     .button-group {
       margin-top: 25px;
       display: flex;
@@ -255,19 +269,34 @@
   <h3>志工資料填寫</h3>
 
   <label class="required">志工代碼</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="volunteerId" required />
+  </div>
 
   <label class="required">姓名</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="name" required />
+  </div>
 
   <label class="required">電子郵件Email</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="email" name="email" required />
+  </div>
 
   <label class="required">連絡電話</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="tel" name="phone" required />
+  </div>
 
   <label class="required">出生年月日</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="date" name="birthday" required />
+  </div>
 
   <label class="required">性別</label>
   <select name="gender" required>
@@ -278,7 +307,10 @@
   </select>
 
   <label class="required">地址</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="address" required />
+  </div>
 
   <label>簡介：</label>
   <textarea id="vDesc" rows="3"></textarea>
@@ -312,13 +344,22 @@
   <h3>長輩資料填寫</h3>
 
   <label class="required">姓名</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="name" required />
+  </div>
 
   <label class="required">連絡電話</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="tel" name="phone" required />
+  </div>
 
   <label class="required">出生年月日</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="date" name="birthday" required />
+  </div>
 
   <label class="required">性別</label>
   <select name="gender" required>
@@ -329,13 +370,22 @@
   </select>
 
   <label class="required">地址</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="address" required />
+  </div>
 
   <label class="required">緊急聯絡人</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="text" name="emergencyContact" required />
+  </div>
 
   <label class="required">緊急聯絡人電話</label>
+  <div class="picker-wrapper">
+    <div id="dateDisplay" class="picker-display"></div>
   <input type="tel" name="emergencyContactPhone" required />
+  </div>
 
   <label>健康狀況備註</label>
   <textarea name="healthNote" rows="3"></textarea>
@@ -358,7 +408,6 @@
     <button type="submit" class="submit-btn">送出</button>
   </div>
 </form>
-
 
   <!-- 載入 LIFF SDK -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
