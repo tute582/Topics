@@ -222,6 +222,12 @@
         color: #fff;
       }
 
+      .edit-actions {
+        display: flex;
+        justify-content: center; /* 水平置中 */
+        gap: 12px; /* 按鈕間距，可調 */
+        margin-top: 10px;
+      }
       /* =========================================
        6. 表格樣式 (Tables)
    ========================================= */
@@ -658,6 +664,7 @@
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
+            loadRecords();
             return;
           }
 
