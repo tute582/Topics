@@ -230,6 +230,7 @@
         <h1 style="margin: 0; font-size: 28px">志工管理系統</h1>
       </div>
 
+      <!-- 已移除：改用 FullCalendar toolbar 的 custom button（會顯示在 Today 旁） -->
       <div style="display: flex; align-items: center">
         <h1 style="margin: 0; text-align: right">
           <span
@@ -298,67 +299,105 @@
           initialDate: "2025-10-01",
           selectable: true,
           locale: "zh-tw",
+          // 把 custom button 加到 left，會顯示在 today 旁
           headerToolbar: {
-            left: "prev,next today",
+            left: "prev,next today viewUpcoming",
             center: "title",
             right: "",
           },
-          // 點日期直接開啟時段選擇
-          dateClick: function (info) {
-            showTimeSlotModal(info.dateStr);
+          customButtons: {
+            viewUpcoming: {
+              text: "即將陪伴",
+              click: function () {
+                // showUpcomingElders 為檔案中已宣告的函式（function 宣告會被 hoist）
+                showUpcomingElders();
+              },
+            },
           },
-          // 點事件可取消（單筆）
-          eventClick: function (info) {
-            if (confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)) {
-              info.event.remove();
-              alert("❌ 已取消該服務時段");
-            }
-          },
-          events: [
-            { title: "可服務 上午", start: "2025-10-10", color: "#4f8a8b" },
-            { title: "可服務 下午", start: "2025-10-15", color: "#74b9ff" },
-          ],
-        });
+           // 點日期直接開啟時段選擇
+           dateClick: function (info) {
+             showTimeSlotModal(info.dateStr);
+           },
+           // 點事件可取消（單筆）
+           eventClick: function (info) {
+             if (confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)) {
+               info.event.remove();
+               alert("❌ 已取消該服務時段");
+             }
+           },
+           events: [
+             { title: "可服務 上午", start: "2025-10-10", color: "#4f8a8b" },
+             { title: "可服務 下午", start: "2025-10-15", color: "#74b9ff" },
+           ],
+         });
 
         calendar.render();
 
-        // 單一天選擇時段（保留原邏輯）
-        function showTimeSlotModal(dateStr) {
-          const overlay = document.createElement("div");
-          overlay.className = "modal-overlay";
+        // 綁定「查看即將陪伴」按鈕
+        const viewBtn = document.getElementById('viewUpcomingBtn');
+        if (viewBtn) viewBtn.addEventListener('click', showUpcomingElders);
+
+        // 顯示未來事件（即將陪伴）modal
+        function showUpcomingElders() {
+          const events = calendar.getEvents()
+            .filter(ev => ev.start && ev.start.getTime() > Date.now())
+            .sort((a,b) => a.start - b.start);
+
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          const listHtml = events.length ? events.map(ev => {
+            const dt = ev.start.toLocaleString();
+            const title = ev.title || '未命名';
+            // extendedProps 可填 elder 資訊（若有）
+            const elder = ev.extendedProps?.elder_name || ev.extendedProps?.elder || '';
+            return `<tr>
+                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${title}</td>
+                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${dt}</td>
+                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${elder}</td>
+                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">
+                        <button class="detail-btn" data-id="${ev.id}" style="padding:6px 10px;border-radius:6px;border:none;background:#0984e3;color:#fff;cursor:pointer;">查看詳情</button>
+                      </td>
+                    </tr>`;
+          }).join('') : `<tr><td colspan="4" style="padding:18px;text-align:center;color:#666;">目前沒有即將的陪伴行程</td></tr>`;
+
           overlay.innerHTML = `
-      <div class="modal">
-        <h3>選擇 ${dateStr} 的可服務時段</h3>
-        <button class="confirm" data-time="上午">上午 (09:00–12:00)</button>
-        <button class="confirm" data-time="下午">下午 (13:00–17:00)</button>
-        <button class="confirm" data-time="晚上">晚上 (18:00–21:00)</button>
-        <br><br>
-        <button class="cancel">取消</button>
-      </div>
-    `;
+            <div class="modal" style="max-width:820px;width:92%;">
+              <h3 style="margin-top:0">即將陪伴的行程</h3>
+              <div style="max-height:420px;overflow:auto;margin-bottom:12px;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr style="background:#f5f7fb;">
+                      <th style="text-align:left;padding:10px 12px;">標題</th>
+                      <th style="text-align:left;padding:10px 12px;">日期時間</th>
+                      <th style="text-align:left;padding:10px 12px;">長者</th>
+                      <th style="text-align:left;padding:10px 12px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${listHtml}
+                  </tbody>
+                </table>
+              </div>
+              <div style="text-align:right;">
+                <button class="close-modal" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;">關閉</button>
+              </div>
+            </div>
+          `;
           document.body.appendChild(overlay);
 
-          overlay.querySelectorAll(".confirm").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const time = btn.dataset.time;
-              calendar.addEvent({
-                title: `可服務 ${time}`,
-                start: dateStr,
-                color:
-                  time === "上午"
-                    ? "#4f8a8b"
-                    : time === "下午"
-                    ? "#74b9ff"
-                    : "#f6b93b",
-              });
-              overlay.remove();
-              alert(`✅ 已新增 ${dateStr} 的 ${time} 可服務時段`);
+          // 綁定細節按鈕（如需更多操作可在此擴充）
+          overlay.querySelectorAll('.detail-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const evId = btn.dataset.id;
+              const ev = calendar.getEventById(evId);
+              if (!ev) return alert('找不到該行程');
+              const info = `標題：${ev.title}\n時間：${ev.start.toLocaleString()}\n備註：${JSON.stringify(ev.extendedProps || {})}`;
+              alert(info);
             });
           });
 
-          overlay.querySelector(".cancel").addEventListener("click", () =>
-            overlay.remove()
-          );
+          overlay.querySelector('.close-modal').addEventListener('click', () => overlay.remove());
+          overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
         }
       });
 
