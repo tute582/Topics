@@ -401,15 +401,11 @@
         padding: 8px 18px;
         font-size: 16px;
       }
-      #confirmSaveBtn {
-        background-color: #4a90e2;
-      }
       #confirmDiscardBtn {
         background-color: #f37a7a;
       }
       #continueEditBtn {
-        background-color: #f2f2f2;
-        color: #333;
+        background-color: #4a90e2;
       }
 
       /* =========================================
@@ -669,7 +665,6 @@
       <div>
         <h3>此次修改需要儲存嗎？</h3>
         <p>若未儲存，變更的內容將會遺失。</p>
-        <button id="confirmSaveBtn">儲存</button>
         <button id="continueEditBtn">繼續編輯</button>
         <button id="confirmDiscardBtn">放棄</button>
       </div>
@@ -739,17 +734,15 @@
           fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
             .then((res) => res.json())
             .then((result) => {
-              if (!result.success) 
-              { 
+              if (!result.success) {
                 // 無效身分，導向註冊頁面
-                alert(
-                  "第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。"
-                );
+                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
                 window.location.href = "../../Login-or-register/index.html";
               } else {
                 // 已註冊，取得身分
                 let identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
+                localStorage.setItem("fromPage", "record-information");
                 switch (identify) {
                   case "志工":
                     window.location.href =
@@ -1297,11 +1290,6 @@
         modal.classList.remove("show");
         setTimeout(() => (modal.style.display = "none"), 300);
       }
-
-      document.getElementById("confirmSaveBtn").onclick = () => {
-        document.getElementById("saveEditBtn").click();
-        closeSaveConfirmModal();
-      };
 
       document.getElementById("confirmDiscardBtn").onclick = () => {
         closeSaveConfirmModal();
