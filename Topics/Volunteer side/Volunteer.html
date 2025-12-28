@@ -158,76 +158,88 @@
       }
 
       /* ===== 調整 FullCalendar 事件樣式（與其他頁面一致） ===== */
+    /* 用高優先/多選器覆蓋 FullCalendar 預設，確保所有情境一致 */
     .calendar-container .fc .fc-daygrid-event,
-    .calendar-container .fc .fc-daygrid-event-harness {
+    .calendar-container .fc .fc-daygrid-event-harness,
+    .calendar-container .fc .fc-event,
+    .calendar-container .fc .fc-event-main,
+    .calendar-container .fc .fc-event-title-container {
       border-radius: 10px !important;
-      overflow: visible;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06) !important;
       border: none !important;
       background: transparent !important;
+      overflow: visible !important;
     }
-    /* 隱藏小圓點 */
-    .calendar-container .fc .fc-daygrid-event .fc-event-dot { display: none !important; }
 
-    /* 讓時間與標題換行顯示 */
-    .calendar-container .fc .fc-daygrid-event .fc-event-main {
-      padding: 8px 12px !important;
-      font-weight: 600;
+    /* 隱藏所有小圓點（不同版本結構可能用不同 class） */
+    .calendar-container .fc .fc-event-dot,
+    .calendar-container .fc .fc-daygrid-event .fc-event-dot,
+    .calendar-container .fc .fc-list-event .fc-event-dot {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* 強制讓時間與標題直向排列（時間在上、標題在下） */
+    .calendar-container .fc .fc-daygrid-event .fc-event-main,
+    .calendar-container .fc .fc-event .fc-event-main,
+    .calendar-container .fc .fc-event-title-container {
       display: flex !important;
-      flex-direction: column !important; /* 由直向排列：時間在上、標題在下 */
+      flex-direction: column !important;
       align-items: flex-start !important;
       gap: 4px !important;
-      border-radius: 10px !important;
-      box-sizing: border-box;
-      white-space: normal !important; /* 允許換行 */
-      line-height: 1.1;
+      padding: 8px 12px !important;
+      white-space: normal !important;
+      line-height: 1.1 !important;
     }
 
-    .calendar-container .fc .fc-daygrid-event .fc-event-time {
+    /* 顯示時間與標題為 block，確保換行且欄位順序正確 */
+    .calendar-container .fc .fc-event-time {
       display: block !important;
-      color: rgba(255,255,255,0.95) !important;
       font-weight: 700 !important;
+      color: rgba(255,255,255,0.95) !important;
+      margin: 0 !important;
       font-size: 0.95em !important;
-      margin: 0 !important;
     }
-    .calendar-container .fc .fc-daygrid-event .fc-event-title {
+    .calendar-container .fc .fc-event-title,
+    .calendar-container .fc .fc-event-title-container .fc-event-title {
       display: block !important;
-      color: inherit !important;
       margin: 0 !important;
+      color: inherit !important;
       font-size: 1em !important;
     }
 
-    /* 針對自定義 class 強制套用背景色與文字色（確保所有情境一致） */
-    .calendar-container .fc .fc-daygrid-event.ev-morning .fc-event-main,
-    .calendar-container .fc .fc-daygrid-event.ev-morning {
+    /* 針對自定義 class 強制套用背景色與文字色（確保有時間/無時間都一致） */
+    .calendar-container .fc .fc-daygrid-event.ev-morning,
+    .calendar-container .fc .fc-event.ev-morning {
       background-color: #4f8a8b !important;
       color: #fff !important;
     }
-    .calendar-container .fc .fc-daygrid-event.ev-afternoon .fc-event-main,
-    .calendar-container .fc .fc-daygrid-event.ev-afternoon {
+    .calendar-container .fc .fc-daygrid-event.ev-afternoon,
+    .calendar-container .fc .fc-event.ev-afternoon {
       background-color: #74b9ff !important;
       color: #fff !important;
     }
-    .calendar-container .fc .fc-daygrid-event.ev-evening .fc-event-main,
-    .calendar-container .fc .fc-daygrid-event.ev-evening {
+    .calendar-container .fc .fc-daygrid-event.ev-evening,
+    .calendar-container .fc .fc-event.ev-evening {
       background-color: #f6b93b !important;
       color: #222 !important;
     }
-    .calendar-container .fc .fc-daygrid-event.ev-custom .fc-event-main,
-    .calendar-container .fc .fc-daygrid-event.ev-custom {
+    .calendar-container .fc .fc-daygrid-event.ev-custom,
+    .calendar-container .fc .fc-event.ev-custom {
       background-color: #6c5ce7 !important;
       color: #fff !important;
     }
 
-    /* 小螢幕微調 */
     @media (max-width: 480px) {
-      .calendar-container .fc .fc-daygrid-event .fc-event-main {
+      .calendar-container .fc .fc-daygrid-event .fc-event-main,
+      .calendar-container .fc .fc-event .fc-event-main {
         padding: 6px 10px !important;
-        font-size: 13px;
+        font-size: 13px !important;
       }
-      .calendar-container .fc .fc-daygrid-event .fc-event-time {
-        font-size: 12px !important;
-      }
+      .calendar-container .fc .fc-event-time { font-size: 12px !important; }
     }
 
       /* 彈窗 */
@@ -294,6 +306,39 @@
           width: 95%;
         }
       }
+
+      /* 過去日期灰階化且不可點選（保留事件可點） */
+      .calendar-container .fc .fc-daygrid-day.fc-past {
+        background-color: #fbfbfc !important;
+      }
+      .calendar-container .fc .fc-daygrid-day.fc-past .fc-daygrid-day-frame {
+        pointer-events: none !important;      /* 禁止點整個日期格 */
+        background: transparent !important;
+        opacity: 0.95;
+      }
+      /* 讓日期數字（右上角）變灰 */
+      .calendar-container .fc .fc-daygrid-day.fc-past .fc-daygrid-day-number {
+        color: #9aa0a6 !important;
+      }
+      /* 若格內有事件，事件仍可互動（覆寫父層 pointer-events:none） */
+      .calendar-container .fc .fc-daygrid-day.fc-past .fc-daygrid-event {
+        pointer-events: auto !important;
+      }
+      /* 游標改為預設以提示不可點格位 */
+      .calendar-container .fc .fc-daygrid-day.fc-past .fc-daygrid-day-frame,
+      .calendar-container .fc .fc-daygrid-day.fc-past {
+        cursor: default !important;
+      }
+      /* 可選：若希望整個格子看起來更灰淡可加上遮罩 */
+      .calendar-container .fc .fc-daygrid-day.fc-past .fc-daygrid-day-frame::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(245,246,248,0.6);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+
     </style>
   </head>
   <body>
@@ -369,7 +414,8 @@
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
-          initialDate: "2025-10-01",
+          // 預設為當天（YYYY-MM-DD）
+          initialDate: new Date().toISOString().split('T')[0],
           selectable: true,
           locale: "zh-tw",
           // 把 custom button 加到 left，會顯示在 today 旁
@@ -387,8 +433,16 @@
               },
             },
           },
-           // 點日期直接開啟時段選擇
+           // 點日期直接開啟時段選擇（但禁止過去日期）
            dateClick: function (info) {
+             // 當天 00:00
+             const clickedDay = new Date(info.dateStr + 'T00:00:00');
+             const todayStart = new Date();
+             todayStart.setHours(0,0,0,0);
+             if (clickedDay < todayStart) {
+               alert('無法預約過去的日期，請選擇今天或未來日期。');
+               return;
+             }
              showTimeSlotModal(info.dateStr);
            },
            // 點事件可取消（單筆）
@@ -403,6 +457,70 @@
          });
  
         calendar.render();
+
+        // ----- 強化：以 data-date 判斷並標記過去日期（避免前後月格子沒被 fc-past 標記） -----
+        function markPastCells() {
+          const todayStart = new Date();
+          todayStart.setHours(0,0,0,0);
+          document.querySelectorAll('.calendar-container .fc .fc-daygrid-day[data-date]').forEach(cell => {
+            const ds = cell.getAttribute('data-date');
+            if (!ds) return;
+            const cellDate = new Date(ds + 'T00:00:00');
+            if (cellDate < todayStart) {
+              cell.classList.add('fc-past');
+              cell.classList.add('past-disabled');
+              cell.setAttribute('aria-disabled', 'true');
+            } else {
+              cell.classList.remove('fc-past');
+              cell.classList.remove('past-disabled');
+              cell.removeAttribute('aria-disabled');
+            }
+          });
+        }
+
+        // 每次 calendar 日期範圍變更都重新標記（包含 initial render）
+        calendar.on('datesSet', function() {
+          // 延遲一個 frame，確保 DOM 已完全輸出
+          requestAnimationFrame(markPastCells);
+        });
+        // 立即標記一次（render 後）
+        requestAnimationFrame(markPastCells);
+
+        // 攔截所有在日曆格子的 click（capture 階段），以 data-date 檢查是否為過去
+        calendarEl.addEventListener('click', function (e) {
+          const dayCell = e.target.closest('.fc-daygrid-day[data-date]');
+          if (!dayCell) return;
+          const ds = dayCell.getAttribute('data-date');
+          if (!ds) return;
+          const cellDateStart = new Date(ds + 'T00:00:00');
+          const todayStart = new Date();
+          todayStart.setHours(0,0,0,0);
+          if (cellDateStart < todayStart) {
+            // 阻擋任何點擊傳播（包括 FullCalendar 的 dateClick）
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            // 小提示（若不想跳 alert 可去掉）
+            const tip = document.createElement('div');
+            tip.textContent = '此日期為過去日期，無法預約。';
+            tip.style.position = 'fixed';
+            tip.style.left = '50%';
+            tip.style.top = '80px';
+            tip.style.transform = 'translateX(-50%)';
+            tip.style.background = 'rgba(0,0,0,0.75)';
+            tip.style.color = '#fff';
+            tip.style.padding = '8px 12px';
+            tip.style.borderRadius = '6px';
+            tip.style.zIndex = 12000;
+            document.body.appendChild(tip);
+            setTimeout(() => tip.remove(), 1400);
+          }
+        }, true);
+        
+        // 補強：把過去日期加上不可互動屬性（輔助工具）
+        document.querySelectorAll('.calendar-container .fc .fc-daygrid-day.fc-past').forEach(d => {
+          d.setAttribute('aria-disabled', 'true');
+          d.classList.add('past-disabled');
+        });
  
         // 立即移除頁面上可能已存在的預設範例事件（保險做法）
         // 如果未來要改成只移除特定日期，請修改 datesToRemove 陣列
@@ -415,9 +533,9 @@
  
         // 新增：點日期時開啟時段選擇，並新增可服務事件
         function showTimeSlotModal(dateStr) {
-          const overlay = document.createElement('div');
-          overlay.className = 'modal-overlay';
-          overlay.innerHTML = `
+           const overlay = document.createElement('div');
+           overlay.className = 'modal-overlay';
+           overlay.innerHTML = `
             <div class="modal" style="max-width:480px;width:92%;text-align:center;">
               <h3 style="margin-top:0">選擇 ${dateStr} 的時段與時間</h3>
               <div style="display:flex;gap:8px;justify-content:center;margin:12px 0;">
@@ -455,8 +573,10 @@
           overlay.querySelector('.confirm').addEventListener('click', () => {
             const timeVal = document.getElementById('slotTime').value;
             const note = document.getElementById('slotNote').value.trim();
+            const now = Date.now();
+
             if (!timeVal) {
-              // 全日（使用 ev-custom 類或你要的類別）
+              // 全日：已在 dateClick 檢查過，允許今天或未來日期的全天預約
               calendar.addEvent({
                 title: `可服務（全天）${note ? ' - ' + note : ''}`,
                 start: dateStr,
@@ -464,25 +584,32 @@
                 classNames: ['ev-custom']
               });
               alert(`✅ 已新增 ${dateStr} 的全天時段`);
-            } else {
-              // 組成當地 ISO datetime
-              const iso = `${dateStr}T${timeVal}:00`;
-              // 根據預設時段選色，可改成更動態映射
-              let cls = 'ev-custom';
-              if (timeVal.startsWith('09') || timeVal < '12:00') cls = 'ev-morning';
-              else if (timeVal >= '12:00' && timeVal < '17:00') cls = 'ev-afternoon';
-              else cls = 'ev-evening';
-
-              calendar.addEvent({
-                title: `可服務 ${timeVal}${note ? ' - ' + note : ''}`,
-                start: iso,
-                allDay: false,
-                classNames: [cls]
-              });
-              alert(`✅ 已新增 ${dateStr} ${timeVal} 的時段`);
+              overlay.remove();
+              return;
             }
-             overlay.remove();
-           });
+
+            // 組成當地 ISO datetime，並檢查是否為未來時間
+            const selectedDt = new Date(`${dateStr}T${timeVal}:00`);
+            if (selectedDt.getTime() <= now) {
+              alert('無法預約已過的時間，請選擇未來的時段或時間。');
+              return;
+            }
+
+            // 根據時間決定類別
+            let cls = 'ev-custom';
+            if (timeVal < '12:00') cls = 'ev-morning';
+            else if (timeVal < '17:00') cls = 'ev-afternoon';
+            else cls = 'ev-evening';
+
+            calendar.addEvent({
+              title: `可服務 ${timeVal}${note ? ' - ' + note : ''}`,
+              start: selectedDt.toISOString(),
+              allDay: false,
+              classNames: [cls]
+            });
+            alert(`✅ 已新增 ${dateStr} ${timeVal} 的時段`);
+            overlay.remove();
+          });
 
           // 點遮罩背景也關閉
           overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
