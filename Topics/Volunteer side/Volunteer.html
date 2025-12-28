@@ -110,6 +110,53 @@
         padding: 20px;
       }
 
+      /* 調整 FullCalendar 工具列：標題在上、按鈕在下 */
+      .calendar-container .fc-toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      /* 每個 chunk 置中顯示（左/中/右皆置中），並讓按鈕區自動換行 */
+      .calendar-container .fc-toolbar .fc-toolbar-chunk {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      /* 主要優先把中間 chunk（通常包含 title）排到最前面 */
+      .calendar-container .fc-toolbar .fc-toolbar-chunk.fc-toolbar-chunk-center,
+      .calendar-container .fc-toolbar .fc-toolbar-chunk:nth-child(2) {
+        order: -2 !important;
+      }
+      /* 確保左右 chunk（按鈕）在下方 */
+      .calendar-container .fc-toolbar .fc-toolbar-chunk.fc-toolbar-chunk-left,
+      .calendar-container .fc-toolbar .fc-toolbar-chunk.fc-toolbar-chunk-right {
+        order: 1 !important;
+      }
+      .calendar-container .fc-toolbar .fc-toolbar-title,
+      .calendar-container .fc-toolbar h2 {
+        font-size: 28px !important;
+        margin: 0 !important;
+        font-weight: 700 !important;
+      }
+      /* 按鈕群集中顯示並小幅間距 */
+      .calendar-container .fc-toolbar .fc-button,
+      .calendar-container .fc-toolbar .fc-button-group > * {
+        margin: 0 6px;
+      }
+      /* 小螢幕下按鈕允許換行 */
+      @media (max-width: 600px) {
+        .calendar-container .fc-toolbar .fc-toolbar-chunk {
+          padding: 0 8px;
+        }
+        .calendar-container .fc-toolbar .fc-button-group {
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .calendar-container .fc-toolbar h2 { font-size: 20px; }
+      }
+
       /* 彈窗 */
       .modal-overlay {
         position: fixed;
@@ -245,9 +292,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const calendarEl = document.getElementById("calendar");
-        let batchMode = false;
-        let cancelMode = false;
-        let selectedDates = [];
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
@@ -255,80 +299,17 @@
           selectable: true,
           locale: "zh-tw",
           headerToolbar: {
-            left: "prev,next today batchButton cancelButton",
+            left: "prev,next today",
             center: "title",
             right: "",
           },
-          customButtons: {
-            batchButton: {
-              text: "批量模式",
-              click: function () {
-                // 離開取消模式時清除顏色
-                if (cancelMode) clearSelectionColors();
-                cancelMode = false;
-                batchMode = !batchMode;
-                updateButtonStates();
-
-                // 離開批量模式 -> 出現時段選擇彈窗
-                if (!batchMode && selectedDates.length > 0) {
-                  showBatchTimeModal();
-                }
-              },
-            },
-            cancelButton: {
-              text: "批量取消",
-              click: function () {
-                // 離開批量模式時清除顏色
-                if (batchMode) clearSelectionColors();
-                batchMode = false;
-
-                // 如果已經在取消模式，第二次點擊 → 確認取消
-                if (cancelMode && selectedDates.length > 0) {
-                  if (
-                    confirm(
-                      `確定要批量取消這 ${selectedDates.length} 天的服務時段嗎？`
-                    )
-                  ) {
-                    selectedDates.forEach((dateStr) => {
-                      calendar.getEvents().forEach((event) => {
-                        if (event.startStr === dateStr) {
-                          event.remove();
-                        }
-                      });
-                    });
-                    alert(`❌ 已批量取消 ${selectedDates.length} 天服務時段`);
-                  }
-                  selectedDates = [];
-                  clearSelectionColors();
-                  cancelMode = false;
-                  updateButtonStates();
-                } else {
-                  // 第一次點擊進入取消模式
-                  cancelMode = true;
-                  updateButtonStates();
-                }
-              },
-            },
-          },
+          // 點日期直接開啟時段選擇
           dateClick: function (info) {
-            if (batchMode) {
-              toggleDateSelection(
-                info.dateStr,
-                info.dayEl,
-                "#ffeaa7",
-                "#f39c12"
-              );
-            } else if (cancelMode) {
-              handleBatchCancelSelection(info.dateStr, info.dayEl);
-            } else {
-              showTimeSlotModal(info.dateStr);
-            }
+            showTimeSlotModal(info.dateStr);
           },
+          // 點事件可取消（單筆）
           eventClick: function (info) {
-            if (
-              !cancelMode &&
-              confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)
-            ) {
+            if (confirm(`確定要取消 ${info.event.startStr} 的服務時段嗎？`)) {
               info.event.remove();
               alert("❌ 已取消該服務時段");
             }
@@ -341,35 +322,7 @@
 
         calendar.render();
 
-        // 更新按鈕狀態顏色
-        function updateButtonStates() {
-          const batchBtn = document.querySelector(".fc-batchButton-button");
-          const cancelBtn = document.querySelector(".fc-cancelButton-button");
-
-          batchBtn.style.backgroundColor = batchMode ? "#f39c12" : "#6c757d";
-          batchBtn.style.borderColor = batchMode ? "#f39c12" : "#6c757d";
-          batchBtn.style.color = "white";
-
-          cancelBtn.style.backgroundColor = cancelMode ? "#d63031" : "#6c757d";
-          cancelBtn.style.borderColor = cancelMode ? "#d63031" : "#6c757d";
-          cancelBtn.style.color = "white";
-        }
-
-        // 批量選擇顏色切換
-        function toggleDateSelection(dateStr, dayEl, bgColor, borderColor) {
-          const isSelected = selectedDates.includes(dateStr);
-          if (isSelected) {
-            selectedDates = selectedDates.filter((d) => d !== dateStr);
-            dayEl.style.backgroundColor = "";
-            dayEl.style.border = "";
-          } else {
-            selectedDates.push(dateStr);
-            dayEl.style.backgroundColor = bgColor;
-            dayEl.style.border = `2px solid ${borderColor}`;
-          }
-        }
-
-        // 單一天選擇
+        // 單一天選擇時段（保留原邏輯）
         function showTimeSlotModal(dateStr) {
           const overlay = document.createElement("div");
           overlay.className = "modal-overlay";
@@ -403,73 +356,9 @@
             });
           });
 
-          overlay
-            .querySelector(".cancel")
-            .addEventListener("click", () => overlay.remove());
-        }
-
-        // 批量模式：新增
-        function showBatchTimeModal() {
-          const overlay = document.createElement("div");
-          overlay.className = "modal-overlay";
-          overlay.innerHTML = `
-      <div class="modal">
-        <h3>為 ${selectedDates.length} 天選擇可服務時段</h3>
-        <button class="confirm" data-time="上午">上午 (09:00–12:00)</button>
-        <button class="confirm" data-time="下午">下午 (13:00–17:00)</button>
-        <button class="confirm" data-time="晚上">晚上 (18:00–21:00)</button>
-        <br><br>
-        <button class="cancel">取消</button>
-      </div>
-    `;
-          document.body.appendChild(overlay);
-
-          overlay.querySelectorAll(".confirm").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const time = btn.dataset.time;
-              selectedDates.forEach((dateStr) => {
-                calendar.addEvent({
-                  title: `可服務 ${time}`,
-                  start: dateStr,
-                  color:
-                    time === "上午"
-                      ? "#4f8a8b"
-                      : time === "下午"
-                      ? "#74b9ff"
-                      : "#f6b93b",
-                });
-              });
-              calendar.refetchEvents();
-              clearSelectionColors();
-              selectedDates = [];
-              overlay.remove();
-              alert(`✅ 已批量新增 ${time} 可服務時段`);
-            });
-          });
-
-          overlay.querySelector(".cancel").addEventListener("click", () => {
-            overlay.remove();
-            clearSelectionColors();
-            selectedDates = [];
-          });
-        }
-
-        // 批量取消模式：僅能點有預約的日期
-        function handleBatchCancelSelection(dateStr, dayEl) {
-          const hasEvent = calendar
-            .getEvents()
-            .some((e) => e.startStr === dateStr);
-          if (!hasEvent) return; // 沒有預約的不讓點
-
-          toggleDateSelection(dateStr, dayEl, "#fab1a0", "#d63031");
-        }
-
-        // 清除所有選取顏色
-        function clearSelectionColors() {
-          document.querySelectorAll(".fc-daygrid-day").forEach((day) => {
-            day.style.backgroundColor = "";
-            day.style.border = "";
-          });
+          overlay.querySelector(".cancel").addEventListener("click", () =>
+            overlay.remove()
+          );
         }
       });
 
