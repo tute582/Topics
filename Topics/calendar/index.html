@@ -115,7 +115,9 @@
         min-height: 40px;
         box-sizing: border-box;
       }
-
+      #editModal form {
+        border: none;
+      }
       /* 下拉選單樣式 */
       select {
         width: 100%;
@@ -222,6 +224,12 @@
         color: #fff;
       }
 
+      .edit-actions {
+        display: flex;
+        justify-content: center; /* 水平置中 */
+        gap: 12px; /* 按鈕間距，可調 */
+        margin-top: 10px;
+      }
       /* =========================================
        6. 表格樣式 (Tables)
    ========================================= */
@@ -628,7 +636,7 @@
       const nameEl = document.getElementById("volunteerName");
 
       // 狀態變數
-      let userId = "";
+      let userId = "U10243a4b528760aad0d03a51d13c2e4c";
       let userName = "";
       let records = []; // 儲存所有行程資料
       let currentEditEventId = null; // 當前編輯的 ID
@@ -658,6 +666,7 @@
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
+            loadRecords();
             return;
           }
 
@@ -772,6 +781,8 @@
       // 格式化重複選項顯示
       function formatRepeat(val) {
         switch ((val || "").toString()) {
+          case "none":
+            return "不重複";
           case "daily":
             return "每天";
           case "weekly":
@@ -780,7 +791,6 @@
             return "每月";
           case "yearly":
             return "每年";
-          case "none":
           default:
             return "不重複";
         }
@@ -790,25 +800,16 @@
       function formatReminder(val) {
         if (!val) return "無";
         switch (val.toString()) {
-          case "5min":
-            return "5 分鐘前";
-          case "10min":
-            return "10 分鐘前";
-          case "15min":
-            return "15 分鐘前";
+          case "none":
+            return "無";
+          case "0min":
+            return "當下提醒";
           case "30min":
             return "30 分鐘前";
           case "1h":
-            return "1 小時前";
-          case "2h":
-            return "2 小時前";
+            return "1小時前";
           case "day":
-            return "1 天前";
-          case "2day":
-            return "2 天前";
-          case "week":
-            return "1 週前";
-          case "none":
+            return "30 分鐘前";
           default:
             return "無";
         }
@@ -840,8 +841,8 @@
               eventId: item.event_id,
               remark: item.remark,
               isReminded: item.is_reminded,
-              repeat: item.repeat || "none",
-              reminderMethod: item.reminder_method || "none",
+              repeat: item.repeat,
+              reminderMethod: item.reminder_method,
             };
           });
           renderAllTable();
@@ -886,16 +887,16 @@
         }
 
         upcomingRecords.forEach((record) => {
-          const repeatLabel = formatRepeat(record.repeat || "none");
-          const reminderLabel = formatReminder(record.reminderMethod || "none");
+          const repeatLabel = formatRepeat(record.repeat);
+          const reminderLabel = formatReminder(record.reminderMethod);
           const row = tbody.insertRow();
           row.innerHTML = `
           <td>${record.date}</td>
           <td>${record.time}</td>
           <td>${escapeHtml(record.scheduleNote)}</td>
           <td>${escapeHtml(record.remark)}</td>
-          <td>${escapeHtml(repeatLabel)}</td>
-          <td>${escapeHtml(reminderLabel)}</td>
+          <td>${repeatLabel}</td>
+          <td>${reminderLabel}</td>
           <td><button data-id="${
             record.eventId
           }" class="but-ans edit-btn">編輯</button></td>
@@ -1025,8 +1026,7 @@
         document.getElementById("editEvent").value = record.scheduleNote;
         document.getElementById("editNote").value = record.remark;
         document.getElementById("editRepeat").value = record.repeat || "none";
-        document.getElementById("editReminder").value =
-          record.reminderMethod || "none";
+        document.getElementById("editReminder").value = record.reminderMethod;
 
         document.getElementById("editModal").style.display = "block";
         bodyEl.classList.add("modal-open");
@@ -1142,17 +1142,15 @@
           fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
             .then((res) => res.json())
             .then((result) => {
-              if (!result.success) 
-              { 
+              if (!result.success) {
                 // 無效身分，導向註冊頁面
-                alert(
-                  "第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。"
-                );
+                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
                 window.location.href = "../../Login-or-register/index.html";
               } else {
                 // 已註冊，取得身分
                 let identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
+                localStorage.setItem("fromPage", "calendar");
                 switch (identify) {
                   case "志工":
                     window.location.href =
