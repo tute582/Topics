@@ -157,6 +157,79 @@
         .calendar-container .fc-toolbar h2 { font-size: 20px; }
       }
 
+      /* ===== 調整 FullCalendar 事件樣式（與其他頁面一致） ===== */
+    .calendar-container .fc .fc-daygrid-event,
+    .calendar-container .fc .fc-daygrid-event-harness {
+      border-radius: 10px !important;
+      overflow: visible;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      border: none !important;
+      background: transparent !important;
+    }
+    /* 隱藏小圓點 */
+    .calendar-container .fc .fc-daygrid-event .fc-event-dot { display: none !important; }
+
+    /* 讓時間與標題換行顯示 */
+    .calendar-container .fc .fc-daygrid-event .fc-event-main {
+      padding: 8px 12px !important;
+      font-weight: 600;
+      display: flex !important;
+      flex-direction: column !important; /* 由直向排列：時間在上、標題在下 */
+      align-items: flex-start !important;
+      gap: 4px !important;
+      border-radius: 10px !important;
+      box-sizing: border-box;
+      white-space: normal !important; /* 允許換行 */
+      line-height: 1.1;
+    }
+
+    .calendar-container .fc .fc-daygrid-event .fc-event-time {
+      display: block !important;
+      color: rgba(255,255,255,0.95) !important;
+      font-weight: 700 !important;
+      font-size: 0.95em !important;
+      margin: 0 !important;
+    }
+    .calendar-container .fc .fc-daygrid-event .fc-event-title {
+      display: block !important;
+      color: inherit !important;
+      margin: 0 !important;
+      font-size: 1em !important;
+    }
+
+    /* 針對自定義 class 強制套用背景色與文字色（確保所有情境一致） */
+    .calendar-container .fc .fc-daygrid-event.ev-morning .fc-event-main,
+    .calendar-container .fc .fc-daygrid-event.ev-morning {
+      background-color: #4f8a8b !important;
+      color: #fff !important;
+    }
+    .calendar-container .fc .fc-daygrid-event.ev-afternoon .fc-event-main,
+    .calendar-container .fc .fc-daygrid-event.ev-afternoon {
+      background-color: #74b9ff !important;
+      color: #fff !important;
+    }
+    .calendar-container .fc .fc-daygrid-event.ev-evening .fc-event-main,
+    .calendar-container .fc .fc-daygrid-event.ev-evening {
+      background-color: #f6b93b !important;
+      color: #222 !important;
+    }
+    .calendar-container .fc .fc-daygrid-event.ev-custom .fc-event-main,
+    .calendar-container .fc .fc-daygrid-event.ev-custom {
+      background-color: #6c5ce7 !important;
+      color: #fff !important;
+    }
+
+    /* 小螢幕微調 */
+    @media (max-width: 480px) {
+      .calendar-container .fc .fc-daygrid-event .fc-event-main {
+        padding: 6px 10px !important;
+        font-size: 13px;
+      }
+      .calendar-container .fc .fc-daygrid-event .fc-event-time {
+        font-size: 12px !important;
+      }
+    }
+
       /* 彈窗 */
       .modal-overlay {
         position: fixed;
@@ -325,40 +398,128 @@
                alert("❌ 已取消該服務時段");
              }
            },
-           events: [
-             { title: "可服務 上午", start: "2025-10-10", color: "#4f8a8b" },
-             { title: "可服務 下午", start: "2025-10-15", color: "#74b9ff" },
-           ],
+           // 初始不載入範例事件（已移除預設顯示）
+           events: [],
          });
-
+ 
         calendar.render();
+ 
+        // 立即移除頁面上可能已存在的預設範例事件（保險做法）
+        // 如果未來要改成只移除特定日期，請修改 datesToRemove 陣列
+        (function clearSampleEvents() {
+          const datesToRemove = ["2025-10-10", "2025-10-15"];
+          calendar.getEvents().forEach(ev => {
+            if (datesToRemove.includes(ev.startStr)) ev.remove();
+          });
+        })();
+ 
+        // 新增：點日期時開啟時段選擇，並新增可服務事件
+        function showTimeSlotModal(dateStr) {
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          overlay.innerHTML = `
+            <div class="modal" style="max-width:480px;width:92%;text-align:center;">
+              <h3 style="margin-top:0">選擇 ${dateStr} 的時段與時間</h3>
+              <div style="display:flex;gap:8px;justify-content:center;margin:12px 0;">
+                <button class="slot-btn" data-time="09:00" data-label="上午" style="padding:8px 12px;border-radius:8px;border:none;background:#4f8a8b;color:#fff;cursor:pointer;">上午</button>
+                <button class="slot-btn" data-time="13:00" data-label="下午" style="padding:8px 12px;border-radius:8px;border:none;background:#74b9ff;color:#fff;cursor:pointer;">下午</button>
+                <button class="slot-btn" data-time="18:00" data-label="晚上" style="padding:8px 12px;border-radius:8px;border:none;background:#f6b93b;color:#222;cursor:pointer;">晚上</button>
+              </div>
+              <div style="margin-top:8px;color:#666;font-size:13px;">或直接輸入具體時間：</div>
+              <input id="slotTime" type="time" style="width:60%;padding:8px;margin:8px auto;border:1px solid #ddd;border-radius:6px;display:block;"/>
+              <div style="margin-top:8px;color:#666;font-size:13px;">備註（選填）</div>
+              <input id="slotNote" type="text" placeholder="例如：家訪、診間陪同" style="width:86%;padding:8px;margin:8px auto;border:1px solid #ddd;border-radius:6px;display:block;"/>
+              <div style="text-align:right;margin-top:10px;">
+                <button class="confirm" style="padding:8px 12px;border-radius:8px;border:none;background:#0984e3;color:#fff;cursor:pointer;">確認新增</button>
+                <button class="cancel" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;margin-left:8px;">取消</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          // 按鈕選預設時間會填入 time input 並加上視覺狀態
+          overlay.querySelectorAll('.slot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const t = btn.dataset.time;
+              document.getElementById('slotTime').value = t;
+              // 樣式標示選中
+              overlay.querySelectorAll('.slot-btn').forEach(b => b.style.opacity = '0.6');
+              btn.style.opacity = '1';
+            });
+          });
+
+          // 取消按鈕
+          overlay.querySelector('.cancel').addEventListener('click', () => overlay.remove());
+
+          // 確認新增：有時間則建立含時間事件，否則建立全天事件
+          overlay.querySelector('.confirm').addEventListener('click', () => {
+            const timeVal = document.getElementById('slotTime').value;
+            const note = document.getElementById('slotNote').value.trim();
+            if (!timeVal) {
+              // 全日（使用 ev-custom 類或你要的類別）
+              calendar.addEvent({
+                title: `可服務（全天）${note ? ' - ' + note : ''}`,
+                start: dateStr,
+                allDay: true,
+                classNames: ['ev-custom']
+              });
+              alert(`✅ 已新增 ${dateStr} 的全天時段`);
+            } else {
+              // 組成當地 ISO datetime
+              const iso = `${dateStr}T${timeVal}:00`;
+              // 根據預設時段選色，可改成更動態映射
+              let cls = 'ev-custom';
+              if (timeVal.startsWith('09') || timeVal < '12:00') cls = 'ev-morning';
+              else if (timeVal >= '12:00' && timeVal < '17:00') cls = 'ev-afternoon';
+              else cls = 'ev-evening';
+
+              calendar.addEvent({
+                title: `可服務 ${timeVal}${note ? ' - ' + note : ''}`,
+                start: iso,
+                allDay: false,
+                classNames: [cls]
+              });
+              alert(`✅ 已新增 ${dateStr} ${timeVal} 的時段`);
+            }
+             overlay.remove();
+           });
+
+          // 點遮罩背景也關閉
+          overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        }
 
         // 綁定「查看即將陪伴」按鈕
         const viewBtn = document.getElementById('viewUpcomingBtn');
         if (viewBtn) viewBtn.addEventListener('click', showUpcomingElders);
 
-        // 顯示未來事件（即將陪伴）modal
+        // 顯示未來事件（即將陪伴）modal（改成可點進去填寫看診資訊）
         function showUpcomingElders() {
-          const events = calendar.getEvents()
-            .filter(ev => ev.start && ev.start.getTime() > Date.now())
-            .sort((a,b) => a.start - b.start);
+          const events = calendar
+            .getEvents()
+            .filter((ev) => ev.start && ev.start.getTime() > Date.now())
+            .sort((a, b) => a.start - b.start);
 
-          const overlay = document.createElement('div');
-          overlay.className = 'modal-overlay';
-          const listHtml = events.length ? events.map(ev => {
-            const dt = ev.start.toLocaleString();
-            const title = ev.title || '未命名';
-            // extendedProps 可填 elder 資訊（若有）
-            const elder = ev.extendedProps?.elder_name || ev.extendedProps?.elder || '';
-            return `<tr>
-                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${title}</td>
-                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${dt}</td>
-                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">${elder}</td>
-                      <td style="padding:8px 12px;border-bottom:1px solid #eee;">
-                        <button class="detail-btn" data-id="${ev.id}" style="padding:6px 10px;border-radius:6px;border:none;background:#0984e3;color:#fff;cursor:pointer;">查看詳情</button>
-                      </td>
-                    </tr>`;
-          }).join('') : `<tr><td colspan="4" style="padding:18px;text-align:center;color:#666;">目前沒有即將的陪伴行程</td></tr>`;
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+          const listHtml = events.length
+            ? events
+                .map((ev) => {
+                  const dt = ev.start.toLocaleString();
+                  const title = ev.title || "未命名";
+                  const elder =
+                    ev.extendedProps?.elder_name || ev.extendedProps?.elder || "";
+                  // 每列加 data-id，整列可點
+                  return `<tr class="upcoming-row" data-id="${ev.id}" style="cursor:pointer;">
+                            <td style="padding:8px 12px;border-bottom:1px solid #eee;">${title}</td>
+                            <td style="padding:8px 12px;border-bottom:1px solid #eee;">${dt}</td>
+                            <td style="padding:8px 12px;border-bottom:1px solid #eee;">${elder}</td>
+                            <td style="padding:8px 12px;border-bottom:1px solid #eee;">
+                              <button class="detail-btn" data-id="${ev.id}" style="padding:6px 10px;border-radius:6px;border:none;background:#0984e3;color:#fff;cursor:pointer;">填寫看診</button>
+                            </td>
+                          </tr>`;
+                })
+                .join("")
+            : `<tr><td colspan="4" style="padding:18px;text-align:center;color:#666;">目前沒有即將的陪伴行程</td></tr>`;
 
           overlay.innerHTML = `
             <div class="modal" style="max-width:820px;width:92%;">
@@ -385,19 +546,90 @@
           `;
           document.body.appendChild(overlay);
 
-          // 綁定細節按鈕（如需更多操作可在此擴充）
-          overlay.querySelectorAll('.detail-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              const evId = btn.dataset.id;
-              const ev = calendar.getEventById(evId);
-              if (!ev) return alert('找不到該行程');
-              const info = `標題：${ev.title}\n時間：${ev.start.toLocaleString()}\n備註：${JSON.stringify(ev.extendedProps || {})}`;
-              alert(info);
+          // 點整列或按「填寫看診」都會打開看診表單
+          overlay.querySelectorAll(".upcoming-row").forEach((row) => {
+            row.addEventListener("click", (e) => {
+              const id = row.dataset.id;
+              const ev = calendar.getEventById(id);
+              if (!ev) return alert("找不到該行程");
+              showClinicForm(ev, overlay);
+            });
+          });
+          overlay.querySelectorAll(".detail-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation(); // 防止觸發列的 click 雙重執行
+              const id = btn.dataset.id;
+              const ev = calendar.getEventById(id);
+              if (!ev) return alert("找不到該行程");
+              showClinicForm(ev, overlay);
             });
           });
 
-          overlay.querySelector('.close-modal').addEventListener('click', () => overlay.remove());
-          overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+          overlay.querySelector(".close-modal").addEventListener("click", () =>
+            overlay.remove()
+          );
+          overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) overlay.remove();
+          });
+        }
+
+        // 打開看診資訊填寫表單（modal），儲存到 localStorage（key = clinic_{eventId}）
+        function showClinicForm(ev, parentOverlay = null) {
+          const saved = localStorage.getItem("clinic_" + ev.id);
+          const prev = saved ? JSON.parse(saved) : {};
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+          overlay.innerHTML = `
+            <div class="modal" style="max-width:720px;width:92%;text-align:left;">
+              <h3 style="margin-top:0">看診資訊 — ${ev.title || ""}</h3>
+              <div style="margin-bottom:8px;color:#555;">
+                <strong>長者：</strong> ${ev.extendedProps?.elder_name || ev.extendedProps?.elder || ""}
+                <br/>
+                <strong>時間：</strong> ${ev.start ? ev.start.toLocaleString() : ""}
+              </div>
+              <form id="clinicForm" style="display:flex;flex-direction:column;gap:8px;">
+                <label>主訴 / 診斷：<input type="text" name="diagnosis" value="${(prev.diagnosis||"")}" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;"/></label>
+                <label>用藥/處置：<input type="text" name="meds" value="${(prev.meds||"")}" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;"/></label>
+                <label>備註：<textarea name="notes" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;" rows="4">${(prev.notes||"")}</textarea></label>
+                <div style="text-align:right;margin-top:6px;">
+                  <button type="button" class="save-clinic" style="padding:8px 12px;border-radius:8px;border:none;background:#0984e3;color:#fff;cursor:pointer;">儲存</button>
+                  <button type="button" class="cancel-clinic" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;margin-left:8px;">取消</button>
+                </div>
+              </form>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          const modal = overlay.querySelector(".modal");
+          overlay.querySelector(".save-clinic").addEventListener("click", () => {
+            const form = overlay.querySelector("#clinicForm");
+            const diagnosis = form.diagnosis.value.trim();
+            const meds = form.meds.value.trim();
+            const notes = form.notes.value.trim();
+            const payload = {
+              elder: ev.extendedProps?.elder_name || ev.extendedProps?.elder || "",
+              datetime: ev.start ? ev.start.toISOString() : "",
+              diagnosis,
+              meds,
+              notes,
+              savedAt: new Date().toISOString(),
+            };
+            localStorage.setItem("clinic_" + ev.id, JSON.stringify(payload));
+            // （可同時把 summary 放回 event.extendedProps）
+            try { ev.setExtendedProp && ev.setExtendedProp("clinicInfo", payload); } catch (err) {}
+            alert("✅ 已儲存看診資訊");
+            overlay.remove();
+            // 若原本的 upcoming modal 傳入了 parentOverlay，保留它；否則無操作
+            if (parentOverlay) {} 
+          });
+
+          overlay.querySelector(".cancel-clinic").addEventListener("click", () => {
+            overlay.remove();
+          });
+
+          overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) overlay.remove();
+          });
         }
       });
 
