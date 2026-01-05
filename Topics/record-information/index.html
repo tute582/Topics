@@ -799,6 +799,34 @@
         editDateInput.addEventListener("input", function () {
           updateDateDisplay(this.value, "editDateDisplay");
         });
+
+        // ★★★ 新增：初始化時設定當下時間 ★★★
+        setDefaultDateTime();
+      }
+
+      // ★★★ 新增：設定預設時間與日期函式 ★★★
+      function setDefaultDateTime() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const min = String(now.getMinutes()).padStart(2, "0");
+
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        const timeStr = `${hh}:${min}`;
+
+        const dateEl = document.getElementById("date");
+        const timeEl = document.getElementById("time");
+
+        if (dateEl) {
+          dateEl.value = todayStr;
+          updateDateDisplay(todayStr, "dateDisplay");
+        }
+        if (timeEl) {
+          timeEl.value = timeStr;
+          updateTimeDisplay(timeStr, "timeDisplay");
+        }
       }
 
       // 更新時間顯示
@@ -1115,12 +1143,12 @@
         }
       }
 
-      // [修改] 清空輸入欄位，同時重置時間與日期的假顯示
+      // [修改] 清空輸入欄位，但重置時間與日期為當下
       function clearInputs() {
         [
           "elderName",
-          "date",
-          "time",
+          // "date",  <-- 移除，不由這裡清空，改由 setDefaultDateTime 設定
+          // "time",  <-- 移除
           "name",
           "department",
           "record",
@@ -1128,12 +1156,9 @@
         ].forEach((id) => {
           document.getElementById(id).value = "";
         });
-        // 清空時間文字
-        document.getElementById("timeDisplay").textContent = "";
-        document.getElementById("timeDisplay").style.color = "#888";
-        // 清空日期文字
-        document.getElementById("dateDisplay").textContent = "";
-        document.getElementById("dateDisplay").style.color = "#888";
+
+        // 呼叫函式重置為當下時間
+        setDefaultDateTime();
       }
 
       function sortTableByDateTime(tableId) {
