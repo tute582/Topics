@@ -102,6 +102,54 @@
       }
 
       /* =========================================
+         [新增] 分頁導覽列 (Tabs)
+         ========================================= */
+      .tab-nav {
+        display: flex;
+        padding: 0 25px; /* 與下方內容對齊 */
+        margin-top: 20px;
+        border-bottom: 2px solid #ddd; /* 分頁底部的線條 */
+      }
+
+      .tab-link {
+        display: block;
+        text-decoration: none;
+        padding: 12px 24px;
+        background-color: #f1f1f1; /* 未選中的背景色 (灰) */
+        color: #666;
+        font-size: 18px;
+        font-weight: bold;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border: 1px solid #ddd;
+        border-bottom: none; /* 底部不畫線，讓它與下底線融合 */
+        margin-right: 5px; /* 分頁之間的間距 */
+        position: relative;
+        top: 2px; /* 往下推一點，蓋住底線 */
+        transition: all 0.2s ease;
+      }
+
+      .tab-link:hover {
+        background-color: #e9e9e9;
+      }
+
+      /* 當前選中的分頁樣式 */
+      .tab-link.active {
+        background-color: white; /* 選中變白色 */
+        color: #4a90e2; /* 選中變藍字 */
+        border-bottom: 2px solid white; /* 用白色蓋住底下的灰線 */
+        z-index: 1; /* 確保浮在最上層 */
+      }
+
+      /* 手機版微調 */
+      @media (max-width: 768px) {
+        .tab-link {
+          padding: 10px 15px;
+          font-size: 16px;
+        }
+      }
+
+      /* =========================================
        4. 表單與輸入元件
        ========================================= */
       .input-container > form {
@@ -445,9 +493,13 @@
 
   <body>
     <nav class="nav-1">
-      <div>
-        <h1 style="margin: 0; font-size: 28px">看診資訊</h1>
-      </div>
+      <div class="tab-nav">
+      <a href="#" class="tab-link active">看診紀錄</a>
+      
+      <a href="family-view.html" class="tab-link">家屬介面</a>
+    </div>
+
+    <div class="input-container">
 
       <div style="display: flex; align-items: center">
         <h1 style="margin: 0; text-align: right">
