@@ -318,17 +318,35 @@
             right: "today"
           },
           events: [
-            // 您指定的預約紀錄
+            // 這裡設定您想要的預約紀錄範例
             {
-              title: "10:00 亞東醫院",
+              title: "亞東醫院 (陪伴就醫)",
               start: `${currentYear}-01-12T10:00:00`,
               end: `${currentYear}-01-12T12:00:00`,
-              classNames: ['hospital-event'], // 紅色樣式
-              extendedProps: { note: "陪伴就醫" }
+              classNames: ['hospital-event'], // 套用自訂樣式
+              extendedProps: {
+                location: "亞東醫院",
+                elder: "林奶奶"
+              }
+            },
+            {
+              title: "社區關懷 (家訪)",
+              start: `${currentYear}-01-20T14:00:00`,
+              color: "#0984e3" // 藍色
+            },
+            {
+              title: "衛生所 (打疫苗)",
+              start: `${currentYear}-02-05T09:30:00`,
+              color: "#00b894" // 綠色
             }
           ],
           eventClick: function(info) {
-             alert(`預約資訊：\n${info.event.title}\n時間：${info.event.start.toLocaleString()}`);
+            // 點擊事件顯示詳細資訊 (簡單 alert 示範)
+            const props = info.event.extendedProps;
+            let msg = `📅 時間: ${info.event.start.toLocaleString()}\n📌 事項: ${info.event.title}`;
+            if(props.location) msg += `\n🏥 地點: ${props.location}`;
+            if(props.elder) msg += `\n👵 長者: ${props.elder}`;
+            alert(msg);
           }
         });
 
