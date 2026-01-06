@@ -14,29 +14,39 @@
         background: #f7f9fb;
         margin: 0;
         padding: 0;
-        padding-bottom: 80px; /* 避免內容被底部遮擋 */
+        padding-bottom: 80px;
       }
 
-      /* ===== 導覽列樣式 ===== */
+      /* =========================================
+         1. 導覽列 (還原原始設定)
+         ========================================= */
       .nav-1 {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 20px;
+        padding: 10px 25px;
         position: sticky;
         top: 0;
         z-index: 1001;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        left: 0;
+        right: 0;
+        color: black;
         background-color: white;
+        box-sizing: border-box;
         border-bottom: 1px solid #ddd;
       }
 
-      /* ===== 分頁切換按鈕 (Tabs) ===== */
+      /* =========================================
+         2. 分頁按鈕 (新增功能)
+         ========================================= */
       .tab-container {
         display: flex;
         background: white;
         margin-top: 1px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
       }
       .tab-btn {
         flex: 1;
@@ -54,37 +64,40 @@
         border-bottom: 3px solid #0984e3;
         background-color: #f0f8ff;
       }
-
-      /* ===== 內容區塊控制 ===== */
+      
       .tab-content {
-        display: none; /* 預設隱藏 */
-        padding: 20px;
+        display: none;
+        padding: 10px 20px;
         justify-content: center;
         animation: fadeIn 0.3s ease-in-out;
       }
       .tab-content.active {
-        display: flex; /* 顯示時使用 flex */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0); }
       }
 
-      /* ===== 志工卡片 ===== */
+      /* =========================================
+         3. 志工卡片 (還原原始樣式)
+         ========================================= */
       .card {
         width: 100%;
-        max-width: 400px; /* 手機版寬度 */
+        max-width: 360px;
         background: #ffffff;
         border-radius: 15px;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
         overflow: hidden;
         position: relative;
-        margin: 0 auto;
+        margin-bottom: 20px;
       }
 
       .card-cover {
         width: 100%;
-        height: 120px;
+        height: 150px;
         background-color: #c2dfff;
       }
 
@@ -92,9 +105,9 @@
         width: 100px;
         height: 100px;
         border-radius: 50%;
-        border: 4px solid white;
+        border: 3px solid rgb(94, 131, 252);
         position: absolute;
-        top: 70px;
+        top: 100px;
         left: 50%;
         transform: translateX(-50%);
         object-fit: cover;
@@ -102,111 +115,132 @@
       }
 
       .card-content {
-        padding: 60px 20px 30px;
+        padding: 70px 20px 30px;
         text-align: center;
       }
 
       .card-title {
-        font-size: 1.5em;
-        margin: 10px 0;
-        color: #333;
+        font-size: 1.3em;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
       }
 
       .special {
         background: #ffeaa7;
         color: #2d3436;
-        padding: 2px 10px 4px;
+        padding: 2px 10px 6px;
         border-radius: 10px;
-        font-size: 0.6em;
-        vertical-align: middle;
-        margin-left: 5px;
+        font-size: 0.8em;
+      }
+
+      .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .card-tags .tag {
+        background-color: #e9f5ff;
+        color: #007bff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
       }
 
       .card-text {
-        color: #636e72;
-        line-height: 1.6;
-        margin: 15px 0;
-      }
-
-      .info-row {
-        text-align: left;
-        margin-bottom: 10px;
-        padding: 8px;
-        background: #f9f9f9;
-        border-radius: 8px;
-        font-size: 0.95em;
-      }
-      .info-label {
-        font-weight: bold;
-        color: #0984e3;
-        margin-right: 5px;
-      }
-
-      /* 編輯模式樣式 */
-      .edit-input {
-        width: 90%;
-        padding: 6px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 1em;
-        margin-top: 5px;
-      }
-      .edit-textarea {
-        width: 90%;
-        height: 80px;
-        padding: 6px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        resize: none;
-        font-size: 1em;
-        margin-top: 5px;
-      }
-      .action-btn {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
         margin-top: 10px;
-        transition: background 0.2s;
+        color: #636e72;
+        line-height: 1.5;
       }
-      .btn-edit { background: #0984e3; color: white; }
-      .btn-save { background: #00b894; color: white; display: none; } /* 預設隱藏儲存鈕 */
 
-      /* ===== 日曆容器 ===== */
+      /* 編輯模式的輸入框樣式 */
+      .edit-input, .edit-textarea {
+        width: 90%;
+        padding: 8px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+      .edit-btn {
+        margin-top: 15px;
+        background: #0984e3;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9em;
+      }
+      .save-btn {
+        background: #00b894;
+        margin-right: 10px;
+      }
+      .cancel-btn {
+        background: #b2bec3;
+      }
+
+      /* =========================================
+         4. 日曆樣式
+         ========================================= */
       .calendar-wrapper {
         width: 100%;
         max-width: 800px;
         background-color: #fff;
         border-radius: 20px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        padding: 15px;
-        margin-bottom: 20px;
+        padding: 20px;
+        box-sizing: border-box;
       }
-
-      /* FullCalendar 樣式微調 */
-      .fc-toolbar-title { font-size: 1.2em !important; }
-      .fc-event { cursor: pointer; }
-      
-      /* 自訂事件樣式 */
+      /* FullCalendar 字體與按鈕微調 */
+      .fc-toolbar-title { font-size: 1.5em !important; font-weight: bold; }
+      .fc-button { font-size: 0.9em !important; }
       .hospital-event {
-        background-color: #e74c3c !important; /* 紅色系代表醫院 */
+        background-color: #d63031 !important; /* 紅色醫院 */
         border: none !important;
         color: white !important;
-        padding: 2px 4px;
-        border-radius: 4px;
       }
-
     </style>
   </head>
   <body>
 
     <nav class="nav-1">
-      <div style="font-size: 20px; font-weight: bold;">志工管理系統</div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <img id="volunteerAvatar" src="https://via.placeholder.com/40" style="width:36px;height:36px;border-radius:50%;display:none;">
-        <span id="volunteerName" style="font-size:14px; color:#555;">載入中...</span>
+      <div>
+        <h1 style="margin: 0; font-size: 28px">志工管理系統</h1>
+      </div>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="https://via.placeholder.com/40"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+                display: none;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >載入中...</span
+            >
+          </span>
+        </h1>
       </div>
     </nav>
 
@@ -221,47 +255,38 @@
         <img class="card-avatar" src="https://i.pravatar.cc/150?img=32" alt="頭像" />
         
         <div class="card-content">
+          
           <div id="viewMode">
             <h2 class="card-title">
-              <span id="display-name">王小明</span>
-              <span class="special">志工編號: V-001</span>
+              <span id="view-name">王小明</span>
+              <span id="view-special" class="special">醫護證照</span>
             </h2>
-            <div class="info-row">
-              <span class="info-label">聯絡電話:</span>
-              <span id="display-phone">0912-345-678</span>
+            <div id="view-tags" class="card-tags">
+              <span class="tag">親切</span>
+              <span class="tag">細心</span>
+              <span class="tag">熱心助人</span>
             </div>
-            <div class="info-row">
-              <span class="info-label">專長/證照:</span>
-              <span id="display-skill">基本救命術(BLS), 陪伴照護</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">服務地區:</span>
-              <span id="display-area">新北市板橋區</span>
-            </div>
-            <p class="card-text" id="display-bio">
-              擁有豐富的醫院志工經驗，熱愛幫助他人，週末時間較為彈性。
-            </p>
-            <button class="action-btn btn-edit" onclick="toggleEdit(true)">✏️ 編輯資料</button>
+            <p id="view-text" class="card-text">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
+            <button class="edit-btn" onclick="toggleEdit(true)">✏️ 編輯資料</button>
           </div>
 
-          <div id="editMode" style="display: none; text-align: left;">
-            <label>姓名</label>
-            <input type="text" id="edit-name" class="edit-input" value="王小明">
+          <div id="editMode" style="display: none;">
+            <label style="color:#888; font-size:0.8em;">姓名</label>
+            <input type="text" id="input-name" class="edit-input" value="王小明">
             
-            <label style="margin-top:10px;display:block;">電話</label>
-            <input type="tel" id="edit-phone" class="edit-input" value="0912-345-678">
+            <label style="color:#888; font-size:0.8em;">特殊稱號 (例如: 醫護證照)</label>
+            <input type="text" id="input-special" class="edit-input" value="醫護證照">
 
-            <label style="margin-top:10px;display:block;">專長/證照</label>
-            <input type="text" id="edit-skill" class="edit-input" value="基本救命術(BLS), 陪伴照護">
+            <label style="color:#888; font-size:0.8em;">標籤 (用逗號隔開)</label>
+            <input type="text" id="input-tags" class="edit-input" value="親切, 細心, 熱心助人">
 
-            <label style="margin-top:10px;display:block;">服務地區</label>
-            <input type="text" id="edit-area" class="edit-input" value="新北市板橋區">
+            <label style="color:#888; font-size:0.8em;">自我介紹</label>
+            <textarea id="input-text" class="edit-textarea" rows="4">擁有豐富的醫院志工經驗，熱愛幫助他人。</textarea>
 
-            <label style="margin-top:10px;display:block;">自我介紹</label>
-            <textarea id="edit-bio" class="edit-textarea">擁有豐富的醫院志工經驗，熱愛幫助他人，週末時間較為彈性。</textarea>
-
-            <button class="action-btn btn-save" style="display:block; margin-top:20px;" onclick="saveProfile()">💾 儲存修改</button>
-            <button class="action-btn" style="background:#aaa; color:white; margin-top:10px;" onclick="toggleEdit(false)">取消</button>
+            <div style="margin-top: 10px;">
+              <button class="edit-btn save-btn" onclick="saveData()">儲存</button>
+              <button class="edit-btn cancel-btn" onclick="toggleEdit(false)">取消</button>
+            </div>
           </div>
 
         </div>
@@ -270,34 +295,28 @@
 
     <section id="tab-calendar" class="tab-content">
       <div class="calendar-wrapper">
-        <div style="background:#e3f2fd; color:#0d47a1; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9em;">
-          ℹ️ 以下顯示您的歷史預約與未來行程。點擊日期可查看詳細資訊。
-        </div>
         <div id="calendar"></div>
       </div>
     </section>
 
     <script>
-      let calendar; // 全域變數，讓切換分頁時可以呼叫
+      let calendar; 
 
       document.addEventListener("DOMContentLoaded", function () {
-        // --- 初始化 FullCalendar ---
+        // --- 設定日曆 ---
         const calendarEl = document.getElementById("calendar");
-        
-        // 取得目前的年份，讓範例資料顯示在當前年份的1月12日，避免看不到
-        const currentYear = new Date().getFullYear();
+        const currentYear = new Date().getFullYear(); // 自動抓取今年年份
 
         calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
-          // 預設日期設為當年度 1月，方便看到範例
-          initialDate: `${currentYear}-01-12`, 
+          initialDate: `${currentYear}-01-12`, // 預設跳到 1/12
           locale: "zh-tw",
+          height: 'auto',
           headerToolbar: {
             left: "prev,next",
             center: "title",
             right: "today"
           },
-          height: 'auto', // 自適應高度
           events: [
             // 這裡設定您想要的預約紀錄範例
             {
@@ -332,94 +351,110 @@
         });
 
         calendar.render();
-        
-        // 初始化 LIFF
-        initLiff();
+
+        // --- 初始化 LIFF (維持原始邏輯) ---
+        initLiffAndSetProfile();
       });
 
-      // --- 分頁切換邏輯 ---
+      // --- 分頁切換 (Tab) ---
       function switchTab(tabName) {
-        // 1. 處理按鈕樣式
+        // 1. 按鈕樣式切換
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        // 找出被點擊的按鈕並加上 active (這裡簡單用 onclick 觸發的位置判斷，或直接指定)
-        if(tabName === 'info') document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-        if(tabName === 'calendar') document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        if (tabName === 'info') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        if (tabName === 'calendar') document.querySelectorAll('.tab-btn')[1].classList.add('active');
 
-        // 2. 處理內容顯示
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        // 2. 內容顯示切換
+        document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
         document.getElementById(`tab-${tabName}`).classList.add('active');
 
-        // 3. 特殊處理：如果是切換到日曆，必須重新 render，否則寬高會跑掉
+        // 3. 修正：切換到日曆時強制更新尺寸 (避免破圖)
         if (tabName === 'calendar' && calendar) {
-          setTimeout(() => {
-            calendar.updateSize(); // 重新計算尺寸
-          }, 50); // 稍微延遲確保 DOM 已顯示
+          setTimeout(() => { calendar.updateSize(); }, 50);
         }
       }
 
-      // --- 志工資料編輯邏輯 ---
-      function toggleEdit(isEdit) {
-        const viewMode = document.getElementById('viewMode');
-        const editMode = document.getElementById('editMode');
+      // --- 編輯功能 (Edit) ---
+      function toggleEdit(showEdit) {
+        if (showEdit) {
+          // 進入編輯模式：將目前的文字填入輸入框
+          document.getElementById('input-name').value = document.getElementById('view-name').innerText;
+          document.getElementById('input-special').value = document.getElementById('view-special').innerText;
+          document.getElementById('input-text').value = document.getElementById('view-text').innerText;
+          
+          // 標籤處理：從 DOM 轉回逗號字串
+          const tags = Array.from(document.querySelectorAll('#view-tags .tag'))
+                            .map(tag => tag.innerText).join(', ');
+          document.getElementById('input-tags').value = tags;
 
-        if (isEdit) {
-          viewMode.style.display = 'none';
-          editMode.style.display = 'block';
-          // 把顯示的值帶入輸入框
-          document.getElementById('edit-name').value = document.getElementById('display-name').innerText;
-          // 其他欄位依此類推...
+          document.getElementById('viewMode').style.display = 'none';
+          document.getElementById('editMode').style.display = 'block';
         } else {
-          viewMode.style.display = 'block';
-          editMode.style.display = 'none';
+          // 取消編輯
+          document.getElementById('viewMode').style.display = 'block';
+          document.getElementById('editMode').style.display = 'none';
         }
       }
 
-      function saveProfile() {
-        // 1. 取得輸入框的值
-        const newName = document.getElementById('edit-name').value;
-        const newPhone = document.getElementById('edit-phone').value;
-        const newSkill = document.getElementById('edit-skill').value;
-        const newArea = document.getElementById('edit-area').value;
-        const newBio = document.getElementById('edit-bio').value;
+      function saveData() {
+        // 1. 更新文字
+        const newName = document.getElementById('input-name').value;
+        const newSpecial = document.getElementById('input-special').value;
+        const newText = document.getElementById('input-text').value;
 
-        // 2. 更新顯示畫面
-        document.getElementById('display-name').innerText = newName;
-        document.getElementById('display-phone').innerText = newPhone;
-        document.getElementById('display-skill').innerText = newSkill;
-        document.getElementById('display-area').innerText = newArea;
-        document.getElementById('display-bio').innerText = newBio;
+        document.getElementById('view-name').innerText = newName;
+        document.getElementById('view-special').innerText = newSpecial;
+        document.getElementById('view-text').innerText = newText;
 
-        // 3. 關閉編輯模式
+        // 2. 更新標籤 (將逗號字串轉回 HTML)
+        const tagsStr = document.getElementById('input-tags').value;
+        const tagsArr = tagsStr.split(',').map(t => t.trim()).filter(t => t);
+        const tagsContainer = document.getElementById('view-tags');
+        tagsContainer.innerHTML = ''; // 清空
+        tagsArr.forEach(tagText => {
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.innerText = tagText;
+          tagsContainer.appendChild(span);
+        });
+
+        // 3. 切換回顯示模式
         toggleEdit(false);
-
-        // 4. (選用) 這裡可以加入送後端 API 或存 localStorage 的程式碼
-        alert("✅ 資料已更新！");
       }
 
-      // --- LIFF 相關 (保留您原本的邏輯) ---
-      const LIFF_ID = "2008228534-R8763A2n"; 
-      async function initLiff() {
+      // --- LIFF (原始邏輯) ---
+      const LIFF_ID = "2008228534-R8763A2n";
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
+
+      async function initLiffAndSetProfile() {
         try {
           await liff.init({ liffId: LIFF_ID });
-          if (liff.isLoggedIn()) {
-            const profile = await liff.getProfile();
-            document.getElementById("volunteerName").innerText = profile.displayName;
-            const img = document.getElementById("volunteerAvatar");
-            if (profile.pictureUrl) {
-                img.src = profile.pictureUrl;
-                img.style.display = "block";
-            }
+
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
+          }
+
+          const profile = await liff.getProfile();
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
           } else {
-            document.getElementById("volunteerName").innerText = "未登入 (點此登入)";
-            document.getElementById("volunteerName").style.cursor = "pointer";
-            document.getElementById("volunteerName").onclick = () => {
-                liff.login({ redirectUri: window.location.href });
-            };
+            avatarEl.style.display = "none";
           }
         } catch (err) {
-          console.error("LIFF error:", err);
+          console.error("LIFF init error:", err);
         }
       }
+
+      // 綁定點擊登入事件
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+        }
+      });
     </script>
   </body>
 </html>
