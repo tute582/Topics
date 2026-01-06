@@ -341,6 +341,97 @@
        padding: 6px 10px !important;
        box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
      }
+     /* 檔期區塊容器 */
+    .schedule-section {
+      background: #fff;
+      margin: 15px 20px;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .schedule-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #333;
+    }
+
+    /* 圖例 */
+    .schedule-legend {
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      gap: 10px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+    .dot-free { background-color: #72c140; }
+    .dot-busy { background-color: #2d3436; }
+    .dot-none { background-color: #dfe6e9; }
+
+    /* 月份滾動區域 */
+    .month-scroll-wrapper {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: none; /* 隱藏捲軸 Firefox */
+    }
+    .month-scroll-wrapper::-webkit-scrollbar { display: none; } /* 隱藏捲軸 Chrome */
+
+    .month-card {
+      min-width: 85px;
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .month-card.active {
+      border-color: #0984e3;
+      background-color: #f0f8ff;
+    }
+
+    .month-label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #2d3436;
+    }
+
+    /* 進度條構造 */
+    .progress-container {
+      display: flex;
+      height: 5px;
+      background-color: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .p-segment { 
+    height: 100%; 
+    transition: flex 0.5s ease-in-out; /* 讓比例變動更平滑 */
+  }
+    /* 這裡模擬比例：綠色代表空閒多，黑色代表已排班 */
+    .p-free { background-color: #72c140; flex: 3; } 
+    .p-busy { background-color: #2d3436; flex: 1; }
+    .p-none { background-color: #dfe6e9; flex: 1; }
     </style>
   </head>
   <body>
@@ -358,7 +449,18 @@
         </h1>
       </div>
     </nav>
-
+    <div class="schedule-section">
+      <div class="schedule-header">
+        <span class="schedule-title">檔期安排</span>
+        <div class="schedule-legend">
+          <span class="legend-item"><span class="dot dot-free"></span> 空閒</span>
+          <span class="legend-item"><span class="dot dot-busy"></span> 忙碌</span>
+          <span class="legend-item"><span class="dot dot-none"></span> 未設置/已過</span>
+        </div>
+      </div>
+      <div class="month-scroll-wrapper" id="monthNav">
+        </div>
+    </div>
     <div class="tab-container">
       <div class="tab-btn active" onclick="switchTab('info')">志工資訊</div>
       <div class="tab-btn" onclick="switchTab('calendar')">預約紀錄</div>
@@ -505,10 +607,97 @@
              const today = new Date(); today.setHours(0,0,0,0);
              if (clicked < today) return; // 過去日期不處理
              showTimeSlotModal(info.dateStr);
-           }
+           },
+          // 當事件集合改變時更新月份進度
+          eventsSet: function() {
+            if (typeof updateMonthProgress === 'function') updateMonthProgress();
+          }
           });
  
           calendar.render();
+         
+          // --- 檔期進度更新函數與月份卡片生成（放在 DOMContentLoaded 內） ---
+          function updateMonthProgress() {
+            if (!calendar) return;
+            const COLOR_FREE = '#72c140';   // 綠色 = 空閒 (尚未安排預約)
+            const COLOR_BUSY = '#2d3436';   // 黑色 = 忙碌 (已預約/新增時段)
+            
+            const allEvents = calendar.getEvents();
+            const monthCards = document.querySelectorAll('.month-card');
+            
+            monthCards.forEach(card => {
+              const year = parseInt(card.dataset.year);
+              const month = parseInt(card.dataset.month);
+
+              // 篩選該月份所有事件
+              const monthEvents = allEvents.filter(ev => {
+                const start = ev.start;
+                return start && start.getFullYear() === year && (start.getMonth() + 1) === month;
+              });
+
+              // 重新定義分類：
+              // 忙碌 (Busy) = 包含醫院任務 OR 自訂新增的時段 (ev-morning, afternoon, evening)
+              const busyCount = monthEvents.length; 
+              
+              // 空閒 (Free) = 假設每個月基準為 10 個單位，減去已佔用的
+              const totalSlots = 10; 
+              const freeCount = Math.max(0, totalSlots - busyCount);
+
+              const pBusy = card.querySelector('.p-busy');
+              const pFree = card.querySelector('.p-free');
+              const pNone = card.querySelector('.p-none');
+
+              if (pBusy && pFree && pNone) {
+                // 動態調整 Flex 比例
+                pBusy.style.flex = busyCount;
+                pFree.style.flex = freeCount;
+                pNone.style.flex = 1;
+
+                // 強制顏色設定
+                pBusy.style.backgroundColor = COLOR_BUSY;
+                pFree.style.backgroundColor = COLOR_FREE;
+              }
+            });
+          }
+
+          // 生成未來 6 個月的導覽按鈕（只建立一次）
+          (function createMonthNav() {
+            const monthNav = document.getElementById('monthNav');
+            if (!monthNav) return;
+            monthNav.innerHTML = ''; // 清空（避免重複）
+            const now = new Date();
+            for (let i = 0; i < 6; i++) {
+              const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+              const m = targetDate.getMonth() + 1;
+              const y = targetDate.getFullYear();
+              const displayMonth = i === 0 ? "本月" : (m < 10 ? '0' + m : m) + "月";
+              const card = document.createElement('div');
+              card.className = `month-card ${i === 0 ? 'active' : ''}`;
+              card.dataset.month = m;
+              card.dataset.year = y;
+              card.innerHTML = `
+                <span class="month-label">${displayMonth}</span>
+                <div class="progress-container">
+                  <div class="p-segment p-free" style="flex:5;"></div>
+                  <div class="p-segment p-busy" style="flex:0;"></div>
+                  <div class="p-segment p-none" style="flex:1;"></div>
+                </div>
+              `;
+              card.addEventListener('click', () => {
+                document.querySelectorAll('.month-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                if (calendar) calendar.gotoDate(`${y}-${(m < 10 ? '0'+m : m)}-01`);
+              });
+              monthNav.appendChild(card);
+            }
+            // 初次計算
+            updateMonthProgress();
+          })();
+
+          // 當日曆資料改變時更新進度（保險）
+          calendar.on && typeof calendar.on === 'function' && calendar.on('eventAdd', updateMonthProgress);
+          calendar.on && typeof calendar.on === 'function' && calendar.on('eventRemove', updateMonthProgress);
+          calendar.on && typeof calendar.on === 'function' && calendar.on('datesSet', updateMonthProgress);
          
           /* ----- 新增：點日排三時段 modal 函式 ----- */
           function showTimeSlotModal(dateStr) {
@@ -590,11 +779,49 @@
         }
       });
 
+      // 已改為在 DOMContentLoaded 內建立 monthNav（避免變數/時機問題）
+      // const monthNav = document.getElementById('monthNav');
+      // const now = new Date();
+      //
+      // for (let i = 0; i < 6; i++) {
+      //   const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      //   const monthNum = targetDate.getMonth() + 1;
+      //   const yearNum = targetDate.getFullYear();
+      //   const displayMonth = i === 0 ? "本月" : (monthNum < 10 ? '0' + monthNum : monthNum) + "月";
+      //
+      //   const card = document.createElement('div');
+      //   card.className = `month-card ${i === 0 ? 'active' : ''}`;
+      //   card.innerHTML = `
+      //     <span class="month-label">${displayMonth}</span>
+      //     <div class="progress-container">
+      //       <div class="p-segment p-free"></div>
+      //       <div class="p-segment p-busy"></div>
+      //       <div class="p-segment p-none"></div>
+      //     </div>
+      //   `;
+      //
+      //   // 點擊事件：切換日曆月份
+      //   card.onclick = () => {
+      //     // 切換 UI 選取狀態
+      //     document.querySelectorAll('.month-card').forEach(c => c.classList.remove('active'));
+      //     card.classList.add('active');
+      //     
+      //     // 日曆跳轉到該月 1 號
+      //     if (calendar) {
+      //       calendar.gotoDate(`${yearNum}-${(monthNum < 10 ? '0' + monthNum : monthNum)}-01`);
+      //     }
+      //   };
+      //
+      //   monthNav.appendChild(card);
+      // }
+
+
+
       // --- Modal 相關函式 ---
       function showModal(info) {
         const event = info.event;
         const props = event.extendedProps;
-        
+
         // 1. 填入標題
         document.getElementById('m-title').innerText = event.title;
         

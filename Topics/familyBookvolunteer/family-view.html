@@ -7,7 +7,7 @@
 
     <style>
       /* =========================================
-         1. 基礎樣式 (沿用上一頁風格)
+         1. 基礎樣式 (完全沿用你的參數)
          ========================================= */
       body {
         font-family: "Arial", sans-serif;
@@ -23,7 +23,7 @@
       }
 
       /* =========================================
-         2. 導覽列與分頁 (保持一致)
+         2. 導覽列與分頁 (保留原始字體 28px)
          ========================================= */
       .nav-1 {
         display: flex;
@@ -37,7 +37,6 @@
         background-color: white;
         border-bottom: 1px solid #ddd;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        color: black;
       }
 
       .volunteer-area {
@@ -46,21 +45,11 @@
         gap: 8px;
       }
 
-      .volunteer-area .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #0984e3;
-        display: none;
-      }
-
       .tab-nav {
         display: flex;
         padding: 0 25px;
         margin-top: 20px;
         border-bottom: 2px solid #ddd;
-        background-color: #f9f9f9;
       }
 
       .tab-link {
@@ -69,7 +58,7 @@
         padding: 12px 24px;
         background-color: #e0e0e0;
         color: #666;
-        font-size: 18px;
+        font-size: 18px; /* 原始參數 */
         font-weight: bold;
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
@@ -78,11 +67,6 @@
         margin-right: 5px;
         position: relative;
         top: 2px;
-        transition: all 0.2s ease;
-      }
-
-      .tab-link:hover {
-        background-color: #dcdcdc;
       }
 
       .tab-link.active {
@@ -93,120 +77,111 @@
       }
 
       /* =========================================
-         3. 進度條樣式 (Timeline)
+         3. 容器與流暢資訊區 (優化對齊感)
          ========================================= */
       .container {
         padding: 20px 25px;
-        max-width: 600px;
+        max-width: 600px; /* 原始寬度 */
         margin: 0 auto;
         background-color: white;
-        border-radius: 0 0 20px 20px; /* 配合分頁的圓角 */
+        border-radius: 0 0 20px 20px;
         min-height: 80vh;
+      }
+
+      /* 優化：建立卡片感，讓資訊讀取流暢 */
+      .info-section {
+        background-color: #fcfcfc;
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        color: #888;
+        font-weight: bold;
+        font-size: 18px; /* 原始字體大小 */
+      }
+
+      .info-value {
+        color: #333;
+        font-weight: bold;
+        font-size: 20px; /* 原始內容大小 */
+        text-align: right;
+      }
+
+      .wait-time {
+        color: #e67e22;
       }
 
       .status-title {
         text-align: center;
-        margin-bottom: 30px;
-        color: #333;
+        margin: 25px 0;
         font-size: 24px;
+        color: #333;
       }
 
+      /* =========================================
+         4. 時間軸 (保留原始線條 30px 位置)
+         ========================================= */
       .timeline {
         position: relative;
         padding: 20px 0;
       }
 
-      /* 左側直線 */
       .timeline::before {
         content: "";
         position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 30px; /* 線的位置 */
-        width: 4px;
-        background: #eee;
+        top: 0; bottom: 0; left: 30px;
+        width: 4px; background: #eee;
         border-radius: 2px;
       }
 
       .timeline-item {
         position: relative;
         margin-bottom: 40px;
-        padding-left: 70px; /* 留空間給圓圈 */
-        opacity: 0.5; /* 預設半透明 (未完成狀態) */
-        transition: all 0.3s ease;
+        padding-left: 70px;
+        opacity: 0.4;
+        transition: 0.3s;
       }
 
-      /* 圓圈標記 */
       .timeline-marker {
         position: absolute;
-        left: 17px; /* (線left 30 + 線寬4)/2 - (圓寬30/2) 微調居中 */
-        top: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: #fff;
-        border: 4px solid #ccc;
-        z-index: 2;
-        transition: all 0.3s ease;
+        left: 17px; top: 0;
+        width: 30px; height: 30px;
+        border-radius: 50%; background: #fff;
+        border: 4px solid #ccc; z-index: 2;
       }
 
-      .timeline-content h3 {
-        margin: 0;
-        font-size: 20px;
-        color: #555;
-      }
+      .timeline-content h3 { font-size: 20px; color: #555; }
+      .timeline-content p { font-size: 14px; color: #999; margin-top: 5px; }
 
-      .timeline-content p {
-        margin: 5px 0 0;
-        font-size: 14px;
-        color: #999;
-      }
-
-      /* === 狀態樣式邏輯 === */
-      
-      /* 已完成或當前狀態 */
-      .timeline-item.active {
-        opacity: 1;
-      }
-
-      .timeline-item.active .timeline-marker {
-        border-color: #4a90e2;
-        background-color: #eaf4ff;
-      }
-
-      .timeline-item.active h3 {
-        color: #222;
-        font-weight: bold;
-      }
-
-      /* 當前正在進行的狀態 (特別強調) */
+      .timeline-item.active { opacity: 1; }
+      .timeline-item.active .timeline-marker { border-color: #4a90e2; }
       .timeline-item.current .timeline-marker {
         background-color: #4a90e2;
         border-color: #4a90e2;
         box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.3);
-        transform: scale(1.1);
-      }
-      
-      .timeline-item.current h3 {
-        color: #4a90e2;
-        font-size: 22px;
       }
 
-      /* =========================================
-         4. 志工控制區 (Volunteer Controls)
-         ========================================= */
+      /* 志工控制區 */
       .controls-area {
         margin-top: 40px;
         padding-top: 20px;
         border-top: 1px solid #eee;
-        display: none; /* 預設隱藏，確認是志工才顯示 */
-      }
-
-      .control-title {
-        font-size: 18px;
-        margin-bottom: 15px;
-        color: #333;
-        font-weight: bold;
+        display: none;
       }
 
       .btn-grid {
@@ -222,68 +197,21 @@
         color: #4a90e2;
         border-radius: 10px;
         font-size: 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .status-btn:hover {
-        background-color: #f0f7ff;
       }
 
       .status-btn.active-btn {
         background-color: #4a90e2;
         color: white;
       }
-      
-      /* Reset button specific */
-      .reset-btn {
-        margin-top: 10px;
-        width: 100%;
-        background-color: #fff;
-        border: 1px solid #ccc;
-        color: #666;
-        padding: 10px;
-        border-radius: 10px;
-        cursor: pointer;
-      }
-
-      /* =========================================
-         5. 響應式
-         ========================================= */
-      @media (max-width: 768px) {
-        .tab-link {
-          padding: 10px 15px;
-          font-size: 16px;
-        }
-        .container {
-            padding: 15px;
-        }
-      }
     </style>
   </head>
 
   <body>
     <nav class="nav-1">
-      <div>
-        <h1 style="margin: 0; font-size: 28px">看診資訊</h1>
-      </div>
-
-      <div style="display: flex; align-items: center">
-        <h1 style="margin: 0; text-align: right">
-          <span class="volunteer-area">
-            <img
-              id="volunteerAvatar"
-              class="avatar"
-              src=""
-              alt="avatar"
-            />
-            <span
-              id="volunteerName"
-              style="cursor: pointer; font-size: 26px"
-              >載入中</span
-            >
-          </span>
-        </h1>
+      <h1 style="font-size: 28px">看診資訊</h1>
+      <div class="volunteer-area">
+        <img id="volunteerAvatar" style="width:36px; height:36px; border-radius:50%; display:none; border:2px solid #0984e3;" />
+        <span id="volunteerName" style="font-size: 26px">載入中</span>
       </div>
     </nav>
 
@@ -293,54 +221,39 @@
     </div>
 
     <div class="container">
+      <div class="info-section">
+        <div class="info-row">
+          <span class="info-label">看診醫院</span>
+          <span class="info-value" id="disp_hospital">讀取中...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">醫生科別</span>
+          <span class="info-value" id="disp_dept">讀取中...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">醫生名字</span>
+          <span class="info-value" id="disp_doctor">讀取中...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">等候時間</span>
+          <span class="info-value wait-time" id="disp_wait">-- 分鐘</span>
+        </div>
+      </div>
+
       <div class="status-title">
         當前進度：<span id="currentStatusText" style="color: #4a90e2; font-weight: bold;">讀取中...</span>
       </div>
 
       <div class="timeline" id="timelineContainer">
-        <div class="timeline-item" id="step-0">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <h3>已到醫院</h3>
-            <p>長輩已抵達醫院現場</p>
-          </div>
-        </div>
-
-        <div class="timeline-item" id="step-1">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <h3>等待看診</h3>
-            <p>已完成報到，於診間外候診</p>
-          </div>
-        </div>
-
-        <div class="timeline-item" id="step-2">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <h3>看診中</h3>
-            <p>醫生正在進行診療</p>
-          </div>
-        </div>
-
-        <div class="timeline-item" id="step-3">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <h3>看診結束</h3>
-            <p>診療結束，準備領藥</p>
-          </div>
-        </div>
-
-        <div class="timeline-item" id="step-4">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <h3>等待拿藥</h3>
-            <p>批價完成，藥局等候領藥</p>
-          </div>
-        </div>
+        <div class="timeline-item" id="step-0"><div class="timeline-marker"></div><div class="timeline-content"><h3>已到醫院</h3><p>長輩已抵達醫院現場</p></div></div>
+        <div class="timeline-item" id="step-1"><div class="timeline-marker"></div><div class="timeline-content"><h3>等待看診</h3><p>已完成報到，於診間外候診</p></div></div>
+        <div class="timeline-item" id="step-2"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診中</h3><p>醫生正在進行診療</p></div></div>
+        <div class="timeline-item" id="step-3"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診結束</h3><p>診療結束，準備領藥</p></div></div>
+        <div class="timeline-item" id="step-4"><div class="timeline-marker"></div><div class="timeline-content"><h3>等待拿藥</h3><p>批價完成，藥局等候領藥</p></div></div>
       </div>
 
       <div class="controls-area" id="volunteerControls">
-        <div class="control-title">更新進度 (志工專用)</div>
+        <div style="font-weight:bold; margin-bottom:15px;">更新進度 (志工專用)</div>
         <div class="btn-grid">
           <button class="status-btn" onclick="updateStatus(0)">已到醫院</button>
           <button class="status-btn" onclick="updateStatus(1)">等待看診</button>
@@ -348,195 +261,91 @@
           <button class="status-btn" onclick="updateStatus(3)">看診結束</button>
           <button class="status-btn" onclick="updateStatus(4)">等待拿藥</button>
         </div>
-        <button class="reset-btn" onclick="resetStatus()">重置狀態 (測試用)</button>
+        <button style="margin-top:10px; width:100%; padding:10px; border:1px solid #ccc; background:#fff; border-radius:10px;" onclick="resetStatus()">重置狀態 (測試用)</button>
       </div>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-      /* =========================================
-         全域變數與設定
-         ========================================= */
-      const LIFF_ID = "2008484068-qkydRNYN"; 
-      // 注意：這需要後端支援 "狀態儲存" 的 Table，這裡僅為模擬前端邏輯
-      const API_URL = "https://supabase-api-six.vercel.app"; 
-      
-      let userId = "";
-      let userRole = ""; // "志工" 或 "家屬"
-      
-      // 定義狀態順序
-      const statusSteps = [
-        "已到醫院",
-        "等待看診",
-        "看診中", 
-        "看診結束", 
-        "等待拿藥"
-      ];
-      
-      // 模擬當前狀態索引 (0 ~ 4)，-1 代表尚未開始
-      // 實際應用中，這個值應該從資料庫讀取
-      let currentStatusIndex = -1; 
-
-      /* =========================================
-         初始化流程
-         ========================================= */
-      initLiff();
+      const LIFF_ID = "2008484068-qkydRNYN";
+      const API_URL = "https://supabase-api-six.vercel.app";
+      let currentStatusIndex = -1;
+      const statusSteps = ["已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥"];
 
       async function initLiff() {
         try {
           await liff.init({ liffId: LIFF_ID });
-          
-          if (!liff.isLoggedIn()) {
-             // 未登入處理 (可導回首頁或顯示登入按鈕)
-             document.getElementById("volunteerName").innerText = "未登入";
-             // 為了方便測試，未登入時暫時模擬一個身分，實際上應強制登入
-             // checkUserRole("dummy_id"); 
-             return;
+          if (liff.isLoggedIn()) {
+            const profile = await liff.getProfile();
+            document.getElementById("volunteerName").innerText = profile.displayName;
+            if(profile.pictureUrl) {
+              const avatar = document.getElementById("volunteerAvatar");
+              avatar.src = profile.pictureUrl; avatar.style.display = "inline-block";
+            }
+            checkUserRole(profile.userId);
+            fetchVisitInfo(profile.userId);
           }
-
-          const profile = await liff.getProfile();
-          userId = profile.userId;
-          const displayName = profile.displayName;
-          
-          // 更新 UI 頭像
-          document.getElementById("volunteerName").innerText = displayName;
-          const avatarEl = document.getElementById("volunteerAvatar");
-          if(profile.pictureUrl){
-             avatarEl.src = profile.pictureUrl;
-             avatarEl.style.display = "inline-block";
-          }
-
-          // 檢查身分
-          checkUserRole(userId);
-
-        } catch (err) {
-          console.error("LIFF Init Error", err);
-        }
+        } catch (err) { console.error(err); }
       }
+      initLiff();
 
-      /* =========================================
-         核心邏輯：檢查身分與權限
-         ========================================= */
-      function checkUserRole(uid) {
-        // 呼叫你的 API 確認身分
-        fetch(`${API_URL}/identify/${uid}`)
+      function fetchVisitInfo(uid) {
+        fetch(`${API_URL}/visit-data/${uid}`)
           .then(res => res.json())
-          .then(result => {
-             if(result.success) {
-                userRole = result.role; // 預期回傳 "志工" 或 "長者"(家屬)
-                console.log("當前身分：", userRole);
-                
-                // 根據身分決定是否顯示控制按鈕
-                if (userRole === "志工") {
-                    document.getElementById("volunteerControls").style.display = "block";
-                } else {
-                    document.getElementById("volunteerControls").style.display = "none";
-                }
-                
-                // 讀取目前的看診進度 (這裡需要你後端有對應 API)
-                // 暫時使用模擬資料或 LocalStorage
-                loadProgressStatus();
-             }
-          })
-          .catch(err => {
-             console.error("身分驗證失敗", err);
-             // 測試用：如果 API 失敗，預設開啟控制項以便你預覽效果
-             // document.getElementById("volunteerControls").style.display = "block";
-             loadProgressStatus();
+          .then(data => {
+            if(data) {
+              document.getElementById("disp_hospital").innerText = data.hospital_name || "未設定";
+              document.getElementById("disp_dept").innerText = data.department || "未設定";
+              document.getElementById("disp_doctor").innerText = data.doctor_name || "未設定";
+              document.getElementById("disp_wait").innerText = data.wait_time || "-- 分鐘";
+            }
           });
       }
 
-      /* =========================================
-         讀取與渲染狀態
-         ========================================= */
-      function loadProgressStatus() {
-        // [TODO] 這裡應該 fetch 後端 API 取得該長輩目前的 statusIndex
-        // 這裡先用 localStorage 模擬跨頁面或是持久化
-        const savedIndex = localStorage.getItem("currentVisitStatus");
-        
-        if (savedIndex !== null) {
-            currentStatusIndex = parseInt(savedIndex);
-        } else {
-            currentStatusIndex = -1; // 初始狀態
-        }
+      function checkUserRole(uid) {
+        fetch(`${API_URL}/identify/${uid}`)
+          .then(res => res.json())
+          .then(result => {
+            if(result.success && result.role === "志工") {
+              document.getElementById("volunteerControls").style.display = "block";
+            }
+            loadProgressStatus();
+          });
+      }
 
+      function loadProgressStatus() {
+        const saved = localStorage.getItem("currentVisitStatus");
+        currentStatusIndex = saved !== null ? parseInt(saved) : -1;
         renderTimeline();
       }
 
       function renderTimeline() {
         const statusTextEl = document.getElementById("currentStatusText");
-        
-        if (currentStatusIndex === -1) {
-            statusTextEl.innerText = "尚未開始";
-            statusTextEl.style.color = "#999";
-        } else {
-            statusTextEl.innerText = statusSteps[currentStatusIndex];
-            statusTextEl.style.color = "#4a90e2";
-        }
-
-        // 更新 Timeline 樣式
-        for (let i = 0; i < statusSteps.length; i++) {
-            const el = document.getElementById(`step-${i}`);
-            
-            // 清除舊 class
-            el.classList.remove("active", "current");
-
-            if (i < currentStatusIndex) {
-                // 已經過的步驟
-                el.classList.add("active");
-            } else if (i === currentStatusIndex) {
-                // 當前步驟 (最亮眼)
-                el.classList.add("active", "current");
-            }
-            // i > currentStatusIndex 則保持預設 (半透明)
-        }
-
-        // 更新按鈕狀態 (僅志工看得到)
-        const btns = document.querySelectorAll(".status-btn");
-        btns.forEach((btn, idx) => {
-            if (idx === currentStatusIndex) {
-                btn.classList.add("active-btn");
-            } else {
-                btn.classList.remove("active-btn");
-            }
+        statusTextEl.innerText = currentStatusIndex === -1 ? "尚未開始" : statusSteps[currentStatusIndex];
+        statusSteps.forEach((_, i) => {
+          const el = document.getElementById(`step-${i}`);
+          el.classList.remove("active", "current");
+          if (i < currentStatusIndex) el.classList.add("active");
+          else if (i === currentStatusIndex) el.classList.add("active", "current");
+        });
+        document.querySelectorAll(".status-btn").forEach((btn, idx) => {
+          btn.classList.toggle("active-btn", idx === currentStatusIndex);
         });
       }
 
-      /* =========================================
-         更新狀態 (志工操作)
-         ========================================= */
       function updateStatus(newIndex) {
-        if (confirm(`確定要將進度更新為「${statusSteps[newIndex]}」嗎？`)) {
-            currentStatusIndex = newIndex;
-            
-            // 1. 儲存到 LocalStorage (模擬)
-            localStorage.setItem("currentVisitStatus", currentStatusIndex);
-            
-            // 2. [TODO] 發送 POST/PATCH 請求到你的 Supabase
-            // const payload = { status: statusSteps[newIndex], time: new Date() };
-            // fetch(`${API_URL}/progress/update`, { method: 'POST', body: ... })
-            
-            // 3. 重新渲染畫面
-            renderTimeline();
+        if (confirm(`確定更新為「${statusSteps[newIndex]}」？`)) {
+          currentStatusIndex = newIndex;
+          localStorage.setItem("currentVisitStatus", currentStatusIndex);
+          renderTimeline();
         }
       }
-      
-      function resetStatus() {
-          currentStatusIndex = -1;
-          localStorage.removeItem("currentVisitStatus");
-          renderTimeline();
-      }
-      
-      // 自動刷新機制 (讓家屬端不需要手動F5也能看到新進度)
-      // 每 10 秒檢查一次 LocalStorage (或呼叫 API)
-      setInterval(() => {
-          const savedIndex = localStorage.getItem("currentVisitStatus");
-          if (savedIndex !== null && parseInt(savedIndex) !== currentStatusIndex) {
-              currentStatusIndex = parseInt(savedIndex);
-              renderTimeline();
-          }
-      }, 5000);
 
+      function resetStatus() {
+        currentStatusIndex = -1;
+        localStorage.removeItem("currentVisitStatus");
+        renderTimeline();
+      }
     </script>
   </body>
 </html>
