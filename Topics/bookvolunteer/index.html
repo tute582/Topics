@@ -846,11 +846,11 @@
         ></div>
       </div>
 
-      <div style="margin-top: 10px">   
+      <div style="margin-top: 10px"> 
+        
         <input
           id="addressFull"
           type="text"
-          value="${b.address}"
           placeholder="請輸入見面地址（或按「目前位置」自動填入）"
           style="
             width: 100%;
@@ -982,6 +982,11 @@
 
       // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
       setDateTimeConstraints();
+
+      //預設地址設定
+     const document.getElementById("addressFull").value=city;
+
+      
 
       function setDateTimeConstraints() {
         const dateEl = document.getElementById("date");
