@@ -20,10 +20,10 @@
        ========================================= */
       body {
         font-family: "Arial", sans-serif;
+        background: #ffffff;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        background-color: #f9f9f9;
       }
       * {
         box-sizing: border-box;
@@ -651,12 +651,8 @@
 
       // 初始化自定義日期/時間選擇器
       initDateTimePickers();
-      
       // 設定日期上限為今天（不可選未來）
       setDateMax();
-
-      // ★★★ 新增：設定預設時間為當下 ★★★
-      setDefaultDateTime();
 
       function setDateMax() {
         const dateEl = document.getElementById("date");
@@ -667,39 +663,8 @@
         const dd = String(now.getDate()).padStart(2, "0");
         const todayStr = `${yyyy}-${mm}-${dd}`;
         dateEl.max = todayStr;
-        // 注意：這裡只設定 max，不設定 value，value 交給 setDefaultDateTime 處理
-      }
-
-      // ★★★ 新增這個函式：取得現在時間並填入 ★★★
-      function setDefaultDateTime() {
-        const now = new Date();
-        
-        // 1. 處理日期 (YYYY-MM-DD)
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const todayStr = `${yyyy}-${mm}-${dd}`;
-        
-        // 2. 處理時間 (HH:MM)
-        const hh = String(now.getHours()).padStart(2, "0");
-        const min = String(now.getMinutes()).padStart(2, "0");
-        const timeStr = `${hh}:${min}`;
-
-        // 3. 填入 Input 欄位
-        const dateEl = document.getElementById("date");
-        const timeEl = document.getElementById("time");
-        
-        if (dateEl) {
-            dateEl.value = todayStr;
-            // 重要：手動呼叫更新畫面的函式，不然使用者看到的會是空白
-            updateDateDisplay(todayStr, "dateDisplay"); 
-        }
-        
-        if (timeEl) {
-            timeEl.value = timeStr;
-            // 重要：手動呼叫更新畫面的函式
-            updateTimeDisplay(timeStr, "timeDisplay");
-        }
+        // 若已存在值且大於 today，修正為 today
+        if (dateEl.value && dateEl.value > todayStr) dateEl.value = todayStr;
       }
 
       /* =================================================================
@@ -1076,12 +1041,12 @@
       };
 
       function clearInputs() {
-        // 修改：送出後不是清空，而是重置為「當下時間」，方便輸入下一筆
-        setDefaultDateTime(); 
-        
-        // 只要清空數值欄位即可
+        document.getElementById("date").value = "";
+        document.getElementById("time").value = "";
         document.getElementById("systolic").value = "";
         document.getElementById("diastolic").value = "";
+        document.getElementById("dateDisplay").textContent = "";
+        document.getElementById("timeDisplay").textContent = "";
       }
 
       async function deleteRecord(event_id) {
