@@ -13,6 +13,7 @@
         font-family: "Arial", sans-serif;
         padding: 0;
         box-sizing: border-box;
+        background-color: #f9f9f9;
       }
 
       * {
@@ -69,6 +70,46 @@
       }
 
       /* =========================================
+       [新增] 分頁導覽列 (Tabs)
+       ========================================= */
+      .tab-nav {
+        display: flex;
+        padding: 0 25px; /* 與下方內容對齊 */
+        margin-top: 20px;
+        border-bottom: 2px solid #ddd; /* 分頁底部的線條 */
+      }
+
+      .tab-link {
+        display: block;
+        text-decoration: none;
+        padding: 12px 24px;
+        background-color: #f1f1f1; /* 未選中的背景色 (灰) */
+        color: #666;
+        font-size: 18px;
+        font-weight: bold;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border: 1px solid #ddd;
+        border-bottom: none; /* 底部不畫線，讓它與下底線融合 */
+        margin-right: 5px; /* 分頁之間的間距 */
+        position: relative;
+        top: 2px; /* 往下推一點，蓋住底線 */
+        transition: all 0.2s ease;
+      }
+
+      .tab-link:hover {
+        background-color: #e9e9e9;
+      }
+
+      /* 當前選中的分頁樣式 */
+      .tab-link.active {
+        background-color: white; /* 選中變白色 */
+        color: #4a90e2; /* 選中變藍字 */
+        border-bottom: 2px solid white; /* 用白色蓋住底下的灰線 */
+        z-index: 1; /* 確保浮在最上層 */
+      }
+
+      /* =========================================
        3. 版面容器與排版
        ========================================= */
       .input-container,
@@ -111,6 +152,8 @@
         border: 1px solid #ccc;
         border-radius: 20px;
         background-color: white;
+        /* 如果希望分頁看起來完全連在一起，可以把上面圓角拿掉，但保留也好看 */
+        border-top-left-radius: 0; 
       }
 
       label {
@@ -124,7 +167,6 @@
       input[type="text"],
       textarea,
       .picker-display {
-        /* [修改] 改名為 picker-display 供日期與時間共用 */
         width: 100%;
         padding: 8px;
         margin-top: 5px;
@@ -135,7 +177,7 @@
         color: #222;
         box-sizing: border-box;
         min-width: 0;
-        min-height: 38px; /* 確保高度一致 */
+        min-height: 38px;
       }
 
       textarea {
@@ -145,33 +187,26 @@
       input[readonly],
       textarea[readonly],
       .picker-display.readonly-mode {
-        background-color: #f7f7f7; /* 唯讀時變灰 */
+        background-color: #f7f7f7;
         cursor: default;
         color: #555;
       }
 
-      /* --- [關鍵修改] 日期與時間選擇器專用樣式 (Picker Hack) --- */
+      /* --- 日期與時間選擇器專用樣式 --- */
       .picker-wrapper {
         position: relative;
         width: 100%;
         margin-top: 5px;
       }
 
-      /* =========================================
-   [新增] 日期與時間的圖示設定
-   說明：因為 input 變透明了，我們要把圖示畫在底下的 display div 上
-   ========================================= */
-
-      /* 日期圖示 (日曆 SVG) */
       #dateDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23888' stroke-width='1.6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 12px center; /* 靠右對齊 */
-        background-size: 20px 20px; /* 圖示大小 */
-        padding-right: 40px; /* 右邊留出空間給 icon，避免文字蓋到 */
+        background-position: right 12px center;
+        background-size: 20px 20px;
+        padding-right: 40px;
       }
 
-      /* 時間圖示 (時鐘 SVG) */
       #timeDisplay {
         background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3Cpath d='M12 7v6l4 2' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
@@ -180,24 +215,22 @@
         padding-right: 40px;
       }
 
-      /* 替身：負責顯示 formatted text */
       .picker-display {
         display: flex;
         align-items: center;
-        margin-top: 0; /* 已經在 wrapper 設過 margin */
+        margin-top: 0;
         height: 38px;
         overflow: hidden;
       }
 
-      /* 真身：透明，蓋在最上面 */
       .real-picker-input {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        opacity: 0; /* 完全透明 */
-        z-index: 10; /* 確保在最上層 */
+        opacity: 0;
+        z-index: 10;
         cursor: pointer;
         -webkit-appearance: none;
       }
@@ -420,6 +453,12 @@
           min-width: 0;
           width: 100%;
         }
+        
+        /* 手機版分頁調整 */
+        .tab-link {
+          padding: 10px 15px;
+          font-size: 16px;
+        }
 
         @media (max-width: 600px) {
           table {
@@ -430,7 +469,6 @@
         input[type="text"],
         textarea,
         .picker-display {
-          /* 確保手機上文字大小 */
           font-size: 16px;
           padding: 10px;
         }
@@ -478,6 +516,11 @@
         </h1>
       </div>
     </nav>
+
+    <div class="tab-nav">
+      <a href="./index.html" class="tab-link active">看診紀錄</a>
+      <a href="../family-view/index.html" class="tab-link">看診進度</a>
+    </div>
 
     <div class="input-container">
       <h1 class="title" style="font-size: 24px">輸入內容</h1>
@@ -673,8 +716,8 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
       /* -----------------------------------------
-   1. 全域變數與設定 (Global Config)
-   ----------------------------------------- */
+       1. 全域變數與設定 (Global Config)
+       ----------------------------------------- */
       const LIFF_ID = "2008484068-qkydRNYN";
       const POST_SUPABASE_API_URL =
         "https://supabase-api-six.vercel.app/consultations";
@@ -690,9 +733,8 @@
       const nameEl = document.getElementById("volunteerName");
 
       /* -----------------------------------------
-   2. 初始化與 LIFF 整合 (Init & LIFF)
-   ----------------------------------------- */
-      // [修改] 初始化時間與日期選擇器
+       2. 初始化與 LIFF 整合 (Init & LIFF)
+       ----------------------------------------- */
       initDateTimePickers();
       initLiffAndSetProfile();
       updateNoRecordMessage();
@@ -777,8 +819,8 @@
       });
 
       /* -----------------------------------------
-   3. 日期與時間選擇器邏輯 (Date & Time Picker Logic)
-   ----------------------------------------- */
+       3. 日期與時間選擇器邏輯 (Date & Time Picker Logic)
+       ----------------------------------------- */
       function initDateTimePickers() {
         // 初始化時間
         const timeInput = document.getElementById("time");
@@ -790,7 +832,7 @@
           updateTimeDisplay(this.value, "editTimeDisplay");
         });
 
-        // [新增] 初始化日期
+        // 初始化日期
         const dateInput = document.getElementById("date");
         dateInput.addEventListener("input", function () {
           updateDateDisplay(this.value, "dateDisplay");
@@ -799,6 +841,33 @@
         editDateInput.addEventListener("input", function () {
           updateDateDisplay(this.value, "editDateDisplay");
         });
+
+        // 設定當下時間
+        setDefaultDateTime();
+      }
+
+      function setDefaultDateTime() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const min = String(now.getMinutes()).padStart(2, "0");
+
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        const timeStr = `${hh}:${min}`;
+
+        const dateEl = document.getElementById("date");
+        const timeEl = document.getElementById("time");
+
+        if (dateEl) {
+          dateEl.value = todayStr;
+          updateDateDisplay(todayStr, "dateDisplay");
+        }
+        if (timeEl) {
+          timeEl.value = timeStr;
+          updateTimeDisplay(timeStr, "timeDisplay");
+        }
       }
 
       // 更新時間顯示
@@ -829,7 +898,7 @@
         }
       }
 
-      // [新增] 更新日期顯示 (將 YYYY-MM-DD 轉為 YYYY 年 MM 月 DD 日)
+      // 更新日期顯示
       function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
 
@@ -849,8 +918,8 @@
       }
 
       /* -----------------------------------------
-   4. 資料讀取 (READ - Load Data)
-   ----------------------------------------- */
+       4. 資料讀取 (READ - Load Data)
+       ----------------------------------------- */
       async function loadData() {
         const table = document.getElementById("dataTable");
         const tbody = table.querySelector("tbody");
@@ -915,8 +984,8 @@
       }
 
       /* -----------------------------------------
-   5. 資料新增 (CREATE - Add Row)
-   ----------------------------------------- */
+       5. 資料新增 (CREATE - Add Row)
+       ----------------------------------------- */
       async function addRow() {
         const elderName = document.getElementById("elderName").value.trim();
         const date = document.getElementById("date").value.trim();
@@ -995,8 +1064,8 @@
       }
 
       /* -----------------------------------------
-   6. 資料更新與刪除 (UPDATE & DELETE)
-   ----------------------------------------- */
+       6. 資料更新與刪除 (UPDATE & DELETE)
+       ----------------------------------------- */
       document.getElementById("saveEditBtn").onclick = () => {
         const row = document.getElementById("dataTable").rows[editRowIndex];
 
@@ -1097,8 +1166,8 @@
       }
 
       /* -----------------------------------------
-   7. 彈窗與 UI 控制邏輯 (UI & Modals)
-   ----------------------------------------- */
+       7. 彈窗與 UI 控制邏輯 (UI & Modals)
+       ----------------------------------------- */
       function updateNoRecordMessage() {
         const table = document.getElementById("dataTable");
         const tbody = table.querySelector("tbody");
@@ -1115,12 +1184,9 @@
         }
       }
 
-      // [修改] 清空輸入欄位，同時重置時間與日期的假顯示
       function clearInputs() {
         [
           "elderName",
-          "date",
-          "time",
           "name",
           "department",
           "record",
@@ -1128,12 +1194,9 @@
         ].forEach((id) => {
           document.getElementById(id).value = "";
         });
-        // 清空時間文字
-        document.getElementById("timeDisplay").textContent = "";
-        document.getElementById("timeDisplay").style.color = "#888";
-        // 清空日期文字
-        document.getElementById("dateDisplay").textContent = "";
-        document.getElementById("dateDisplay").style.color = "#888";
+
+        // 呼叫函式重置為當下時間
+        setDefaultDateTime();
       }
 
       function sortTableByDateTime(tableId) {
@@ -1193,19 +1256,16 @@
         document.querySelector(".nav-1").style.display = "none";
       }
 
-      // [修改] 統一管理 ReadOnly 樣式
       function setReadOnly(readOnly) {
         document
           .querySelectorAll("#editModal input, #editModal textarea")
           .forEach((el) => {
             el.readOnly = readOnly;
-            // 如果不是 date 或 time，背景變灰 (因為 date/time 有自己的假顯示框處理背景)
             if (el.type !== "date" && el.type !== "time") {
               el.style.backgroundColor = readOnly ? "#f7f7f7" : "white";
             }
           });
 
-        // 處理假顯示框的唯讀樣式 (時間 & 日期)
         togglePickerReadOnly("editTimeDisplay", "editTime", readOnly);
         togglePickerReadOnly("editDateDisplay", "editDate", readOnly);
 
@@ -1221,7 +1281,6 @@
         isEditing = !readOnly;
       }
 
-      // [新增] 輔助函式：切換假顯示框的唯讀狀態
       function togglePickerReadOnly(displayId, inputId, readOnly) {
         const displayEl = document.getElementById(displayId);
         const inputEl = document.getElementById(inputId);
@@ -1229,10 +1288,9 @@
         if (readOnly) {
           displayEl.classList.add("readonly-mode");
           displayEl.style.color = "#555";
-          inputEl.style.pointerEvents = "none"; // 禁止點擊觸發原生選單
+          inputEl.style.pointerEvents = "none";
         } else {
           displayEl.classList.remove("readonly-mode");
-          // 如果有值顯示深色，沒值顯示淺色
           displayEl.style.color = inputEl.value ? "#222" : "#888";
           inputEl.style.pointerEvents = "auto";
         }
@@ -1277,8 +1335,8 @@
       });
 
       /* -----------------------------------------
-   8. 儲存確認視窗 (Save Confirm Modal)
-   ----------------------------------------- */
+       8. 儲存確認視窗 (Save Confirm Modal)
+       ----------------------------------------- */
       function showSaveConfirmModal() {
         const modal = document.getElementById("saveConfirmModal");
         modal.style.display = "block";

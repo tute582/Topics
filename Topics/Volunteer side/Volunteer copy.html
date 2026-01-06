@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>志工管理系統 Volunteer Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+      body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background: #f7f9fb;
+        margin: 0;
+        padding: 0;
+        padding-bottom: 80px;
+      }
+
+      /* =========================================
+         1. 導覽列 (還原原始設定)
+         ========================================= */
+      .nav-1 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 25px;
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        left: 0;
+        right: 0;
+        color: black;
+        background-color: white;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ddd;
+      }
+
+      /* =========================================
+         2. 分頁按鈕 (新增功能)
+         ========================================= */
+      .tab-container {
+        display: flex;
+        background: white;
+        margin-top: 1px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+      }
+      .tab-btn {
+        flex: 1;
+        text-align: center;
+        padding: 15px 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #888;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+      }
+      .tab-btn.active {
+        color: #0984e3;
+        border-bottom: 3px solid #0984e3;
+        background-color: #f0f8ff;
+      }
+      
+      .tab-content {
+        display: none;
+        padding: 10px 20px;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .tab-content.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* =========================================
+         3. 志工卡片 (還原原始樣式)
+         ========================================= */
+      .card {
+        width: 100%;
+        max-width: 360px;
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .card-cover {
+        width: 100%;
+        height: 150px;
+        background-color: #c2dfff;
+      }
+
+      .card-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid rgb(94, 131, 252);
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        object-fit: cover;
+        background: #fff;
+      }
+
+      .card-content {
+        padding: 70px 20px 30px;
+        text-align: center;
+      }
+
+      .card-title {
+        font-size: 1.3em;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .special {
+        background: #ffeaa7;
+        color: #2d3436;
+        padding: 2px 10px 6px;
+        border-radius: 10px;
+        font-size: 0.8em;
+      }
+
+      .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .card-tags .tag {
+        background-color: #e9f5ff;
+        color: #007bff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+      }
+
+      .card-text {
+        margin-top: 10px;
+        color: #636e72;
+        line-height: 1.5;
+      }
+
+      /* 編輯模式的輸入框樣式 */
+      .edit-input, .edit-textarea {
+        width: 90%;
+        padding: 8px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+      .edit-btn {
+        margin-top: 15px;
+        background: #0984e3;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9em;
+      }
+      .save-btn {
+        background: #00b894;
+        margin-right: 10px;
+      }
+      .cancel-btn {
+        background: #b2bec3;
+      }
+
+      /* =========================================
+         4. 日曆樣式
+         ========================================= */
+      .calendar-wrapper {
+        width: 100%;
+        max-width: 800px;
+        background-color: #fff;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      /* FullCalendar 字體與按鈕微調 */
+      .fc-toolbar-title { font-size: 1.5em !important; font-weight: bold; }
+      .fc-button { font-size: 0.9em !important; }
+      .hospital-event {
+        background-color: #d63031 !important; /* 紅色醫院 */
+        border: none !important;
+        color: white !important;
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav class="nav-1">
+      <div>
+        <h1 style="margin: 0; font-size: 28px">志工管理系統</h1>
+      </div>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >未登入</span
+            >
+          </span>
+        </h1>
+      </div>
+    </nav>
+
+    <div class="tab-container">
+      <div class="tab-btn active" onclick="switchTab('info')">志工資訊</div>
+      <div class="tab-btn" onclick="switchTab('calendar')">預約紀錄</div>
+    </div>
+
+    <section id="tab-info" class="tab-content active">
+      <div class="card">
+        <div class="card-cover"></div>
+        <img class="card-avatar" src="https://i.pravatar.cc/150?img=32" alt="頭像" />
+        
+        <div class="card-content">
+          
+          <div id="viewMode">
+            <h2 class="card-title">
+              <span id="view-name">王小明</span>
+              <span id="view-special" class="special">醫護證照</span>
+            </h2>
+            <div id="view-tags" class="card-tags">
+              <span class="tag">親切</span>
+              <span class="tag">細心</span>
+              <span class="tag">熱心助人</span>
+            </div>
+            <p id="view-text" class="card-text">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
+            <button class="edit-btn" onclick="toggleEdit(true)">✏️ 編輯資料</button>
+          </div>
+
+          <div id="editMode" style="display: none;">
+            <label style="color:#888; font-size:0.8em;">姓名</label>
+            <input type="text" id="input-name" class="edit-input" value="王小明">
+            
+            <label style="color:#888; font-size:0.8em;">特殊稱號 (例如: 醫護證照)</label>
+            <input type="text" id="input-special" class="edit-input" value="醫護證照">
+
+            <label style="color:#888; font-size:0.8em;">標籤 (用逗號隔開)</label>
+            <input type="text" id="input-tags" class="edit-input" value="親切, 細心, 熱心助人">
+
+            <label style="color:#888; font-size:0.8em;">自我介紹</label>
+            <textarea id="input-text" class="edit-textarea" rows="4">擁有豐富的醫院志工經驗，熱愛幫助他人。</textarea>
+
+            <div style="margin-top: 10px;">
+              <button class="edit-btn save-btn" onclick="saveData()">儲存</button>
+              <button class="edit-btn cancel-btn" onclick="toggleEdit(false)">取消</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-calendar" class="tab-content">
+      <div class="calendar-wrapper">
+        <div id="calendar"></div>
+      </div>
+    </section>
+
+    <script>
+      let calendar; 
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // --- 設定日曆 ---
+        const calendarEl = document.getElementById("calendar");
+        const currentYear = new Date().getFullYear(); // 自動抓取今年年份
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          initialDate: `${currentYear}-01-12`, // 預設跳到 1/12
+          locale: "zh-tw",
+          height: 'auto',
+          headerToolbar: {
+            left: "prev,next",
+            center: "title",
+            right: "today"
+          },
+          events: [
+            // 這裡設定您想要的預約紀錄範例
+            {
+              title: "亞東醫院 (陪伴就醫)",
+              start: `${currentYear}-01-12T10:00:00`,
+              end: `${currentYear}-01-12T12:00:00`,
+              classNames: ['hospital-event'], // 套用自訂樣式
+              extendedProps: {
+                location: "亞東醫院",
+                elder: "林奶奶"
+              }
+            },
+            {
+              title: "社區關懷 (家訪)",
+              start: `${currentYear}-01-20T14:00:00`,
+              color: "#0984e3" // 藍色
+            },
+            {
+              title: "衛生所 (打疫苗)",
+              start: `${currentYear}-02-05T09:30:00`,
+              color: "#00b894" // 綠色
+            }
+          ],
+          eventClick: function(info) {
+            // 點擊事件顯示詳細資訊 (簡單 alert 示範)
+            const props = info.event.extendedProps;
+            let msg = `📅 時間: ${info.event.start.toLocaleString()}\n📌 事項: ${info.event.title}`;
+            if(props.location) msg += `\n🏥 地點: ${props.location}`;
+            if(props.elder) msg += `\n👵 長者: ${props.elder}`;
+            alert(msg);
+          }
+        });
+
+        calendar.render();
+
+        // --- 初始化 LIFF (維持原始邏輯) ---
+        initLiffAndSetProfile();
+      });
+
+      // --- 分頁切換 (Tab) ---
+      function switchTab(tabName) {
+        // 1. 按鈕樣式切換
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (tabName === 'info') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        if (tabName === 'calendar') document.querySelectorAll('.tab-btn')[1].classList.add('active');
+
+        // 2. 內容顯示切換
+        document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        // 3. 修正：切換到日曆時強制更新尺寸 (避免破圖)
+        if (tabName === 'calendar' && calendar) {
+          setTimeout(() => { calendar.updateSize(); }, 50);
+        }
+      }
+
+      // --- 編輯功能 (Edit) ---
+      function toggleEdit(showEdit) {
+        if (showEdit) {
+          // 進入編輯模式：將目前的文字填入輸入框
+          document.getElementById('input-name').value = document.getElementById('view-name').innerText;
+          document.getElementById('input-special').value = document.getElementById('view-special').innerText;
+          document.getElementById('input-text').value = document.getElementById('view-text').innerText;
+          
+          // 標籤處理：從 DOM 轉回逗號字串
+          const tags = Array.from(document.querySelectorAll('#view-tags .tag'))
+                            .map(tag => tag.innerText).join(', ');
+          document.getElementById('input-tags').value = tags;
+
+          document.getElementById('viewMode').style.display = 'none';
+          document.getElementById('editMode').style.display = 'block';
+        } else {
+          // 取消編輯
+          document.getElementById('viewMode').style.display = 'block';
+          document.getElementById('editMode').style.display = 'none';
+        }
+      }
+
+      function saveData() {
+        // 1. 更新文字
+        const newName = document.getElementById('input-name').value;
+        const newSpecial = document.getElementById('input-special').value;
+        const newText = document.getElementById('input-text').value;
+
+        document.getElementById('view-name').innerText = newName;
+        document.getElementById('view-special').innerText = newSpecial;
+        document.getElementById('view-text').innerText = newText;
+
+        // 2. 更新標籤 (將逗號字串轉回 HTML)
+        const tagsStr = document.getElementById('input-tags').value;
+        const tagsArr = tagsStr.split(',').map(t => t.trim()).filter(t => t);
+        const tagsContainer = document.getElementById('view-tags');
+        tagsContainer.innerHTML = ''; // 清空
+        tagsArr.forEach(tagText => {
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.innerText = tagText;
+          tagsContainer.appendChild(span);
+        });
+
+        // 3. 切換回顯示模式
+        toggleEdit(false);
+      }
+
+      // --- LIFF (原始邏輯) ---
+      const LIFF_ID = "2008228534-R8763A2n";
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
+
+      async function initLiffAndSetProfile() {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            return;
+          }
+
+          const profile = await liff.getProfile();
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+        } catch (err) {
+          console.error("LIFF init error:", err);
+        }
+      }
+
+      // 綁定點擊登入事件
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+        }
+      });
+    </script>
+  </body>
+</html>

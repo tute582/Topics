@@ -18,7 +18,7 @@
       body {
         font-family: "Arial", sans-serif;
         padding: 0;
-        background: #ffffff;
+        background-color: #f9f9f9;
         color: #222;
       }
 
@@ -780,6 +780,16 @@
         >
           目前位置
         </button>
+        <button style="        
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #0984e3;
+            background: #0984e3;
+            color: #fff;
+            cursor: pointer;
+          ">
+          常用診所紀錄
+        </button>   
       </div>
       <div
         id="viewNote"
@@ -836,7 +846,8 @@
         ></div>
       </div>
 
-      <div style="margin-top: 10px">
+      <div style="margin-top: 10px"> 
+        
         <input
           id="addressFull"
           type="text"
@@ -971,6 +982,11 @@
 
       // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
       setDateTimeConstraints();
+
+      //預設地址設定
+     const document.getElementById("addressFull").value=city;
+
+      
 
       function setDateTimeConstraints() {
         const dateEl = document.getElementById("date");
