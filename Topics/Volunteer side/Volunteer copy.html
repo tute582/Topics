@@ -299,6 +299,48 @@
         cursor: pointer;
         font-size: 1em;
       }
+
+      /* 過去日期樣式（灰階化）並提示無法點選 */
+      .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-day-frame {
+         background: #fbfbfc !important;
+         position: relative;
+         pointer-events: none; /* 禁止點選整個格子（事件會被下方的規則放行） */
+       }
+       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-day-number {
+         color: #bdbfc2 !important;
+       }
+       /* 放行格內事件的互動 */
+       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-event,
+       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-event {
+         pointer-events: auto !important;
+       }
+       /* 額外提示樣式（可選） */
+       .calendar-wrapper .fc .fc-daygrid-day.my-past.past-click-blocked {
+         outline: 2px solid rgba(0,0,0,0.04);
+       }
+
+     /* 三時段事件顏色（用 classNames 一致套用） */
+     .calendar-wrapper .fc .fc-daygrid-event.ev-morning,
+     .calendar-wrapper .fc .fc-event.ev-morning {
+       background-color: #4f8a8b !important;
+       color: #fff !important;
+     }
+     .calendar-wrapper .fc .fc-daygrid-event.ev-afternoon,
+     .calendar-wrapper .fc .fc-event.ev-afternoon {
+       background-color: #74b9ff !important;
+       color: #fff !important;
+     }
+     .calendar-wrapper .fc .fc-daygrid-event.ev-evening,
+     .calendar-wrapper .fc .fc-event.ev-evening {
+       background-color: #f6b93b !important;
+       color: #222 !important;
+     }
+     /* 讓事件有圓角與內距 */
+     .calendar-wrapper .fc .fc-daygrid-event .fc-event-main {
+       border-radius: 10px !important;
+       padding: 6px 10px !important;
+       box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
+     }
     </style>
   </head>
   <body>
@@ -396,57 +438,156 @@
       let calendar; 
 
       document.addEventListener("DOMContentLoaded", function () {
-        const calendarEl = document.getElementById("calendar");
-        const currentYear = new Date().getFullYear();
+        try {
+          const calendarEl = document.getElementById("calendar");
+          const currentYear = new Date().getFullYear();
 
-        calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: "dayGridMonth",
-          initialDate: `${currentYear}-01-12`,
-          locale: "zh-tw",
-          height: 'auto',
-          headerToolbar: {
-            left: "prev,next",
-            center: "title",
-            right: "today"
-          },
-          events: [
-            {
-              title: "亞東醫院 (陪伴就醫)",
-              start: `${currentYear}-01-12T10:00:00`,
-              end: `${currentYear}-01-12T12:00:00`,
-              classNames: ['hospital-event'],
-              extendedProps: {
-                location: "亞東醫院",
-                elder: "林奶奶"
-              }
+          calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            initialDate: `${currentYear}-01-12`,
+            locale: "zh-tw",
+            height: 'auto',
+            headerToolbar: {
+              left: "prev,next",
+              center: "title",
+              right: "today"
             },
-            {
-              title: "社區關懷 (家訪)",
-              start: `${currentYear}-01-20T14:00:00`,
-              color: "#0984e3",
-              extendedProps: {
-                location: "板橋區中正路",
-                elder: "張爺爺"
+            events: [
+              {
+                title: "亞東醫院 (陪伴就醫)",
+                start: `${currentYear}-01-12T10:00:00`,
+                end: `${currentYear}-01-12T12:00:00`,
+                classNames: ['hospital-event'],
+                extendedProps: {
+                  location: "亞東醫院",
+                  elder: "林奶奶"
+                }
+              },
+              {
+                title: "社區關懷 (家訪)",
+                start: `${currentYear}-01-20T14:00:00`,
+                color: "#0984e3",
+                extendedProps: {
+                  location: "板橋區中正路",
+                  elder: "張爺爺"
+                }
+              },
+              {
+                title: "衛生所 (打疫苗)",
+                start: `${currentYear}-02-05T09:30:00`,
+                color: "#00b894",
+                extendedProps: {
+                  location: "板橋衛生所",
+                  elder: "自己"
+                }
               }
+            ],
+            // 修改這裡：原本是 alert，現在改成呼叫 showModal
+            eventClick: function(info) {
+               showModal(info);
             },
-            {
-              title: "衛生所 (打疫苗)",
-              start: `${currentYear}-02-05T09:30:00`,
-              color: "#00b894",
-              extendedProps: {
-                location: "板橋衛生所",
-                elder: "自己"
-              }
-            }
-          ],
-          // 修改這裡：原本是 alert，現在改成呼叫 showModal
-          eventClick: function(info) {
-             showModal(info);
+           // 在日格掛載時標記過去日格（給 CSS 使用）
+           dayCellDidMount: function(arg) {
+             try {
+               const today = new Date();
+               today.setHours(0,0,0,0);
+               const cellDate = new Date(arg.date);
+               cellDate.setHours(0,0,0,0);
+               if (cellDate < today) {
+                 arg.el.classList.add('my-past');
+                 arg.el.setAttribute('aria-disabled','true');
+               }
+             } catch (err) { /* ignore */ }
+           },
+           // 點日期 → 顯示三時段選單（但禁止過去日期）
+           dateClick: function(info) {
+             const clicked = new Date(info.dateStr + 'T00:00:00');
+             const today = new Date(); today.setHours(0,0,0,0);
+             if (clicked < today) return; // 過去日期不處理
+             showTimeSlotModal(info.dateStr);
+           }
+          });
+ 
+          calendar.render();
+         
+          /* ----- 新增：點日排三時段 modal 函式 ----- */
+          function showTimeSlotModal(dateStr) {
+            // 建 overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay show';
+            overlay.style.zIndex = 3000;
+            overlay.innerHTML = `
+              <div class="modal-box" style="max-width:420px;padding:18px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                  <h3 style="margin:0">新增可服務時段 — ${dateStr}</h3>
+                  <span style="cursor:pointer;font-size:20px;" id="slotClose">×</span>
+                </div>
+                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+                  <button class="slot-select" data-time="09:00" data-class="ev-morning" style="padding:8px 12px;border-radius:8px;border:none;background:#4f8a8b;color:#fff;cursor:pointer;">上午</button>
+                  <button class="slot-select" data-time="14:00" data-class="ev-afternoon" style="padding:8px 12px;border-radius:8px;border:none;background:#74b9ff;color:#fff;cursor:pointer;">下午</button>
+                  <button class="slot-select" data-time="18:00" data-class="ev-evening" style="padding:8px 12px;border-radius:8px;border:none;background:#f6b93b;color:#222;cursor:pointer;">晚上</button>
+                </div>
+                <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂時間</div>
+                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
+                  <input id="customSlotTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
+                  <select id="customSlotClass" style="padding:8px;border-radius:6px;border:1px solid #ddd;">
+                    <option value="ev-morning">上午</option>
+                    <option value="ev-afternoon">下午</option>
+                    <option value="ev-evening">晚上</option>
+                  </select>
+                </div>
+                <div style="text-align:right;">
+                  <button id="slotCancel" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;margin-right:8px;">取消</button>
+                  <button id="slotConfirm" style="padding:8px 12px;border-radius:8px;border:none;background:#0984e3;color:#fff;cursor:pointer;">新增</button>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // 元件參考
+            const timeInput = overlay.querySelector('#customSlotTime');
+            const classSelect = overlay.querySelector('#customSlotClass');
+
+            // 關閉
+            overlay.querySelector('#slotClose').addEventListener('click', () => overlay.remove());
+            overlay.querySelector('#slotCancel').addEventListener('click', () => overlay.remove());
+
+            // 點快速時段：只填入 time picker 與選標籤，並標示被選取的按鈕，讓使用者可以再調整
+            overlay.querySelectorAll('.slot-select').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const time = btn.dataset.time;
+                const cls = btn.dataset.class;
+                timeInput.value = time;
+                classSelect.value = cls;
+                // 樣式標示選中
+                overlay.querySelectorAll('.slot-select').forEach(b => b.style.opacity = '0.6');
+                btn.style.opacity = '1';
+              });
+            });
+
+            // 確認自訂時間 / 新增：使用 timeInput 與 classSelect 的值建立事件
+            overlay.querySelector('#slotConfirm').addEventListener('click', () => {
+              const t = timeInput.value;
+              const cls = classSelect.value || 'ev-morning';
+              if (!t) { alert('請選擇時間或點選上方時段'); return; }
+              const dt = new Date(`${dateStr}T${t}:00`);
+              if (dt.getTime() <= Date.now()) { alert('無法新增已過的時段'); return; }
+              calendar.addEvent({
+                title: `可服務 ${t}`,
+                start: dt.toISOString(),
+                allDay: false,
+                classNames: [cls],
+                extendedProps: { note: '排班 (自訂)' }
+              });
+              overlay.remove();
+            });
           }
-        });
-
-        calendar.render();
-        initLiffAndSetProfile();
+         
+          initLiffAndSetProfile();
+        } catch (err) {
+          console.error('初始化錯誤:', err);
+          alert('初始化發生錯誤，請打開開發者工具 (F12) 查看 console，並將錯誤訊息貼給我。\n\n錯誤訊息：' + (err && err.message ? err.message : err));
+        }
       });
 
       // --- Modal 相關函式 ---
