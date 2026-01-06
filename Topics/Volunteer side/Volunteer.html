@@ -458,6 +458,33 @@
  
         calendar.render();
 
+        // 強力攔截：在 capture 階段阻擋對過去日期格子的任何互動（但允許格內的 event 可互動）
+        const blockPastInteraction = function (e) {
+          try {
+            const dayCell = e.target.closest('.fc-daygrid-day, .fc-day');
+            if (!dayCell) return;
+            // 若點到事件本身，允許（例如要查看/取消已存在事件）
+            if (e.target.closest('.fc-event, .fc-daygrid-event')) return;
+            if (dayCell.classList.contains('fc-past')) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              // 可選：短暫視覺回饋（不必要可註解）
+              dayCell.classList.add('past-click-blocked');
+              setTimeout(() => dayCell.classList.remove('past-click-blocked'), 180);
+            }
+          } catch (err) { /* ignore */ }
+        };
+        ['pointerdown', 'mousedown', 'touchstart', 'click'].forEach(evt =>
+          calendarEl.addEventListener(evt, blockPastInteraction, true)
+        );
+
+        // （可選）加入一點 CSS 用於短暫回饋或讓過去格位更不可點
+        const css = `
+          .past-click-blocked { outline: 2px solid rgba(0,0,0,0.06); }
+        `;
+        const style = document.createElement('style'); style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
+
         // ----- 強化：以 data-date 判斷並標記過去日期（避免前後月格子沒被 fc-past 標記） -----
         function markPastCells() {
           const todayStart = new Date();
