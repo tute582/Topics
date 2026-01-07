@@ -228,6 +228,12 @@
                     : "—"
                 }
               </dd>
+              <dt>使用者ID</dt>
+              <dd> ${
+                d.volunteer_user_id || ""
+              }  <a href='https://line.me/R/share?text=${
+              d.volunteer_user_id || ""
+            }'>  <button>分享</button></a></dd>
             </dl>
           `;
 
