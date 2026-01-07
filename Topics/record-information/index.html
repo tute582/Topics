@@ -153,7 +153,7 @@
         border-radius: 20px;
         background-color: white;
         /* 如果希望分頁看起來完全連在一起，可以把上面圓角拿掉，但保留也好看 */
-        border-top-left-radius: 0; 
+        border-top-left-radius: 0;
       }
 
       label {
@@ -453,7 +453,7 @@
           min-width: 0;
           width: 100%;
         }
-        
+
         /* 手機版分頁調整 */
         .tab-link {
           padding: 10px 15px;
@@ -712,6 +712,15 @@
         <button id="confirmDiscardBtn">放棄</button>
       </div>
     </div>
+
+    <label for="medical-upload">上傳看診單 / 藥袋（拍照或相簿）</label>
+    <input
+      type="file"
+      id="medical-upload"
+      accept="image/*"
+      capture="environment"
+      multiple
+    />
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
@@ -1185,13 +1194,7 @@
       }
 
       function clearInputs() {
-        [
-          "elderName",
-          "name",
-          "department",
-          "record",
-          "note",
-        ].forEach((id) => {
+        ["elderName", "name", "department", "record", "note"].forEach((id) => {
           document.getElementById(id).value = "";
         });
 
@@ -1374,6 +1377,38 @@
           }
         });
       }
+
+      //攝像機功能(影像辨識)
+      document
+        .getElementById("medical-upload")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          // 檢查是否為圖片
+          if (!file.type.startsWith("image/")) {
+            alert("請上傳圖片檔案");
+            return;
+          }
+
+          const reader = new FileReader();
+
+          reader.onloadend = function () {
+            const base64StringFull = reader.result;
+            const base64Data = base64StringFull.split(",")[1];
+            const mimeType = file.type;
+
+            console.log("準備傳給後端的資料:", {
+              mimeType,
+              base64DataLength: base64Data.length,
+            });
+
+            // TODO: 呼叫後端 API
+            // fetch('/api/upload', { ... })
+          };
+
+          reader.readAsDataURL(file);
+        });
     </script>
   </body>
 </html>
