@@ -713,8 +713,24 @@
       </div>
     </div>
 
-    <label for="medical-upload">上傳看診單 / 藥袋（拍照或相簿）</label>
-    <input type="file" id="medical-upload" accept="image/*" multiple />
+    <div class="input-container">
+      <h1 class="title" style="font-size: 24px">📷 上傳並遮蔽看診單</h1>
+      <form>
+        <div id="camera-area" style="margin-top: 15px">
+          <iframe
+            src="./TestimageC.html"
+            style="
+              width: 100%;
+              max-width: 700px;
+              height: 800px;
+              border: none;
+              border-radius: 12px;
+              background: #fff;
+            "
+          ></iframe>
+        </div>
+      </form>
+    </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
@@ -1371,38 +1387,6 @@
           }
         });
       }
-
-      //攝像機功能(影像辨識)
-      document
-        .getElementById("medical-upload")
-        .addEventListener("change", function (e) {
-          const file = e.target.files[0];
-          if (!file) return;
-
-          // 檢查是否為圖片
-          if (!file.type.startsWith("image/")) {
-            alert("請上傳圖片檔案");
-            return;
-          }
-
-          const reader = new FileReader();
-
-          reader.onloadend = function () {
-            const base64StringFull = reader.result;
-            const base64Data = base64StringFull.split(",")[1];
-            const mimeType = file.type;
-
-            console.log("準備傳給後端的資料:", {
-              mimeType,
-              base64DataLength: base64Data.length,
-            });
-
-            // TODO: 呼叫後端 API
-            // fetch('/api/upload', { ... })
-          };
-
-          reader.readAsDataURL(file);
-        });
     </script>
   </body>
 </html>

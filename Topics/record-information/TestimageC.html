@@ -3,74 +3,151 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>隱私資料遮蔽工具</title>
+    <title>隱私資料遮蔽工具 (UI優化版)</title>
     <style>
       body {
         font-family: sans-serif;
         padding: 20px;
-        text-align: center;
+        /* [修改] 改為靠左對齊 */
+        text-align: left;
+        overscroll-behavior: none;
       }
+
       .container {
-        max-width: 600px;
-        margin: 0 auto;
+        /* [修改] 移除 max-width 和 margin: 0 auto，讓它自然靠左並填滿 iframe */
+        width: 100%;
+        margin: 0;
       }
-      /* 畫布容器，確保在手機上不會跑版 */
+
+      /* --- 工具列 (上方) --- */
+      .tools-bar {
+        display: none;
+        /* [修改] 靠左排列 */
+        justify-content: flex-start;
+        gap: 15px; /* 增加一點間距 */
+        align-items: center;
+        margin-bottom: 5px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .tool-label {
+        font-size: 14px;
+        color: #555;
+        font-weight: bold;
+      }
+
+      /* 畫布容器 */
       #canvas-container {
         width: 100%;
-        overflow: auto;
+        overflow: hidden;
         border: 2px dashed #ccc;
-        margin-top: 20px;
-        /* 在這裡設定觸控操作時不捲動頁面，專注於繪圖 */
         touch-action: none;
-        display: none; /* 預設隱藏 */
+        display: none;
+        background-color: #eee;
+        margin-top: 10px;
       }
+
       canvas {
-        /* 讓畫布寬度自適應容器，但高度按比例維持 */
         max-width: 100%;
         height: auto;
         display: block;
-        cursor: crosshair; /* 滑鼠游標變十字 */
+        /* [修改] 移除 margin: 0 auto (置中)，改為靠左 */
+        margin: 0;
+        cursor: crosshair;
       }
+
+      /* 按鈕樣式 */
       .btn {
-        margin-top: 20px;
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        transition: opacity 0.2s;
       }
+      .btn:active {
+        opacity: 0.8;
+      }
+
+      /* 復原按鈕 */
+      #undoBtn {
+        background-color: #ff9800;
+        color: white;
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+      #undoBtn:disabled {
+        background-color: #e0e0e0;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      /* 確認按鈕 */
       #confirmBtn {
         background-color: #4caf50;
         color: white;
-        border: none;
-        display: none; /* 預設隱藏 */
+        display: none;
+        width: 100%;
+        margin-top: 15px;
+        padding: 15px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      /* 提示文字 */
+      #hintText {
+        display: none;
+        color: #d9534f;
+        margin: 15px 0;
+        text-align: left; /* 保持靠左 */
+        font-size: 14px;
+        background: #fff5f5;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      h2 {
+        margin-top: 0;
+        font-size: 20px; /* 稍微調整標題大小以配合整體 */
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h2>步驟 1: 上傳照片</h2>
-      <p>上傳看診單 / 藥袋（拍照或相簿）</p>
-      <input type="file" id="imageInput" accept="image/*" multiple />
-      <div
-        id="hintText"
-        style="display: none; color: #d9534f; margin-top: 15px"
-      >
-        <strong>步驟 2: 遮蔽個資</strong><br />
-        請用手指或滑鼠，將此區域的姓名、身分證號塗黑。<br />
-        (這就像用奇異筆塗掉一樣，送出後就無法復原囉！)
+      <p style="color: #666; margin-bottom: 20px">
+        上傳看診單 / 藥袋（拍照或相簿）
+      </p>
+
+      <input type="file" id="imageInput" accept="image/*" />
+
+      <div id="hintText">
+        <strong>💡 步驟 2: 遮蔽個資</strong><br />
+        請直接在圖片上滑動手指，塗黑<strong>姓名</strong>與<strong>身分證號</strong>。
+      </div>
+
+      <div class="tools-bar" id="toolsBar">
+        <span class="tool-label">🖌️ 塗抹遮蔽模式</span>
+        <button id="undoBtn" class="btn" disabled>↺ 復原上一步</button>
       </div>
 
       <div id="canvas-container">
         <canvas id="imageCanvas"></canvas>
       </div>
 
-      <button id="confirmBtn" class="btn">確認遮蔽並取得 Base64</button>
+      <button id="confirmBtn" class="btn">確認安全，送出辨識 ➤</button>
 
-      <h3>測試結果輸出區：</h3>
+      <h3 style="margin-top: 30px; font-size: 14px; color: #999">
+        (測試用) Base64 輸出結果：
+      </h3>
       <textarea
         id="resultOutput"
-        rows="5"
-        style="width: 100%"
-        placeholder="Base64 結果..."
+        rows="3"
+        style="width: 400px; font-size: 10px; color: #ccc"
+        placeholder="等待生成..."
       ></textarea>
     </div>
 
@@ -79,18 +156,26 @@
       const canvasContainer = document.getElementById("canvas-container");
       const canvas = document.getElementById("imageCanvas");
       const ctx = canvas.getContext("2d");
+
+      // UI 元素
+      const toolsBar = document.getElementById("toolsBar");
       const confirmBtn = document.getElementById("confirmBtn");
+      const undoBtn = document.getElementById("undoBtn");
       const hintText = document.getElementById("hintText");
       const resultOutput = document.getElementById("resultOutput");
 
+      // 變數設定
       let isDrawing = false;
-      let lastX = 0;
-      let lastY = 0;
-      // 設定筆刷粗細與顏色
-      const brushSize = 30; // 筆刷粗細 (像素)，建議設粗一點方便塗抹
-      const brushColor = "#000000"; // 黑色
+      let baseImage = null;
 
-      // --- 1. 圖片載入與畫布初始化 ---
+      // 歷史紀錄系統
+      let historyStrokes = [];
+      let currentStroke = [];
+
+      const brushSize = 35;
+      const brushColor = "#000000";
+
+      // --- 1. 圖片載入 ---
       imageInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -99,44 +184,38 @@
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
-            // 重要：將畫布的實際解析度設定為圖片的原始解析度
             canvas.width = img.width;
             canvas.height = img.height;
-            // 將圖片畫上去作為背景
+            baseImage = img;
+            historyStrokes = [];
+            updateUndoButton();
             ctx.drawImage(img, 0, 0);
 
-            // 顯示相關介面
-            canvasContainer.style.display = "block";
-            confirmBtn.style.display = "inline-block";
             hintText.style.display = "block";
-
-            // 設定繪圖樣式
-            ctx.strokeStyle = brushColor;
-            ctx.lineWidth = brushSize;
-            ctx.lineJoin = "round"; // 讓線條轉彎處圓滑
-            ctx.lineCap = "round"; // 讓筆觸頭尾圓滑
+            toolsBar.style.display = "flex";
+            canvasContainer.style.display = "block";
+            confirmBtn.style.display = "block";
+            setupBrush();
           };
           img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       });
 
-      // --- 2. 繪圖功能實作 (支援滑鼠與觸控) ---
+      function setupBrush() {
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushSize;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+      }
 
-      // 取得在畫布上的正確座標 (處理縮放問題)
+      // --- 2. 繪圖核心邏輯 ---
       function getPos(e) {
-        // 如果是觸控事件，取第一個觸控點
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        // 取得畫布在螢幕上的位置與尺寸
         const rect = canvas.getBoundingClientRect();
-
-        // 計算縮放比例 (因為 CSS 有設 max-width: 100%，畫布顯示大小可能不等於實際大小)
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-
-        // 回傳換算後的實際座標
         return {
           x: (clientX - rect.left) * scaleX,
           y: (clientY - rect.top) * scaleY,
@@ -146,59 +225,83 @@
       function startDrawing(e) {
         isDrawing = true;
         const pos = getPos(e);
-        lastX = pos.x;
-        lastY = pos.y;
-        // 這一行是為了點一下也能畫出一個圓點
-        draw(e);
-        e.preventDefault(); // 防止手機上滑動頁面
+        currentStroke = [pos];
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
       }
 
       function draw(e) {
         if (!isDrawing) return;
         const pos = getPos(e);
+        currentStroke.push(pos);
+        const lastPoint = currentStroke[currentStroke.length - 2];
         ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
+        ctx.moveTo(lastPoint.x, lastPoint.y);
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
-        [lastX, lastY] = [pos.x, pos.y];
         e.preventDefault();
       }
 
       function stopDrawing() {
+        if (!isDrawing) return;
         isDrawing = false;
+        if (currentStroke.length > 0) {
+          historyStrokes.push(currentStroke);
+          updateUndoButton();
+        }
       }
 
-      // 滑鼠事件監聽
+      // --- 3. 重繪功能 (Undo) ---
+      function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (baseImage) {
+          ctx.drawImage(baseImage, 0, 0);
+        }
+        setupBrush();
+        historyStrokes.forEach((stroke) => {
+          if (stroke.length === 0) return;
+          ctx.beginPath();
+          ctx.moveTo(stroke[0].x, stroke[0].y);
+          stroke.forEach((point, index) => {
+            if (index > 0) ctx.lineTo(point.x, point.y);
+          });
+          ctx.stroke();
+        });
+      }
+
+      undoBtn.addEventListener("click", () => {
+        if (historyStrokes.length === 0) return;
+        historyStrokes.pop();
+        redrawCanvas();
+        updateUndoButton();
+      });
+
+      function updateUndoButton() {
+        undoBtn.disabled = historyStrokes.length === 0;
+        undoBtn.style.opacity = historyStrokes.length === 0 ? "0.5" : "1";
+      }
+
+      // 事件監聽
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mousemove", draw);
       canvas.addEventListener("mouseup", stopDrawing);
       canvas.addEventListener("mouseout", stopDrawing);
 
-      // 觸控事件監聽 (手機平板用)
       canvas.addEventListener("touchstart", startDrawing, { passive: false });
       canvas.addEventListener("touchmove", draw, { passive: false });
       canvas.addEventListener("touchend", stopDrawing);
       canvas.addEventListener("touchcancel", stopDrawing);
 
-      // --- 3. 確認並輸出 Base64 ---
+      // --- 4. 確認輸出 ---
       confirmBtn.addEventListener("click", () => {
-        // 將整個畫布的內容轉為 Base64 JPEG
-        // 第二個參數 0.8 是品質壓縮，可以稍微縮小檔案體積
         const base64Full = canvas.toDataURL("image/jpeg", 0.8);
-
-        // 切掉前綴，準備傳給後端
         const base64Data = base64Full.split(",")[1];
-
-        // 顯示在測試區
         resultOutput.value = base64Data;
-        console.log(
-          "準備傳送的資料 (含遮蔽):",
-          base64Data.substring(0, 50) + "..."
-        );
-
-        // TODO: 這裡呼叫您的後端 API
-        // getGeminiVisionResponse(prompt, base64Data, 'image/jpeg');
-        alert("已產生遮蔽後的 Base64 資料！請查看下方文字框或 Console。");
+        console.log("Ready to send:", base64Data.substring(0, 30));
+        alert("遮蔽完成！資料已準備好傳送給 AI。");
       });
     </script>
   </body>
