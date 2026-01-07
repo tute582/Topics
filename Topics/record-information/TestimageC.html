@@ -1,198 +1,206 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>隱私資料遮蔽工具</title>
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        /* 畫布容器，確保在手機上不會跑版 */
-        #canvas-container {
-            width: 100%;
-            overflow: auto;
-            border: 2px dashed #ccc;
-            margin-top: 20px;
-            /* 在這裡設定觸控操作時不捲動頁面，專注於繪圖 */
-            touch-action: none; 
-            display: none; /* 預設隱藏 */
-        }
-        canvas {
-            /* 讓畫布寬度自適應容器，但高度按比例維持 */
-            max-width: 100%; 
-            height: auto;
-            display: block;
-            cursor: crosshair; /* 滑鼠游標變十字 */
-        }
-        .btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #confirmBtn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            display: none; /* 預設隱藏 */
-        }
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        text-align: center;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      /* 畫布容器，確保在手機上不會跑版 */
+      #canvas-container {
+        width: 100%;
+        overflow: auto;
+        border: 2px dashed #ccc;
+        margin-top: 20px;
+        /* 在這裡設定觸控操作時不捲動頁面，專注於繪圖 */
+        touch-action: none;
+        display: none; /* 預設隱藏 */
+      }
+      canvas {
+        /* 讓畫布寬度自適應容器，但高度按比例維持 */
+        max-width: 100%;
+        height: auto;
+        display: block;
+        cursor: crosshair; /* 滑鼠游標變十字 */
+      }
+      .btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      #confirmBtn {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        display: none; /* 預設隱藏 */
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="container">
-        <h2>步驟 1: 上傳照片</h2>
-        <p>請上傳藥袋或看診單。</p>
-        <input type="file" id="imageInput" accept="image/*">
+      <h2>步驟 1: 上傳照片</h2>
+      <p>請上傳藥袋或看診單。</p>
+      <input type="file" id="imageInput" accept="image/*" />
 
-        <div id="hintText" style="display:none; color: #d9534f; margin-top: 15px;">
-            <strong>步驟 2: 遮蔽個資</strong><br>
-            請用手指或滑鼠，將此區域的姓名、身分證號塗黑。<br>
-            (這就像用奇異筆塗掉一樣，送出後就無法復原囉！)
-        </div>
+      <div
+        id="hintText"
+        style="display: none; color: #d9534f; margin-top: 15px"
+      >
+        <strong>步驟 2: 遮蔽個資</strong><br />
+        請用手指或滑鼠，將此區域的姓名、身分證號塗黑。<br />
+        (這就像用奇異筆塗掉一樣，送出後就無法復原囉！)
+      </div>
 
-        <div id="canvas-container">
-            <canvas id="imageCanvas"></canvas>
-        </div>
+      <div id="canvas-container">
+        <canvas id="imageCanvas"></canvas>
+      </div>
 
-        <button id="confirmBtn" class="btn">確認遮蔽並取得 Base64</button>
-        
-        <h3>測試結果輸出區：</h3>
-        <textarea id="resultOutput" rows="5" style="width:100%;" placeholder="Base64 結果..."></textarea>
+      <button id="confirmBtn" class="btn">確認遮蔽並取得 Base64</button>
+
+      <h3>測試結果輸出區：</h3>
+      <textarea
+        id="resultOutput"
+        rows="5"
+        style="width: 100%"
+        placeholder="Base64 結果..."
+      ></textarea>
     </div>
 
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const canvasContainer = document.getElementById('canvas-container');
-        const canvas = document.getElementById('imageCanvas');
-        const ctx = canvas.getContext('2d');
-        const confirmBtn = document.getElementById('confirmBtn');
-        const hintText = document.getElementById('hintText');
-        const resultOutput = document.getElementById('resultOutput');
+      const imageInput = document.getElementById("imageInput");
+      const canvasContainer = document.getElementById("canvas-container");
+      const canvas = document.getElementById("imageCanvas");
+      const ctx = canvas.getContext("2d");
+      const confirmBtn = document.getElementById("confirmBtn");
+      const hintText = document.getElementById("hintText");
+      const resultOutput = document.getElementById("resultOutput");
 
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        // 設定筆刷粗細與顏色
-        const brushSize = 30; // 筆刷粗細 (像素)，建議設粗一點方便塗抹
-        const brushColor = '#000000'; // 黑色
+      let isDrawing = false;
+      let lastX = 0;
+      let lastY = 0;
+      // 設定筆刷粗細與顏色
+      const brushSize = 30; // 筆刷粗細 (像素)，建議設粗一點方便塗抹
+      const brushColor = "#000000"; // 黑色
 
-        // --- 1. 圖片載入與畫布初始化 ---
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+      // --- 1. 圖片載入與畫布初始化 ---
+      imageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    // 重要：將畫布的實際解析度設定為圖片的原始解析度
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    // 將圖片畫上去作為背景
-                    ctx.drawImage(img, 0, 0);
-                    
-                    // 顯示相關介面
-                    canvasContainer.style.display = 'block';
-                    confirmBtn.style.display = 'inline-block';
-                    hintText.style.display = 'block';
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            // 重要：將畫布的實際解析度設定為圖片的原始解析度
+            canvas.width = img.width;
+            canvas.height = img.height;
+            // 將圖片畫上去作為背景
+            ctx.drawImage(img, 0, 0);
 
-                    // 設定繪圖樣式
-                    ctx.strokeStyle = brushColor;
-                    ctx.lineWidth = brushSize;
-                    ctx.lineJoin = 'round'; // 讓線條轉彎處圓滑
-                    ctx.lineCap = 'round';  // 讓筆觸頭尾圓滑
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+            // 顯示相關介面
+            canvasContainer.style.display = "block";
+            confirmBtn.style.display = "inline-block";
+            hintText.style.display = "block";
 
-        // --- 2. 繪圖功能實作 (支援滑鼠與觸控) ---
+            // 設定繪圖樣式
+            ctx.strokeStyle = brushColor;
+            ctx.lineWidth = brushSize;
+            ctx.lineJoin = "round"; // 讓線條轉彎處圓滑
+            ctx.lineCap = "round"; // 讓筆觸頭尾圓滑
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
-        // 取得在畫布上的正確座標 (處理縮放問題)
-        function getPos(e) {
-            // 如果是觸控事件，取第一個觸控點
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      // --- 2. 繪圖功能實作 (支援滑鼠與觸控) ---
 
-            // 取得畫布在螢幕上的位置與尺寸
-            const rect = canvas.getBoundingClientRect();
+      // 取得在畫布上的正確座標 (處理縮放問題)
+      function getPos(e) {
+        // 如果是觸控事件，取第一個觸控點
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-            // 計算縮放比例 (因為 CSS 有設 max-width: 100%，畫布顯示大小可能不等於實際大小)
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        // 取得畫布在螢幕上的位置與尺寸
+        const rect = canvas.getBoundingClientRect();
 
-            // 回傳換算後的實際座標
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
-        }
+        // 計算縮放比例 (因為 CSS 有設 max-width: 100%，畫布顯示大小可能不等於實際大小)
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
 
-        function startDrawing(e) {
-            isDrawing = true;
-            const pos = getPos(e);
-            lastX = pos.x;
-            lastY = pos.y;
-            // 這一行是為了點一下也能畫出一個圓點
-            draw(e); 
-            e.preventDefault(); // 防止手機上滑動頁面
-        }
+        // 回傳換算後的實際座標
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY,
+        };
+      }
 
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            [lastX, lastY] = [pos.x, pos.y];
-            e.preventDefault();
-        }
+      function startDrawing(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        // 這一行是為了點一下也能畫出一個圓點
+        draw(e);
+        e.preventDefault(); // 防止手機上滑動頁面
+      }
 
-        function stopDrawing() {
-            isDrawing = false;
-        }
+      function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        [lastX, lastY] = [pos.x, pos.y];
+        e.preventDefault();
+      }
 
-        // 滑鼠事件監聽
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
+      function stopDrawing() {
+        isDrawing = false;
+      }
 
-        // 觸控事件監聽 (手機平板用)
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing);
-        canvas.addEventListener('touchcancel', stopDrawing);
+      // 滑鼠事件監聽
+      canvas.addEventListener("mousedown", startDrawing);
+      canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("mouseup", stopDrawing);
+      canvas.addEventListener("mouseout", stopDrawing);
 
+      // 觸控事件監聽 (手機平板用)
+      canvas.addEventListener("touchstart", startDrawing, { passive: false });
+      canvas.addEventListener("touchmove", draw, { passive: false });
+      canvas.addEventListener("touchend", stopDrawing);
+      canvas.addEventListener("touchcancel", stopDrawing);
 
-        // --- 3. 確認並輸出 Base64 ---
-        confirmBtn.addEventListener('click', () => {
-            // 將整個畫布的內容轉為 Base64 JPEG
-            // 第二個參數 0.8 是品質壓縮，可以稍微縮小檔案體積
-            const base64Full = canvas.toDataURL('image/jpeg', 0.8);
+      // --- 3. 確認並輸出 Base64 ---
+      confirmBtn.addEventListener("click", () => {
+        // 將整個畫布的內容轉為 Base64 JPEG
+        // 第二個參數 0.8 是品質壓縮，可以稍微縮小檔案體積
+        const base64Full = canvas.toDataURL("image/jpeg", 0.8);
 
-            // 切掉前綴，準備傳給後端
-            const base64Data = base64Full.split(',')[1];
+        // 切掉前綴，準備傳給後端
+        const base64Data = base64Full.split(",")[1];
 
-            // 顯示在測試區
-            resultOutput.value = base64Data;
-            console.log("準備傳送的資料 (含遮蔽):", base64Data.substring(0, 50) + "...");
+        // 顯示在測試區
+        resultOutput.value = base64Data;
+        console.log(
+          "準備傳送的資料 (含遮蔽):",
+          base64Data.substring(0, 50) + "..."
+        );
 
-            // TODO: 這裡呼叫您的後端 API
-            // getGeminiVisionResponse(prompt, base64Data, 'image/jpeg');
-            alert("已產生遮蔽後的 Base64 資料！請查看下方文字框或 Console。");
-        });
-
+        // TODO: 這裡呼叫您的後端 API
+        // getGeminiVisionResponse(prompt, base64Data, 'image/jpeg');
+        alert("已產生遮蔽後的 Base64 資料！請查看下方文字框或 Console。");
+      });
     </script>
-</body>
+  </body>
 </html>
