@@ -302,46 +302,46 @@
 
       /* 過去日期樣式（灰階化）並提示無法點選 */
       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-day-frame {
-         background: #fbfbfc !important;
-         position: relative;
-         pointer-events: none; /* 禁止點選整個格子（事件會被下方的規則放行） */
-       }
-       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-day-number {
-         color: #bdbfc2 !important;
-       }
-       /* 放行格內事件的互動 */
-       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-event,
-       .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-event {
-         pointer-events: auto !important;
-       }
-       /* 額外提示樣式（可選） */
-       .calendar-wrapper .fc .fc-daygrid-day.my-past.past-click-blocked {
-         outline: 2px solid rgba(0,0,0,0.04);
-       }
+          background: #fbfbfc !important;
+          position: relative;
+          pointer-events: none; /* 禁止點選整個格子（事件會被下方的規則放行） */
+        }
+        .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-day-number {
+          color: #bdbfc2 !important;
+        }
+        /* 放行格內事件的互動 */
+        .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-daygrid-event,
+        .calendar-wrapper .fc .fc-daygrid-day.my-past .fc-event {
+          pointer-events: auto !important;
+        }
+        /* 額外提示樣式（可選） */
+        .calendar-wrapper .fc .fc-daygrid-day.my-past.past-click-blocked {
+          outline: 2px solid rgba(0,0,0,0.04);
+        }
 
-     /* 三時段事件顏色（用 classNames 一致套用） */
-     .calendar-wrapper .fc .fc-daygrid-event.ev-morning,
-     .calendar-wrapper .fc .fc-event.ev-morning {
-       background-color: #4f8a8b !important;
-       color: #fff !important;
-     }
-     .calendar-wrapper .fc .fc-daygrid-event.ev-afternoon,
-     .calendar-wrapper .fc .fc-event.ev-afternoon {
-       background-color: #74b9ff !important;
-       color: #fff !important;
-     }
-     .calendar-wrapper .fc .fc-daygrid-event.ev-evening,
-     .calendar-wrapper .fc .fc-event.ev-evening {
-       background-color: #f6b93b !important;
-       color: #222 !important;
-     }
-     /* 讓事件有圓角與內距 */
-     .calendar-wrapper .fc .fc-daygrid-event .fc-event-main {
-       border-radius: 10px !important;
-       padding: 6px 10px !important;
-       box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
-     }
-     /* 檔期區塊容器 */
+      /* 三時段事件顏色（用 classNames 一致套用） */
+      .calendar-wrapper .fc .fc-daygrid-event.ev-morning,
+      .calendar-wrapper .fc .fc-event.ev-morning {
+        background-color: #4f8a8b !important;
+        color: #fff !important;
+      }
+      .calendar-wrapper .fc .fc-daygrid-event.ev-afternoon,
+      .calendar-wrapper .fc .fc-event.ev-afternoon {
+        background-color: #74b9ff !important;
+        color: #fff !important;
+      }
+      .calendar-wrapper .fc .fc-daygrid-event.ev-evening,
+      .calendar-wrapper .fc .fc-event.ev-evening {
+        background-color: #f6b93b !important;
+        color: #222 !important;
+      }
+      /* 讓事件有圓角與內距 */
+      .calendar-wrapper .fc .fc-daygrid-event .fc-event-main {
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
+      }
+      /* 檔期區塊容器 */
     .schedule-section {
       background: #fff;
       margin: 15px 20px;
@@ -554,36 +554,83 @@
               center: "title",
               right: "today"
             },
+            // ========== 這裡設定了 10 筆假資料 ==========
             events: [
+              // 1. 醫院陪診 (紅色, 1月)
               {
                 title: "亞東醫院 (陪伴就醫)",
                 start: `${currentYear}-01-12T10:00:00`,
                 end: `${currentYear}-01-12T12:00:00`,
                 classNames: ['hospital-event'],
-                extendedProps: {
-                  location: "亞東醫院",
-                  elder: "林奶奶"
-                }
+                extendedProps: { location: "亞東醫院", elder: "林奶奶" }
               },
+              // 2. 居家清潔 (綠色, 1月)
+              {
+                title: "居家清潔服務",
+                start: `${currentYear}-01-15T14:00:00`,
+                color: "#4f8a8b",
+                extendedProps: { location: "板橋區文化路", elder: "陳爺爺" }
+              },
+              // 3. 採買物資 (藍色, 1月)
+              {
+                title: "代購生活物資",
+                start: `${currentYear}-01-18T09:00:00`,
+                color: "#0984e3",
+                extendedProps: { location: "家樂福板橋店", elder: "李阿姨" }
+              },
+              // 4. 家訪 (藍色, 1月)
               {
                 title: "社區關懷 (家訪)",
                 start: `${currentYear}-01-20T14:00:00`,
                 color: "#0984e3",
-                extendedProps: {
-                  location: "板橋區中正路",
-                  elder: "張爺爺"
-                }
+                extendedProps: { location: "板橋區中正路", elder: "張爺爺" }
               },
+              // 5. 電話問安 (黃色, 1月, 晚上)
+              {
+                title: "電話問安志工",
+                start: `${currentYear}-01-25T19:00:00`,
+                color: "#f6b93b",
+                textColor: "#222",
+                extendedProps: { location: "志工服務中心", elder: "多位長者" }
+              },
+              // 6. 陪同復健 (紅色, 2月)
+              {
+                title: "雙和醫院 (陪同復健)",
+                start: `${currentYear}-02-02T08:30:00`,
+                classNames: ['hospital-event'],
+                extendedProps: { location: "雙和醫院復健科", elder: "王伯伯" }
+              },
+              // 7. 施打疫苗 (綠色, 2月)
               {
                 title: "衛生所 (打疫苗)",
                 start: `${currentYear}-02-05T09:30:00`,
                 color: "#00b894",
-                extendedProps: {
-                  location: "板橋衛生所",
-                  elder: "自己"
-                }
+                extendedProps: { location: "板橋衛生所", elder: "自己" }
+              },
+              // 8. 節慶活動 (紫色, 2月)
+              {
+                title: "元宵節送湯圓",
+                start: `${currentYear}-02-15T10:00:00`,
+                color: "#6c5ce7",
+                extendedProps: { location: "社區活動中心", elder: "社區長者" }
+              },
+              // 9. 醫院回診 (紅色, 2月)
+              {
+                title: "台大醫院 (回診)",
+                start: `${currentYear}-02-22T13:30:00`,
+                classNames: ['hospital-event'],
+                extendedProps: { location: "台大醫院", elder: "劉奶奶" }
+              },
+              // 10. 教育訓練 (灰色, 3月)
+              {
+                title: "志工教育訓練",
+                start: `${currentYear}-03-05T14:00:00`,
+                color: "#636e72",
+                extendedProps: { location: "市府大禮堂", elder: "無" }
               }
             ],
+            // ==========================================
+            
             // 修改這裡：原本是 alert，現在改成呼叫 showModal
             eventClick: function(info) {
                showModal(info);
@@ -615,7 +662,7 @@
           });
  
           calendar.render();
-         
+          
           // --- 檔期進度更新函數與月份卡片生成（放在 DOMContentLoaded 內） ---
           function updateMonthProgress() {
             if (!calendar) return;
@@ -698,7 +745,7 @@
           calendar.on && typeof calendar.on === 'function' && calendar.on('eventAdd', updateMonthProgress);
           calendar.on && typeof calendar.on === 'function' && calendar.on('eventRemove', updateMonthProgress);
           calendar.on && typeof calendar.on === 'function' && calendar.on('datesSet', updateMonthProgress);
-         
+          
           /* ----- 新增：點日排三時段 modal 函式 ----- */
           function showTimeSlotModal(dateStr) {
             // 建 overlay
@@ -771,7 +818,7 @@
               overlay.remove();
             });
           }
-         
+          
           initLiffAndSetProfile();
         } catch (err) {
           console.error('初始化錯誤:', err);
@@ -888,7 +935,7 @@
           document.getElementById('input-text').value = document.getElementById('view-text').innerText;
           
           const tags = Array.from(document.querySelectorAll('#view-tags .tag'))
-                            .map(tag => tag.innerText).join(', ');
+                             .map(tag => tag.innerText).join(', ');
           document.getElementById('input-tags').value = tags;
 
           document.getElementById('viewMode').style.display = 'none';
