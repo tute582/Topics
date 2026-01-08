@@ -973,10 +973,6 @@
       // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
       setDateTimeConstraints();
 
-      //預設地址設定
-     const document.getElementById("addressFull").value=city;
-
-
       function setDateTimeConstraints() {
         const dateEl = document.getElementById("date");
         const timeEl = document.getElementById("time");
@@ -1130,17 +1126,22 @@
         try {
           await liff.init({ liffId: LIFF_ID });
 
+          // LIFF 登入失敗
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
             return;
           }
 
+          // ↓ LIFF成功登入後執行
           const profile = await liff.getProfile();
           userId = profile.userId;
           userName = profile.displayName;
           localStorage.setItem("userId", userId);
           console.log("LIFF Profile userId:", userId, "userName:", userName);
+          
+          // 預設地址取得(call API長者資訊)
+          await loadDefaultAddress(userId);
 
           nameEl.innerText = profile.displayName || "志工";
           if (profile.pictureUrl) {
@@ -1256,6 +1257,25 @@
           console.error("⚠️ 志工資料載入失敗：", err);
         }
       });
+
+      // 載入長者 個人資料中輸入的地址(預設)
+      async function loadDefaultAddress(userId) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/elders/${userId}`);
+          const json = await res.json();
+
+          if (!json.success || !json.data) return;
+
+          const address = json.data.address || "";
+          const addressInput = document.getElementById("addressFull");
+
+          if (addressInput && address) {
+            addressInput.value = address;
+          }
+        } catch (err) {
+          console.error("取得預設地址失敗：", err);
+        }
+      }
 
       /* =================================================================
        5. 核心功能：配對與搜尋 (Matching & Search)
