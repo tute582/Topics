@@ -1161,16 +1161,14 @@
                 identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
 
-                // 預設地址取得(長者介面)
-                if(result.role == "長者")
-                {
-                  const address = result.data.address || "";
-                  const addressInput = document.getElementById("addressFull");
+                // 預設地址取得 start
+                const address = result.data.address || "";
+                const addressInput = document.getElementById("addressFull");
 
-                  if (addressInput && address) {
-                    addressInput.value = address;
-                  }
+                if (addressInput && address) {
+                  addressInput.value = address;
                 }
+                // 預設地址取得 end
               }
             })
             .catch((err) => {
