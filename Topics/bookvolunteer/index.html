@@ -841,6 +841,7 @@
           id="addressFull"
           type="text"
           placeholder="請輸入見面地址（或按「目前位置」自動填入）"
+          value=city
           style="
             width: 100%;
             padding: 10px;
@@ -971,6 +972,10 @@
 
       // [新增] 設定日期/時間只能選擇未來（頁面載入與變更時）
       setDateTimeConstraints();
+
+      //預設地址設定
+     const document.getElementById("addressFull").value=city;
+
 
       function setDateTimeConstraints() {
         const dateEl = document.getElementById("date");
