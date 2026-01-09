@@ -82,8 +82,19 @@
         let currentEventId = null;
 
         function goToHistory() {
-            // 使用相對路徑跳轉，避免路徑疊加錯誤
+            // 使用相對路徑，確保檔案在同資料夾下能正確開啟
             window.location.href = 'history.html'; 
+        }
+
+        function handleLoginClick() {
+            if (!liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+            } else {
+                if (confirm("確定要登出嗎？")) {
+                    liff.logout();
+                    window.location.reload();
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -119,16 +130,25 @@
             } catch (err) { console.error(err); loadRecords(); }
         }
 
+        // --- 核心修正：載入資料時過濾掉過去行程 ---
         async function loadRecords() {
             try {
                 const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}`);
                 const result = await res.json();
-                const events = (result.data || []).map(item => ({
-                    id: item.event_id,
-                    title: item.schedule_note,
-                    start: item.schedule_time.replace(' ', 'T'),
-                    extendedProps: { note: item.remark, repeat: item.repeat, reminder: item.reminder_method || "none" }
-                }));
+                const now = new Date(); // 取得現在時間
+
+                const events = (result.data || [])
+                    .filter(item => {
+                        // 比對行程時間，只留下比現在晚的（未來行程）
+                        return new Date(item.schedule_time) >= now;
+                    })
+                    .map(item => ({
+                        id: item.event_id,
+                        title: item.schedule_note,
+                        start: item.schedule_time.replace(' ', 'T'),
+                        extendedProps: { note: item.remark, repeat: item.repeat, reminder: item.reminder_method || "none" }
+                    }));
+
                 calendar.removeAllEvents();
                 calendar.addEventSource(events);
             } catch (e) { console.error(e); }
