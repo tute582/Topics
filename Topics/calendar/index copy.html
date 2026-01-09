@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>智慧行事曆 - 日曆版</title>
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+        /* =========================================
+           1. 基礎樣式與日曆自定義
+           ========================================= */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f39c12;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: "Arial", sans-serif;
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: #222;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 導覽列 */
+        .nav-1 {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; background: #fff; border-bottom: 1px solid #ddd;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        /* 日曆容器樣式 */
+        #calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        /* 懸浮按鈕 (FAB) */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 35px;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+            cursor: pointer;
+            z-index: 999;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .fab:hover { transform: scale(1.1); background-color: #357abd; }
+
+        /* =========================================
+           2. 彈窗 (Modal) 共用樣式
+           ========================================= */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: #fff;
+            width: 90%; max-width: 450px;
+            margin: 50px auto;
+            padding: 25px;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        /* 原本表單元素優化 */
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select, .picker-display {
+            width: 100%; padding: 12px; margin-top: 5px;
+            border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box;
+        }
+        .btn {
+            width: 100%; padding: 12px; margin-top: 20px;
+            border: none; border-radius: 10px; cursor: pointer; font-size: 16px;
+            background: var(--primary-color); color: white;
+        }
+
+        /* 日曆內事件樣式 */
+        .fc-event { cursor: pointer; border: none; padding: 2px; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-1">
+        <h1>我的行事曆</h1>
+        <div class="volunteer-area">
+            <span id="volunteerName">載入中...</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="calendar-container">
+            <div id="calendar"></div>
+        </div>
+
+        <h2 style="margin-top: 40px;">即將到來的行程</h2>
+        <div id="no-record-msg">目前尚未有紀錄</div>
+        <div id="table-area" style="display:none;">
+            </div>
+    </div>
+
+    <div class="fab" id="openAddModalBtn">+</div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size:24px;" onclick="closeModal('addModal')">&times;</span>
+            <h3>新增行程</h3>
+            <form id="dataForm">
+                <label>日期</label>
+                <input type="date" id="date">
+                
+                <label>時間</label>
+                <input type="time" id="time">
+
+                <label>行程內容</label>
+                <input type="text" id="event" placeholder="例如：回診">
+
+                <label>備註</label>
+                <input type="text" id="note">
+
+                <label>重複</label>
+                <select id="repeat">
+                    <option value="none">不重複</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每週</option>
+                </select>
+
+                <button type="button" class="btn" id="addBtn">儲存並新增</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let calendar;
+        let records = [];
+        const LIFF_ID = "2008484068-Kp57RrAr"; 
+        let userId = "U10243a4b528760aad0d03a51d13c2e4c";
+
+        // 初始化日曆
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'zh-tw',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                // 點擊日曆日期直接填寫日期並開啟彈窗
+                dateClick: function(info) {
+                    document.getElementById('date').value = info.dateStr;
+                    openModal('addModal');
+                },
+                // 點擊已存在的事件開啟編輯
+                eventClick: function(info) {
+                    openEditModalById(info.event.id); 
+                }
+            });
+            calendar.render();
+            initLiff();
+        });
+
+        // 彈窗控制
+        const openAddModalBtn = document.getElementById('openAddModalBtn');
+        openAddModalBtn.onclick = () => openModal('addModal');
+
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // 串接原本的 API 與資料處理
+        async function loadRecords() {
+            try {
+                const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}`);
+                const result = await res.json();
+                const data = result.data || [];
+                
+                records = data.map(item => {
+                    const [d, tFull] = item.schedule_time.split("T");
+                    return {
+                        id: item.event_id,
+                        title: item.schedule_note,
+                        start: `${d}T${tFull.substring(0, 5)}`,
+                        extendedProps: { remark: item.remark }
+                    };
+                });
+
+                // 更新日曆
+                calendar.removeAllEvents();
+                calendar.addEventSource(records);
+
+                // 更新「無紀錄」提示
+                document.getElementById('no-record-msg').style.display = records.length ? 'none' : 'block';
+            } catch (err) {
+                console.error("載入失敗", err);
+            }
+        }
+
+        // 修改原本的新增按鈕點擊事件
+        document.getElementById("addBtn").addEventListener("click", async () => {
+            // ... 執行你原本的 fetch POST 邏輯 ...
+            // 成功後記得執行：
+            // closeModal('addModal');
+            // loadRecords(); 
+        });
+
+        // LIFF 初始化
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    document.getElementById('volunteerName').innerText = profile.displayName;
+                }
+                loadRecords();
+            } catch (err) { console.log(err); loadRecords(); }
+        }
+    </script>
+</body>
+</html>
