@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>看診進度管理</title>
+    <title>看診進度</title>
 
     <style>
       /* =========================================
@@ -15,11 +15,45 @@
         margin: 0; padding: 0;
       }
 
+      /* =========================================
+       2. 頂部導覽列
+       ========================================= */
       .nav-1 {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 15px 20px; background: white;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        position: sticky; top: 0; z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        width: 100%;
+        padding: 10px 25px;
+        background-color: white;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        color: black;
+        box-sizing: border-box;
+      }
+
+      .volunteer-area {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .volunteer-area .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        display: none;
+      }
+
+      .volunteer-area #volunteerName {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: transparent;
       }
 
       .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4a90e2; }
@@ -37,8 +71,8 @@
         flex: 1;
         text-align: center;
         text-decoration: none;
-        padding: 15px 0;
-        font-size: 18px;
+        padding: 20px 0;
+        font-size: 20px;
         font-weight: bold;
         color: #666;
         border-bottom: 4px solid transparent;
@@ -50,12 +84,13 @@
         border-bottom-color: #4a90e2;
       }
 
+
       .container { padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
 
       .page-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; border-left: 6px solid #4a90e2; padding-left: 10px; }
 
       /* =========================================
-         2. 時序進度條 (Timeline)
+         3. 時序進度條 (Timeline)
          ========================================= */
       .container { max-width: 500px; margin: 20px auto; padding: 0 20px 180px; }
       .status-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
@@ -67,10 +102,8 @@
       .timeline-marker { position: absolute; left: -33px; top: 0; width: 18px; height: 18px; border-radius: 50%; background: white; border: 4px solid #ccc; z-index: 2; }
       .timeline-item.current .timeline-marker { background: #4a90e2; border-color: #4a90e2; box-shadow: 0 0 0 5px rgba(74, 144, 226, 0.2); transform: scale(1.1); }
 
-      .doctor-display-box { margin-top: 8px; padding: 10px; background: #f0f7ff; border-left: 4px solid #4a90e2; border-radius: 5px; display: none; font-size: 14px; }
-
       /* =========================================
-         3. 志工控制區 (參考圖片樣式)
+         4. 志工控制區 (參考圖片樣式)
          ========================================= */
       .controls-area { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: none; }
       .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -84,7 +117,7 @@
       .status-btn.reset-btn { border-color: #ccc; color: #777; }
 
       /* =========================================
-         4. 自定義 Modal (替代原視窗)
+         5. 自定義 Modal (替代原視窗)
          ========================================= */
       .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -106,13 +139,40 @@
 
   <body>
     <nav class="nav-1">
-      <h1 style="font-size: 18px">就醫陪同進度</h1>
-      <div class="volunteer-area">
-        <span id="userRoleBadge" class="role-badge">志工</span>
-        <img id="userAvatar" class="avatar" src="https://via.placeholder.com/40" />
+      <div>
+        <h1 style="margin: 0; font-size: 28px">看診資訊</h1>
+      </div>
+
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="../bookvolunteer/default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >未登入</span
+            >
+          </span>
+        </h1>
       </div>
     </nav>
-
+    
     <div class="tab-nav">
       <a href="../record-information/index copy.html" class="tab-link">看診紀錄</a>
       <a href="#" class="tab-link active">看診進度</a>
@@ -120,47 +180,39 @@
 
     <div class="container">
       <div class="status-card">
+        <h3 id="sysDate" style="margin: 0 0 10px 0; color: #333; font-size: 18px;"></h3>
+        
         <p style="color: #888; font-size: 13px; margin-bottom: 4px;">當前階段</p>
         <h2 id="currentStatusText" style="color: #4a90e2; font-size: 20px;">尚未開始</h2>
       </div>
 
       <div class="timeline">
-        <div class="timeline-item" id="step-0"><div class="timeline-marker"></div><div class="timeline-content"><h3>已到醫院</h3><p>陪同長輩抵達醫院</p></div></div>
-        <div class="timeline-item" id="step-1">
+        <div class="timeline-item" id="step-0"><div class="timeline-marker"></div><div class="timeline-content"><h3>到見面地點</h3><p>與長輩會合</p></div></div>
+        
+        <div class="timeline-item" id="step-1"><div class="timeline-marker"></div><div class="timeline-content"><h3>已到醫院</h3><p>陪同長輩抵達醫院</p></div></div>
+        <div class="timeline-item" id="step-2">
             <div class="timeline-marker"></div>
             <div class="timeline-content">
                 <h3>等待看診</h3><p>報到完成，候診中</p>
-                <div id="infoBox" class="doctor-display-box">🏥 <b><span id="valSpecialty">--</span></b> ｜ <b><span id="valDoctor">--</span></b> 醫師</div>
             </div>
         </div>
-        <div class="timeline-item" id="step-2"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診中</h3><p>醫師診療中</p></div></div>
-        <div class="timeline-item" id="step-3"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診結束</h3><p>準備批價</p></div></div>
-        <div class="timeline-item" id="step-4"><div class="timeline-marker"></div><div class="timeline-content"><h3>等待拿藥</h3><p>藥局領藥中</p></div></div>
-        <div class="timeline-item" id="step-5"><div class="timeline-marker"></div><div class="timeline-content"><h3>結束就醫陪伴</h3><p>已送長輩返家/離開醫院</p></div></div>
+        <div class="timeline-item" id="step-3"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診中</h3><p>醫師診療中</p></div></div>
+        <div class="timeline-item" id="step-4"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診結束</h3><p>準備批價</p></div></div>
+        <div class="timeline-item" id="step-5"><div class="timeline-marker"></div><div class="timeline-content"><h3>等待拿藥</h3><p>藥局領藥中</p></div></div>
+        <div class="timeline-item" id="step-6"><div class="timeline-marker"></div><div class="timeline-content"><h3>結束就醫陪伴</h3><p>已送長輩返家/離開醫院</p></div></div>
       </div>
     </div>
 
     <div class="controls-area" id="editControls">
       <div class="btn-grid">
-        <button class="status-btn" onclick="askStatus(0)">已到醫院</button>
-        <button class="status-btn" onclick="askStatus(1)">等待看診</button>
-        <button class="status-btn" onclick="askStatus(2)">看診中</button>
-        <button class="status-btn" onclick="askStatus(3)">看診結束</button>
-        <button class="status-btn" onclick="askStatus(4)">等待拿藥</button>
-        <button class="status-btn" onclick="askStatus(5)">結束就醫</button>
-        <button class="status-btn reset-btn" style="grid-column: span 3;" onclick="askReset()">重置狀態</button>
-      </div>
-    </div>
-
-    <div id="doctorModal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">輸入看診資訊</div>
-        <input type="text" id="inputSpecialty" class="modal-input" placeholder="請輸入科別 (如:內科)">
-        <input type="text" id="inputDoctor" class="modal-input" placeholder="請輸入醫師姓名">
-        <div class="modal-footer">
-          <button class="modal-btn btn-cancel" onclick="closeModal('doctorModal')">取消</button>
-          <button class="modal-btn btn-confirm" onclick="confirmDoctor()">確定更新</button>
-        </div>
+        <button class="status-btn" onclick="askStatus(0)">到見面地點</button>
+        <button class="status-btn" onclick="askStatus(1)">已到醫院</button>
+        <button class="status-btn" onclick="askStatus(2)">等待看診</button>
+        <button class="status-btn" onclick="askStatus(3)">看診中</button>
+        <button class="status-btn" onclick="askStatus(4)">看診結束</button>
+        <button class="status-btn" onclick="askStatus(5)">等待拿藥</button>
+        <button class="status-btn" onclick="askStatus(6)">結束就醫</button>
+        <button class="status-btn reset-btn" style="grid-column: span 2;" onclick="askReset()">重置狀態</button>
       </div>
     </div>
 
@@ -175,41 +227,56 @@
     </div>
 
     <script>
-      const statusSteps = ["已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥", "已結束就醫陪伴"];
+      // 陣列同步更新：在最前面加入 "到見面地點"
+      const statusSteps = ["到見面地點", "已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥", "已結束就醫陪伴"];
       let currentStatusIndex = -1;
       let pendingIndex = -1;
 
       window.onload = function() {
           document.getElementById("editControls").style.display = "block"; // 強制志工身分測試
+          
+          // 新增：設定系統當下日期
+          setSystemDate();
+
           loadData();
       };
 
-      function loadData() {
-          const idx = localStorage.getItem("visit_idx");
-          const info = JSON.parse(localStorage.getItem("visit_info") || "{}");
-          currentStatusIndex = idx !== null ? parseInt(idx) : -1;
-          render(info);
+      // 取得並格式化日期的函式
+      function setSystemDate() {
+          const now = new Date();
+          const yyyy = now.getFullYear();
+          const mm = now.getMonth() + 1; // 月份是 0-11
+          const dd = now.getDate();
+          const day = now.getDay(); // 星期
+          const dayNames = ["日", "一", "二", "三", "四", "五", "六"];
+          
+          const dateStr = `${yyyy}年${mm}月${dd}日 (週${dayNames[day]})`;
+          document.getElementById("sysDate").innerText = dateStr;
       }
 
-      function render(info) {
+      function loadData() {
+          const idx = localStorage.getItem("visit_idx");
+          currentStatusIndex = idx !== null ? parseInt(idx) : -1;
+          render();
+      }
+
+      function render() {
           document.getElementById("currentStatusText").innerText = currentStatusIndex === -1 ? "尚未開始" : statusSteps[currentStatusIndex];
+          
           for (let i = 0; i < statusSteps.length; i++) {
               const el = document.getElementById(`step-${i}`);
               el.classList.remove("active", "current");
               if (i < currentStatusIndex) el.classList.add("active");
               if (i === currentStatusIndex) el.classList.add("active", "current");
           }
-          const infoBox = document.getElementById("infoBox");
-          if (currentStatusIndex >= 1 && info.doctor) {
-              infoBox.style.display = "block";
-              document.getElementById("valSpecialty").innerText = info.specialty;
-              document.getElementById("valDoctor").innerText = info.doctor;
-          } else { infoBox.style.display = "none"; }
 
           const btns = document.querySelectorAll(".status-btn");
           btns.forEach((btn, i) => {
-              if (i === currentStatusIndex) btn.classList.add("active-btn");
-              else btn.classList.remove("active-btn");
+              // 排除 Reset 按鈕 (因為 Reset 不在 statusSteps 索引中)
+              if (i < statusSteps.length) { 
+                  if (i === currentStatusIndex) btn.classList.add("active-btn");
+                  else btn.classList.remove("active-btn");
+              }
           });
       }
 
@@ -220,27 +287,10 @@
       // 點擊進度按鈕
       function askStatus(idx) {
           pendingIndex = idx;
-          let info = JSON.parse(localStorage.getItem("visit_info") || "{}");
           
-          if (idx >= 1 && !info.doctor) {
-              openModal('doctorModal');
-          } else {
-              document.getElementById("confirmTitle").innerText = `確定切換至「${statusSteps[idx]}」？`;
-              document.getElementById("confirmBtnAction").onclick = function() { performUpdate(); };
-              openModal('confirmModal');
-          }
-      }
-
-      // 醫師 Modal 確定
-      function confirmDoctor() {
-          const spec = document.getElementById("inputSpecialty").value || "一般科";
-          const doc = document.getElementById("inputDoctor").value;
-          if (!doc) return alert("請輸入醫師姓名");
-          
-          const info = { specialty: spec, doctor: doc };
-          localStorage.setItem("visit_info", JSON.stringify(info));
-          closeModal('doctorModal');
-          performUpdate();
+          document.getElementById("confirmTitle").innerText = `確定切換至「${statusSteps[idx]}」？`;
+          document.getElementById("confirmBtnAction").onclick = function() { performUpdate(); };
+          openModal('confirmModal');
       }
 
       function performUpdate() {
@@ -254,7 +304,6 @@
           document.getElementById("confirmTitle").innerText = "確定要重置今日所有狀態嗎？";
           document.getElementById("confirmBtnAction").onclick = function() {
               localStorage.removeItem("visit_idx");
-              localStorage.removeItem("visit_info");
               currentStatusIndex = -1;
               closeModal('confirmModal');
               loadData();
