@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>看診進度</title>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
       /* =========================================
          1. 基礎與佈局
@@ -57,7 +59,6 @@
       }
 
       .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4a90e2; }
-      .role-badge { background: #4a90e2; color: white; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
 
       .tab-nav {
         display: flex;
@@ -87,8 +88,6 @@
 
       .container { padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
 
-      .page-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; border-left: 6px solid #4a90e2; padding-left: 10px; }
-
       /* =========================================
          3. 時序進度條 (Timeline)
          ========================================= */
@@ -102,8 +101,32 @@
       .timeline-marker { position: absolute; left: -33px; top: 0; width: 18px; height: 18px; border-radius: 50%; background: white; border: 4px solid #ccc; z-index: 2; }
       .timeline-item.current .timeline-marker { background: #4a90e2; border-color: #4a90e2; box-shadow: 0 0 0 5px rgba(74, 144, 226, 0.2); transform: scale(1.1); }
 
+      /* 主要修改：讓 H3 變成 Flex 佈局，可以讓時間靠左或靠右 */
+      .timeline-content h3 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+        display: flex;       /* 使用 Flexbox */
+        align-items: center; /* 垂直置中 */
+        flex-wrap: wrap;     /* 手機寬度不夠時自動換行 */
+      }
+
+      /* 修改：時間顯示樣式 (移到標題旁邊) */
+      .time-record {
+        color: #e67e22;
+        font-weight: bold; /* 不要太粗 */
+        font-size: 16px;     /* 字體比標題稍微小一點點 */
+        margin-left: 12px;   /* 與左邊標題保持距離 */
+        display: none;       /* 預設隱藏 */
+      }
+      
+      .timeline-content p {
+        margin: 0;
+        color: #666;
+        font-size: 15px;
+      }
+
       /* =========================================
-         4. 志工控制區 (參考圖片樣式)
+         4. 志工控制區
          ========================================= */
       .controls-area { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: none; }
       .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -114,10 +137,10 @@
         transition: 0.2s;
       }
       .status-btn.active-btn { background: #4a90e2; color: white; }
-      .status-btn.reset-btn { border-color: #ccc; color: #777; }
+      .status-btn.reset-btn { border-color: #333; color: #777; }
 
       /* =========================================
-         5. 自定義 Modal (替代原視窗)
+         5. 自定義 Modal
          ========================================= */
       .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -127,9 +150,6 @@
         background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       }
       .modal-header { font-weight: bold; font-size: 18px; margin-bottom: 15px; text-align: center; color: #333; }
-      .modal-input {
-        width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
-      }
       .modal-footer { display: flex; gap: 10px; margin-top: 15px; }
       .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
       .btn-confirm { background: #4a90e2; color: white; }
@@ -181,25 +201,87 @@
     <div class="container">
       <div class="status-card">
         <h3 id="sysDate" style="margin: 0 0 10px 0; color: #333; font-size: 18px;"></h3>
-        
-        <p style="color: #888; font-size: 13px; margin-bottom: 4px;">當前階段</p>
+        <p style="color: #333; font-size: 18px; margin-bottom: 4px; font-weight: bold;">當前階段</p>
         <h2 id="currentStatusText" style="color: #4a90e2; font-size: 20px;">尚未開始</h2>
       </div>
 
       <div class="timeline">
-        <div class="timeline-item" id="step-0"><div class="timeline-marker"></div><div class="timeline-content"><h3>到見面地點</h3><p>與長輩會合</p></div></div>
+        <div class="timeline-item" id="step-0">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              到見面地點
+              <span class="time-record"></span>
+            </h3>
+            <p>與長輩會合</p>
+          </div>
+        </div>
         
-        <div class="timeline-item" id="step-1"><div class="timeline-marker"></div><div class="timeline-content"><h3>已到醫院</h3><p>陪同長輩抵達醫院</p></div></div>
+        <div class="timeline-item" id="step-1">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              已到醫院
+              <span class="time-record"></span>
+            </h3>
+            <p>陪同長輩抵達醫院</p>
+          </div>
+        </div>
+
         <div class="timeline-item" id="step-2">
             <div class="timeline-marker"></div>
             <div class="timeline-content">
-                <h3>等待看診</h3><p>報到完成，候診中</p>
+                <h3>
+                  等待看診
+                  <span class="time-record"></span>
+                </h3>
+                <p>報到完成，候診中</p>
             </div>
         </div>
-        <div class="timeline-item" id="step-3"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診中</h3><p>醫師診療中</p></div></div>
-        <div class="timeline-item" id="step-4"><div class="timeline-marker"></div><div class="timeline-content"><h3>看診結束</h3><p>準備批價</p></div></div>
-        <div class="timeline-item" id="step-5"><div class="timeline-marker"></div><div class="timeline-content"><h3>等待拿藥</h3><p>藥局領藥中</p></div></div>
-        <div class="timeline-item" id="step-6"><div class="timeline-marker"></div><div class="timeline-content"><h3>結束就醫陪伴</h3><p>已送長輩返家/離開醫院</p></div></div>
+
+        <div class="timeline-item" id="step-3">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              看診中
+              <span class="time-record"></span>
+            </h3>
+            <p>醫師診療中</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" id="step-4">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              看診結束
+              <span class="time-record"></span>
+            </h3>
+            <p>準備批價</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" id="step-5">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              等待拿藥
+              <span class="time-record"></span>
+            </h3>
+            <p>藥局領藥中</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" id="step-6">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>
+              結束就醫陪伴
+              <span class="time-record"></span>
+            </h3>
+            <p>已送長輩返家/離開醫院</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -227,27 +309,22 @@
     </div>
 
     <script>
-      // 陣列同步更新：在最前面加入 "到見面地點"
       const statusSteps = ["到見面地點", "已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥", "已結束就醫陪伴"];
       let currentStatusIndex = -1;
       let pendingIndex = -1;
 
       window.onload = function() {
           document.getElementById("editControls").style.display = "block"; // 強制志工身分測試
-          
-          // 新增：設定系統當下日期
           setSystemDate();
-
           loadData();
       };
 
-      // 取得並格式化日期的函式
       function setSystemDate() {
           const now = new Date();
           const yyyy = now.getFullYear();
-          const mm = now.getMonth() + 1; // 月份是 0-11
+          const mm = now.getMonth() + 1;
           const dd = now.getDate();
-          const day = now.getDay(); // 星期
+          const day = now.getDay();
           const dayNames = ["日", "一", "二", "三", "四", "五", "六"];
           
           const dateStr = `${yyyy}年${mm}月${dd}日 (週${dayNames[day]})`;
@@ -263,16 +340,27 @@
       function render() {
           document.getElementById("currentStatusText").innerText = currentStatusIndex === -1 ? "尚未開始" : statusSteps[currentStatusIndex];
           
+          const savedTimes = JSON.parse(localStorage.getItem("visit_times") || "{}");
+
           for (let i = 0; i < statusSteps.length; i++) {
               const el = document.getElementById(`step-${i}`);
+              const timeBox = el.querySelector(".time-record");
+
               el.classList.remove("active", "current");
               if (i < currentStatusIndex) el.classList.add("active");
               if (i === currentStatusIndex) el.classList.add("active", "current");
+
+              // 顯示時間
+              if (savedTimes[i]) {
+                timeBox.style.display = "inline-block"; // 修改為 inline-block 或 block
+                timeBox.innerHTML = `${savedTimes[i]}`;
+              } else {
+                timeBox.style.display = "none";
+              }
           }
 
           const btns = document.querySelectorAll(".status-btn");
           btns.forEach((btn, i) => {
-              // 排除 Reset 按鈕 (因為 Reset 不在 statusSteps 索引中)
               if (i < statusSteps.length) { 
                   if (i === currentStatusIndex) btn.classList.add("active-btn");
                   else btn.classList.remove("active-btn");
@@ -280,14 +368,11 @@
           });
       }
 
-      // 控制 Modal 顯示
       function openModal(id) { document.getElementById(id).style.display = "flex"; }
       function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-      // 點擊進度按鈕
       function askStatus(idx) {
           pendingIndex = idx;
-          
           document.getElementById("confirmTitle").innerText = `確定切換至「${statusSteps[idx]}」？`;
           document.getElementById("confirmBtnAction").onclick = function() { performUpdate(); };
           openModal('confirmModal');
@@ -296,6 +381,18 @@
       function performUpdate() {
           currentStatusIndex = pendingIndex;
           localStorage.setItem("visit_idx", currentStatusIndex);
+
+          // 1. 取得現在時間 (HH:mm)
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          const timeStr = `${hh}:${mm}`;
+
+          // 2. 更新時間
+          let savedTimes = JSON.parse(localStorage.getItem("visit_times") || "{}");
+          savedTimes[currentStatusIndex] = timeStr;
+          localStorage.setItem("visit_times", JSON.stringify(savedTimes));
+
           closeModal('confirmModal');
           loadData();
       }
@@ -304,6 +401,7 @@
           document.getElementById("confirmTitle").innerText = "確定要重置今日所有狀態嗎？";
           document.getElementById("confirmBtnAction").onclick = function() {
               localStorage.removeItem("visit_idx");
+              localStorage.removeItem("visit_times");
               currentStatusIndex = -1;
               closeModal('confirmModal');
               loadData();
