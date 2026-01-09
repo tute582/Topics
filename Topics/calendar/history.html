@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>過往紀錄</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: "Arial", sans-serif; background-color: #f4f7f6; color: #333; }
+        .nav-1 { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #fff; border-bottom: 2px solid #eee; position: sticky; top: 0; z-index: 100; }
+        .back-link { font-size: 20px; color: #4a90e2; text-decoration: none; font-weight: bold; cursor: pointer; }
+        #volunteerName { font-size: 26px; font-weight: bold; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #ffa502; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card-time { font-size: 14px; color: #888; margin-bottom: 5px; }
+        .card-title { font-size: 18px; font-weight: bold; color: #222; }
+        .card-note { font-size: 15px; color: #666; margin-top: 4px; }
+        .no-data { text-align: center; margin-top: 50px; color: #999; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <nav class="nav-1">
+        <div class="back-link" onclick="window.location.href='index.html'">◀ 返回</div>
+        <span id="volunteerName">載入中</span>
+    </nav>
+
+    <div class="container">
+        <h2 style="margin-bottom: 20px;">過往行程紀錄</h2>
+        <div id="historyList">正在載入紀錄...</div>
+    </div>
+
+    <script>
+        const LIFF_ID = "2008484068-Kp57RrAr";
+        let userId = "U10243a4b528760aad0d03a51d13c2e4c";
+
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    document.getElementById("volunteerName").innerText = profile.displayName;
+                } else {
+                    document.getElementById("volunteerName").innerText = "未登入";
+                }
+                loadHistory();
+            } catch (e) { loadHistory(); }
+        }
+
+        async function loadHistory() {
+            const listDiv = document.getElementById("historyList");
+            try {
+                const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}`);
+                const result = await res.json();
+                const now = new Date();
+                // 篩選出今天之前的紀錄，並按時間倒序排列
+                const history = (result.data || [])
+                    .filter(item => new Date(item.schedule_time) < now)
+                    .sort((a, b) => new Date(b.schedule_time) - new Date(a.schedule_time));
+
+                if (history.length === 0) {
+                    listDiv.innerHTML = '<div class="no-data">目前沒有過往紀錄</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = history.map(item => `
+                    <div class="card">
+                        <div class="card-time">${item.schedule_time.replace('T', ' ')}</div>
+                        <div class="card-title">${item.schedule_note}</div>
+                        <div class="card-note">備註：${item.remark || '無'}</div>
+                    </div>
+                `).join('');
+            } catch (e) { listDiv.innerHTML = "載入失敗"; }
+        }
+
+        window.onload = initLiff;
+    </script>
+</body>
+</html>

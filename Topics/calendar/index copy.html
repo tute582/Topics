@@ -7,94 +7,84 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* 保留你原本的 CSS 設定並加入日曆樣式 */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: "Arial", sans-serif; background-color: #f9f9f9; color: #222; }
-        
         .nav-1 { display: flex; align-items: center; justify-content: space-between; padding: 10px 25px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1001; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none; }
         #volunteerName { cursor: pointer; font-size: 26px; font-weight: bold; }
-
         .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
         #calendar-container { background: white; padding: 15px; border-radius: 16px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-
-        /* 懸浮按鈕 */
         .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; }
-        
-        /* 彈窗樣式 (延用原本彈窗設計) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; }
         .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 18px; border-radius: 12px; position: relative; }
-        
-        /* 表單樣式 */
         input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; }
         .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; }
         #saveBtn { background: #4a90e2; }
     </style>
 </head>
 <body>
-
     <nav class="nav-1">
         <h1>行事曆</h1>
-        <div class="volunteer-area" onclick="handleLoginClick()">
+        <div class="volunteer-area" onclick="handleLoginClick()" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <img id="volunteerAvatar" class="avatar" src="" alt="avatar" />
             <span id="volunteerName">載入中</span>
         </div>
     </nav>
 
     <div class="container">
-        <div id="calendar-container">
-            <div id="calendar"></div>
+        <div id="calendar-container"><div id="calendar"></div></div>
+        <div style="margin-top: 25px; display: flex; justify-content: center;">
+            <button type="button" onclick="goToHistory()" style="background: #ffa502; border: none; border-radius: 12px; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px;">
+                檢視過往紀錄
+            </button>
         </div>
     </div>
 
     <div class="fab" id="fabAdd">+</div>
 
     <div id="dataModal" class="modal">
-    <div class="modal-content">
-        <h3 id="modalTitle">新增行程</h3>
-        <form id="dataForm">
-            <label>日期</label>
-            <input type="date" id="date" required>
-            <label>時間</label>
-            <input type="time" id="time" required>
-            <label>行程內容</label>
-            <input type="text" id="event" placeholder="限25字" maxlength="25">
-            <label>備註</label>
-            <input type="text" id="note" placeholder="限25字" maxlength="25">
-            
-            <label>重複</label>
-            <select id="repeat">
-                <option value="none">不重複</option>
-                <option value="daily">每天</option>
-                <option value="weekly">每週</option>
-                <option value="monthly">每月</option>
-                <option value="yearly">每年</option>
-            </select>
-
-            <label>提醒類型</label>
-            <select id="reminder">
-                <option value="none">無</option>
-                <option value="0min">當下提醒</option>
-                <option value="30min">30分鐘前</option>
-                <option value="1h">1小時前</option>
-                <option value="day">1天前</option>
-            </select>
-
-            <button type="button" class="btn" id="saveBtn">儲存行程</button>
-            <button type="button" class="btn" onclick="closeModal()" style="background:#ccc; margin-top:10px;">取消</button>
-            <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top:10px; display:none;">刪除行程</button>
-        </form>
+        <div class="modal-content">
+            <h3 id="modalTitle">新增行程</h3>
+            <form id="dataForm">
+                <label>日期</label><input type="date" id="date" required>
+                <label>時間</label><input type="time" id="time" required>
+                <label>行程內容</label><input type="text" id="event" placeholder="限25字" maxlength="25">
+                <label>備註</label><input type="text" id="note" placeholder="限25字" maxlength="25">
+                <label>重複</label>
+                <select id="repeat">
+                    <option value="none">不重複</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每週</option>
+                    <option value="monthly">每月</option>
+                    <option value="yearly">每年</option>
+                </select>
+                <label>提醒類型</label>
+                <select id="reminder">
+                    <option value="none">無</option>
+                    <option value="0min">當下提醒</option>
+                    <option value="30min">30分鐘前</option>
+                    <option value="1h">1小時前</option>
+                    <option value="day">1天前</option>
+                </select>
+                <button type="button" class="btn" id="saveBtn">儲存行程</button>
+                <button type="button" class="btn" onclick="closeModal()" style="background:#ccc; margin-top:10px;">取消</button>
+                <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top:10px; display:none;">刪除行程</button>
+            </form>
+        </div>
     </div>
-</div>
 
     <script>
-        // ------------------ 1. 初始化設定 ------------------
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         let userId = "U10243a4b528760aad0d03a51d13c2e4c"; 
         let userName = "";
         let calendar;
         let isEditing = false;
         let currentEventId = null;
+
+        function goToHistory() {
+            // 使用相對路徑跳轉，避免路徑疊加錯誤
+            window.location.href = 'history.html'; 
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
@@ -109,12 +99,11 @@
             initLiff();
         });
 
-        // ------------------ 2. LIFF 登入邏輯 ------------------
         async function initLiff() {
             try {
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) {
-                    document.getElementById("volunteerName").innerText = "未登入 (點此登入)";
+                    document.getElementById("volunteerName").innerText = "未登入";
                 } else {
                     const profile = await liff.getProfile();
                     userId = profile.userId;
@@ -130,74 +119,46 @@
             } catch (err) { console.error(err); loadRecords(); }
         }
 
-        function handleLoginClick() { if (!liff.isLoggedIn()) liff.login(); }// 尋找這段程式碼：
-async function initLiff() {
-    try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-            // 將這裡的 "未登入 (點此登入)" 改為 "未登入"
-            document.getElementById("volunteerName").innerText = "未登入";
-            document.getElementById("volunteerAvatar").style.display = "none";
-        } else {
-            // ... 登入後的邏輯保持不變
-        }
-    } catch (err) { console.error(err); }
-}
-
-        // ------------------ 3. 資料庫串接 (CRUD) ------------------
         async function loadRecords() {
             try {
                 const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}`);
                 const result = await res.json();
-                const data = result.data || [];
-                const events = data.map(item => ({
+                const events = (result.data || []).map(item => ({
                     id: item.event_id,
                     title: item.schedule_note,
                     start: item.schedule_time.replace(' ', 'T'),
-                    extendedProps: { note: item.remark, repeat: item.repeat }
+                    extendedProps: { note: item.remark, repeat: item.repeat, reminder: item.reminder_method || "none" }
                 }));
                 calendar.removeAllEvents();
                 calendar.addEventSource(events);
-            } catch (e) { console.error("載入失敗", e); }
+            } catch (e) { console.error(e); }
         }
 
         document.getElementById("saveBtn").onclick = async function() {
             const payload = {
-                elder_user_id: userId,
-                elder_name: userName,
+                elder_user_id: userId, elder_name: userName,
                 schedule_time: `${document.getElementById("date").value} ${document.getElementById("time").value}`,
                 schedule_note: document.getElementById("event").value,
                 remark: document.getElementById("note").value,
-                repeat: document.getElementById("repeat").value
+                repeat: document.getElementById("repeat").value,
+                reminder_method: document.getElementById("reminder").value 
             };
-
-            const url = isEditing 
-                ? `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}`
-                : "https://supabase-api-six.vercel.app/schedules";
-            
-            const method = isEditing ? "PATCH" : "POST";
-
-            const res = await fetch(url, {
-                method: method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                closeModal();
-                loadRecords();
-            } else {
-                alert("儲存失敗，請檢查登入狀態");
-            }
+            const url = isEditing ? `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}` : "https://supabase-api-six.vercel.app/schedules";
+            const res = await fetch(url, { method: isEditing ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (res.ok) { closeModal(); loadRecords(); }
         };
 
-        // ------------------ 4. 彈窗控制 ------------------
+        document.getElementById("deleteBtn").onclick = async function() {
+            if (!confirm("確定要刪除嗎？")) return;
+            const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}`, { method: "DELETE" });
+            if (res.ok) { closeModal(); loadRecords(); }
+        };
+
         function openModal(editMode, data) {
             isEditing = editMode;
             document.getElementById("dataModal").style.display = "block";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
-
             if (editMode) {
                 currentEventId = data.id;
                 document.getElementById("date").value = data.startStr.split('T')[0];
@@ -205,12 +166,12 @@ async function initLiff() {
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note;
                 document.getElementById("repeat").value = data.extendedProps.repeat;
+                document.getElementById("reminder").value = data.extendedProps.reminder;
             } else {
                 document.getElementById("dataForm").reset();
                 if (data) document.getElementById("date").value = data;
             }
         }
-
         function closeModal() { document.getElementById("dataModal").style.display = "none"; }
         document.getElementById("fabAdd").onclick = () => openModal(false);
     </script>
