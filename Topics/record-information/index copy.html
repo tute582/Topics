@@ -388,6 +388,10 @@
     <script>
       const LIFF_ID = "2008484068-qkydRNYN";
       let userId = "";
+      let userName = "";
+
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
       
       let dummyData = [
         {
@@ -435,28 +439,87 @@
       /* -----------------------------------------
          2. 初始化與 LIFF 整合 (Init & LIFF)
          ----------------------------------------- */
-      initLiff();
+      initLiffAndSetProfile();
 
-      async function initLiff() {
+      async function initLiffAndSetProfile() {
         try {
           await liff.init({ liffId: LIFF_ID });
-          if (liff.isLoggedIn()) {
-            const profile = await liff.getProfile();
-            userId = profile.userId;
-            document.getElementById("userName").innerText = profile.displayName;
-            if (profile.pictureUrl) {
-              const avatar = document.getElementById("userAvatar");
-              avatar.src = profile.pictureUrl; avatar.style.display = "block";
-            }
-          } else {
-            document.getElementById("userName").innerText = "測試模式 (王先生)";
+
+          if (!liff.isLoggedIn()) {
+            nameEl.innerText = "未登入";
+            avatarEl.style.display = "none";
+            renderCards(dummyData);
+            return;
           }
+
+          const profile = await liff.getProfile();
+          userId = profile.userId;
+          userName = profile.displayName;
+          localStorage.setItem("userId", userId);
+          console.log("LIFF Profile userId:", userId, "userName:", userName);
+
+          nameEl.innerText = profile.displayName || "志工";
+          if (profile.pictureUrl) {
+            avatarEl.src = profile.pictureUrl;
+            avatarEl.style.display = "inline-block";
+          } else {
+            avatarEl.style.display = "none";
+          }
+
           renderCards(dummyData);
         } catch (err) {
-          console.error(err);
+          console.error("LIFF init error:", err);
           renderCards(dummyData);
         }
       }
+
+      avatarEl.addEventListener("click", () => {
+        if (liff.isLoggedIn()) {
+          // 檢查後端是否有這個userId註冊
+          fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+            .then((res) => res.json())
+            .then((result) => {
+              if (!result.success) {
+                // 無效身分，導向註冊頁面
+                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
+                window.location.href = "../../Login-or-register/index.html";
+              } else {
+                // 已註冊，取得身分
+                let identify = result.role; //回傳文字(志工或長者)
+                console.log("登入角色 role：", result.role);
+                localStorage.setItem("fromPage", "record-information");
+                switch (identify) {
+                  case "志工":
+                    window.location.href =
+                      "../../Login-or-register/志工資料顯示.html";
+                    break;
+                  case "長者":
+                    window.location.href =
+                      "../../Login-or-register/長輩資料顯示.html";
+                    break;
+                  default:
+                    // "未註冊" 或 undefined 都導往登入
+                    window.location.href = "../../Login-or-register/index.html";
+                }
+              }
+            })
+            .catch((err) => {
+              console.error("身分檢查 API 錯誤：", err);
+              // API 出錯也視為無效身分
+              window.location.href = "../../Login-or-register/index.html";
+            });
+        } else {
+          liff.login({ redirectUri: window.location.href });
+        }
+      });
+
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+        } else {
+          alert("已登入：" + (nameEl.innerText || "志工"));
+        }
+      });
 
       function renderCards(data) {
         const listContainer = document.getElementById("recordList");

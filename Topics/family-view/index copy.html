@@ -333,9 +333,7 @@
       /* -----------------------------------------
        2. 初始化與 LIFF 整合 (Init & LIFF)
        ----------------------------------------- */
-      initDateTimePickers();
       initLiffAndSetProfile();
-      updateNoRecordMessage();
 
       async function initLiffAndSetProfile() {
         try {
@@ -344,7 +342,6 @@
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
-            await loadData();
             return;
           }
 
@@ -361,8 +358,6 @@
           } else {
             avatarEl.style.display = "none";
           }
-
-          await loadData();
         } catch (err) {
           console.error("LIFF init error:", err);
         }
@@ -382,7 +377,7 @@
                 // 已註冊，取得身分
                 let identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
-                localStorage.setItem("fromPage", "record-information");
+                localStorage.setItem("fromPage", "family-view");
                 switch (identify) {
                   case "志工":
                     window.location.href =
