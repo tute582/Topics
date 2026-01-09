@@ -4,11 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>看診資訊</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
       /* =========================================
-          1. 基礎設定與配色
-          ========================================= */
+         1. 基礎設定與配色
+         ========================================= */
       body {
         font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
         padding: 0;
@@ -33,6 +34,7 @@
         border-bottom: 1px solid #ddd;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         color: black;
+        box-sizing: border-box;
       }
 
       .volunteer-area {
@@ -57,17 +59,9 @@
         background: transparent;
       }
 
-      .volunteer-area button {
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 14px;
-        margin-top: 0;
-      }
-
-
       /* =========================================
-          2. 分頁導覽列 (Tabs)
-          ========================================= */
+         2. 分頁導覽列 (Tabs)
+         ========================================= */
       .tab-nav {
         display: flex;
         padding: 0 20px;
@@ -80,8 +74,8 @@
         flex: 1;
         text-align: center;
         text-decoration: none;
-        padding: 15px 0;
-        font-size: 18px;
+        padding: 20px 0;
+        font-size: 20px;
         font-weight: bold;
         color: #666;
         border-bottom: 4px solid transparent;
@@ -93,59 +87,90 @@
         border-bottom-color: #4a90e2;
       }
 
-      .container { padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
+      .container { 
+        padding: 0 15px; 
+        max-width: 600px; 
+        margin: 0 auto; 
+        padding-bottom: 100px; 
+      }
 
       .page-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; border-left: 6px solid #4a90e2; padding-left: 10px; }
 
       /* =========================================
-          3. 卡片設計
-          ========================================= */
+         3. 卡片設計
+         ========================================= */
       .record-card {
         background: white;
         border-radius: 20px;
         padding: 20px;
+        padding-bottom: 65px; /* 預留底部空間給編輯按鈕 */
         margin-bottom: 20px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         position: relative;
         overflow: hidden;
       }
 
-      .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: #bdc3c7; }
-      .accent-heart { background: #ff6b6b; }
-      .accent-bone { background: #f1c40f; }
-      .accent-eye { background: #1abc9c; }
-      .accent-rehab { background: #9b59b6; }
-      .accent-dental { background: #3498db; }
+      .card-header { 
+        display: flex; 
+        justify-content: space-between; /* 讓日期靠左，時間靠右 */
+        align-items: center; 
+        margin-bottom: 15px; 
+        border-bottom: 1px solid #f0f0f0; 
+        padding-bottom: 10px; 
+      }
+      
+      .date-box { font-size: 20px; font-weight: 900; color: #34495e; }
 
-      .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
-      .date-box { font-size: 24px; font-weight: 900; color: #34495e; }
+      /* 時間顯示區塊的樣式 */
+      .time-box {
+        font-size: 20px;
+        font-weight: bold;
+        color: #34495e;
+        display: flex;
+        align-items: center;
+        gap: 6px; /* Icon 和時間文字的間距 */
+      }
 
       .edit-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
         background: #4a90e2;
         color: white;
         border: none;
-        padding: 8px 16px;
+        padding: 10px 20px;
         border-radius: 10px;
         font-size: 16px;
         font-weight: bold;
         cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10;
       }
 
-      .card-body { display: flex; flex-direction: column; gap: 10px; }
+      .edit-btn:active {
+        transform: scale(0.98);
+      }
+
+      .card-body { display: flex; flex-direction: column; gap: 12px; }
       .info-item { font-size: 18px; line-height: 1.4; display: flex; align-items: flex-start; }
-      .label-text { color: #7f8c8d; font-weight: bold; min-width: 95px; flex-shrink: 0; }
+      .label-text { color: #333; font-weight: bold; min-width: 95px; flex-shrink: 0; }
       .content-text { color: #333; font-weight: 500; }
       
-      .dept-text { color: #333; font-weight: bold; }
+      .dept-text { color: #333; font-weight: 500; }
 
-      .medical-notes { background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #edf2f7; margin-top: 5px; }
-      .notes-title { font-weight: bold; color: #4a90e2; display: block; margin-bottom: 4px; }
+      .medical-notes { background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #edf2f7; margin-top: 5px; }
+      
+      .notes-title { font-weight: bold; color: #4a90e2; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+      .remark-box { color: #e67e22; font-weight: bold; font-size: 17px; margin-top: 5px; display: flex; align-items: center; gap: 8px; padding: 0 0 15px;}
 
-      .remark-box { color: #e67e22; font-weight: bold; font-size: 17px; margin-top: 5px; }
+      i.fa-solid, i.fa-regular {
+        width: 20px; 
+        text-align: center;
+      }
 
       /* =========================================
-          4. CRUD 彈窗
-          ========================================= */
+         4. CRUD 彈窗
+         ========================================= */
       .modal {
         display: none;
         position: fixed;
@@ -156,6 +181,7 @@
         align-items: center;
       }
       .modal-content {
+        position: relative; /* 關鍵修改：讓絕對定位的關閉按鈕以此為基準 */
         background: white;
         width: 90%;
         max-width: 450px;
@@ -164,9 +190,35 @@
         max-height: 90vh;
         overflow-y: auto;
       }
+
+      /* 新增：右上角叉叉按鈕樣式 */
+      .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;        /* 正方形寬 */
+        height: 40px;       /* 正方形高 */
+        border-radius: 10px; /* 圓角 */
+        background-color: #f1f3f5; /* 淺灰背景 */
+        color: #636e72;
+        border: none;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        z-index: 2005;
+      }
+      .close-btn:hover { background-color: #e2e6ea; }
+      .close-btn:active { transform: scale(0.95); }
+
       .modal-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; text-align: center; color: #2c3e50; }
       .form-group { margin-bottom: 18px; }
       .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; font-size: 18px; }
+      
+      .form-group label i { color: #4a90e2; margin-right: 5px; }
+
       .form-group input, .form-group textarea {
         width: 100%;
         padding: 14px;
@@ -180,7 +232,7 @@
       .btn { flex: 1; padding: 15px; border-radius: 15px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; }
       .btn-save { background: #2ecc71; color: white; }
       .btn-delete { background: #e74c3c; color: white; }
-      .btn-cancel { background: #95a5a6; color: white; }
+      /* 移除 btn-cancel 樣式，因為用不到了 */
 
       .add-fab {
         position: fixed;
@@ -188,29 +240,73 @@
         bottom: 20px;
         width: 70px;
         height: 70px;
-        background: #4a90e2;
+        background: #2ecc71;
         color: white;
         border-radius: 50%;
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 40px;
+        line-height: 1;         /* 重要：將行高設為 1，消除文字上下的預留間隙 */
+        /* 核心置中語法 End */
+
+        font-size: 30px;        /* 直接在這裡控制 icon 大小，不要寫在 html 裡 */
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         cursor: pointer;
         z-index: 1500;
+        transition: transform 0.2s;
       }
+      /* 確保 icon 本身沒有額外的邊距 */
+      .add-fab i {
+        /* 1. 強制讓 icon 變成一個方塊，避免 inline 元素的不可控空白 */
+        display: block; 
+        
+        /* 2. 讓 icon 的寬度跟隨字體大小 (30px)，並強制文字水平置中 */
+        width: 1em; 
+        text-align: center;
+        
+        /* 3. (選用) 視覺微調： */
+        margin-right: 1px; 
+      }
+
+      .add-fab:active { transform: scale(0.95); }
     </style>
   </head>
 
   <body>
     <nav class="nav-1">
-      <div style="font-size: 20px; font-weight: bold;">看診資訊</div>
-      <div class="volunteer-area">
-        <img id="userAvatar" class="avatar" src="https://via.placeholder.com/45" style="display: none" />
-        <span id="userName" style="font-weight: bold">載入中...</span>
+      <div>
+        <h1 style="margin: 0; font-size: 28px">看診資訊</h1>
+      </div>
+
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span
+            class="volunteer-area"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <img
+              id="volunteerAvatar"
+              class="avatar"
+              src="../bookvolunteer/default-avatar.png"
+              alt="avatar"
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0984e3;
+              "
+            />
+            <span
+              id="volunteerName"
+              title="點此以 Line 登入"
+              style="cursor: pointer; font-size: 26px"
+              >未登入</span
+            >
+          </span>
+        </h1>
       </div>
     </nav>
-
     <div class="tab-nav">
       <a href="./index copy.html" class="tab-link active">看診紀錄</a>
       <a href="../family-view/index.html" class="tab-link">看診進度</a>
@@ -219,44 +315,54 @@
     <div class="container">
       <h2 class="page-title">就醫紀錄管理</h2>
       <div id="recordList"></div>
-      <div id="noDataMsg" class="no-data" style="display: none; text-align:center; padding: 50px; color:#999;">目前沒有紀錄喔！</div>
+      <div id="noDataMsg" class="no-data" style="display: none; text-align:center; padding: 50px; color:#999;">
+        <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 10px; display:block;"></i>
+        目前沒有紀錄喔！
+      </div>
     </div>
 
-    <div class="add-fab" onclick="openModal()">+</div>
+    <div class="add-fab" onclick="openModal()"><i class="fa-solid fa-plus"></i></div>
 
     <div id="editModal" class="modal">
       <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
         <div id="modalTitle" class="modal-title">修改看診紀錄</div>
         <input type="hidden" id="editIndex">
         
         <div class="form-group">
-          <label>📅 看診日期</label>
+          <label><i class="fa-regular fa-calendar-days"></i> 看診日期</label>
           <input type="date" id="field_date">
         </div>
         <div class="form-group">
-          <label>⏰ 看診時間</label>
+          <label><i class="fa-regular fa-clock"></i> 看診時間</label>
           <input type="time" id="field_time">
         </div>
         <div class="form-group">
-          <label>🏥 醫生科別</label>
+          <label><i class="fa-solid fa-hospital"></i> 醫院/診所名稱</label>
+          <input type="text" id="field_hospital" placeholder="例如：臺大醫院">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-hospital-user"></i> 醫生科別</label>
           <input type="text" id="field_dept" placeholder="例如：心臟內科">
         </div>
         <div class="form-group">
-          <label>👨‍⚕️ 醫生姓名</label>
+          <label><i class="fa-solid fa-user-doctor"></i> 醫生姓名</label>
           <input type="text" id="field_doctor" placeholder="醫生名字">
         </div>
         <div class="form-group">
-          <label>📖 囑咐內容</label>
+          <label><i class="fa-solid fa-file-medical"></i> 囑咐內容</label>
           <textarea id="field_details" rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label>🔔 提醒備註</label>
+          <label><i class="fa-solid fa-bell"></i> 提醒備註</label>
           <input type="text" id="field_remarks">
         </div>
 
         <div class="modal-btns">
           <button class="btn btn-delete" id="deleteBtn" onclick="deleteRecord()">刪除</button>
-          <button class="btn btn-cancel" onclick="closeModal()">取消</button>
           <button class="btn btn-save" onclick="saveRecord()">儲存</button>
         </div>
       </div>
@@ -264,28 +370,13 @@
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-      /* -----------------------------------------
-       1. 全域變數與設定 (Global Config)
-       ----------------------------------------- */
       const LIFF_ID = "2008484068-qkydRNYN";
-      const POST_SUPABASE_API_URL =
-        "https://supabase-api-six.vercel.app/consultations";
-
       let userId = "";
-      let userName = "";
-      let currentEditEventId = "";
-      let editRowIndex = null;
-      let isEditing = false;
-      let originalData = {};
-
-      const avatarEl = document.getElementById("volunteerAvatar");
-      const nameEl = document.getElementById("volunteerName");
-
       
-      // 已更新為 5 筆假資料
       let dummyData = [
         {
           visit_time: "2026-01-06T09:30",
+          hospital_name: "臺大醫院",
           department: "心臟內科",
           doctor_name: "陳志明",
           visit_details: "定期回診，數值正常。注意飲食清淡。",
@@ -293,6 +384,7 @@
         },
         {
           visit_time: "2025-12-20T14:15",
+          hospital_name: "長庚醫院",
           department: "骨科",
           doctor_name: "林建勳",
           visit_details: "左膝蓋疼痛，進行復健。減少爬樓梯。",
@@ -300,6 +392,7 @@
         },
         {
           visit_time: "2025-11-15T10:00",
+          hospital_name: "榮民總醫院",
           department: "眼科",
           doctor_name: "張美惠",
           visit_details: "視網膜檢查正常。眼藥水每天早晚點一次。",
@@ -307,6 +400,7 @@
         },
         {
           visit_time: "2025-10-05T15:30",
+          hospital_name: "馬偕醫院",
           department: "復健科",
           doctor_name: "王大夫",
           visit_details: "肩頸痠痛改善中，持續拉筋運動。",
@@ -314,6 +408,7 @@
         },
         {
           visit_time: "2025-09-12T09:00",
+          hospital_name: "李氏牙醫診所",
           department: "牙科",
           doctor_name: "李醫師",
           visit_details: "洗牙及例行檢查，有一顆輕微蛀牙下次處理。",
@@ -322,90 +417,30 @@
       ];
 
       /* -----------------------------------------
-       2. 初始化與 LIFF 整合 (Init & LIFF)
-       ----------------------------------------- */
-      initDateTimePickers();
-      initLiffAndSetProfile();
-      updateNoRecordMessage();
+         2. 初始化與 LIFF 整合 (Init & LIFF)
+         ----------------------------------------- */
+      initLiff();
 
-      async function initLiffAndSetProfile() {
+      async function initLiff() {
         try {
           await liff.init({ liffId: LIFF_ID });
-
-          if (!liff.isLoggedIn()) {
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            await loadData();
-            return;
-          }
-
-          const profile = await liff.getProfile();
-          userId = profile.userId;
-          userName = profile.displayName;
-          localStorage.setItem("userId", userId);
-          console.log("LIFF Profile userId:", userId, "userName:", userName);
-
-          nameEl.innerText = profile.displayName || "志工";
-          if (profile.pictureUrl) {
-            avatarEl.src = profile.pictureUrl;
-            avatarEl.style.display = "inline-block";
+          if (liff.isLoggedIn()) {
+            const profile = await liff.getProfile();
+            userId = profile.userId;
+            document.getElementById("userName").innerText = profile.displayName;
+            if (profile.pictureUrl) {
+              const avatar = document.getElementById("userAvatar");
+              avatar.src = profile.pictureUrl; avatar.style.display = "block";
+            }
           } else {
-            avatarEl.style.display = "none";
+            document.getElementById("userName").innerText = "測試模式 (王先生)";
           }
-
-          await loadData();
+          renderCards(dummyData);
         } catch (err) {
-          console.error("LIFF init error:", err);
+          console.error(err);
+          renderCards(dummyData);
         }
       }
-
-      avatarEl.addEventListener("click", () => {
-        if (liff.isLoggedIn()) {
-          // 檢查後端是否有這個userId註冊
-          fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
-            .then((res) => res.json())
-            .then((result) => {
-              if (!result.success) {
-                // 無效身分，導向註冊頁面
-                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
-                window.location.href = "../../Login-or-register/index.html";
-              } else {
-                // 已註冊，取得身分
-                let identify = result.role; //回傳文字(志工或長者)
-                console.log("登入角色 role：", result.role);
-                localStorage.setItem("fromPage", "record-information");
-                switch (identify) {
-                  case "志工":
-                    window.location.href =
-                      "../../Login-or-register/志工資料顯示.html";
-                    break;
-                  case "長者":
-                    window.location.href =
-                      "../../Login-or-register/長輩資料顯示.html";
-                    break;
-                  default:
-                    // "未註冊" 或 undefined 都導往登入
-                    window.location.href = "../../Login-or-register/index.html";
-                }
-              }
-            })
-            .catch((err) => {
-              console.error("身分檢查 API 錯誤：", err);
-              // API 出錯也視為無效身分
-              window.location.href = "../../Login-or-register/index.html";
-            });
-        } else {
-          liff.login({ redirectUri: window.location.href });
-        }
-      });
-
-      nameEl.addEventListener("click", () => {
-        if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: window.location.href });
-        } else {
-          alert("已登入：" + (nameEl.innerText || "志工"));
-        }
-      });
 
       function renderCards(data) {
         const listContainer = document.getElementById("recordList");
@@ -417,39 +452,47 @@
           const dateStr = `${dt.getFullYear()}年 ${dt.getMonth()+1}月 ${dt.getDate()}日`;
           const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-          let accentClass = "";
-          if (item.department.includes("心臟")) accentClass = "accent-heart";
-          else if (item.department.includes("骨")) accentClass = "accent-bone";
-          else if (item.department.includes("眼")) accentClass = "accent-eye";
-          else if (item.department.includes("復健")) accentClass = "accent-rehab";
-          else if (item.department.includes("牙")) accentClass = "accent-dental";
-
+          // 這裡合併了「科別」與「醫生姓名」
           const card = `
             <div class="record-card">
-              <div class="card-accent ${accentClass}"></div>
               <div class="card-header">
                 <div class="date-box">${dateStr}</div>
-                <button class="edit-btn" onclick="openModal(${index})">編輯</button>
+                
+                <div class="time-box">
+                  <i class="fa-regular fa-clock"></i> ${timeStr}
+                </div>
               </div>
+
               <div class="card-body">
                 <div class="info-item">
-                  <span class="label-text">看診時間：</span>
-                  <span class="content-text" style="font-size: 20px; color: #4a90e2;">${timeStr}</span>
+                  <span class="label-text">醫院/診所名稱：</span>
+                  <span class="content-text">${item.hospital_name || '未填寫'}</span>
                 </div>
+                
                 <div class="info-item">
-                  <span class="label-text">醫生科別：</span>
-                  <span class="content-text dept-text">${item.department}</span>
+                  <span class="label-text" style="min-width: auto; margin-right: 8px;">
+                    <i class="fa-solid fa-stethoscope" title="醫生科別與姓名"></i>
+                  </span>
+                  <span class="content-text dept-text">
+                    ${item.department} - ${item.doctor_name} 醫師
+                  </span>
                 </div>
-                <div class="info-item">
-                  <span class="label-text">醫生姓名：</span>
-                  <span class="content-text">${item.doctor_name} 醫師</span>
-                </div>
+
                 <div class="medical-notes">
-                  <span class="notes-title">📖 醫生囑咐內容：</span>
+                  <span class="notes-title">
+                    <i class="fa-solid fa-notes-medical"></i> 醫生囑咐內容：
+                  </span>
                   <span class="content-text">${item.visit_details}</span>
                 </div>
-                ${item.remarks ? `<div class="remark-box">🔔 提醒：${item.remarks}</div>` : ""}
+                ${item.remarks ? `
+                  <div class="remark-box">
+                    <i class="fa-solid fa-bell"></i> 提醒：${item.remarks}
+                  </div>` : ""}
               </div>
+              
+              <button class="edit-btn" onclick="openModal(${index})">
+                <i class="fa-solid fa-pen"></i> 編輯
+              </button>
             </div>
           `;
           listContainer.innerHTML += card;
@@ -462,20 +505,42 @@
         document.getElementById("editIndex").value = index;
 
         if (index === -1) {
+          // ================= 新增模式 =================
           document.getElementById("modalTitle").innerText = "新增看診紀錄";
-          document.getElementById("field_date").value = "";
-          document.getElementById("field_time").value = "";
+          
+          // 1. 取得現在時間
+          const now = new Date();
+          
+          // 2. 格式化為 YYYY-MM-DD
+          const yyyy = now.getFullYear();
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          const dd = String(now.getDate()).padStart(2, '0');
+          const today = `${yyyy}-${mm}-${dd}`;
+          
+          // 3. 格式化為 HH:mm
+          const hh = String(now.getHours()).padStart(2, '0');
+          const min = String(now.getMinutes()).padStart(2, '0');
+          const currentTime = `${hh}:${min}`;
+
+          // 4. 填入欄位
+          document.getElementById("field_date").value = today;
+          document.getElementById("field_time").value = currentTime;
+
+          // 清空其他欄位
+          document.getElementById("field_hospital").value = ""; 
           document.getElementById("field_dept").value = "";
           document.getElementById("field_doctor").value = "";
           document.getElementById("field_details").value = "";
           document.getElementById("field_remarks").value = "";
           deleteBtn.style.display = "none";
         } else {
+          // ================= 編輯模式 =================
           document.getElementById("modalTitle").innerText = "修改看診紀錄";
           const item = dummyData[index];
           const parts = item.visit_time.split('T');
           document.getElementById("field_date").value = parts[0];
           document.getElementById("field_time").value = parts[1];
+          document.getElementById("field_hospital").value = item.hospital_name || ""; 
           document.getElementById("field_dept").value = item.department;
           document.getElementById("field_doctor").value = item.doctor_name;
           document.getElementById("field_details").value = item.visit_details;
@@ -493,6 +558,7 @@
         const index = parseInt(document.getElementById("editIndex").value);
         const datePart = document.getElementById("field_date").value;
         const timePart = document.getElementById("field_time").value;
+        const hospitalPart = document.getElementById("field_hospital").value; 
 
         if (!datePart || !timePart || !document.getElementById("field_dept").value) {
           alert("請填寫日期、時間與科別喔！");
@@ -501,6 +567,7 @@
 
         const newData = {
           visit_time: `${datePart}T${timePart}`,
+          hospital_name: hospitalPart, 
           department: document.getElementById("field_dept").value,
           doctor_name: document.getElementById("field_doctor").value,
           visit_details: document.getElementById("field_details").value,
