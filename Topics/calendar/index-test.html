@@ -15,29 +15,64 @@
         .container { padding: 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
         #calendar-container { background: white; padding: 15px; border-radius: 16px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; }
+        
+        /* Modal 通用設定 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; }
-        .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 18px; border-radius: 12px; position: relative; }
-        input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; }
-        .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; }
-        #saveBtn { background: #4a90e2; }
+        .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 25px 18px 18px; border-radius: 12px; position: relative; }
+        
+        /* --- 新增：右上角關閉按鈕樣式 --- */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #f37a7a;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            font-size: 20px;
+            line-height: 1; /* 確保 X 垂直置中 */
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 0; /* 移除預設 padding */
+            padding-bottom: 2px; /* 微調 X 的位置 */
+        }
+        .close-btn:hover { background-color: #d63031; }
 
-        /* 響應式設計 - 平板 */
+        /* 表單樣式 */
+        input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; }
+        .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
+        #saveBtn { background: #4a90e2; }
+        
+        /* 當日行程列表樣式 */
+        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; transition: background 0.2s; }
+        .event-item:hover { background-color: #f0f7ff; }
+        .event-item:last-child { border-bottom: none; }
+        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
+        .event-title { font-size: 16px; color: #333; flex-grow: 1; }
+        .no-event-text { text-align: center; color: #888; padding: 20px; font-size: 16px; }
+
+        /* 響應式設計 */
         @media (max-width: 768px) {
             .nav-1 { padding: 8px 15px; flex-wrap: wrap; }
             .container { padding: 15px; }
             #calendar-container { padding: 10px; border-radius: 12px; }
-            .modal-content { margin: 30px auto; padding: 15px; }
+            .modal-content { margin: 30px auto; padding: 20px 15px 15px; }
             .fab { width: 50px; height: 50px; bottom: 20px; right: 20px; }
         }
-
-        /* 響應式設計 - 手機 */
         @media (max-width: 480px) {
             .nav-1 { padding: 8px 10px; }
             .volunteer-area { gap: 5px !important; }
             .avatar { width: 35px; height: 35px; }
             .container { padding: 10px; }
             #calendar-container { padding: 8px; border-radius: 8px; }
-            .modal-content { margin: 20px auto; padding: 12px; width: 95%; max-width: none; }
+            .modal-content { margin: 20px auto; padding: 20px 12px 12px; width: 95%; max-width: none; }
             .fab { width: 45px; height: 45px; bottom: 15px; right: 15px; }
             button[onclick="goToHistory()"] { padding: 12px 20px !important; min-width: auto !important; width: 100%; }
         }
@@ -65,6 +100,8 @@
 
     <div id="dataModal" class="modal">
         <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('dataModal')">×</button>
+            
             <h3 id="modalTitle">新增行程</h3>
             <form id="dataForm">
                 <label>日期</label><input type="date" id="date" required>
@@ -88,9 +125,23 @@
                     <option value="day">1天前</option>
                 </select>
                 <button type="button" class="btn" id="saveBtn">儲存行程</button>
-                <button type="button" class="btn" onclick="closeModal()" style="background:#ccc; margin-top:10px;">取消</button>
-                <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top:10px; display:none;">刪除行程</button>
+                <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; display:none;">刪除行程</button>
             </form>
+        </div>
+    </div>
+
+    <div id="dayViewModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('dayViewModal')">×</button>
+
+            <h3 id="dayViewTitle" style="margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px;"></h3>
+            
+            <div id="dayEventList" style="max-height: 300px; overflow-y: auto;">
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">在此日新增</button>
+            </div>
         </div>
     </div>
 
@@ -101,6 +152,7 @@
         let calendar;
         let isEditing = false;
         let currentEventId = null;
+        let selectedDateStr = ""; 
 
         function goToHistory() {
             window.location.href = 'history.html'; 
@@ -123,7 +175,7 @@
                 initialView: 'dayGridMonth',
                 locale: 'zh-tw',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
-                dateClick: (info) => openModal(false, info.dateStr),
+                dateClick: (info) => openDayView(info.dateStr),
                 eventClick: (info) => openModal(true, info.event)
             });
             calendar.render();
@@ -146,49 +198,48 @@
                         avatar.style.display = "inline-block";
                     }
                 }
-                loadRecords(); // 呼叫載入資料
+                loadRecords();
             } catch (err) { console.error(err); loadRecords(); }
         }
 
-        // --- 產生未來日期的輔助函式 (確保假資料不會被過濾掉) ---
         function getFutureDate(daysAdd, timeStr) {
             const date = new Date();
-            date.setDate(date.getDate() + daysAdd); // 加上天數
+            date.setDate(date.getDate() + daysAdd);
             const yyyy = date.getFullYear();
             const mm = String(date.getMonth() + 1).padStart(2, '0');
             const dd = String(date.getDate()).padStart(2, '0');
             return `${yyyy}-${mm}-${dd} ${timeStr}`;
         }
 
-        // --- 核心修正：使用假資料載入 ---
         async function loadRecords() {
             try {
-                // 原本的 API 呼叫先註解掉，改用假資料
-                // const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}`);
-                // const result = await res.json();
-                
-                // 10 筆假資料
+                // 20 筆自然分佈的假資料
                 const fakeData = [
-                    { event_id: '1', schedule_note: '臺大醫院回診', schedule_time: getFutureDate(1, '09:00'), remark: '記得帶健保卡', repeat: 'none', reminder_method: 'day' },
-                    { event_id: '2', schedule_note: '社區長青課程', schedule_time: getFutureDate(1, '14:00'), remark: '書法課', repeat: 'weekly', reminder_method: '1h' },
-                    { event_id: '3', schedule_note: '服用降血壓藥', schedule_time: getFutureDate(2, '08:00'), remark: '飯後服用', repeat: 'daily', reminder_method: '0min' },
-                    { event_id: '4', schedule_note: '跟孫子視訊', schedule_time: getFutureDate(2, '20:00'), remark: '用LINE打電話', repeat: 'none', reminder_method: '30min' },
-                    { event_id: '5', schedule_note: '公園散步', schedule_time: getFutureDate(3, '16:30'), remark: '約老李一起', repeat: 'daily', reminder_method: 'none' },
-                    { event_id: '6', schedule_note: '繳水電費', schedule_time: getFutureDate(4, '10:00'), remark: '要去超商', repeat: 'monthly', reminder_method: 'day' },
-                    { event_id: '7', schedule_note: '復健治療', schedule_time: getFutureDate(5, '15:00'), remark: '左手肩膀', repeat: 'weekly', reminder_method: '1h' },
-                    { event_id: '8', schedule_note: '超市買菜', schedule_time: getFutureDate(6, '09:30'), remark: '買雞蛋和牛奶', repeat: 'none', reminder_method: 'none' },
-                    { event_id: '9', schedule_note: '老友聚餐', schedule_time: getFutureDate(7, '12:00'), remark: '在海霸王', repeat: 'none', reminder_method: 'day' },
-                    { event_id: '10', schedule_note: '年度健康檢查', schedule_time: getFutureDate(10, '08:00'), remark: '前一晚需空腹', repeat: 'yearly', reminder_method: 'day' }
+                    { event_id: '1', schedule_note: '臺大醫院回診', schedule_time: getFutureDate(0, '09:00'), remark: '記得帶健保卡', repeat: 'none', reminder_method: 'day' },
+                    { event_id: '2', schedule_note: '復健治療', schedule_time: getFutureDate(3, '14:30'), remark: '左肩熱敷', repeat: 'weekly', reminder_method: '1h' },
+                    { event_id: '3', schedule_note: '眼科檢查', schedule_time: getFutureDate(15, '10:00'), remark: '定期追蹤白內障', repeat: 'none', reminder_method: 'day' },
+                    { event_id: '4', schedule_note: '領慢性處方箋', schedule_time: getFutureDate(20, '09:30'), remark: '去樓下藥局', repeat: 'monthly', reminder_method: 'day' },
+                    { event_id: '5', schedule_note: '跟孫子視訊', schedule_time: getFutureDate(1, '20:00'), remark: '用LINE打電話', repeat: 'weekly', reminder_method: '30min' },
+                    { event_id: '6', schedule_note: '老友聚餐', schedule_time: getFutureDate(5, '11:30'), remark: '在海霸王', repeat: 'none', reminder_method: 'day' },
+                    { event_id: '7', schedule_note: '社區歌唱班', schedule_time: getFutureDate(8, '14:00'), remark: '練唱老歌', repeat: 'weekly', reminder_method: '1h' },
+                    { event_id: '8', schedule_note: '家庭聚會', schedule_time: getFutureDate(12, '18:00'), remark: '兒子一家回來', repeat: 'none', reminder_method: 'day' },
+                    { event_id: '9', schedule_note: '公園散步', schedule_time: getFutureDate(0, '16:30'), remark: '約老李一起', repeat: 'daily', reminder_method: 'none' },
+                    { event_id: '10', schedule_note: '超市買菜', schedule_time: getFutureDate(2, '08:30'), remark: '買雞蛋、牛奶、水果', repeat: 'none', reminder_method: 'none' },
+                    { event_id: '11', schedule_note: '書法課', schedule_time: getFutureDate(6, '14:00'), remark: '社區中心2樓', repeat: 'weekly', reminder_method: '1h' },
+                    { event_id: '12', schedule_note: '剪頭髮', schedule_time: getFutureDate(10, '10:30'), remark: '預約小美設計師', repeat: 'none', reminder_method: '1h' },
+                    { event_id: '13', schedule_note: '倒垃圾', schedule_time: getFutureDate(1, '19:00'), remark: '分類回收日', repeat: 'weekly', reminder_method: '0min' },
+                    { event_id: '14', schedule_note: '繳水電費', schedule_time: getFutureDate(4, '09:00'), remark: '去超商繳', repeat: 'monthly', reminder_method: 'day' },
+                    { event_id: '15', schedule_note: '銀行辦事', schedule_time: getFutureDate(9, '13:30'), remark: '刷存摺', repeat: 'none', reminder_method: 'none' },
+                    { event_id: '16', schedule_note: '修水龍頭', schedule_time: getFutureDate(18, '15:00'), remark: '師傅會來', repeat: 'none', reminder_method: '1h' },
+                    { event_id: '17', schedule_note: '量血壓', schedule_time: getFutureDate(0, '08:00'), remark: '記錄在筆記本', repeat: 'daily', reminder_method: 'none' },
+                    { event_id: '18', schedule_note: '服用維他命', schedule_time: getFutureDate(0, '12:30'), remark: '飯後吃', repeat: 'daily', reminder_method: 'none' },
+                    { event_id: '19', schedule_note: '年度健康檢查', schedule_time: getFutureDate(25, '08:00'), remark: '前晚要空腹', repeat: 'yearly', reminder_method: 'day' },
+                    { event_id: '20', schedule_note: '藥師諮詢', schedule_time: getFutureDate(22, '10:00'), remark: '詢問保健食品', repeat: 'none', reminder_method: 'day' }
                 ];
 
                 const now = new Date();
-
-                // 使用 fakeData 進行處理
                 const events = fakeData
-                    .filter(item => {
-                        // 確保只顯示現在之後的行程 (假資料預設都是未來時間，所以都會顯示)
-                        return new Date(item.schedule_time) >= now;
-                    })
+                    .filter(item => new Date(item.schedule_time) >= now)
                     .map(item => ({
                         id: item.event_id,
                         title: item.schedule_note,
@@ -198,13 +249,60 @@
 
                 calendar.removeAllEvents();
                 calendar.addEventSource(events);
-                console.log("已載入假資料模式");
-
+                console.log("假資料已載入");
             } catch (e) { console.error(e); }
         }
 
+        // --- 新增功能：開啟當日行程列表 ---
+        function openDayView(dateStr) {
+            selectedDateStr = dateStr;
+            const titleEl = document.getElementById('dayViewTitle');
+            const listEl = document.getElementById('dayEventList');
+            const modal = document.getElementById('dayViewModal');
+            
+            titleEl.innerText = `${dateStr} 行程一覽`;
+            listEl.innerHTML = ''; 
+
+            const allEvents = calendar.getEvents();
+            const dayEvents = allEvents.filter(e => {
+                const eventDate = e.start;
+                const yyyy = eventDate.getFullYear();
+                const mm = String(eventDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(eventDate.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}` === dateStr;
+            });
+
+            dayEvents.sort((a, b) => a.start - b.start);
+
+            if (dayEvents.length === 0) {
+                listEl.innerHTML = '<div class="no-event-text">本日尚無安排行程</div>';
+            } else {
+                dayEvents.forEach(e => {
+                    const timeStr = e.start.toTimeString().substring(0, 5); 
+                    const item = document.createElement('div');
+                    item.className = 'event-item';
+                    item.innerHTML = `
+                        <span class="event-time">${timeStr}</span>
+                        <span class="event-title">${e.title}</span>
+                        <span style="color:#aaa;">></span>
+                    `;
+                    item.onclick = () => {
+                        closeModal('dayViewModal');
+                        openModal(true, e);
+                    };
+                    listEl.appendChild(item);
+                });
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function openAddFromDayView() {
+            closeModal('dayViewModal');
+            openModal(false, selectedDateStr);
+        }
+
         document.getElementById("saveBtn").onclick = async function() {
-            // 注意：因為現在是假資料模式，新增功能雖然會呼叫 API，但畫面重新載入時仍會顯示假資料
             const payload = {
                 elder_user_id: userId, elder_name: userName,
                 schedule_time: `${document.getElementById("date").value} ${document.getElementById("time").value}`,
@@ -215,14 +313,13 @@
             };
             const url = isEditing ? `https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}` : "https://supabase-api-six.vercel.app/schedules";
             const res = await fetch(url, { method: isEditing ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-            if (res.ok) { closeModal(); loadRecords(); }
+            if (res.ok) { closeModal('dataModal'); loadRecords(); }
         };
 
         document.getElementById("deleteBtn").onclick = async function() {
             if (!confirm("確定要刪除嗎？")) return;
-            // 注意：刪除假資料會導致 API 錯誤 (因為資料庫沒這些 ID)，這是正常現象
             const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}`, { method: "DELETE" });
-            if (res.ok) { closeModal(); loadRecords(); }
+            if (res.ok) { closeModal('dataModal'); loadRecords(); }
         };
 
         function openModal(editMode, data) {
@@ -230,20 +327,31 @@
             document.getElementById("dataModal").style.display = "block";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
+            
             if (editMode) {
                 currentEventId = data.id;
-                document.getElementById("date").value = data.startStr.split('T')[0];
-                document.getElementById("time").value = data.startStr.split('T')[1].substring(0,5);
+                const d = data.start;
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const timeStr = d.toTimeString().substring(0,5);
+
+                document.getElementById("date").value = dateStr;
+                document.getElementById("time").value = timeStr;
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note;
                 document.getElementById("repeat").value = data.extendedProps.repeat;
                 document.getElementById("reminder").value = data.extendedProps.reminder;
             } else {
                 document.getElementById("dataForm").reset();
-                if (data) document.getElementById("date").value = data;
+                if (typeof data === 'string') {
+                    document.getElementById("date").value = data;
+                }
             }
         }
-        function closeModal() { document.getElementById("dataModal").style.display = "none"; }
+
+        function closeModal(modalId) { 
+            document.getElementById(modalId).style.display = "none"; 
+        }
+
         document.getElementById("fabAdd").onclick = () => openModal(false);
     </script>
 </body>
