@@ -12,7 +12,7 @@
         .nav-1 { display: flex; align-items: center; justify-content: space-between; padding: 10px 25px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1001; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none; }
         #volunteerName { cursor: pointer; font-size: 26px; font-weight: bold; }
-        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
         #calendar-container { background: white; padding: 15px; border-radius: 16px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; }
@@ -20,6 +20,27 @@
         input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; }
         .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; }
         #saveBtn { background: #4a90e2; }
+
+        /* 響應式設計 - 平板 */
+        @media (max-width: 768px) {
+            .nav-1 { padding: 8px 15px; flex-wrap: wrap; }
+            .container { padding: 15px; }
+            #calendar-container { padding: 10px; border-radius: 12px; }
+            .modal-content { margin: 30px auto; padding: 15px; }
+            .fab { width: 50px; height: 50px; bottom: 20px; right: 20px; }
+        }
+
+        /* 響應式設計 - 手機 */
+        @media (max-width: 480px) {
+            .nav-1 { padding: 8px 10px; }
+            .volunteer-area { gap: 5px !important; }
+            .avatar { width: 35px; height: 35px; }
+            .container { padding: 10px; }
+            #calendar-container { padding: 8px; border-radius: 8px; }
+            .modal-content { margin: 20px auto; padding: 12px; width: 95%; max-width: none; }
+            .fab { width: 45px; height: 45px; bottom: 15px; right: 15px; }
+            button[onclick="goToHistory()"] { padding: 12px 20px !important; min-width: auto !important; width: 100%; }
+        }
     </style>
 </head>
 <body>
