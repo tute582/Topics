@@ -439,12 +439,40 @@
       const statusSteps = ["到見面地點", "已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥", "已結束就醫陪伴"];
       let currentStatusIndex = -1;
       let pendingIndex = -1;
+      let userRole = ""; // "志工" 或 "長者"
 
       window.onload = function() {
-          document.getElementById("editControls").style.display = "block"; // 強制志工身分測試
           setSystemDate();
-          loadData();
+          checkUserRole(userId);
       };
+
+      function checkUserRole(uid) {
+          if (!uid) {
+              loadData();
+              return;
+          }
+          
+          fetch(`https://supabase-api-six.vercel.app/identify/${uid}`)
+              .then(res => res.json())
+              .then(result => {
+                  if(result.success) {
+                      userRole = result.role;
+                      console.log("當前身分：", userRole);
+                      
+                      if (userRole === "志工" || userRole === "長輩") {
+                          document.getElementById("editControls").style.display = "block";
+                      } else {
+                          document.getElementById("editControls").style.display = "none";
+                      }
+                  }
+                  loadData();
+              })
+              .catch(err => {
+                  console.error("身分驗證失敗", err);
+                  document.getElementById("editControls").style.display = "none";
+                  loadData();
+              });
+      }
 
       function setSystemDate() {
           const now = new Date();
