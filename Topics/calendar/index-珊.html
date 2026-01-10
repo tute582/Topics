@@ -20,7 +20,7 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; }
         .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 25px 18px 18px; border-radius: 12px; position: relative; }
         
-        /* --- 新增：右上角關閉按鈕樣式 --- */
+        /* --- 右上角關閉按鈕樣式 --- */
         .close-btn {
             position: absolute;
             top: 10px;
@@ -32,7 +32,7 @@
             border-radius: 10px;
             border: none;
             font-size: 20px;
-            line-height: 1; /* 確保 X 垂直置中 */
+            line-height: 1; 
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -40,8 +40,8 @@
             cursor: pointer;
             z-index: 10;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            padding: 0; /* 移除預設 padding */
-            padding-bottom: 2px; /* 微調 X 的位置 */
+            padding: 0; 
+            padding-bottom: 2px; 
         }
         .close-btn:hover { background-color: #d63031; }
 
@@ -51,11 +51,13 @@
         #saveBtn { background: #4a90e2; }
         
         /* 當日行程列表樣式 */
-        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; transition: background 0.2s; }
+        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: flex-start; cursor: pointer; transition: background 0.2s; }
         .event-item:hover { background-color: #f0f7ff; }
         .event-item:last-child { border-bottom: none; }
-        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
-        .event-title { font-size: 16px; color: #333; flex-grow: 1; }
+        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; margin-top: 2px; }
+        .event-info { flex-grow: 1; display: flex; flex-direction: column; }
+        .event-title { font-size: 16px; color: #333; font-weight: bold; }
+        .event-note { font-size: 14px; color: #888; margin-top: 4px; }
         .no-event-text { text-align: center; color: #888; padding: 20px; font-size: 16px; }
 
         /* 響應式設計 */
@@ -124,8 +126,12 @@
                     <option value="1h">1小時前</option>
                     <option value="day">1天前</option>
                 </select>
-                <button type="button" class="btn" id="saveBtn">儲存行程</button>
-                <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; display:none;">刪除行程</button>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="button" class="btn" id="saveBtn" style="margin-top: 0; flex: 1;">儲存行程</button>
+                    <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top: 0; flex: 1; display:none;">刪除行程</button>
+                </div>
+
             </form>
         </div>
     </div>
@@ -279,12 +285,17 @@
             } else {
                 dayEvents.forEach(e => {
                     const timeStr = e.start.toTimeString().substring(0, 5); 
+                    const noteText = e.extendedProps.note || ''; 
+                    
                     const item = document.createElement('div');
                     item.className = 'event-item';
                     item.innerHTML = `
                         <span class="event-time">${timeStr}</span>
-                        <span class="event-title">${e.title}</span>
-                        <span style="color:#aaa;">></span>
+                        <div class="event-info">
+                            <span class="event-title">${e.title}</span>
+                            ${noteText ? `<span class="event-note">${noteText}</span>` : ''}
+                        </div>
+                        <span style="color:#aaa; align-self: center;">></span>
                     `;
                     item.onclick = () => {
                         closeModal('dayViewModal');
