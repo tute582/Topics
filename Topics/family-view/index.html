@@ -377,6 +377,8 @@
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
+            // 加入這行：如果沒登入，嘗試載入資料（看診進度），但不顯示控制項
+            checkUserRole("");
             return;
           }
 
@@ -393,6 +395,8 @@
           } else {
             avatarEl.style.display = "none";
           }
+          // ★★★ 重點：取得 ID 後，在這裡呼叫檢查身分 ★★★
+        checkUserRole(userId);
         } catch (err) {
           console.error("LIFF init error:", err);
         }
@@ -454,11 +458,13 @@
 
       window.onload = function() {
           setSystemDate();
-          checkUserRole(userId);
+          //checkUserRole(userId);
       };
 
       function checkUserRole(uid) {
           if (!uid) {
+            // 如果沒有 uid，確保隱藏，並載入資料
+              if(controls) controls.style.display = "none";
               loadData();
               return;
           }
