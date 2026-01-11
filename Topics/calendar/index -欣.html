@@ -36,7 +36,9 @@
         }
 
         /* 表單元素升級 */
-        label { display: block; font-weight: bold; font-size: 16px; margin: 12px 0 6px 5px; color: #555; }
+        label { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px; margin: 12px 0 6px 5px; color: #555; }
+        .label-icon { width: 18px; height: 18px; fill: #666; } /* 控制 Icon 顏色 */
+
         input[type="text"], input[type="date"], input[type="time"], select { 
             width: 100%; padding: 12px; border-radius: 12px; 
             border: 2px solid #efefef; font-size: 16px; background: #fafafa;
@@ -54,8 +56,7 @@
 
         /* 按鈕樣式 */
         .btn-save { background: #4a90e2; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 18px; font-weight: bold; width: 100%; cursor: pointer; }
-        .btn-delete { background: #fff; color: #f37a7a; border: none; padding: 10px; font-weight: bold; cursor: pointer; }
-
+        
         /* 當日行程列表樣式 */
         .event-item { padding: 15px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer; }
         .event-time { font-weight: bold; color: #4a90e2; margin-right: 15px; font-size: 16px; }
@@ -90,13 +91,22 @@
         <h2 id="modalTitle" style="text-align: center; margin-bottom: 15px;">新增行程</h2>
         
         <form id="dataForm">
-            <label>📅 日期</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8Z"/></svg>
+                日期
+            </label>
             <input type="date" id="date" required>
             
-            <label>⏰ 時間</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/></svg>
+                時間
+            </label>
             <input type="time" id="time" required>
             
-            <label>📝 行程內容</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></svg>
+                行程內容
+            </label>
             <div class="tag-container" style="margin-bottom: 10px;">
                 <button type="button" class="tag-btn" onclick="quickFill('看醫生🏥')">看醫生</button>
                 <button type="button" class="tag-btn" onclick="quickFill('領藥💊')">領藥</button>
@@ -105,10 +115,16 @@
             </div>
             <input type="text" id="event" placeholder="限25字" maxlength="25">
             
-            <label>💡 備註</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10M6,7H18V9H6V7M6,11H15V13H6V11Z"/></svg>
+                備註
+            </label>
             <input type="text" id="note" placeholder="限25字" maxlength="25">
             
-            <label>🔄 重複</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M17,17H7V14L3,18L7,22V19H19V13H17V17M7,7H17V10L21,6L17,2V5H5V11H7V7Z"/></svg>
+                重複
+            </label>
             <select id="repeat">
                 <option value="none">不重複</option>
                 <option value="daily">每天</option>
@@ -117,7 +133,10 @@
                 <option value="yearly">每年</option>
             </select>
 
-            <label>🔔 提醒類型</label>
+            <label>
+                <svg class="label-icon" viewBox="0 0 24 24"><path d="M12,22A2,2 0 0,0 14,20H10A2,2 0 0,0 12,22M18,16V11C18,7.93 16.36,5.36 13.5,4.68V4A1.5,1.5 0 0,0 12,2.5A1.5,1.5 0 0,0 10.5,4V4.68C7.63,5.36 6,7.92 6,11V16L4,18V19H20V18L18,16Z"/></svg>
+                提醒類型
+            </label>
             <select id="reminder">
                 <option value="none">無</option>
                 <option value="0min">當下提醒</option>
@@ -145,6 +164,7 @@
     </div>
 
     <script>
+        // ... (腳本內容與您原本的邏輯完全一致，未做改動)
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         let userId = "U10243a4b528760aad0d03a51d13c2e4c"; 
         let userName = "";
@@ -153,7 +173,6 @@
         let currentEventId = null;
         let selectedDateStr = ""; 
 
-        // 快速填寫功能
         function quickFill(text) {
             const input = document.getElementById("event");
             input.value = text;
@@ -218,7 +237,6 @@
 
         async function loadRecords() {
             try {
-                // 保留您的 20 筆假資料
                 const fakeData = [
                     { event_id: '1', schedule_note: '臺大醫院回診', schedule_time: getFutureDate(0, '09:00'), remark: '記得帶健保卡', repeat: 'none', reminder_method: 'day' },
                     { event_id: '2', schedule_note: '復健治療', schedule_time: getFutureDate(3, '14:30'), remark: '左肩熱敷', repeat: 'weekly', reminder_method: '1h' },
@@ -336,7 +354,6 @@
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
         document.getElementById("fabAdd").onclick = () => openModal(false);
         
-        // 點擊背景關閉
         window.onclick = function(event) {
             if (event.target.className === 'modal') {
                 event.target.style.display = "none";
