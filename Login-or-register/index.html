@@ -370,7 +370,7 @@
         <input type="email" name="email" required />
 
         <label class="required">連絡電話</label>
-        <input type="tel" name="phone" required />
+        <input type="tel" name="phone" pattern:"[0]{1}[9]{1}[0-9]{8}" required />  //電話格式檢查  預設手機號
 
         <label class="required">出生年月日</label>
         <div class="picker-wrapper">
