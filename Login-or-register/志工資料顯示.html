@@ -3,62 +3,65 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>志工資料顯示</title>
+    <title>長輩個人資料</title>
 
     <style>
-      /* ======== 基本頁面樣式 ======== */
+      /* --- 整體頁面設定 --- */
       body {
-        font-family: "Arial", sans-serif;
-        background: #f4f6f8; /* 淡灰背景 */
+        font-family: "Arial", sans-serif; /* 字型 */
+        background: #f4f6f8; /* 淺灰背景 */
         margin: 0;
         padding: 0;
       }
 
-      /* ======== 卡片外觀設定 ======== */
+      /* --- 主要內容卡片 --- */
       .card {
         max-width: 720px; /* 最大寬度 */
-        margin: 24px auto; /* 置中 */
-        background: #fff; /* 白底 */
+        margin: 24px auto; /* 垂直間距 + 置中 */
+        background: #fff; /* 白色背景 */
         padding: 20px;
-        border-radius: 8px;
+        border-radius: 8px; /* 圓角 */
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* 陰影 */
-        text-align: center;
+        text-align: center; /* 內容置中 */
       }
 
+      /* --- 標題設定 --- */
       h1 {
         margin: 0 0 0 0;
         font-size: 28px;
       }
 
-      /* ======== 頭像樣式 ======== */
+      /* --- 頭像圖片樣式 --- */
       .avatar {
         width: 120px;
         height: 120px;
-        border-radius: 50%; /* 圓形頭像 */
-        object-fit: cover; /* 等比例裁切 */
-        border: 3px solid #0078d4; /* 藍色外框 */
+        border-radius: 50%; /* 圓形 */
+        object-fit: cover; /* 圖片自動裁切填滿 */
+        border: 3px solid #0078d4; /* 外框藍色 */
         margin-bottom: 0px;
       }
 
-      /* ======== 個人資料清單 (dt/dd) ======== */
+      /* --- 定義清單樣式 (顯示個人資料用) --- */
       dl {
-        display: grid; /* 使用grid分成兩欄 */
-        grid-template-columns: 140px 1fr; /* 左欄標題 右欄內容 */
-        gap: 8px 16px; /* 行間與欄間距 */
+        display: grid; /* 使用網格排版 */
+        grid-template-columns: 140px 1fr; /* 左標題欄 + 右內容欄 */
+        gap: 8px 16px; /* 間距 */
         text-align: left;
         margin-top: 10px;
       }
+
       dt {
-        font-weight: 700;
+        font-weight: 700; /* 標題粗體 */
         color: #333;
       }
+
       dd {
         margin: 0;
         color: #222;
-        word-break: break-word; /* 自動換行防止溢出 */
+        word-break: break-word; /* 自動換行避免溢出 */
       }
 
-      /* ======== 返回按鈕 ======== */
+      /* --- 返回按鈕樣式 --- */
       .back {
         display: inline-block;
         margin-top: 20px;
@@ -66,63 +69,63 @@
         background: #0078d4;
         color: #fff;
         border-radius: 6px;
-        text-decoration: none;
+        text-decoration: none; /* 移除底線 */
       }
 
-      /* ======== 無資料提示文字 ======== */
       .empty {
         color: #666;
+      }
+       
+
+      /* --- 導覽列(nav bar) --- */
+      .nav-1 {
+        display: flex; /* 水平排列 */
+        font-weight: bold;
+        align-items: center; /* 垂直置中 */
+        justify-content: space-between; /* 左右兩端對齊 */
+        padding: 10px 25px;
+        position: sticky; /* 滾動時固定上方 */
+        top: 0;
+        z-index: 1001; /* 位於最上層 */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        color: black;
+        background-color: white;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ddd; /* 下邊界線 */
       }
 
       .tag-display {
         display: inline-block;
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
         border-radius: 12px;
         padding: 4px 10px;
         margin: 4px 6px 0 0;
         font-size: 14px;
         white-space: nowrap;
       }
-
-      /* ======== 導覽列樣式 ======== */
-      .nav-1 {
-        display: flex; /* 水平排列內容 */
-        font-weight: bold;
-        align-items: center; /* 垂直置中 */
-        justify-content: space-between; /* 左右兩邊對齊 */
-        padding: 10px 25px;
-        position: sticky; /* 滾動時固定頂端 */
-        top: 0;
-        z-index: 1001; /* 保持在最上層 */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        left: 0;
-        right: 0;
-        color: black;
-        background-color: white;
-        box-sizing: border-box; /* 避免padding撐爆 */
-        border-bottom: 1px solid #ddd; /* 下邊界線 */
-      }
     </style>
   </head>
+
   <body>
-    <!-- ======== 導覽列區塊 ======== -->
+    <!-- 導覽列 -->
     <nav class="nav-1">
       <div>
-        <h1>志工個人資料</h1>
+        <h1>長輩個人資料</h1>
       </div>
 
+      <!-- 導覽列右側顯示志工頭像與名稱 -->
       <div style="display: flex; align-items: center">
         <h1 style="margin: 0; text-align: right">
           <span
             class="volunteer-area"
             style="display: flex; align-items: center; gap: 8px"
           >
-            <!-- 導覽列頭像（小尺寸） -->
+            <!-- 導覽列上的小頭像 -->
             <img
-              id="volunteerAvatar"
+              id="avatar"
               class="avatar"
               src="default-avatar.png"
               alt="avatar"
@@ -134,7 +137,7 @@
                 border: 2px solid #0984e3;
               "
             />
-            <!-- 志工名稱或登入提示 -->
+            <!-- 顯示志工名稱（預設未登入） -->
             <span
               id="volunteerName"
               title="點此以 Line 登入"
@@ -146,36 +149,42 @@
       </div>
     </nav>
 
-    <!-- ======== 主卡片內容區 ======== -->
+    <!-- 主要卡片內容 -->
     <div class="card">
-      <!-- 大頭貼（主要展示） -->
+      <!-- 使用者頭像（卡片內的大頭像） -->
       <img
-        id="avatar"
+        id="volunteerAvatar"
         class="avatar"
         src="default-avatar.png"
         alt="使用者頭像"
       />
-      <!-- 志工詳細資料將動態插入此處 -->
+
+      <!-- 這裡放使用者詳細資料 -->
       <div id="content"></div>
 
-      <!-- 切換身分   -->
-      <div id="change-div" style="width:100%;">  
-        <label style="text-align:center; width:100%;">切換身分</label>
-        <!-- 資料不可編輯 -->
-        
+       <div id="change-div">  <!-- 切換身分  -->
+        <label style="text-align:center;">切換身分</label>
+        <!-- <button id=changeV
+          onClick={()=>{
+          setFormData();
+          setIsEdit(true);
+          }}
+          >志工</button> -->
 
-      
+      </div>
+
       <!-- 返回原本頁面按鈕 -->
-     <a id="updataBtn" >修改資料</a> <a id="backBtn" class="back">回到原頁面</a>
+      <a id="backBtn" class="back">回到原頁面</a>
+      
     </div>
 
-    <!-- ======== JavaScript 資料載入區 ======== -->
+    <!-- JavaScript 區域 -->
     <script>
-      // 取得 HTML 元素
-      const content = document.getElementById("content"); // 顯示詳細資料的容器
-      const avatarPreview = document.getElementById("avatar"); // 卡片頭像
-      const volunteerAvatar = document.getElementById("volunteerAvatar"); // 導覽列頭像
-      const volunteerName = document.getElementById("volunteerName"); // 導覽列名稱
+      // 取得網頁中需要操作的元素
+      const content = document.getElementById("content"); // 顯示資料內容區
+      const avatar = document.getElementById("avatar"); // 導覽列頭像
+      const volunteerAvatar = document.getElementById("volunteerAvatar"); // 卡片大頭像
+      const raw = localStorage.getItem("seniors"); // 從 localStorage 取資料（JSON 字串）
 
       // 從 localStorage 取得上次儲存的志工資料
       const userId = localStorage.getItem("userId");
@@ -184,72 +193,69 @@
       // 顯示 loading（可選）
       content.innerHTML = `<p>資料載入中...</p>`;
 
-      // 如果沒有 userId
       if (!userId) {
-        content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
+        content.innerHTML = '<p class="empty">尚未登入，無法取得資料。</p>';
       } else {
-        // 使用 fetch 從 API 取得資料
-        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
+        // 呼叫 Elder API
+        fetch(`https://supabase-api-six.vercel.app/elders/${userId}`)
           .then((res) => res.json())
           .then((result) => {
             // API 回傳失敗
             if (!result.success || !result.data) {
-              content.innerHTML = '<p class="empty">找不到使用者資料。</p>';
+              content.innerHTML = '<p class="empty">找不到長輩資料。</p>';
               return;
             }
 
-            const d = result.data; // 資料物件
+            const d = result.data;
 
-            /* ======== 頭像處理 ======== */
+            /* ======== 頭像 ======== */
             const avatarUrl =
               d.image_url && d.image_url.trim() !== ""
                 ? d.image_url
                 : "default-avatar.png";
 
-            if (avatarPreview) avatarPreview.src = avatarUrl;
-            if (volunteerAvatar) volunteerAvatar.src = avatarUrl;
-            if (avatar) avatar.src = avatarUrl;
+            avatar.src = avatarUrl; // 主卡頭像
+            volunteerAvatar.src = avatarUrl; // 導覽列小頭像
 
-            /* ======== 設定名稱 ======== */
-            if (volunteerName)
-              volunteerName.textContent = d.volunteer_name || "未登入";
+            /* ======== 名稱顯示 ======== */
+            volunteerName.textContent = d.elder_name || "未登入";
 
-            /* ======== 顯示詳細資料 ======== */
+            /* ======== 顯示個人資料 ======== */
             const html = `
             <dl>
-              <dt>志工代碼</dt><dd>${d.vcode || ""}</dd>
-              <dt>姓名</dt><dd>${d.volunteer_name || ""}</dd>
-              <dt>電子郵件Email</dt><dd>${d.email || ""}</dd>
+              <dt>姓名</dt><dd>${d.elder_name || ""}</dd>
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
-              <dt>性別</dt><dd>${d.gender || ""}</dd>
+              <dt>性別</dt><dd>${
+                d.gender === "男性" ? "男性" : d.gender === "女性" ? "女性" : ""
+              }</dd>
               <dt>地址</dt><dd>${d.address || ""}</dd>
-              <dt>簡介</dt><dd>${d.partner_experience || "—"}</dd>
+              <dt>緊急聯絡人</dt><dd>${d.emergency_contact || "—"}</dd>
+              <dt>緊急聯絡人電話</dt><dd>${
+                d.emergency_contact_phone || "—"
+              }</dd>
+              <dt>健康備註</dt><dd>${d.health_note || "—"}</dd>
 
-              <dt>服務特質</dt>
+              <dt>個性特質</dt>
               <dd>
                 ${
-                  Array.isArray(d.personality)
-                    ? d.personality
+                  Array.isArray(d.preference_tags)
+                    ? d.preference_tags
                         .map((tag) => `<span class="tag-display">${tag}</span>`)
                         .join("")
                     : "—"
                 }
               </dd>
               <dt>使用者ID</dt>
-              <dd> ${
-                d.volunteer_user_id || ""
-              }  <a href='https://line.me/R/share?text=${
-              d.volunteer_user_id || ""
-            }'>  <button>分享</button></a></dd>
-            </dl>
+              <dd> ${d.elder_user_id || ""}  <a href='https://line.me/R/share?text=${d.elder_user_id || ""}'>  <button>分享</button></a></dd>
+              </dl>
           `;
 
             content.innerHTML = html;
           })
-          .catch((err) => {
-            content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
-            console.error("API Error:", err);
+          .catch((error) => {
+            console.error("API 錯誤:", error);
+            content.innerHTML = '<p class="empty">無法連線到伺服器。</p>';
           });
       }
 
@@ -258,8 +264,8 @@
       // 設定跳轉頁面
       let targetUrl = "../../Topics/Topics/bookvolunteer/index.html";
       switch (fromPage) {
-        case "blood-pressure":
-          targetUrl = "../../Topics/Topics/blood-pressure/index.html";
+        case "blood-pressre":
+          targetUrl = "../../Topics/Topics/blood-pressre/index.html";
           break;
         case "bookvolunteer":
           targetUrl = "../../Topics/Topics/bookvolunteer/index.html";
@@ -272,13 +278,14 @@
           break;
       }
 
+      //讀取註冊頁
+      let registerS ="../../Topics/Login-or-register/index.html";
+      
+
       //點選返回按鈕
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
-      //修改按鈕
-      const updtatBtn = document.getElementById("updataBtn");
-      updataBtn.href = "../../Topics/Login-or-register/index.html";
-      
+     
     </script>
   </body>
 </html>
