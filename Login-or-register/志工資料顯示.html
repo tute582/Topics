@@ -172,8 +172,8 @@
       <div id="convert-div" style="width:100%;">  
         <label style="text-align:center; width:100%;">切換身分</label>
         <!-- 資料不可編輯 -->
-        <!-- <a id="convertBtn">長者</a> -->
-        <button id="convertBtn" click={convert}>轉換</button>
+        <a id="convertBtn">長者</a>
+        <!-- <button id="convertBtn" click={convert}>轉換</button> -->
       <!-- 返回原本頁面按鈕 -->
      <a id="updataBtn" >修改資料</a> <a id="backBtn" class="back">回到原頁面</a>
     </div>
@@ -289,17 +289,17 @@
       updataBtn.href = "../../Topics/Login-or-register/index.html";
 
       // 身分轉換
-      // const convertBtn = document.getElementById("convertBtn");
-      // convertBtn.href = "../../Topics/Login-or-register/長輩資料顯示.html"
-      function convert() = () => {
-        if(!userId)
-        {
-          content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
-        }else()
-          {
-            targetUrl ="../../Topics/Login-or-register/長輩資料顯示.html"
-          }
-      };
+      const convertBtn = document.getElementById("convertBtn");
+      convertBtn.href = "../../Topics/Login-or-register/長輩資料顯示.html"
+      // function convert() = () => {
+      //   if(!userId)
+      //   {
+      //     content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
+      //   }else()
+      //     {
+      //       targetUrl ="../../Topics/Login-or-register/長輩資料顯示.html"
+      //     }
+      // };
 
       
     </script>
