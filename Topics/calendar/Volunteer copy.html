@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>志工管理系統 Volunteer Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: #f7f9fb;
+        margin: 0;
+        padding: 0;
+        padding-bottom: 80px;
+      }
+
+      /* 1. 導覽列 */
+      .nav-1 {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 25px; position: sticky; top: 0; z-index: 1001;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); width: 100%;
+        background-color: white; box-sizing: border-box; border-bottom: 1px solid #ddd;
+      }
+
+      /* 2. 分頁按鈕 */
+      .tab-container {
+        display: flex; background: white; margin-top: 1px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;
+      }
+      .tab-btn {
+        flex: 1; text-align: center; padding: 15px 0; font-size: 16px;
+        font-weight: bold; color: #888; cursor: pointer;
+        border-bottom: 3px solid transparent; transition: all 0.3s;
+      }
+      .tab-btn.active {
+        color: #0984e3; border-bottom: 3px solid #0984e3; background-color: #f0f8ff;
+      }
+      .tab-content {
+        display: none; padding: 10px 20px; justify-content: center;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .tab-content.active {
+        display: flex; flex-direction: column; align-items: center;
+      }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* 3. 日曆樣式 (共用) */
+      .calendar-wrapper {
+        width: 100%; max-width: 95%; background-color: #fff;
+        border-radius: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px; box-sizing: border-box;
+      }
+      
+      @media (max-width: 768px) {
+        .calendar-wrapper { padding: 10px; max-width: 100%; border-radius: 0; }
+        .fc .fc-daygrid-day-frame { min-height: 80px !important; }
+        .fc-toolbar-title { font-size: 1.2em !important; }
+        .fc-event { padding: 1px 2px !important; margin-bottom: 1px !important; }
+        .fc-event-main { font-size: 0.75em !important; }
+      }
+
+      .fc-toolbar-title { 
+        font-size: 1.5em !important; 
+        font-weight: 600 !important; 
+        letter-spacing: 1px;         
+        font-feature-settings: "tnum"; 
+      }
+
+      .fc-button { font-size: 0.9em !important; padding: 0.4em 0.65em !important; }
+
+      .fc-theme-standard td, .fc-theme-standard th {
+          border-bottom: 1px solid #f0f0f0 !important;
+          border-left: none !important; border-right: none !important; border-top: none !important;
+      }
+      .fc-theme-standard .fc-scrollgrid { border: none !important; }
+      .fc-col-header-cell { border-bottom: 2px solid #ddd !important; padding-bottom: 5px !important; }
+
+      .fc-daygrid-day { background-color: #fff !important; }
+      .fc-day-other .fc-daygrid-day-frame { opacity: 0 !important; pointer-events: none !important; }
+      .fc-day-other { border-bottom: none !important; }
+
+      /* 日期數字置中 */
+      .fc .fc-daygrid-day-top {
+        display: flex;
+        justify-content: center !important; 
+        flex-direction: row;
+      }
+
+      .fc-event {
+        border: none !important; border-radius: 4px !important;
+        box-shadow: none !important; margin-bottom: 3px !important;
+        padding: 2px 4px !important; cursor: pointer;
+        overflow: hidden; 
+      }
+      
+      .fc-event-main {
+        color: #333333 !important; font-weight: 600; font-size: 0.9em;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+
+      .fc-daygrid-more-link {
+        font-size: 0.8em; font-weight: bold; color: #0984e3 !important;
+        text-decoration: none; display: block; text-align: center; margin-top: 2px;
+      }
+
+      /* 強制隱藏 FullCalendar 預設氣泡 */
+      .fc-popover { display: none !important; }
+
+      .booked-slot { background-color: #fca5a5 !important; border-left: 4px solid #ef4444 !important; }
+      .booked-slot:hover { background-color: #f87171 !important; }
+
+      .available-slot { background-color: #6ee7b7 !important; border-left: 4px solid #10b981 !important; }
+      .available-slot:hover { background-color: #34d399 !important; }
+
+      .calendar-wrapper .fc .fc-daygrid-day.my-past:not(.fc-day-other) .fc-daygrid-day-frame { background: #fbfbfc !important; }
+      .calendar-wrapper .fc .fc-daygrid-day.my-past:not(.fc-day-other) .fc-daygrid-day-number { color: #bdbfc2 !important; }
+      
+      /* 4. 檔期區塊 */
+      .schedule-section { background: #fff; margin: 15px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+      .schedule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+      .schedule-title { font-weight: bold; font-size: 1.1em; color: #333; }
+      .schedule-legend { font-size: 12px; color: #888; display: flex; gap: 10px; }
+      .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+      .dot-free { background-color: #6ee7b7; border: 1px solid #10b981; } 
+      .dot-busy { background-color: #fca5a5; border: 1px solid #ef4444; } 
+      .dot-none { background-color: #e5e7eb; border: 1px solid #d1d5db; }
+
+      .month-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+      .month-scroll-wrapper::-webkit-scrollbar { display: none; }
+      
+      .month-card {
+        min-width: 110px; background: #fff; border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px;
+        cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 6px;
+      }
+      .month-card.active { border-color: #0984e3; background-color: #f0f8ff; }
+      .month-info { display: flex; justify-content: space-between; align-items: baseline; }
+      .month-label { font-size: 15px; font-weight: bold; color: #2d3436; }
+      .month-stats { font-size: 12px; color: #636e72; font-weight: bold;}
+      .progress-container { display: flex; height: 6px; background-color: #eee; border-radius: 3px; overflow: hidden; }
+      .p-segment { height: 100%; transition: flex 0.5s ease-in-out; }
+      .p-busy { background-color: #fca5a5; } 
+      .p-free { background-color: #6ee7b7; } 
+      .p-none { background-color: #e5e7eb; } 
+
+      /* 5. Modal 樣式系統 */
+      .modal-overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background-color: rgba(0, 0, 0, 0.4); /* 半透明黑 */
+        backdrop-filter: blur(5px);           /* 背景模糊特效 */
+        -webkit-backdrop-filter: blur(5px);   /* 支援 Safari */
+        z-index: 2000; 
+        display: none; 
+        justify-content: center; align-items: center; 
+      }
+      
+      /* 確保警告視窗層級最高 */
+      #alertModal.modal-overlay, #confirmModal.modal-overlay { z-index: 4000; }
+
+      .modal-overlay.show { display: flex; }
+      
+      .modal-box { 
+        background: white; width: 90%; max-width: 400px; 
+        border-radius: 12px; overflow: hidden; 
+        display: flex; flex-direction: column; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      }
+      .modal-box.large-modal { max-width: 600px; height: 70vh; }
+
+      .modal-header { background-color: #f0f8ff; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+      .modal-title { font-size: 1.2em; font-weight: bold; color: #333; }
+      .close-icon { font-size: 1.5em; cursor: pointer; color: #666; }
+      
+      .modal-body { padding: 20px; font-size: 1em; color: #555; line-height: 1.6; overflow-y: auto; flex-grow: 1; background-color: #fff; }
+      .modal-footer { padding: 15px; text-align: right; border-top: 1px solid #eee; flex-shrink: 0; background: #fff; }
+      .modal-btn { background: #0984e3; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
+
+      /* 刪除按鈕樣式 (紅色) */
+      .btn-delete { background: #ef4444 !important; color: white !important; }
+      .btn-delete:hover { background: #dc2626 !important; }
+      .btn-delete:disabled { background: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed; }
+      
+      /* 取消按鈕樣式 (灰色) */
+      .btn-cancel { background: #9ca3af !important; color: white !important; margin-right: 10px; }
+
+      /* 卡片樣式 */
+      .event-card { 
+        box-shadow: none; 
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px; 
+        display: flex; align-items: center; 
+        position: relative; overflow: hidden;
+      }
+      
+      .event-card::before { display: none; }
+
+      .card-green { background-color: #f0fdf4; border-color: #86efac; }
+      .card-red { background-color: #fef2f2; border-color: #fca5a5; }
+
+      .event-card.clickable { cursor: pointer; transition: background-color 0.2s; }
+      .event-card.clickable:hover { filter: brightness(0.95); }
+
+      /* 選取狀態樣式 */
+      .event-card.selected { border: 2px solid #0984e3; background-color: #e3f2fd !important; }
+
+      .card-main { display: flex; flex-direction: column; gap: 6px; padding-left: 10px; width: 100%; }
+      .card-title { font-weight: bold; font-size: 1.15rem; color: #333; }
+      .card-info { font-size: 0.95rem; color: #555; display: flex; flex-direction: column; gap: 4px; }
+      .detail-row { display: flex; align-items: center; gap: 8px; }
+
+      /* Checkbox 樣式 */
+      .card-checkbox { 
+        width: 20px; height: 20px; 
+        border: 2px solid #ccc; border-radius: 4px; 
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 5px; flex-shrink: 0;
+      }
+      .event-card.selected .card-checkbox { border-color: #0984e3; background-color: #0984e3; }
+      .event-card.selected .card-checkbox::after { content: '✔'; color: white; font-size: 14px; }
+
+    </style>
+  </head>
+  <body>
+
+    <nav class="nav-1">
+      <div><h1 style="margin: 0; font-size: 28px">志工管理系統</h1></div>
+      <div style="display: flex; align-items: center">
+        <h1 style="margin: 0; text-align: right">
+          <span class="volunteer-area" style="display: flex; align-items: center; gap: 8px">
+            <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none;" />
+            <span id="volunteerName" style="cursor: pointer; font-size: 26px">未登入</span>
+          </span>
+        </h1>
+      </div>
+    </nav>
+
+    <div class="schedule-section">
+      <div class="schedule-header">
+        <span class="schedule-title">檔期安排總覽</span>
+        <div class="schedule-legend">
+          <span class="legend-item" id="legend-free"><span class="dot dot-free"></span> 可服務</span>
+          <span class="legend-item" id="legend-busy"><span class="dot dot-busy"></span> 已預約</span>
+          <span class="legend-item"><span class="dot dot-none"></span> 更多</span>
+        </div>
+      </div>
+      <div class="month-scroll-wrapper" id="monthNav">
+      </div>
+    </div>
+
+    <div class="tab-container">
+      <div class="tab-btn active" onclick="switchTab('avail')">可服務時段</div>
+      <div class="tab-btn" onclick="switchTab('booking')">預約紀錄</div>
+    </div>
+
+    <section id="tab-avail" class="tab-content active">
+      <div class="calendar-wrapper">
+        <div id="calendar-avail"></div>
+      </div>
+    </section>
+
+    <section id="tab-booking" class="tab-content">
+      <div class="calendar-wrapper">
+        <div id="calendar-book"></div>
+      </div>
+    </section>
+
+    <div id="eventModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title" id="detail-title">詳細資訊</div>
+          <span class="close-icon" onclick="closeModal('eventModal')">×</span>
+        </div>
+        <div class="modal-body" id="detail-body"></div>
+        <div class="modal-footer">
+           <button id="btn-delete-single" class="modal-btn btn-delete">刪除</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="moreListModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+      <div class="modal-box large-modal">
+        <div class="modal-header">
+          <div class="modal-title" id="more-list-title">當日事件</div>
+          <span class="close-icon" onclick="closeModal('moreListModal')">×</span>
+        </div>
+        <div class="modal-body">
+           <div id="more-list-body" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+           <button id="btn-add-in-list" class="modal-btn" style="background-color: #0984e3;">新增</button>
+           <button id="btn-delete-multi" class="modal-btn btn-delete" disabled>刪除選取項目 (0)</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="alertModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+      <div class="modal-box" style="max-width: 320px; text-align: center;">
+        <div class="modal-header" style="justify-content: center; background: #fff; border: none; padding-top: 25px;">
+          <div class="modal-title" id="alert-title" style="font-size: 1.3em;">提示</div>
+        </div>
+        <div class="modal-body" id="alert-message" style="padding: 10px 25px 25px; color: #555; font-size: 1.1em; background: #fff;"></div>
+        <div class="modal-footer" style="justify-content: center; border: none; padding-bottom: 25px; background: #fff;">
+          <button class="modal-btn" style="width: 100%; padding: 10px;" onclick="closeModal('alertModal')">確定</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+      <div class="modal-box" style="max-width: 320px; text-align: center;">
+        <div class="modal-header" style="justify-content: center; background: #fff; border: none; padding-top: 25px;">
+          <div class="modal-title" style="font-size: 1.3em;">確認</div>
+        </div>
+        <div class="modal-body" id="confirm-message" style="padding: 10px 25px 25px; color: #555; font-size: 1.1em; background: #fff;"></div>
+        <div class="modal-footer" style="justify-content: center; border: none; padding-bottom: 25px; background: #fff; display: flex; gap: 10px;">
+          <button class="modal-btn btn-cancel" onclick="closeModal('confirmModal')">取消</button>
+          <button class="modal-btn" id="btn-confirm-yes">確定</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let calendarAvail;
+      let calendarBook;
+      let currentTabMode = 'avail'; 
+      let selectedEventIds = new Set();
+      let confirmCallback = null;
+      let currentListDateStr = '';
+
+      function updateMonthProgress() {
+        const availEvs = calendarAvail ? calendarAvail.getEvents() : [];
+        const bookEvs = calendarBook ? calendarBook.getEvents() : [];
+        const allCurrentEvents = [...availEvs, ...bookEvs]; 
+        
+        const monthCards = document.querySelectorAll('.month-card');
+        const MONTH_CAPACITY = 20; 
+
+        monthCards.forEach(card => {
+          const year = parseInt(card.dataset.year);
+          const month = parseInt(card.dataset.month);
+          
+          const monthEvents = allCurrentEvents.filter(ev => {
+            const start = ev.start;
+            return start && start.getFullYear() === year && (start.getMonth() + 1) === month;
+          });
+
+          const bookedCount = monthEvents.filter(e => e.classNames.includes('booked-slot')).length;
+          const availableCount = monthEvents.filter(e => e.classNames.includes('available-slot')).length;
+          
+          const pBusy = card.querySelector('.p-busy');
+          const pFree = card.querySelector('.p-free');
+          const pNone = card.querySelector('.p-none');
+          const statsEl = card.querySelector('.month-stats');
+          
+          let displayFree = 0;
+          let displayBusy = 0;
+          let displayNone = 0;
+
+          if (currentTabMode === 'avail') {
+             displayFree = availableCount;
+             displayBusy = 0; 
+             displayNone = Math.max(0, MONTH_CAPACITY - availableCount);
+             if(statsEl) statsEl.innerText = `(${availableCount}筆)`;
+          } else {
+             displayFree = 0; 
+             displayBusy = bookedCount;
+             displayNone = Math.max(0, MONTH_CAPACITY - bookedCount);
+             if(statsEl) statsEl.innerText = `(${bookedCount}筆)`;
+          }
+
+          if (pBusy && pFree && pNone) {
+            pBusy.style.flex = displayBusy;
+            pFree.style.flex = displayFree;
+            pNone.style.flex = displayNone;
+          }
+        });
+      }
+
+      function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+        
+        currentTabMode = tabName; 
+
+        if (tabName === 'avail') {
+          document.querySelectorAll('.tab-btn')[0].classList.add('active');
+          document.getElementById('tab-avail').classList.add('active');
+          if (calendarAvail) setTimeout(() => calendarAvail.updateSize(), 50);
+          
+          document.getElementById('legend-free').style.display = 'inline-block';
+          document.getElementById('legend-busy').style.display = 'none';
+
+        } else if (tabName === 'booking') {
+          document.querySelectorAll('.tab-btn')[1].classList.add('active');
+          document.getElementById('tab-booking').classList.add('active');
+          if (calendarBook) setTimeout(() => calendarBook.updateSize(), 50);
+          
+          document.getElementById('legend-free').style.display = 'none';
+          document.getElementById('legend-busy').style.display = 'inline-block';
+        }
+        updateMonthProgress();
+      }
+
+      function showCustomAlert(msg) {
+        document.getElementById('alert-message').innerText = msg;
+        document.getElementById('alertModal').classList.add('show');
+      }
+
+      function showCustomConfirm(msg, onYes) {
+        document.getElementById('confirm-message').innerText = msg;
+        confirmCallback = onYes; 
+        document.getElementById('confirmModal').classList.add('show');
+      }
+
+      document.getElementById('btn-confirm-yes').onclick = function() {
+         if (confirmCallback) {
+            confirmCallback();
+            confirmCallback = null;
+         }
+         closeModal('confirmModal');
+      };
+
+      function generateMonthlyData(baseDate) {
+        const events = [];
+        const taskTitles = ["醫院陪診", "居家清潔", "代購物資", "電話問安", "活動支援", "行政協助"];
+        const locations = ["亞東醫院", "板橋區", "活動中心", "衛生所", "服務中心"];
+        
+        for (let i = 0; i < 6; i++) {
+          const targetMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
+          const year = targetMonth.getFullYear();
+          const month = targetMonth.getMonth(); 
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+          const bookedCount = Math.floor(Math.random() * 6) + 3;
+          const availableCount = Math.floor(Math.random() * 5) + 2;
+
+          for (let b = 0; b < bookedCount; b++) {
+            const day = Math.floor(Math.random() * (daysInMonth - 1)) + 1; 
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const randomTitle = taskTitles[Math.floor(Math.random() * taskTitles.length)];
+            events.push({
+              id: `booked-${i}-${b}`, 
+              title: randomTitle,
+              start: `${dateStr}T${9 + Math.floor(Math.random()*8)}:00:00`,
+              end: `${dateStr}T${12 + Math.floor(Math.random()*4)}:00:00`, 
+              classNames: ['booked-slot'], 
+              extendedProps: { location: locations[Math.floor(Math.random()*locations.length)], elder: "某長者", type: 'booked' }
+            });
+          }
+
+          for (let a = 0; a < availableCount; a++) {
+            const day = Math.floor(Math.random() * (daysInMonth - 1)) + 1;
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            events.push({
+              id: `avail-${i}-${a}`, 
+              title: "可服務時段",
+              start: `${dateStr}T${9 + Math.floor(Math.random()*8)}:00:00`,
+              end: `${dateStr}T${12 + Math.floor(Math.random()*4)}:00:00`, 
+              classNames: ['available-slot'], 
+              extendedProps: { note: "自行排班", location: "未定", type: 'available' }
+            });
+          }
+        }
+        return events;
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        try {
+          const availEl = document.getElementById("calendar-avail");
+          const bookEl = document.getElementById("calendar-book");
+          const now = new Date();
+          const allEvents = generateMonthlyData(now);
+
+          const availOnlyEvents = allEvents.filter(e => e.extendedProps.type === 'available');
+          const bookedOnlyEvents = allEvents.filter(e => e.extendedProps.type === 'booked');
+
+          function createCalendarConfig(eventsData, isInteractive) {
+             return {
+                initialView: "dayGridMonth",
+                initialDate: now, 
+                locale: "zh-tw",
+                buttonText: { today: '回到今天' }, 
+                height: 'auto',
+                headerToolbar: { left: "prev,next", center: "title", right: "today" },
+                titleFormat: { year: 'numeric', month: 'long' },
+                eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
+
+                events: eventsData, 
+                fixedWeekCount: false, 
+                
+                dayMaxEvents: 2, 
+                
+                moreLinkContent: function() { return ''; },
+
+                moreLinkClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    openMoreListModal(info.date, info.allSegs);
+                },
+
+                dayHeaderContent: function(arg) { return arg.text.slice(-1); },
+                dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
+                
+                // 【關鍵修改】：移除 eventClick 的 showModal 行為，統一走 dateClick 流程
+                // eventClick 只是把事件傳給 openMoreListModal
+                eventClick: function(info) { 
+                   // 找到當天所有事件
+                   const dateStr = info.event.startStr.split('T')[0];
+                   const currentCalendar = isInteractive ? calendarAvail : calendarBook;
+                   const allEvs = currentCalendar.getEvents();
+                   const todayEvs = allEvs.filter(ev => ev.startStr.split('T')[0] === dateStr);
+                   
+                   // 統一打開列表視窗
+                   const mockSegments = todayEvs.map(ev => ({ event: ev }));
+                   openMoreListModal(info.event.start, mockSegments);
+                },
+
+                dayCellDidMount: function(arg) {
+                   if (arg.isOther) return; 
+                   const today = new Date(); today.setHours(0,0,0,0);
+                   const cellDate = new Date(arg.date); cellDate.setHours(0,0,0,0);
+                   if (cellDate < today) {
+                     arg.el.classList.add('my-past');
+                     arg.el.setAttribute('aria-disabled','true');
+                   }
+                },
+                
+                dateClick: function(info) {
+                   const currentCalendar = isInteractive ? calendarAvail : calendarBook;
+                   if(!currentCalendar) return;
+
+                   const allEvs = currentCalendar.getEvents();
+                   const dateStr = info.dateStr; 
+                   
+                   const todayEvs = allEvs.filter(ev => {
+                       return ev.startStr.split('T')[0] === dateStr;
+                   });
+
+                   if (todayEvs.length > 0) {
+                       const mockSegments = todayEvs.map(ev => ({ event: ev }));
+                       openMoreListModal(info.date, mockSegments);
+                   } 
+                   else if (isInteractive) {
+                       const clicked = new Date(dateStr + 'T00:00:00');
+                       const today = new Date(); today.setHours(0,0,0,0);
+                       if (clicked < today) return; 
+                       showTimeSlotModal(dateStr);
+                   }
+                },
+                eventsSet: function() {
+                    if (typeof updateMonthProgress === 'function') updateMonthProgress();
+                }
+             };
+          }
+
+          calendarAvail = new FullCalendar.Calendar(availEl, createCalendarConfig(availOnlyEvents, true));
+          calendarAvail.render();
+
+          calendarBook = new FullCalendar.Calendar(bookEl, createCalendarConfig(bookedOnlyEvents, false));
+          calendarBook.render();
+          
+          document.getElementById('legend-busy').style.display = 'none';
+
+          (function createMonthNav() {
+            const monthNav = document.getElementById('monthNav');
+            if (!monthNav) return;
+            monthNav.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+              const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+              const m = targetDate.getMonth() + 1;
+              const y = targetDate.getFullYear();
+              const displayMonth = i === 0 ? "本月" : (m < 10 ? '0' + m : m) + "月";
+              const card = document.createElement('div');
+              card.className = `month-card ${i === 0 ? 'active' : ''}`;
+              card.dataset.month = m;
+              card.dataset.year = y;
+              
+              card.innerHTML = `
+                <div class="month-info"><span class="month-label">${displayMonth}</span><span class="month-stats">(0筆)</span></div>
+                <div class="progress-container">
+                  <div class="p-segment p-free" style="flex:0;"></div>
+                  <div class="p-segment p-busy" style="flex:0;"></div>
+                  <div class="p-segment p-none" style="flex:1;"></div>
+                </div>`;
+                
+              card.addEventListener('click', () => {
+                document.querySelectorAll('.month-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                const gotoDate = `${y}-${(m < 10 ? '0'+m : m)}-01`;
+                if (calendarAvail) calendarAvail.gotoDate(gotoDate);
+                if (calendarBook) calendarBook.gotoDate(gotoDate);
+              });
+              monthNav.appendChild(card);
+            }
+            setTimeout(updateMonthProgress, 100);
+          })();
+
+          // LIFF
+          const LIFF_ID = "2008228534-R8763A2n";
+          const avatarEl = document.getElementById("volunteerAvatar");
+          const nameEl = document.getElementById("volunteerName");
+          async function initLiffAndSetProfile() {
+            try {
+              if (typeof liff === 'undefined') return;
+              await liff.init({ liffId: LIFF_ID });
+              if (!liff.isLoggedIn()) {
+                nameEl.innerText = "未登入"; avatarEl.style.display = "none"; return;
+              }
+              const profile = await liff.getProfile();
+              nameEl.innerText = profile.displayName || "志工";
+              if (profile.pictureUrl) { avatarEl.src = profile.pictureUrl; avatarEl.style.display = "inline-block"; }
+            } catch (err) { console.error("LIFF error:", err); }
+          }
+          nameEl.addEventListener("click", () => {
+            if (typeof liff !== 'undefined' && !liff.isLoggedIn()) liff.login({ redirectUri: window.location.href });
+          });
+          initLiffAndSetProfile();
+        } catch (err) { console.error('初始化錯誤:', err); }
+      });
+
+      function formatTime(date) {
+        return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      function showTimeSlotModal(dateStr) {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay show';
+        overlay.style.zIndex = 3000;
+        // 【關鍵修改】：調整視窗寬度適配手機
+        overlay.innerHTML = `
+          <div class="modal-box" style="width: 85%; max-width: 300px; padding: 18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h3 style="margin:0">新增可服務時段 — ${dateStr}</h3>
+              <span style="cursor:pointer;font-size:20px;" id="slotClose">×</span>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+              <button class="slot-select" data-start="09:00" data-end="12:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">上午</button>
+              <button class="slot-select" data-start="14:00" data-end="17:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">下午</button>
+              <button class="slot-select" data-start="18:00" data-end="21:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">晚上</button>
+            </div>
+            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂時間</div>
+            <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:12px;">
+              <input id="customStartTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
+              <span>~</span>
+              <input id="customEndTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
+            </div>
+            <div style="text-align:right;">
+              <button id="slotCancel" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;margin-right:8px;">取消</button>
+              <button id="slotConfirm" style="padding:8px 12px;border-radius:8px;border:none;background:#0984e3;color:#fff;cursor:pointer;">新增</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+
+        const startTimeInput = overlay.querySelector('#customStartTime');
+        const endTimeInput = overlay.querySelector('#customEndTime');
+        
+        const closeFunc = () => overlay.remove();
+        overlay.querySelector('#slotClose').addEventListener('click', closeFunc);
+        overlay.querySelector('#slotCancel').addEventListener('click', closeFunc);
+
+        overlay.querySelectorAll('.slot-select').forEach(btn => {
+          btn.addEventListener('click', () => {
+            startTimeInput.value = btn.dataset.start;
+            endTimeInput.value = btn.dataset.end;
+            overlay.querySelectorAll('.slot-select').forEach(b => b.style.opacity = '0.6');
+            btn.style.opacity = '1';
+          });
+        });
+
+        overlay.querySelector('#slotConfirm').addEventListener('click', () => {
+          const s = startTimeInput.value;
+          const e = endTimeInput.value;
+          if (!s || !e) { showCustomAlert('請填寫完整時間'); return; }
+          
+          const startDt = new Date(`${dateStr}T${s}:00`);
+          const endDt = new Date(`${dateStr}T${e}:00`);
+          if (startDt >= endDt) { showCustomAlert('結束時間必須晚於開始時間'); return; }
+          if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
+
+          const allEvents = calendarAvail.getEvents();
+          const todayEvents = allEvents.filter(ev => {
+             const evDateStr = ev.startStr.split('T')[0];
+             return evDateStr === dateStr && ev.extendedProps.type === 'available';
+          });
+
+          if (todayEvents.length >= 2) {
+             showCustomAlert('一天最多只能新增 2 筆可服務時段！');
+             return;
+          }
+
+          const newEvent = {
+            id: `new-${Date.now()}`,
+            title: `可服務 ${s}-${e}`, 
+            start: startDt.toISOString(), 
+            end: endDt.toISOString(), 
+            classNames: ['available-slot'], 
+            extendedProps: { note: '排班 (自訂)', type: 'available' }
+          };
+          
+          calendarAvail.addEvent(newEvent);
+          overlay.remove();
+        });
+      }
+
+      function showModal(info) {
+        // 此函式保留，但不會被呼叫了，因為 eventClick 已經改為打開列表
+        // 若未來需要單一事件視窗，可再啟用
+      }
+      
+      // --- 多選刪除功能 (改用客製化 Confirm) ---
+      function openMoreListModal(date, segments) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        currentListDateStr = `${year}-${month}-${day}`;
+
+        const title = date.toLocaleString('zh-TW', { month: 'long', day: 'numeric' }) + ' 事件清單';
+        document.getElementById('more-list-title').innerText = title;
+        const listBody = document.getElementById('more-list-body');
+        listBody.innerHTML = ''; 
+        
+        selectedEventIds.clear();
+        updateDeleteButton();
+
+        const btnAdd = document.getElementById('btn-add-in-list');
+        if (currentTabMode === 'booking') {
+            btnAdd.style.display = 'none';
+        } else {
+            btnAdd.style.display = 'inline-block';
+            btnAdd.onclick = function() {
+                closeModal('moreListModal');
+                setTimeout(() => {
+                    showTimeSlotModal(currentListDateStr);
+                }, 200); 
+            };
+        }
+
+        const btnDeleteMulti = document.getElementById('btn-delete-multi');
+        btnDeleteMulti.onclick = function() {
+            if(selectedEventIds.size === 0) return;
+            
+            showCustomConfirm(`確定要刪除選取的 ${selectedEventIds.size} 筆事件嗎？`, () => {
+                [calendarAvail, calendarBook].forEach(cal => {
+                    if(!cal) return;
+                    selectedEventIds.forEach(id => {
+                        const ev = cal.getEventById(id);
+                        if(ev) ev.remove();
+                    });
+                });
+                closeModal('moreListModal');
+            });
+        };
+
+        segments.forEach(seg => {
+          const ev = seg.event;
+          const props = ev.extendedProps;
+          
+          const card = document.createElement('div');
+          const bgColor = (props.type === 'available') ? '#f0fdf4' : '#fef2f2';
+          
+          card.className = `event-card clickable`;
+          card.style.cssText = `border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 0; box-shadow: none; background-color: ${bgColor}; border-left: 1px solid #eee !important; display: flex; align-items: center;`;
+          
+          const startStr = formatTime(ev.start);
+          const endStr = ev.end ? formatTime(ev.end) : '';
+          const timeDisplay = endStr ? `${startStr} - ${endStr}` : startStr;
+          const locText = props.location ? `地點：${props.location}` : '';
+
+          card.innerHTML = `
+            <div class="card-checkbox"></div>
+            <div class="card-main">
+              <div class="card-title">${ev.title}</div>
+              <div class="card-info">
+                 <span>時間：${timeDisplay}</span>
+                 <span style="font-size:0.85em; opacity:0.7;">${locText}</span>
+              </div>
+            </div>
+          `;
+          
+          card.addEventListener('click', () => {
+             if (selectedEventIds.has(ev.id)) {
+                 selectedEventIds.delete(ev.id);
+                 card.classList.remove('selected');
+             } else {
+                 selectedEventIds.add(ev.id);
+                 card.classList.add('selected');
+             }
+             updateDeleteButton();
+          });
+          
+          listBody.appendChild(card);
+        });
+        
+        document.getElementById('moreListModal').classList.add('show');
+      }
+
+      function updateDeleteButton() {
+          const btn = document.getElementById('btn-delete-multi');
+          const count = selectedEventIds.size;
+          btn.innerText = `刪除選取項目 (${count})`;
+          btn.disabled = count === 0;
+      }
+
+      function closeModal(modalId) { 
+        document.getElementById(modalId).classList.remove('show'); 
+      }
+      function closeModalOnOverlay(e) { 
+        if (e.target.classList.contains('modal-overlay')) {
+           e.target.classList.remove('show');
+        }
+      }
+    </script>
+  </body>
+</html>
