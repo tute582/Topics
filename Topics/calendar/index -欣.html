@@ -4,175 +4,75 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>行事曆</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: "Arial", sans-serif; background-color: #f9f9f9; color: #222; }
+        
+        /* 導航欄：左上角顯示 行事曆 */
         .nav-1 { display: flex; align-items: center; justify-content: space-between; padding: 10px 25px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1001; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none; }
         #volunteerName { cursor: pointer; font-size: 26px; font-weight: bold; }
-        .container {
-           max-width: 1200px; /* 從 1000px 放大，才會像圖片中那麼寬 */
-           width: 95%;
-           margin: 35px auto 0;
-     }
+        
+        .container { max-width: 1200px; width: 95%; margin: 35px auto 0; }
         #calendar-container { background: white; padding: 15px; border-radius: 16px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; }
         
-        /* Modal 通用設定 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; }
-        .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 25px 18px 18px; border-radius: 12px; position: relative; }
+        /* 懸浮按鈕 */
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; }
         
-        /* --- 右上角關閉按鈕樣式 --- */
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 30px;
-            height: 30px;
-            background-color: #f37a7a;
-            color: white;
-            border-radius: 10px;
-            border: none;
-            font-size: 20px;
-            line-height: 1; 
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            padding: 0; 
-            padding-bottom: 2px; 
+        /* 彈出視窗：右圖質感 (4px 模糊 + 0.3 遮罩) */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.3); 
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px); 
+            z-index: 2000; 
+            overflow-y: auto; 
         }
-        .close-btn:hover { background-color: #d63031; }
+        
+        .modal-content { background: #fff; width: 420px; max-width: calc(100% - 40px); margin: 50px auto; padding: 25px 18px 18px; border-radius: 12px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        
+        /* 關閉按鈕 */
+        .close-btn { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; background-color: #f37a7a; color: white; border-radius: 10px; border: none; font-size: 18px; line-height: 1; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); padding: 0; padding-bottom: 2px; }
 
         /* 表單樣式 */
         input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; }
-        .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
+        label { display: block; font-weight: 500; margin-bottom: 2px; color: #333; }
+        label i { margin-right: 8px; color: #4a90e2; width: 18px; text-align: center; }
+
+        /* 按鈕樣式 */
+        .btn { padding: 12px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; }
         #saveBtn { background: #4a90e2; }
         
-        /* 當日行程列表樣式 */
-        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: flex-start; cursor: pointer; transition: background 0.2s; }
-        .event-item:hover { background-color: #f0f7ff; }
-        .event-item:last-child { border-bottom: none; }
-        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; margin-top: 2px; }
-        .event-info { flex-grow: 1; display: flex; flex-direction: column; }
+        /* 行程列表樣式 */
+        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: flex-start; cursor: pointer; }
+        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
         .event-title { font-size: 16px; color: #333; font-weight: bold; }
         .event-note { font-size: 14px; color: #888; margin-top: 4px; }
-        .no-event-text { text-align: center; color: #888; padding: 20px; font-size: 16px; }
+        
+        /* FullCalendar 客製化樣式 */
+        .fc-theme-standard td, .fc-theme-standard th { border: none !important; }
+        .fc-daygrid-row { border-bottom: 1px solid #f0f0f0 !important; }
+        .fc-event { background-color: #79f2c0 !important; border: none !important; border-radius: 6px !important; color: #2c3e50 !important; padding: 2px 5px !important; cursor: pointer; }
+        
+        /* 中間標題加上「未來行程」 */
+        .fc-toolbar-title::before {
+            content: "未來行程 - ";
+            color: #2c3e50;
+            font-weight: bold;
+        }
 
-        /* 響應式設計 */
         @media (max-width: 768px) {
-            .nav-1 { padding: 8px 15px; flex-wrap: wrap; }
-            .container { padding: 15px; }
-            #calendar-container { padding: 10px; border-radius: 12px; }
-            .modal-content { margin: 30px auto; padding: 20px 15px 15px; }
-            .fab { width: 50px; height: 50px; bottom: 20px; right: 20px; }
+            .nav-1 { padding: 8px 15px; }
+            .modal-content { margin: 30px auto; }
         }
-        @media (max-width: 480px) {
-            .nav-1 { padding: 8px 10px; }
-            .volunteer-area { gap: 5px !important; }
-            .avatar { width: 35px; height: 35px; }
-            .container { padding: 10px; }
-            #calendar-container { padding: 8px; border-radius: 8px; }
-            .modal-content { margin: 20px auto; padding: 20px 12px 12px; width: 95%; max-width: none; }
-            .fab { width: 45px; height: 45px; bottom: 15px; right: 15px; }
-            button[onclick="goToHistory()"] { padding: 12px 20px !important; min-width: auto !important; width: 100%; }
-        }
-        /* --- 仿圖片簡約風格樣式 --- */
-
-   /* 1. 徹底移除所有預設邊框與背景顏色 */
-   .fc-theme-standard .fc-scrollgrid,
-   .fc-theme-standard td,
-   .fc-theme-standard th,
-   .fc-theme-standard .fc-list,
-   .fc-scrollgrid-section > td,
-   .fc-scrollgrid-section > th {
-      border: none !important;
-      background: transparent !important;
-  }
-
-   /* 2. 只針對每一列的底部加上「極淺」的橫線 */
-   .fc-daygrid-row {
-    border-bottom: 1px solid #f0f0f0 !important;
-  }
-
-   /* 3. 標題列（日一二...）的樣式：加強間距與下劃線 */
-   .fc-col-header-cell {
-       padding-bottom: 15px !important;
-       border-bottom: 1px solid #f0f0f0 !important;
-   }
-    .fc-col-header-cell-cushion {
-    color: #333;
-    text-decoration: none !important;
-    font-weight: 500;
-   }
-
-   /* 4. 日期數字樣式：靠中、字體變細、顏色變淡 */
-   .fc-daygrid-day-number {
-       color: #999;
-       font-size: 14px;
-       padding: 10px !important;
-       text-decoration: none !important;
-       display: block;
-       text-align: center;
-       width: 100%;
-   }
-
-   /* 5. 修改活動（Event）的外觀：綠色圓角膠囊 */
-   .fc-event {
-       background-color: #79f2c0 !important; /* 圖片中的淺綠色 */
-       border: none !important;
-       border-radius: 6px !important;
-       padding: 2px 8px !important;
-       color: #2c3e50 !important; /* 深色文字比較好讀 */
-       font-size: 12px !important;
-       margin: 2px 4px !important;
-    }
-
-    /* 6. 移除日期格子的藍色選取背景 (如果有的話) */
-    .fc-daygrid-day:hover {
-        background-color: #fcfcfc;
-    }
-
-     /* 7. 隱藏其他月份的日期 (選用，讓畫面更乾淨) */
-    .fc-day-other .fc-daygrid-day-top {
-        opacity: 0;
-    }
-      /* Modal 樣式系統 */
-      .modal-overlay { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background-color: rgba(0, 0, 0, 0.4); /* 半透明黑 */
-        backdrop-filter: blur(5px);           /* 背景模糊特效 */
-        -webkit-backdrop-filter: blur(5px);   /* 支援 Safari */
-        z-index: 2000; 
-        display: none; 
-        justify-content: center; align-items: center; 
-      }
-      
-      /* 確保警告視窗層級最高 */
-      #alertModal.modal-overlay, #confirmModal.modal-overlay { z-index: 4000; }
-
-      .modal-overlay.show { display: flex; }
-      
-      .modal-box { 
-        background: white; width: 90%; max-width: 400px; 
-        border-radius: 12px; overflow: hidden; 
-        display: flex; flex-direction: column; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      }
-      .modal-box.large-modal { max-width: 600px; height: 70vh; }
-
-      .modal-header { background-color: #f0f8ff; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-      .modal-title { font-size: 1.2em; font-weight: bold; color: #333; }
-      .close-icon { font-size: 1.5em; cursor: pointer; color: #666; }
-      
-      .modal-body { padding: 20px; font-size: 1em; color: #555; line-height: 1.6; overflow-y: auto; flex-grow: 1; background-color: #fff; }
-      .modal-footer { padding: 15px; text-align: right; border-top: 1px solid #eee; flex-shrink: 0; background: #fff; }
-      .modal-btn { background: #0984e3; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -188,24 +88,31 @@
         <div id="calendar-container"><div id="calendar"></div></div>
         <div style="margin-top: 25px; display: flex; justify-content: center;">
             <button type="button" onclick="goToHistory()" style="background: #ffa502; border: none; border-radius: 12px; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px;">
-                檢視過往紀錄
+                <i class="fas fa-list-ul"></i> 檢視過往紀錄
             </button>
         </div>
     </div>
 
-    <div class="fab" id="fabAdd">+</div>
+    <div class="fab" id="fabAdd"><i class="fas fa-plus"></i></div>
 
     <div id="dataModal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal('dataModal')">×</button>
-            
-            <h3 id="modalTitle">新增行程</h3>
+            <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
+            <h3 id="modalTitle" style="margin-bottom:15px;">新增行程</h3>
             <form id="dataForm">
-                <label>日期</label><input type="date" id="date" required>
-                <label>時間</label><input type="time" id="time" required>
-                <label>行程內容</label><input type="text" id="event" placeholder="限25字" maxlength="25">
-                <label>備註</label><input type="text" id="note" placeholder="限25字" maxlength="25">
-                <label>重複</label>
+                <label><i class="fas fa-calendar-day"></i>日期</label>
+                <input type="date" id="date" required>
+                
+                <label><i class="fas fa-clock"></i>時間</label>
+                <input type="time" id="time" required>
+                
+                <label><i class="fas fa-pencil-alt"></i>行程內容</label>
+                <input type="text" id="event" placeholder="例如：看醫生、吃藥 (限25字)" maxlength="25">
+                
+                <label><i class="fas fa-bookmark"></i>備註</label>
+                <input type="text" id="note" placeholder="限25字" maxlength="25">
+                
+                <label><i class="fas fa-redo"></i>重複</label>
                 <select id="repeat">
                     <option value="none">不重複</option>
                     <option value="daily">每天</option>
@@ -213,7 +120,8 @@
                     <option value="monthly">每月</option>
                     <option value="yearly">每年</option>
                 </select>
-                <label>提醒類型</label>
+                
+                <label><i class="fas fa-bell"></i>提醒類型</label>
                 <select id="reminder">
                     <option value="none">無</option>
                     <option value="0min">當下提醒</option>
@@ -223,25 +131,26 @@
                 </select>
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="button" class="btn" id="saveBtn" style="margin-top: 0; flex: 1;">儲存行程</button>
-                    <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top: 0; flex: 1; display:none;">刪除行程</button>
+                    <button type="button" class="btn" id="saveBtn" style="margin-top: 0; flex: 1;">
+                        <i class="fas fa-check"></i> 儲存行程
+                    </button>
+                    <button type="button" class="btn" id="deleteBtn" style="background:#f37a7a; margin-top: 0; flex: 1; display:none;">
+                        <i class="fas fa-trash-alt"></i> 刪除行程
+                    </button>
                 </div>
-
             </form>
         </div>
     </div>
 
     <div id="dayViewModal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal('dayViewModal')">×</button>
-
+            <button class="close-btn" onclick="closeModal('dayViewModal')"><i class="fas fa-times"></i></button>
             <h3 id="dayViewTitle" style="margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px;"></h3>
-            
-            <div id="dayEventList" style="max-height: 300px; overflow-y: auto;">
-            </div>
-
+            <div id="dayEventList" style="max-height: 300px; overflow-y: auto;"></div>
             <div style="margin-top: 15px;">
-                <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">在此日新增</button>
+                <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">
+                    <i class="fas fa-plus-circle"></i> 在此日新增
+                </button>
             </div>
         </div>
     </div>
@@ -255,9 +164,7 @@
         let currentEventId = null;
         let selectedDateStr = ""; 
 
-        function goToHistory() {
-            window.location.href = 'history.html'; 
-        }
+        function goToHistory() { window.location.href = 'history.html'; }
 
         function handleLoginClick() {
             if (!liff.isLoggedIn()) {
@@ -275,8 +182,18 @@
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'zh-tw',
-                aspectRatio: 1.8, // <--- 加入這一行，數值越大，日曆看起來越寬扁
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
+                aspectRatio: 1.8,
+                headerToolbar: { 
+                    left: 'prev,next today', 
+                    center: 'title', 
+                    right: 'dayGridMonth,listWeek,listMonth' // 右上角三個按鈕
+                },
+                buttonText: {
+                    today: '今天',
+                    month: '月曆',
+                    listWeek: '一週',
+                    listMonth: '一月'
+                },
                 dateClick: (info) => openDayView(info.dateStr),
                 eventClick: (info) => openModal(true, info.event)
             });
@@ -287,9 +204,7 @@
         async function initLiff() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    document.getElementById("volunteerName").innerText = "未登入";
-                } else {
+                if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     userId = profile.userId;
                     userName = profile.displayName;
@@ -299,6 +214,8 @@
                         avatar.src = profile.pictureUrl;
                         avatar.style.display = "inline-block";
                     }
+                } else {
+                    document.getElementById("volunteerName").innerText = "未登入";
                 }
                 loadRecords();
             } catch (err) { console.error(err); loadRecords(); }
@@ -315,7 +232,6 @@
 
         async function loadRecords() {
             try {
-                // 20 筆自然分佈的假資料
                 const fakeData = [
                     { event_id: '1', schedule_note: '臺大醫院回診', schedule_time: getFutureDate(0, '09:00'), remark: '記得帶健保卡', repeat: 'none', reminder_method: 'day' },
                     { event_id: '2', schedule_note: '復健治療', schedule_time: getFutureDate(3, '14:30'), remark: '左肩熱敷', repeat: 'weekly', reminder_method: '1h' },
@@ -338,7 +254,6 @@
                     { event_id: '19', schedule_note: '年度健康檢查', schedule_time: getFutureDate(25, '08:00'), remark: '前晚要空腹', repeat: 'yearly', reminder_method: 'day' },
                     { event_id: '20', schedule_note: '藥師諮詢', schedule_time: getFutureDate(22, '10:00'), remark: '詢問保健食品', repeat: 'none', reminder_method: 'day' }
                 ];
-
                 const now = new Date();
                 const events = fakeData
                     .filter(item => new Date(item.schedule_time) >= now)
@@ -348,70 +263,69 @@
                         start: item.schedule_time.replace(' ', 'T'),
                         extendedProps: { note: item.remark, repeat: item.repeat, reminder: item.reminder_method || "none" }
                     }));
-
                 calendar.removeAllEvents();
                 calendar.addEventSource(events);
-                console.log("假資料已載入");
             } catch (e) { console.error(e); }
         }
 
-        // --- 新增功能：開啟當日行程列表 ---
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const titleEl = document.getElementById('dayViewTitle');
             const listEl = document.getElementById('dayEventList');
-            const modal = document.getElementById('dayViewModal');
-            
             titleEl.innerText = `${dateStr} 行程一覽`;
             listEl.innerHTML = ''; 
-
-            const allEvents = calendar.getEvents();
-            const dayEvents = allEvents.filter(e => {
-                const eventDate = e.start;
-                const yyyy = eventDate.getFullYear();
-                const mm = String(eventDate.getMonth() + 1).padStart(2, '0');
-                const dd = String(eventDate.getDate()).padStart(2, '0');
-                return `${yyyy}-${mm}-${dd}` === dateStr;
-            });
-
-            dayEvents.sort((a, b) => a.start - b.start);
+            const dayEvents = calendar.getEvents().filter(e => {
+                const d = e.start;
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` === dateStr;
+            }).sort((a, b) => a.start - b.start);
 
             if (dayEvents.length === 0) {
-                listEl.innerHTML = '<div class="no-event-text">本日尚無安排行程</div>';
+                listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日尚無安排行程</div>';
             } else {
                 dayEvents.forEach(e => {
-                    const timeStr = e.start.toTimeString().substring(0, 5); 
-                    const noteText = e.extendedProps.note || ''; 
-                    
                     const item = document.createElement('div');
                     item.className = 'event-item';
                     item.innerHTML = `
-                        <span class="event-time">${timeStr}</span>
+                        <span class="event-time">${e.start.toTimeString().substring(0, 5)}</span>
                         <div class="event-info">
                             <span class="event-title">${e.title}</span>
-                            ${noteText ? `<span class="event-note">${noteText}</span>` : ''}
+                            ${e.extendedProps.note ? `<span class="event-note">${e.extendedProps.note}</span>` : ''}
                         </div>
-                        <span style="color:#aaa; align-self: center;">></span>
                     `;
-                    item.onclick = () => {
-                        closeModal('dayViewModal');
-                        openModal(true, e);
-                    };
+                    item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
                     listEl.appendChild(item);
                 });
             }
-
-            modal.style.display = 'block';
+            document.getElementById('dayViewModal').style.display = 'block';
         }
 
-        function openAddFromDayView() {
-            closeModal('dayViewModal');
-            openModal(false, selectedDateStr);
+        function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
+
+        function openModal(editMode, data) {
+            isEditing = editMode;
+            document.getElementById("dataModal").style.display = "block";
+            document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
+            document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
+            if (editMode) {
+                currentEventId = data.id;
+                const d = data.start;
+                document.getElementById("date").value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                document.getElementById("time").value = d.toTimeString().substring(0,5);
+                document.getElementById("event").value = data.title;
+                document.getElementById("note").value = data.extendedProps.note || "";
+                document.getElementById("repeat").value = data.extendedProps.repeat || "none";
+                document.getElementById("reminder").value = data.extendedProps.reminder || "none";
+            } else {
+                document.getElementById("dataForm").reset();
+                if (typeof data === 'string') document.getElementById("date").value = data;
+            }
         }
 
+        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+        
         document.getElementById("saveBtn").onclick = async function() {
             const payload = {
-                elder_user_id: userId, elder_name: userName,
+                elder_user_id: userId,
                 schedule_time: `${document.getElementById("date").value} ${document.getElementById("time").value}`,
                 schedule_note: document.getElementById("event").value,
                 remark: document.getElementById("note").value,
@@ -428,36 +342,6 @@
             const res = await fetch(`https://supabase-api-six.vercel.app/schedules/elder/${userId}/${currentEventId}`, { method: "DELETE" });
             if (res.ok) { closeModal('dataModal'); loadRecords(); }
         };
-
-        function openModal(editMode, data) {
-            isEditing = editMode;
-            document.getElementById("dataModal").style.display = "block";
-            document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
-            document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
-            
-            if (editMode) {
-                currentEventId = data.id;
-                const d = data.start;
-                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                const timeStr = d.toTimeString().substring(0,5);
-
-                document.getElementById("date").value = dateStr;
-                document.getElementById("time").value = timeStr;
-                document.getElementById("event").value = data.title;
-                document.getElementById("note").value = data.extendedProps.note;
-                document.getElementById("repeat").value = data.extendedProps.repeat;
-                document.getElementById("reminder").value = data.extendedProps.reminder;
-            } else {
-                document.getElementById("dataForm").reset();
-                if (typeof data === 'string') {
-                    document.getElementById("date").value = data;
-                }
-            }
-        }
-
-        function closeModal(modalId) { 
-            document.getElementById(modalId).style.display = "none"; 
-        }
 
         document.getElementById("fabAdd").onclick = () => openModal(false);
     </script>
