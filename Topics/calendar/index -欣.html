@@ -45,16 +45,14 @@
             border-bottom: 1px solid #f0f0f0 !important; 
         }
         
-        /* --- 修正重點：針對「一週」與「一月」清單模式的外框改為圓角 --- */
         .fc-list {
             border-radius: 12px !important;
             overflow: hidden !important;
             border: 1px solid #e0e0e0 !important;
         }
         .fc-list-table {
-            border-style: hidden !important; /* 隱藏表格外部預設直線 */
+            border-style: hidden !important;
         }
-        /* ------------------------------------------------------- */
 
         .fc-toolbar-title { font-size: 1.4em !important; font-weight: bold; color: #2c3e50; }
         
@@ -89,12 +87,33 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
         }
 
-        input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 10px; margin: 8px 0 15px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; -webkit-appearance: none; }
+        /* --- 輸入框設定：隱藏圖示並讓點擊空格即可彈出 --- */
+        input[type="text"], input[type="date"], input[type="time"], select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0 15px; 
+            border-radius: 10px; 
+            border: 1px solid #ccc; 
+            font-size: 18px;
+            position: relative;
+        }
         
+        input[type="date"], input[type="time"] {
+            cursor: pointer;
+            min-height: 50px;
+            background-color: #fff;
+            -webkit-appearance: none;
+        }
+
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
-            display: none;
-            -webkit-appearance: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            padding: 0; margin: 0;
+            color: transparent;
+            background: transparent;
+            cursor: pointer;
         }
 
         label { display: block; font-weight: 500; margin-bottom: 2px; color: #333; }
@@ -110,7 +129,18 @@
         
         .fc-daygrid-day-top { display: flex; justify-content: center !important; padding-top: 5px; }
         .fc-daygrid-day-number { color: #888 !important; text-decoration: none !important; padding: 8px !important; display: block; width: 100%; text-align: center; }
-        .fc-event { background-color: #79f2c0 !important; border: none !important; border-radius: 6px !important; color: #2c3e50 !important; padding: 2px 5px !important; cursor: pointer; }
+
+        /* --- 修正區域：僅在月曆格子內保留行程綠色底，移除列表視圖綠色底 --- */
+        .fc-daygrid-event { 
+            background-color: #79f2c0 !important; 
+            border: none !important; 
+            border-radius: 6px !important; 
+            color: #2c3e50 !important; 
+            padding: 2px 5px !important; 
+            cursor: pointer; 
+        }
+        /* 列表模式與全域通用 event 樣式恢復簡潔 */
+        .fc-event { cursor: pointer; }
     </style>
 </head>
 <body>
