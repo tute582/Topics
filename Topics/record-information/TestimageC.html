@@ -7,10 +7,12 @@
     <style>
       body {
         font-family: sans-serif;
-        padding: 20px;
-        /* [修改] 改為靠左對齊 */
+        padding: 0px;
         text-align: left;
         overscroll-behavior: none;
+        /* [新增] 隱藏子頁面的捲軸，交給 iframe 自動長高 */
+        overflow: hidden; 
+        margin: 0; /* 建議歸零 */
       }
 
       .container {
@@ -114,6 +116,11 @@
         font-size: 20px; /* 稍微調整標題大小以配合整體 */
       }
 
+      input[type="file"] {
+          margin-top: 5px;
+          display: block; 
+      }
+
       /* Loading Overlay */
       .loading-overlay {
         position: fixed;
@@ -167,19 +174,16 @@
   </head>
   <body>
     <div class="container">
-      <h2>步驟 1: 上傳照片</h2>
-      <p style="color: #666; margin-bottom: 20px">
-        上傳看診單 / 藥袋（拍照或相簿）
-      </p>
-
-      <input
-        type="file"
-        id="imageInput"
-        accept="image/*"
-        capture="environment"
-        multiple
-      />
-
+      <h2>步驟 1: 上傳看診單 / 藥袋
+        <input
+          type="file"
+          id="imageInput"
+          accept="image/*"
+          capture="environment"
+          multiple
+        />
+      </h2>
+      
       <div id="hintText">
         <strong>💡 步驟 2: 遮蔽個資</strong><br />
         請直接在圖片上滑動手指，塗黑<strong>姓名</strong>與<strong>身分證號</strong>。
@@ -230,6 +234,20 @@
       const brushSize = 35;
       const brushColor = "#000000";
 
+      // [新增] 這是核心功能：計算當前高度並傳給外層
+      function sendHeightToParent() {
+        // 取得 body 的完整高度
+        const height = document.body.scrollHeight;
+        // 發送訊息給父視窗 (index.html)
+        // 傳送內容包含 type 和 height 數值
+        window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+      }
+
+      // [新增] 1. 畫面剛載入時，先傳一次 (這時只有上傳按鈕，高度很矮)
+      window.addEventListener('load', sendHeightToParent);
+      // [新增] 2. 視窗大小改變時，也重新計算
+      window.addEventListener('resize', sendHeightToParent);
+
       // --- 1. 圖片載入 ---
       imageInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
@@ -239,6 +257,7 @@
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
+            // ... 原本的 Canvas 處理邏輯 ...
             canvas.width = img.width;
             canvas.height = img.height;
             baseImage = img;
@@ -246,11 +265,15 @@
             updateUndoButton();
             ctx.drawImage(img, 0, 0);
 
+            // 顯示原本隱藏的工具列與畫布
             hintText.style.display = "block";
             toolsBar.style.display = "flex";
             canvasContainer.style.display = "block";
             confirmBtn.style.display = "block";
             setupBrush();
+
+            // [新增] 3. 重要！元件顯示出來後，等一小段時間讓畫面渲染完，再傳一次新高度
+            setTimeout(sendHeightToParent, 100);
           };
           img.src = event.target.result;
         };
@@ -355,13 +378,13 @@
         const base64Full = canvas.toDataURL("image/jpeg", 0.8);
         const base64Data = base64Full.split(",")[1];
 
-        // ✅ 顯示 loading
-        loadingOverlay.style.display = "flex";
+        // [修改] 改為發送訊息通知 index.html 顯示 loading
+        window.parent.postMessage({ type: 'show-loading' }, '*');
+        
         confirmBtn.disabled = true;
 
         console.log("Ready to send:", base64Data.substring(0, 30));
 
-        // 🔄 呼叫後端 API
         try {
           const response = await fetch(
             "https://supabase-api-six.vercel.app/photoCapture",
@@ -382,14 +405,22 @@
             alert("AI 辨識失敗，請稍後再試");
           } else {
             console.log("AI 辨識成功：", result.data);
+            
+            // 傳送資料
+            window.parent.postMessage({
+                type: 'fill-data',
+                data: result.data
+            }, '*');
+            
             alert("辨識完成！");
           }
         } catch (err) {
           console.error("API 呼叫失敗:", err);
           alert("系統連線失敗，請檢查網路");
         } finally {
-          // 關掉 loading
-          loadingOverlay.style.display = "none";
+          // [修改] 發送訊息通知 index.html 關閉 loading
+          window.parent.postMessage({ type: 'hide-loading' }, '*');
+          
           confirmBtn.disabled = false;
         }
       });
