@@ -199,7 +199,6 @@
 
       <button id="confirmBtn" class="btn">確認安全，送出辨識 ➤</button>
 
-      <!-- AI 辨識中遮罩 -->
       <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-box">
           <div class="spinner"></div>
@@ -385,6 +384,7 @@
 
         console.log("Ready to send:", base64Data.substring(0, 30));
 
+        // 🔄 呼叫後端 API
         try {
           const response = await fetch(
             "https://supabase-api-six.vercel.app/photoCapture",
@@ -406,10 +406,13 @@
           } else {
             console.log("AI 辨識成功：", result.data);
             
-            // 傳送資料
+            // ==========================================
+            // [修改] 將 AI 辨識出的資料 與 圖片 Base64 一併傳送
+            // ==========================================
             window.parent.postMessage({
                 type: 'fill-data',
-                data: result.data
+                data: result.data,
+                base64: base64Data // <--- 這裡加入了 base64 資料
             }, '*');
             
             alert("辨識完成！");

@@ -100,8 +100,8 @@
          [新增] 志工專用下拉選單樣式
          ========================================= */
       .volunteer-select-box {
-        display: none;
-        background-color: #e3f2fd;
+        display: none; /* 預設隱藏，JS 判斷身分後開啟 */
+        background-color: #e3f2fd; /* 淡藍色背景 */
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
@@ -171,6 +171,7 @@
       
       .notes-title { font-weight: bold; color: #4a90e2; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
+      /* [新增] 回診資訊樣式 */
       .next-visit-box {
         color: #27ae60;
         font-weight: bold;
@@ -181,40 +182,43 @@
         gap: 8px;
       }
 
+      /* [新增] 底部並排區域 (提醒 + 按鈕) */
       .card-footer-row {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 15px;
+        justify-content: space-between; /* 左右推開 */
+        align-items: center;            /* 垂直置中 */
+        margin-top: 15px;               /* 與上方內容的間距 */
         padding-top: 12px;
-        border-top: 1px dashed #eee;
+        border-top: 1px dashed #eee;    /* 虛線分隔線 */
         min-height: 36px;
       }
 
+      /* [修改] 提醒文字盒 */
       .remark-box { 
         color: #e67e22; 
         font-weight: bold; 
-        font-size: 16px;
-        margin: 0;
+        font-size: 16px;   /* 字體縮小 */
+        margin: 0;         /* 移除外距 */
         padding: 0;
         display: flex; 
         align-items: center; 
         gap: 6px;
-        flex: 1;
+        flex: 1;           /* 佔據剩餘空間 */
       }
 
+      /* [修改] 編輯按鈕 */
       .edit-btn {
-        position: static;
+        position: static;  /* 移除絕對定位 */
         background: #4a90e2;
         color: white;
         border: none;
-        padding: 6px 16px;
+        padding: 6px 16px; /* 縮小內距 */
         border-radius: 8px;
-        font-size: 15px;
+        font-size: 15px;   /* 縮小字體 */
         font-weight: bold;
         cursor: pointer;
         box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        flex-shrink: 0;
+        flex-shrink: 0;    /* 防止按鈕被壓縮 */
         transition: transform 0.1s;
       }
 
@@ -250,6 +254,7 @@
         overflow-y: auto;
       }
 
+      /* 右上角叉叉按鈕 */
       .close-btn {
         position: absolute;
         top: 15px;
@@ -543,14 +548,13 @@
       
       let userId = "";
       let userName = "";
-      let pictureUrl = "";
       let identifyRole = "";
 
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
       
-      // dummyData 改為從後端抓取的容器，初始為空
       let dummyData = [];
+      let currentBase64 = ""; // [新增] 用來暫存 Iframe 傳來的圖片 Base64
 
       /* -----------------------------------------
          統一控制 Loading 的函式
@@ -596,7 +600,6 @@
 
         } catch (err) {
           console.error("LIFF init error:", err);
-          // 錯誤處理：可以在這裡加個全域錯誤提示，或重新整理
         }
       }
 
@@ -607,11 +610,9 @@
             const result = await response.json();
 
             if (!result.success) {
-                // 未註冊 -> 導向註冊頁面
                 alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「確定」前往註冊。");
                 window.location.href = "../../Login-or-register/index.html"; 
             } else {
-                // 已註冊 -> 設定 UI
                 identifyRole = result.role;
                 nameEl.innerText = userName || "未登入";
                 if (pictureUrl) {
@@ -619,14 +620,12 @@
                     avatarEl.style.display = "inline-block";
                 }
 
-                // 判斷是否顯示志工專用區塊
                 if (identifyRole === "志工") {
                     document.getElementById("volunteerOnlyArea").style.display = "block";
                 } else {
                     document.getElementById("volunteerOnlyArea").style.display = "none";
                 }
 
-                // 抓取看診資料
                 fetchConsultations(uid);
             }
         } catch (err) {
@@ -645,7 +644,6 @@
         }
       });
 
-      // 抓取看診資訊 API
       async function fetchConsultations(uid) {
         showLoading("正在載入看診紀錄...", "請稍候");
         try {
@@ -653,7 +651,6 @@
             const result = await response.json();
             
             if (result.success && Array.isArray(result.data)) {
-                // 將後端資料轉換格式存入 dummyData
                 dummyData = result.data.map(item => ({
                     event_id: item.event_id,
                     visit_time: item.visit_time,
@@ -662,7 +659,8 @@
                     department: item.department,
                     visit_details: item.visit_details,
                     remarks: item.remarks,
-                    next_visit: item.next_visit_time
+                    next_visit: item.next_visit_time,
+                    image_base64: item.image_base64 // 假設後端有回傳這欄位，雖不一定用到
                 }));
                 renderCards(dummyData);
             } else {
@@ -682,7 +680,6 @@
         const listContainer = document.getElementById("recordList");
         listContainer.innerHTML = "";
         
-        // 排序：日期新的在上面
         data.sort((a, b) => new Date(b.visit_time) - new Date(a.visit_time));
 
         data.forEach((item, index) => {
@@ -690,7 +687,6 @@
           const dateStr = `${dt.getFullYear()}年 ${dt.getMonth()+1}月 ${dt.getDate()}日`;
           const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-          // 處理下一次回診的顯示
           let nextVisitHtml = "";
           if (item.next_visit) {
              const ndt = new Date(item.next_visit);
@@ -765,6 +761,9 @@
         const modal = document.getElementById("editModal");
         const deleteBtn = document.getElementById("deleteBtn");
         document.getElementById("editIndex").value = index;
+
+        // 重置全域 base64 變數
+        currentBase64 = "";
 
         const iframe = document.getElementById("cameraFrame");
         if (iframe) {
@@ -849,7 +848,6 @@
         const doctorName = document.getElementById("field_doctor").value;
         const visitDetails = document.getElementById("field_details").value;
 
-        // 取得回診欄位
         const nextDatePart = document.getElementById("field_next_date").value;
         const nextTimePart = document.getElementById("field_next_time").value;
         let nextVisitStr = "";
@@ -867,10 +865,8 @@
           return;
         }
 
-        // 組合資料
         const fullVisitTime = `${datePart}T${timePart}`;
 
-        // 開啟 Loading
         showLoading("正在儲存資料...", "請稍候");
 
         try {
@@ -887,7 +883,8 @@
                     "department": department,
                     "visit_details": visitDetails,
                     "remarks": remark,
-                    "next_visit_time": nextVisitStr
+                    "next_visit_time": nextVisitStr,
+                    "image_base64": currentBase64 // [新增] 將圖片 base64 送出
                 };
 
                 const res = await fetch(`${API_BASE_URL}/consultations`, {
@@ -898,21 +895,21 @@
                 const result = await res.json();
 
                 if (result.success) {
-                    // 若新增成功且有回診時間，呼叫行事曆 API
                     if (nextVisitStr) {
                         await addToSchedule(nextVisitStr, remark);
                     } else {
                         alert("✅ 新增成功！");
                     }
                     closeModal();
-                    fetchConsultations(userId); // 重刷列表
+                    fetchConsultations(userId); 
                 } else {
                     alert("新增失敗：" + (result.message || "未知錯誤"));
                 }
+
             } else {
                 // ================= 編輯 (PATCH) =================
                 const item = dummyData[index];
-                const eventId = item.event_id; // 取得 event_id
+                const eventId = item.event_id; 
 
                 const payload = {
                     "elder_name": userName || "訪客",
@@ -924,7 +921,8 @@
                     "department": department,
                     "visit_details": visitDetails,
                     "remarks": remark,
-                    "next_visit_time": nextVisitStr
+                    "next_visit_time": nextVisitStr,
+                    "image_base64": currentBase64 // [新增] 將圖片 base64 送出 (若有新圖)
                 };
 
                 const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
@@ -937,7 +935,7 @@
                 if (result.success) {
                     alert("✅ 更新成功！");
                     closeModal();
-                    fetchConsultations(userId); // 重刷列表
+                    fetchConsultations(userId); 
                 } else {
                     alert("更新失敗：" + (result.message || "未知錯誤"));
                 }
@@ -991,18 +989,14 @@
 
         showLoading("正在刪除...", "請稍候");
         try {
-            // [注意] 雖然需求提到 PATCH，但一般刪除行為使用 DELETE 方法較為標準
-            // 若後端嚴格要求 PATCH，請將 method 改為 "PATCH"
             const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" }
             });
-            // 由於有些後端 DELETE 不回傳 JSON，這邊加個防呆
             try {
                 const result = await res.json(); 
                 if(!result.success) throw new Error("Delete failed");
             } catch(e) {
-                // 若解析 JSON 失敗但 http status 是 200/204 視為成功
                 if(!res.ok) throw e;
             }
 
@@ -1032,6 +1026,10 @@
         if (event.data.type === 'fill-data') {
           const data = event.data.data;
           console.log("收到 AI 資料:", data);
+
+          if (event.data.base64) {
+              currentBase64 = event.data.base64; 
+          }
 
           const visitDate = data.patient_info?.visit_date;
           if (visitDate) {
@@ -1069,7 +1067,6 @@
           }
         }
 
-        // [修改] 接收 Iframe 的 Loading 請求，顯示「AI 辨識中」
         if (event.data.type === 'show-loading') {
           showLoading("正在為您辨識圖片中的文字資訊", "請稍候，這可能需要約 10～30 秒");
         }
