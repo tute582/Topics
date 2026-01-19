@@ -280,79 +280,79 @@
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
       
-      
+     
       //修改資料
-      document.getElementById('updataBtn').addEventListener('click', function(){
-      const html = `
-            <dl>
-            <dt>志工代碼</dt>
-            <dd>
-              <input type="text" name="vcode" value="${d.vcode || ''}">
-            </dd>
-            <dt>姓名</dt>
-            <dd>
-              <input type="text" name="volunteer_name" value="${d.volunteer_name || ''}">
-            </dd>
-            <dt>電子郵件 Email</dt>
-            <dd>
-              <input type="email" name="email" value="${d.email || ''}">
-            </dd>
-            <dt>連絡電話</dt>
-            <dd>
-              <input type="tel" name="phone" value="${d.phone || ''}">
-            </dd>
-            <dt>出生年月日</dt>
-            <dd>
-              <input type="date" name="birthday" value="${d.birthday || ''}">
-            </dd>
-          <dt>性別</dt>
-          <dd>
-            <select name="gender">
-              <option value="">請選擇</option>
-              <option value="男" ${d.gender === '男' ? 'selected' : ''}>男</option>
-              <option value="女" ${d.gender === '女' ? 'selected' : ''}>女</option>
-            </select>
-          </dd>
-          <dt>地址</dt>
-          <dd>
-            <input type="text" name="address" value="${d.address || ''}">
-          </dd>
-          <dt>簡介</dt>
-          <dd>
-            <textarea name="partner_experience" rows="3">
-          ${d.partner_experience || ""}
-            </textarea>
-          </dd>
+      // document.getElementById('updataBtn').addEventListener('click', function(){
+      // const html = `
+      //       <dl>
+      //       <dt>志工代碼</dt>
+      //       <dd>
+      //         <input type="text" name="vcode" value="${d.vcode || ''}">
+      //       </dd>
+      //       <dt>姓名</dt>
+      //       <dd>
+      //         <input type="text" name="volunteer_name" value="${d.volunteer_name || ''}">
+      //       </dd>
+      //       <dt>電子郵件 Email</dt>
+      //       <dd>
+      //         <input type="email" name="email" value="${d.email || ''}">
+      //       </dd>
+      //       <dt>連絡電話</dt>
+      //       <dd>
+      //         <input type="tel" name="phone" value="${d.phone || ''}">
+      //       </dd>
+      //       <dt>出生年月日</dt>
+      //       <dd>
+      //         <input type="date" name="birthday" value="${d.birthday || ''}">
+      //       </dd>
+      //     <dt>性別</dt>
+      //     <dd>
+      //       <select name="gender">
+      //         <option value="">請選擇</option>
+      //         <option value="男" ${d.gender === '男' ? 'selected' : ''}>男</option>
+      //         <option value="女" ${d.gender === '女' ? 'selected' : ''}>女</option>
+      //       </select>
+      //     </dd>
+      //     <dt>地址</dt>
+      //     <dd>
+      //       <input type="text" name="address" value="${d.address || ''}">
+      //     </dd>
+      //     <dt>簡介</dt>
+      //     <dd>
+      //       <textarea name="partner_experience" rows="3">
+      //     ${d.partner_experience || ""}
+      //       </textarea>
+      //     </dd>
 
-              <dt>服務特質</dt>
-              <dd>
-                ${
-                  Array.isArray(d.personality)
-                    ? d.personality
-                        .map((tag) => `<span class="tag-display">${tag}</span>`)
-                        .join("")
-                    : "—"
-                }
-              </dd>
-              <dt>使用者ID</dt>
-              <dd> ${
-                d.volunteer_user_id || ""
-              }  <a href='https://line.me/R/share?text=${
-              d.volunteer_user_id || ""
-            }'>  <button>分享</button></a></dd>
-            </dl>
-          `;
+      //         <dt>服務特質</dt>
+      //         <dd>
+      //           ${
+      //             Array.isArray(d.personality)
+      //               ? d.personality
+      //                   .map((tag) => `<span class="tag-display">${tag}</span>`)
+      //                   .join("")
+      //               : "—"
+      //           }
+      //         </dd>
+      //         <dt>使用者ID</dt>
+      //         <dd> ${
+      //           d.volunteer_user_id || ""
+      //         }  <a href='https://line.me/R/share?text=${
+      //         d.volunteer_user_id || ""
+      //       }'>  <button>分享</button></a></dd>
+      //       </dl>
+      //     `;
 
-            content.innerHTML = html;
-          })
-          .catch((err) => {
-            content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
-            console.error("API Error:", err);
-          });
-      }
+      //       content.innerHTML = html;
+      //     })
+      //     .catch((err) => {
+      //       content.innerHTML = '<p class="empty">資料讀取失敗。</p>';
+      //       console.error("API Error:", err);
+      //     });
+      // }
 
         
-      })
+      
     </script>
   </body>
 </html>
