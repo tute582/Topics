@@ -105,6 +105,16 @@
         box-sizing: border-box; /* 避免padding撐爆 */
         border-bottom: 1px solid #ddd; /* 下邊界線 */
       }
+      .updataBtn
+      {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 8px 14px;
+        background: red;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+      }
     </style>
   </head>
   <body>
@@ -158,20 +168,7 @@
       <!-- 志工詳細資料將動態插入此處 -->
       <div id="content"></div>
 
-      <!-- 切換身分   -->
-      <div id="change-div" style="width:100%;">  
-        <label style="text-align:center; width:100%;">切換身分</label>
-        <!-- 資料不可編輯 -->
-        <button id=changeE
-          onClick={()=>{
-          setFormData();
-          setIsEdit(false);   
-          }}
-          >長者</button>
-
-      </div>
-
-      
+           
       <!-- 返回原本頁面按鈕 -->
      <a id="updataBtn" >修改資料</a> <a id="backBtn" class="back">回到原頁面</a>
     </div>
@@ -282,10 +279,13 @@
       //點選返回按鈕
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
-      //修改按鈕
-      const updtatBtn = document.getElementById("updataBtn");
-      updataBtn.href = "../../Topics/Login-or-register/index.html";
       
+      
+      //修改資料
+      document.getElementById('updataBtn').addEventListener('click', function(){
+      updataBtn.href = "../../Topics/Login-or-register/index.html";
+        
+      })
     </script>
   </body>
 </html>
