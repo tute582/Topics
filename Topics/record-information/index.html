@@ -100,8 +100,8 @@
          [新增] 志工專用下拉選單樣式
          ========================================= */
       .volunteer-select-box {
-        display: none; 
-        background-color: #e3f2fd; 
+        display: none;
+        background-color: #e3f2fd;
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
@@ -543,15 +543,17 @@
       
       let userId = "";
       let userName = "";
+      let pictureUrl = "";
+      let identifyRole = "";
 
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
       
-      // [修改] dummyData 改為從後端抓取的容器，初始為空
+      // dummyData 改為從後端抓取的容器，初始為空
       let dummyData = [];
 
       /* -----------------------------------------
-         [新增] 統一控制 Loading 的函式
+         統一控制 Loading 的函式
          ----------------------------------------- */
       function showLoading(title = "正在處理中...", subtitle = "請稍候") {
         document.getElementById('loadingTitle').innerText = title;
@@ -571,46 +573,79 @@
       async function initLiffAndSetProfile() {
         try {
           await liff.init({ liffId: LIFF_ID });
-         
-          // ===========================================
-          // [關鍵修改] 無論是否登入，都強制顯示志工選單
-          // 將顯示邏輯移到最上方
-          // ===========================================
-          document.getElementById("volunteerOnlyArea").style.display = "block";
 
           if (!liff.isLoggedIn()) {
+            //liff.login(); // 強制登入
+            //下方為測試用start
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
-            renderCards([]); // 沒登入就清空
+            checkIdentity(userId);
+            //上方為測試用end
             return;
           }
 
           const profile = await liff.getProfile();
           userId = profile.userId;
           userName = profile.displayName;
+          pictureUrl = profile.pictureUrl;
           localStorage.setItem("userId", userId);
           console.log("LIFF Profile userId:", userId, "userName:", userName);
 
-          nameEl.innerText = profile.displayName || "志工";
-          
-          if (profile.pictureUrl) {
-            avatarEl.src = profile.pictureUrl;
-            avatarEl.style.display = "inline-block";
-          } else {
-            avatarEl.style.display = "none";
-          }
-
-          // [新增] 登入成功後，抓取後端資料
-          fetchConsultations(userId);
+          // 檢查後端是否有這個userId註冊
+          checkIdentity(userId);
 
         } catch (err) {
           console.error("LIFF init error:", err);
-          document.getElementById("volunteerOnlyArea").style.display = "block";
-          renderCards([]);
+          // 錯誤處理：可以在這裡加個全域錯誤提示，或重新整理
         }
       }
 
-      // [新增] 抓取看診資訊 API
+      async function checkIdentity(uid) {
+        showLoading("正在驗證身分...", "請稍候");
+        try {
+            const response = await fetch(`${API_BASE_URL}/identify/${uid}`);
+            const result = await response.json();
+
+            if (!result.success) {
+                // 未註冊 -> 導向註冊頁面
+                alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「確定」前往註冊。");
+                window.location.href = "../../Login-or-register/index.html"; 
+            } else {
+                // 已註冊 -> 設定 UI
+                identifyRole = result.role;
+                nameEl.innerText = userName || "未登入";
+                if (pictureUrl) {
+                    avatarEl.src = pictureUrl;
+                    avatarEl.style.display = "inline-block";
+                }
+
+                // 判斷是否顯示志工專用區塊
+                if (identifyRole === "志工") {
+                    document.getElementById("volunteerOnlyArea").style.display = "block";
+                } else {
+                    document.getElementById("volunteerOnlyArea").style.display = "none";
+                }
+
+                // 抓取看診資料
+                fetchConsultations(uid);
+            }
+        } catch (err) {
+            console.error("Identity Check Error:", err);
+            alert("身分驗證失敗，請檢查網路連線");
+        } finally {
+            hideLoading();
+        }
+      }
+
+      nameEl.addEventListener("click", () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+        } else {
+          alert("已登入：" + (nameEl.innerText || "志工"));
+        }
+      });
+
+      // 抓取看診資訊 API
       async function fetchConsultations(uid) {
         showLoading("正在載入看診紀錄...", "請稍候");
         try {
@@ -620,9 +655,9 @@
             if (result.success && Array.isArray(result.data)) {
                 // 將後端資料轉換格式存入 dummyData
                 dummyData = result.data.map(item => ({
-                    event_id: item.event_id, // 保存 event_id 供後續編輯/刪除使用
+                    event_id: item.event_id,
                     visit_time: item.visit_time,
-                    hospital_name: item.hospital_name || "", // 若 API 沒回傳則給空字串
+                    hospital_name: item.hospital_name || "",
                     doctor_name: item.doctor_name,
                     department: item.department,
                     visit_details: item.visit_details,
@@ -669,7 +704,6 @@
              `;
           }
 
-          // 判斷是否有提醒備註，決定顯示內容
           const remarkHtml = item.remarks ? 
             `<div class="remark-box"><i class="fa-solid fa-bell"></i> 提醒：${item.remarks}</div>` : 
             `<div class="remark-box"></div>`;
