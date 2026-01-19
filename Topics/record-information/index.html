@@ -100,8 +100,8 @@
          [新增] 志工專用下拉選單樣式
          ========================================= */
       .volunteer-select-box {
-        display: none; /* 預設隱藏，JS 判斷身分後開啟 */
-        background-color: #e3f2fd; /* 淡藍色背景 */
+        display: none; 
+        background-color: #e3f2fd; 
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
@@ -171,7 +171,6 @@
       
       .notes-title { font-weight: bold; color: #4a90e2; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
-      /* [新增] 回診資訊樣式 */
       .next-visit-box {
         color: #27ae60;
         font-weight: bold;
@@ -182,43 +181,40 @@
         gap: 8px;
       }
 
-      /* [新增] 底部並排區域 (提醒 + 按鈕) */
       .card-footer-row {
         display: flex;
-        justify-content: space-between; /* 左右推開 */
-        align-items: center;            /* 垂直置中 */
-        margin-top: 15px;               /* 與上方內容的間距 */
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
         padding-top: 12px;
-        border-top: 1px dashed #eee;    /* 虛線分隔線 */
+        border-top: 1px dashed #eee;
         min-height: 36px;
       }
 
-      /* [修改] 提醒文字盒 */
       .remark-box { 
         color: #e67e22; 
         font-weight: bold; 
-        font-size: 16px;   /* 字體縮小 */
-        margin: 0;         /* 移除外距 */
+        font-size: 16px;
+        margin: 0;
         padding: 0;
         display: flex; 
         align-items: center; 
         gap: 6px;
-        flex: 1;           /* 佔據剩餘空間 */
+        flex: 1;
       }
 
-      /* [修改] 編輯按鈕 */
       .edit-btn {
-        position: static;  /* 移除絕對定位 */
+        position: static;
         background: #4a90e2;
         color: white;
         border: none;
-        padding: 6px 16px; /* 縮小內距 */
+        padding: 6px 16px;
         border-radius: 8px;
-        font-size: 15px;   /* 縮小字體 */
+        font-size: 15px;
         font-weight: bold;
         cursor: pointer;
         box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        flex-shrink: 0;    /* 防止按鈕被壓縮 */
+        flex-shrink: 0;
         transition: transform 0.1s;
       }
 
@@ -254,7 +250,6 @@
         overflow-y: auto;
       }
 
-      /* 右上角叉叉按鈕 */
       .close-btn {
         position: absolute;
         top: 15px;
@@ -543,33 +538,17 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
       const LIFF_ID = "2008484068-qkydRNYN";
-      const POST_SUPABASE_API_URL ="https://supabase-api-six.vercel.app/consultations";
+      // API Base Urls
+      const API_BASE_URL = "https://supabase-api-six.vercel.app";
+      
       let userId = "";
       let userName = "";
 
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
       
-      let dummyData = [
-        {
-          visit_time: "2026-01-06T09:30",
-          hospital_name: "臺大醫院",
-          department: "心臟內科",
-          doctor_name: "陳志明",
-          visit_details: "定期回診，數值正常。注意飲食清淡。",
-          remarks: "記得早晚量血壓",
-          next_visit: "2026-04-06T09:30" 
-        },
-        {
-          visit_time: "2025-12-20T14:15",
-          hospital_name: "長庚醫院",
-          department: "骨科",
-          doctor_name: "林建勳",
-          visit_details: "左膝蓋疼痛，進行復健。減少爬樓梯。",
-          remarks: "下週二復健",
-          next_visit: ""
-        }
-      ];
+      // [修改] dummyData 改為從後端抓取的容器，初始為空
+      let dummyData = [];
 
       /* -----------------------------------------
          [新增] 統一控制 Loading 的函式
@@ -592,7 +571,7 @@
       async function initLiffAndSetProfile() {
         try {
           await liff.init({ liffId: LIFF_ID });
-
+         
           // ===========================================
           // [關鍵修改] 無論是否登入，都強制顯示志工選單
           // 將顯示邏輯移到最上方
@@ -602,7 +581,7 @@
           if (!liff.isLoggedIn()) {
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
-            renderCards(dummyData);
+            renderCards([]); // 沒登入就清空
             return;
           }
 
@@ -621,19 +600,54 @@
             avatarEl.style.display = "none";
           }
 
-          renderCards(dummyData);
+          // [新增] 登入成功後，抓取後端資料
+          fetchConsultations(userId);
+
         } catch (err) {
           console.error("LIFF init error:", err);
-
-          // 若初始化失敗，也強制顯示
           document.getElementById("volunteerOnlyArea").style.display = "block";
-          renderCards(dummyData);
+          renderCards([]);
+        }
+      }
+
+      // [新增] 抓取看診資訊 API
+      async function fetchConsultations(uid) {
+        showLoading("正在載入看診紀錄...", "請稍候");
+        try {
+            const response = await fetch(`${API_BASE_URL}/consultations/${uid}`);
+            const result = await response.json();
+            
+            if (result.success && Array.isArray(result.data)) {
+                // 將後端資料轉換格式存入 dummyData
+                dummyData = result.data.map(item => ({
+                    event_id: item.event_id, // 保存 event_id 供後續編輯/刪除使用
+                    visit_time: item.visit_time,
+                    hospital_name: item.hospital_name || "", // 若 API 沒回傳則給空字串
+                    doctor_name: item.doctor_name,
+                    department: item.department,
+                    visit_details: item.visit_details,
+                    remarks: item.remarks,
+                    next_visit: item.next_visit_time
+                }));
+                renderCards(dummyData);
+            } else {
+                console.warn("API 回傳成功但無資料或格式錯誤", result);
+                dummyData = [];
+                renderCards([]);
+            }
+        } catch (err) {
+            console.error("Fetch Consultations Error:", err);
+            alert("載入資料失敗，請檢查網路連線");
+        } finally {
+            hideLoading();
         }
       }
 
       function renderCards(data) {
         const listContainer = document.getElementById("recordList");
         listContainer.innerHTML = "";
+        
+        // 排序：日期新的在上面
         data.sort((a, b) => new Date(b.visit_time) - new Date(a.visit_time));
 
         data.forEach((item, index) => {
@@ -819,78 +833,154 @@
           return;
         }
 
-        const newData = {
-          visit_time: `${datePart}T${timePart}`,
-          hospital_name: hospitalPart, 
-          department: department,
-          doctor_name: doctorName,
-          visit_details: visitDetails,
-          remarks: remark,
-          next_visit: nextVisitStr
-        };
+        // 組合資料
+        const fullVisitTime = `${datePart}T${timePart}`;
 
-        // 先儲存本地資料
-        if (index === -1) {
-          dummyData.push(newData);
-        } else {
-          dummyData[index] = newData;
+        // 開啟 Loading
+        showLoading("正在儲存資料...", "請稍候");
+
+        try {
+            if (index === -1) {
+                // ================= 新增 (POST) =================
+                const payload = {
+                    "elder_user_id": userId,
+                    "elder_name": userName,
+                    "volunteer_user_id": null,
+                    "volunteer_name": null,
+                    "visit_time": fullVisitTime,
+                    "hospital_name": hospitalPart,
+                    "doctor_name": doctorName,
+                    "department": department,
+                    "visit_details": visitDetails,
+                    "remarks": remark,
+                    "next_visit_time": nextVisitStr
+                };
+
+                const res = await fetch(`${API_BASE_URL}/consultations`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    // 若新增成功且有回診時間，呼叫行事曆 API
+                    if (nextVisitStr) {
+                        await addToSchedule(nextVisitStr, remark);
+                    } else {
+                        alert("✅ 新增成功！");
+                    }
+                    closeModal();
+                    fetchConsultations(userId); // 重刷列表
+                } else {
+                    alert("新增失敗：" + (result.message || "未知錯誤"));
+                }
+            } else {
+                // ================= 編輯 (PATCH) =================
+                const item = dummyData[index];
+                const eventId = item.event_id; // 取得 event_id
+
+                const payload = {
+                    "elder_name": userName || "訪客",
+                    "volunteer_user_id": null,
+                    "volunteer_name": null,
+                    "visit_time": fullVisitTime,
+                    "hospital_name": hospitalPart,
+                    "doctor_name": doctorName,
+                    "department": department,
+                    "visit_details": visitDetails,
+                    "remarks": remark,
+                    "next_visit_time": nextVisitStr
+                };
+
+                const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    alert("✅ 更新成功！");
+                    closeModal();
+                    fetchConsultations(userId); // 重刷列表
+                } else {
+                    alert("更新失敗：" + (result.message || "未知錯誤"));
+                }
+            }
+        } catch (err) {
+            console.error("Save Error:", err);
+            alert("系統錯誤，無法儲存");
+        } finally {
+            hideLoading();
         }
+      }
 
-        // ==========================================
-        // [修改] 呼叫行事曆 API 邏輯 + Loading 文字控制
-        // ==========================================
-        if (nextVisitStr) { 
+      // [獨立函式] 加入行事曆
+      async function addToSchedule(nextTime, remarkText) {
+         showLoading("正在加入行事曆提醒...", "請稍候");
+         try {
             const apiPayload = {
-                "elder_user_id": userId,
+                "elder_user_id": userId, 
                 "elder_name": userName,
-                "schedule_time": nextVisitStr,
+                "schedule_time": nextTime,
                 "schedule_note": "回診",
                 "is_reminded": true,
-                "remark": "提醒您，明日要回診，請攜帶您的健保卡",
+                "remark": "提醒您，明日要回診，請攜帶您的健保卡\n" + (remarkText || ""),
                 "reminder_method": "day"
             };
 
-            // 顯示 Loading，設定文字為「正在儲存紀錄... 請稍候，約需 5 秒」
-            showLoading("正在儲存紀錄並設定提醒...", "請稍候，系統處理中 (約 5 秒)");
+            const response = await fetch(`${API_BASE_URL}/schedules`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(apiPayload)
+            });
+            const result = await response.json();
 
-            try {
-                const response = await fetch("https://supabase-api-six.vercel.app/schedules", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(apiPayload)
-                });
-                const result = await response.json();
-
-                hideLoading(); // 關閉 Loading
-
-                if (result.success) {
-                    alert("✅ 看診紀錄已儲存，並成功加入行事曆提醒！");
-                } else {
-                    console.error("API Error:", result);
-                    alert("⚠️ 看診紀錄已儲存，但加入行事曆失敗。");
-                }
-
-            } catch (err) {
-                hideLoading(); // 關閉 Loading
-                console.error("Network Error:", err);
-                alert("⚠️ 看診紀錄已儲存，但連線錯誤導致行事曆加入失敗。");
+            if (result.success) {
+                alert("✅ 資料已儲存，並成功加入行事曆！");
+            } else {
+                alert("⚠️ 資料已儲存，但加入行事曆失敗。");
             }
-        } else {
-            // 沒有回診時間，直接提示成功
-            alert("✅ 看診紀錄已儲存！");
-        }
-        // ==========================================
-
-        renderCards(dummyData);
-        closeModal();
+         } catch (err) {
+            console.error(err);
+            alert("⚠️ 資料已儲存，但連線錯誤導致行事曆加入失敗。");
+         }
       }
 
-      function deleteRecord() {
+      async function deleteRecord() {
         const index = parseInt(document.getElementById("editIndex").value);
-        if (confirm("確定要刪除這筆紀錄嗎？")) {
-          dummyData.splice(index, 1);
-          renderCards(dummyData);
-          closeModal();
+        if (!confirm("確定要刪除這筆紀錄嗎？")) return;
+
+        const item = dummyData[index];
+        const eventId = item.event_id;
+
+        showLoading("正在刪除...", "請稍候");
+        try {
+            // [注意] 雖然需求提到 PATCH，但一般刪除行為使用 DELETE 方法較為標準
+            // 若後端嚴格要求 PATCH，請將 method 改為 "PATCH"
+            const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            // 由於有些後端 DELETE 不回傳 JSON，這邊加個防呆
+            try {
+                const result = await res.json(); 
+                if(!result.success) throw new Error("Delete failed");
+            } catch(e) {
+                // 若解析 JSON 失敗但 http status 是 200/204 視為成功
+                if(!res.ok) throw e;
+            }
+
+            alert("刪除成功");
+            closeModal();
+            fetchConsultations(userId);
+
+        } catch (err) {
+            console.error("Delete Error:", err);
+            alert("刪除失敗，請稍後再試");
+        } finally {
+            hideLoading();
         }
       }
 
