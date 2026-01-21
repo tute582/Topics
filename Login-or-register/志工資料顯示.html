@@ -170,8 +170,10 @@
 
            
       <!-- 返回原本頁面按鈕 -->
-     <button id="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
+     <div>
+       <button id="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
     </div>
+     </div>
 
     <!-- ======== JavaScript 資料載入區 ======== -->
     <script>
@@ -282,7 +284,7 @@
       
      
     //修改資料
-    $("[#edit]").click((e)=>{
+    $("[id=edit]").click((()=>{
        fields.forEach((dd) => {
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
@@ -296,6 +298,38 @@
       editBtn.style.display = "none";
       saveBtn.style.display = "inline-block";
     });
+
+      //儲存修改
+      // saveBtn.addEventListener("click", () => {
+      //   const updatedData = {};
+      
+      //   document
+      //     .querySelectorAll("#volunteerDetail [data-field]")
+      //     .forEach((el) => {
+      //       updatedData[el.dataset.field] = el.value;
+      //     });
+      
+      //   console.log("要送出的資料:", updatedData);
+      
+      //   // TODO: fetch PUT / PATCH API
+      //   /*
+      //   fetch("/api/volunteer/update", {
+      //     method: "PUT",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(updatedData)
+      //   })
+      //   */
+      
+      //   // 儲存後切回顯示模式
+      //   Object.entries(updatedData).forEach(([key, value]) => {
+      //     const dd = document.querySelector(`dd[data-field="${key}"]`);
+      //     if (dd) dd.textContent = value;
+      //   });
+      
+      //   saveBtn.style.display = "none";
+      //   editBtn.style.display = "inline-block";
+      // });
+
         
       
     </script>
