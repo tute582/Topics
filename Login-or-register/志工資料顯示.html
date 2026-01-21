@@ -69,6 +69,17 @@
         text-decoration: none;
       }
 
+      /* 修改按鈕 */
+      .editBtn{
+        display: inline-block;
+        margin-top: 20px;
+        padding: 8px 14px;
+        background: #3a3d3f;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+
       /* ======== 無資料提示文字 ======== */
       .empty {
         color: #666;
@@ -171,7 +182,7 @@
            
       <!-- 返回原本頁面按鈕 -->
      <div>
-       <button id="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
+       <button class="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
     </div>
      </div>
 
@@ -281,6 +292,22 @@
       //點選返回按鈕
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
+
+      //修改功能
+         $("[class=edit]").addEventListener("click",async (e)=>{
+        fields.forEach((dd) => {
+        const value = dd.textContent.trim();
+        const field = dd.dataset.field;
+        // textarea 用於簡介，其餘用 input
+        if (field === "partner_experience") {
+          dd.innerHTML = `<textarea data-field="${field}">${value}</textarea>`;
+        } else {
+          dd.innerHTML = `<input type="text" data-field="${field}" value="${value}">`;
+        }
+        });
+      editBtn.style.display = "none";
+      // saveBtn.style.display = "inline-block";
+    })
       
 
 
