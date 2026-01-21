@@ -182,7 +182,7 @@
            
       <!-- 返回原本頁面按鈕 -->
      <div>
-       <button class="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
+       <button id="edit" class="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
     </div>
      </div>
 
@@ -295,8 +295,8 @@
 
       //修改功能
         const fields = document.querySelectorAll("[data-field]");
-        const editBtn = document.querySelector(".edit");
-        document.querySelector(".edit").addEventListener("click",async (e)=>{
+        const editBtn = document.querySelector("#edit");
+        editBtn.addEventListener("click",async (e)=>{
         fields.forEach((dd) => {
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
