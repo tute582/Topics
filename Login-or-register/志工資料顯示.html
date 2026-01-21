@@ -126,6 +126,38 @@
         border-radius: 6px;
         text-decoration: none;
       }
+      /* 修改modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+      }
+      
+      .modal-content {
+        background: #fff;
+        width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 20px;
+        border-radius: 8px;
+        position: relative;
+      }
+      
+      .modal-close {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        font-size: 24px;
+        cursor: pointer;
+      }
+      
     </style>
   </head>
   <body>
@@ -182,7 +214,7 @@
            
       <!-- 返回原本頁面按鈕 -->
      <div>
-       <button id="edit" class="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
+       <button onclick="openVolunteerModal()">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
     </div>
      </div>
 
@@ -294,31 +326,66 @@
       backBtn.href = targetUrl;
 
       //修改功能
-        const editBtn = document.querySelector("#editBtn");
-        const fields = document.querySelectorAll(".edit");
+        function openVolunteerModal() {
+          document.getElementById("volunteerModal").style.display = "flex";
         
-        editBtn.addEventListener("click", () => {
-          fields.forEach((dd) => {
-            // 防止重複轉換
-            if (dd.querySelector("input")) return;
+          // 範例：帶入既有資料（實務上可從後端或 dataset 取得）
+          document.querySelector('[name="volunteerId"]').value = "V001";
+          document.querySelector('[name="name"]').value = "王小明";
+          document.querySelector('[name="email"]').value = "test@mail.com";
+          document.querySelector('[name="phone"]').value = "0912345678";
+          document.querySelector('[name="gender"]').value = "男性";
+        }
         
-            const value = dd.textContent.trim();
-        
-            // 將內容轉成 input
-            dd.innerHTML = `<input type="text" value="${value}">`;
-        
-            // 加上狀態 class（可選）
-            dd.classList.add("editing");
-          });
-        
-          // 隱藏編輯按鈕（可選）
-          editBtn.style.display = "none";
-        });
-              
-
-
-        
+        function closeVolunteerModal() {
+          document.getElementById("volunteerModal").style.display = "none";
+        }
+</script>
       
     </script>
+    <!-- Modal 遮罩 -->
+<div id="volunteerModal" class="modal-overlay">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeVolunteerModal()">×</span>
+
+    <!-- 你的原本表單，直接放進來 -->
+    <form id="volunteerForm" class="form-section">
+      <h3>志工資料修改</h3>
+
+      <label class="required">志工代碼</label>
+      <input type="text" name="volunteerId" required />
+
+      <label class="required">姓名</label>
+      <input type="text" name="name" required />
+
+      <label class="required">電子郵件 Email</label>
+      <input type="email" name="email" required />
+
+      <label class="required">連絡電話</label>
+      <input type="tel" name="phone" pattern="09[0-9]{8}" required />
+
+      <label class="required">出生年月日</label>
+      <input type="date" name="birthday" required />
+
+      <label class="required">性別</label>
+      <select name="gender" required>
+        <option value="">請選擇</option>
+        <option value="男性">男性</option>
+        <option value="女性">女性</option>
+        <option value="其他">其他</option>
+      </select>
+
+      <label class="required">地址</label>
+      <input type="text" name="address" required />
+
+      <label>簡介與經驗</label>
+      <textarea rows="3"></textarea>
+
+      <div class="button-group">
+        <button type="submit" class="submit-btn">儲存修改</button>
+      </div>
+    </form>
+  </div>
+</div>
   </body>
 </html>
