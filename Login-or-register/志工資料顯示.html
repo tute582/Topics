@@ -282,53 +282,7 @@
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
       
-     
-    //修改資料
-    $("[id=edit]").click((()=>{
-       fields.forEach((dd) => {
-        const value = dd.textContent.trim();
-        const field = dd.dataset.field;
-        // textarea 用於簡介，其餘用 input
-        if (field === "partner_experience") {
-          dd.innerHTML = `<textarea data-field="${field}">${value}</textarea>`;
-        } else {
-          dd.innerHTML = `<input type="text" data-field="${field}" value="${value}">`;
-        }
-        });
-      editBtn.style.display = "none";
-      saveBtn.style.display = "inline-block";
-    });
 
-      //儲存修改
-      // saveBtn.addEventListener("click", () => {
-      //   const updatedData = {};
-      
-      //   document
-      //     .querySelectorAll("#volunteerDetail [data-field]")
-      //     .forEach((el) => {
-      //       updatedData[el.dataset.field] = el.value;
-      //     });
-      
-      //   console.log("要送出的資料:", updatedData);
-      
-      //   // TODO: fetch PUT / PATCH API
-      //   /*
-      //   fetch("/api/volunteer/update", {
-      //     method: "PUT",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify(updatedData)
-      //   })
-      //   */
-      
-      //   // 儲存後切回顯示模式
-      //   Object.entries(updatedData).forEach(([key, value]) => {
-      //     const dd = document.querySelector(`dd[data-field="${key}"]`);
-      //     if (dd) dd.textContent = value;
-      //   });
-      
-      //   saveBtn.style.display = "none";
-      //   editBtn.style.display = "inline-block";
-      // });
 
         
       
