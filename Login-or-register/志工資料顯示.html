@@ -170,7 +170,7 @@
 
            
       <!-- 返回原本頁面按鈕 -->
-     <button id="editBtn">修改資料</button>button> <a id="backBtn" class="back">回到原頁面</a>
+     <button id="editBtn">修改資料</button> <a id="backBtn" class="back">回到原頁面</a>
     </div>
 
     <!-- ======== JavaScript 資料載入區 ======== -->
@@ -286,7 +286,6 @@
        fields.forEach((dd) => {
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
-    
         // textarea 用於簡介，其餘用 input
         if (field === "partner_experience") {
           dd.innerHTML = `<textarea data-field="${field}">${value}</textarea>`;
@@ -294,7 +293,6 @@
           dd.innerHTML = `<input type="text" data-field="${field}" value="${value}">`;
         }
         });
-    
       editBtn.style.display = "none";
       saveBtn.style.display = "inline-block";
     });
