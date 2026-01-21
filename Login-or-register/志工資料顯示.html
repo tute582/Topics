@@ -294,7 +294,9 @@
       backBtn.href = targetUrl;
 
       //修改功能
-         $("[class=edit]").addEventListener("click",async (e)=>{
+        const fields = document.querySelectorAll("[data-field]");
+        const editBtn = document.querySelector(".edit");
+        document.querySelector(".edit").addEventListener("click",async (e)=>{
         fields.forEach((dd) => {
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
