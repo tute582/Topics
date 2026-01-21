@@ -298,6 +298,7 @@
         const editBtn = document.querySelector("#edit");
         editBtn.addEventListener("click",async (e)=>{
         fields.forEach((dd) => {
+         console.log(dd, dd.dataset.field, dd.textContent);
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
         // textarea 用於簡介，其餘用 input
