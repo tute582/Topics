@@ -299,7 +299,7 @@
         const value = dd.textContent.trim();
         const field = dd.dataset.field;
         // textarea 用於簡介，其餘用 input
-        if (field === "partner_experience") {
+        if (field === "e_experience") {
           dd.innerHTML = `<textarea data-field="${field}">${value}</textarea>`;
         } else {
           dd.innerHTML = `<input type="text" data-field="${field}" value="${value}">`;
