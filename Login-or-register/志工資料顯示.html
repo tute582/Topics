@@ -235,16 +235,16 @@
             const html = `
             <dl>
               <dt>志工代碼</dt><dd>${d.vcode || ""}</dd>
-              <dt>姓名</dt><dd>${d.volunteer_name || ""}</dd>
-              <dt>電子郵件Email</dt><dd>${d.email || ""}</dd>
-              <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
-              <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
+              <dt>姓名</dt><dd class="edit">${d.volunteer_name || ""}</dd>
+              <dt>電子郵件Email</dt><dd class="edit">${d.email || ""}</dd>
+              <dt>連絡電話</dt><dd class="edit">${d.phone || ""}</dd>
+              <dt>出生年月日</dt><dd class="edit">${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${d.gender || ""}</dd>
-              <dt>地址</dt><dd>${d.address || ""}</dd>
-              <dt>簡介</dt><dd>${d.partner_experience || "—"}</dd>
+              <dt>地址</dt><dd class="edit">${d.address || ""}</dd>
+              <dt>簡介</dt><dd class="edit">${d.partner_experience || "—"}</dd>
 
               <dt>服務特質</dt>
-              <dd>
+              <dd class="edit-t">
                 ${
                   Array.isArray(d.personality)
                     ? d.personality
@@ -294,24 +294,27 @@
       backBtn.href = targetUrl;
 
       //修改功能
-        const fields = document.querySelectorAll("[data-field]");
-        const editBtn = document.querySelector("#edit");
-        editBtn.addEventListener("click",async (e)=>{
-        fields.forEach((dd) => {
-         console.log(dd, dd.dataset.field, dd.textContent);
-        const value = dd.textContent.trim();
-        const field = dd.dataset.field;
-        // textarea 用於簡介，其餘用 input
-        if (field === "e_experience") {
-          dd.innerHTML = `<textarea data-field="${field}">${value}</textarea>`;
-        } else {
-          dd.innerHTML = `<input type="text" data-field="${field}" value="${value}">`;
-        }
+        const editBtn = document.querySelector("#editBtn");
+        const fields = document.querySelectorAll(".edit");
+        
+        editBtn.addEventListener("click", () => {
+          fields.forEach((dd) => {
+            // 防止重複轉換
+            if (dd.querySelector("input")) return;
+        
+            const value = dd.textContent.trim();
+        
+            // 將內容轉成 input
+            dd.innerHTML = `<input type="text" value="${value}">`;
+        
+            // 加上狀態 class（可選）
+            dd.classList.add("editing");
+          });
+        
+          // 隱藏編輯按鈕（可選）
+          editBtn.style.display = "none";
         });
-      editBtn.style.display = "none";
-      // saveBtn.style.display = "inline-block";
-    })
-      
+              
 
 
         
