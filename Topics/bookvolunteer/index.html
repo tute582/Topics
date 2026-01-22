@@ -1161,14 +1161,21 @@
                 identify = result.role; //回傳文字(志工或長者)
                 console.log("登入角色 role：", result.role);
 
-                // 預設地址取得 start
-                const address = result.data.address || "";
-                const addressInput = document.getElementById("addressFull");
-
-                if (addressInput && address) {
-                  addressInput.value = address;
+                if(identify === "志工"){
+                  window.location.href = "Volunteer.html";
                 }
-                // 預設地址取得 end
+                else if(identify === "長者"){
+                  console.log("以長者身份登入，歡迎使用預約志工服務！");
+
+                  // 預設地址取得 start
+                  const address = result.data.address || "";
+                  const addressInput = document.getElementById("addressFull");
+
+                  if (addressInput && address) {
+                    addressInput.value = address;
+                  }
+                  // 預設地址取得 end
+                }
               }
             })
             .catch((err) => {
