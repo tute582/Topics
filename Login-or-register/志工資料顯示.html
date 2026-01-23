@@ -297,7 +297,7 @@
         content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
       } else {
         // 使用 fetch 從 API 取得資料
-        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
+        fetch(`https://supabase-api-six.vercel.app/volunteers/${volunteerId}`)
           .then((res) => res.json())
           .then((result) => {
             // API 回傳失敗
@@ -404,16 +404,22 @@
       }
 
       //close modal
-      function closeElderModal() {
-        document.getElementById("elderModal").style.display = "none";
+      function closeVolunteerModal() {
+        document.getElementById("VolunteerModal").style.display = "none";
       }
 
 
       //修改api
-        document.querySelector("#volunteerForm").addEventListener("submit", async (e) => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("volunteerForm");
+        if (!form) {
+          console.error("找不到 volunteerForm");
+          return;
+        }
+
+        form.addEventListener("submit", async (e) => {
           e.preventDefault();
-      
-          const formData = new FormData(volunteerForm);
+           const formData = new FormData(volunteerForm);
       
           const payload = {
             volunteer_name: formData.get("volunteer_name"),
@@ -426,7 +432,7 @@
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
       
-         fetch(`https://supabase-api-six.vercel.app/volunteers/${elderId}`, {
+         fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -450,12 +456,12 @@
               console.error(err);
               alert("系統錯誤 "+ err);
             });
+          
         });
+      });
 
 
 
-
-      
 </script>
     <!-- Modal 遮罩 -->
 <div id="volunteerModal" class="modal-overlay">
