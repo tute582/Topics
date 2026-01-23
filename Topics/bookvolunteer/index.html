@@ -1264,75 +1264,10 @@
         } catch (err) {
           console.error("LIFF init error:", err);
           hideLoading();
+          // userId = "test_line_id_002o"; // 測試用
         }
       }
-        try {
-          await liff.init({ liffId: LIFF_ID });
-
-          // LIFF 登入失敗
-          if (!liff.isLoggedIn()) {
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            return;
-          }
-
-          // ↓ LIFF成功登入後執行
-          const profile = await liff.getProfile();
-          userId = profile.userId;
-          userName = profile.displayName;
-          localStorage.setItem("userId", userId);
-          console.log("LIFF Profile userId:", userId, "userName:", userName);
-
-          nameEl.innerText = profile.displayName || "志工";
-          if (profile.pictureUrl) {
-            avatarEl.src = profile.pictureUrl;
-            avatarEl.style.display = "inline-block";
-          } else {
-            avatarEl.style.display = "none";
-          }
-
-          // 檢查後端是否有這個userId註冊
-          fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
-            .then((res) => res.json())
-            .then((result) => {
-              if (!result.success) {
-                alert(
-                  "首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。"
-                );
-                // API 判定不存在 / 驗證失敗 → 導回登入頁面
-                window.location.href = "../../Login-or-register/index.html";
-              } else {
-                identify = result.role; //回傳文字(志工或長者)
-                console.log("登入角色 role：", result.role);
-
-                if(identify === "志工"){
-                  window.location.href = "Volunteer.html";
-                }
-                else if(identify === "長者"){
-                  console.log("以長者身份登入，歡迎使用預約志工服務！");
-
-                  // 預設地址取得 start
-                  const address = result.data.address || "";
-                  const addressInput = document.getElementById("addressFull");
-
-                  if (addressInput && address) {
-                    addressInput.value = address;
-                  }
-                  // 預設地址取得 end
-                }
-              }
-            })
-            .catch((err) => {
-              console.error("身分檢查 API 錯誤：", err);
-              // API 出錯也視為無效身分
-              window.location.href = "../../Login-or-register/index.html";
-            });
-        } catch (err) {
-          console.error("LIFF init error:", err);
-          userId = "test_line_id_002o";
-        }
-      }
-
+      
       //大頭貼跳傳頁面設定
       avatarEl &&
         avatarEl.addEventListener("click", () => {
