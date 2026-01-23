@@ -220,6 +220,7 @@
 
     <!-- ======== JavaScript 資料載入區 ======== -->
     <script>
+      let currentVolunteer = null;
       // 取得 HTML 元素
       const content = document.getElementById("content"); // 顯示詳細資料的容器
       const avatarPreview = document.getElementById("avatar"); // 卡片頭像
@@ -248,6 +249,7 @@
             }
 
             const d = result.data; // 資料物件
+            currentVolunteer = d; 
 
             /* ======== 頭像處理 ======== */
             const avatarUrl =
@@ -327,19 +329,80 @@
 
       //修改功能
         function openVolunteerModal() {
-          document.getElementById("volunteerModal").style.display = "flex";
-        
-          // 範例：帶入既有資料（實務上可從後端或 dataset 取得）
-          document.querySelector('[name="volunteerId"]').value = "V001";
-          document.querySelector('[name="name"]').value = "王小明";
-          document.querySelector('[name="email"]').value = "test@mail.com";
-          document.querySelector('[name="phone"]').value = "0912345678";
-          document.querySelector('[name="gender"]').value = "男性";
-        }
-        
-        function closeVolunteerModal() {
-          document.getElementById("volunteerModal").style.display = "none";
-        }
+          if (!currentVolunteer) return;
+
+        const modal = document.getElementById("volunteerModal");
+        modal.style.display = "flex";
+      
+        // 帶入目前資料
+        document.querySelector('[name="volunteerId"]').value =
+          currentVolunteer.vcode || "";
+      
+        document.querySelector('[name="name"]').value =
+          currentVolunteer.volunteer_name || "";
+      
+        document.querySelector('[name="email"]').value =
+          currentVolunteer.email || "";
+      
+        document.querySelector('[name="phone"]').value =
+          currentVolunteer.phone || "";
+      
+        document.querySelector('[name="birthday"]').value =
+          currentVolunteer.birthday || "";
+      
+        document.querySelector('[name="gender"]').value =
+          currentVolunteer.gender || "";
+      
+        document.querySelector('[name="address"]').value =
+          currentVolunteer.address || "";
+      
+        document.querySelector("textarea").value =
+          currentVolunteer.partner_experience || "";
+      }
+
+      //修改modal
+      document.getElementById("volunteerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+      
+        const formData = new FormData(e.target);
+      
+        const payload = {
+          vcode: formData.get("volunteerId"),
+          volunteer_name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          birthday: formData.get("birthday"),
+          gender: formData.get("gender"),
+          address: formData.get("address"),
+          partner_experience: document.querySelector("textarea").value,
+        };
+      
+        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (!result.success) {
+              alert("更新失敗");
+              return;
+            }
+      
+            alert("修改成功 ✅");
+            closeVolunteerModal();
+      
+            // 重新載入畫面資料
+            location.reload();
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("系統錯誤");
+          });
+      });
+
 
       
 </script>
