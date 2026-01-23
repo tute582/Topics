@@ -407,33 +407,36 @@
       }
 
       //修改功能api
-      document
-        .getElementById("elderForm")
-        .addEventListener("submit", function (e) {
+      document.addEventListener("DOMContentLoaded", () => {
+        const elderForm = document.getElementById("elderForm");
+      
+        elderForm.addEventListener("submit", function (e) {
           e.preventDefault();
       
-          const formData = new FormData(e.target);
+          const formData = new FormData(elderForm);
       
           const payload = {
             elder_name: formData.get("elder_name"),
             phone: formData.get("phone"),
+            birthday: formData.get("birthday"),
+            gender: formData.get("gender"),
             address: formData.get("address"),
             emergency_contact: formData.get("emergency_contact"),
-            emergency_contact_phone: formData.get(
-              "emergency_contact_phone"
-            ),
+            emergency_contact_phone: formData.get("emergency_contact_phone"),
             health_note: formData.get("health_note"),
           };
       
+          console.log("送出 payload 👉", payload); // 🔥一定要看
+      
           fetch(`https://supabase-api-six.vercel.app/elders/${userId}`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           })
-            .then((res) => res.json())
-            .then((result) => {
+            .then(res => res.json())
+            .then(result => {
+              console.log("API 回傳 👉", result);
+      
               if (!result.success) {
                 alert("更新失敗");
                 return;
@@ -443,11 +446,12 @@
               closeElderModal();
               location.reload();
             })
-            .catch((err) => {
+            .catch(err => {
               console.error(err);
               alert("系統錯誤");
             });
         });
+      });
 
 
       
