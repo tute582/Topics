@@ -610,6 +610,54 @@
               const profile = await liff.getProfile();
               nameEl.innerText = profile.displayName || "志工";
               if (profile.pictureUrl) { avatarEl.src = profile.pictureUrl; avatarEl.style.display = "inline-block"; }
+              
+              // 4. 呼叫後端 API 檢查身分
+              fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+                .then((res) => res.json())
+                .then((result) => {
+                  
+                  if (!result.success) {
+                    // --- 情況 A：未註冊 ---
+                    hideLoading(); // 關閉動畫讓使用者看 Alert
+                    alert(
+                      "首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。"
+                    );
+                    window.location.href = "../../Login-or-register/index.html";
+                  } else {
+                    identify = result.role;
+                    console.log("登入角色 role：", result.role);
+
+                    if (identify === "志工") {
+                      // --- 情況 B：是志工 (需要跳轉) ---
+                      // 更新 Loading 文字，且「不要」關閉 Loading
+                      // 這樣畫面會一直轉圈直到跳轉完成，不會露出長者介面
+                      showLoading("身分確認：志工", "正在前往志工專區...");
+                      
+                      setTimeout(() => {
+                          window.location.href = "Volunteer.html"; 
+                      }, 800); // 稍微延遲讓使用者看清楚文字
+
+                    } else if (identify === "長者") {
+                      // --- 情況 C：是長者 (留在本頁) ---
+                      console.log("以長者身份登入，歡迎使用預約志工服務！");
+
+                      // 填入地址
+                      const address = result.data.address || "";
+                      const addressInput = document.getElementById("addressFull");
+                      if (addressInput && address) {
+                        addressInput.value = address;
+                      }
+
+                      // 重要：身分確認是長者，這時候才把 Loading 關掉，顯示頁面
+                      hideLoading();
+                    }
+                  }
+                })
+                .catch((err) => {
+                  console.error("身分檢查 API 錯誤：", err);
+                  hideLoading(); // 出錯也要關掉動畫
+                  window.location.href = "../../Login-or-register/index.html";
+                });
             } catch (err) { console.error("LIFF error:", err); }
           }
           nameEl.addEventListener("click", () => {
@@ -841,6 +889,21 @@
         if (e.target.classList.contains('modal-overlay')) {
            e.target.classList.remove('show');
         }
+      }
+
+      // 載入動畫Loading 控制函式
+      function showLoading(title = "正在處理中...", subtitle = "請稍候") {
+        const overlay = document.getElementById("mainLoadingOverlay");
+        if(overlay) {
+            document.getElementById("loadingTitle").innerText = title;
+            document.getElementById("loadingSubtitle").innerText = subtitle;
+            overlay.style.display = "flex";
+        }
+      }
+
+      function hideLoading() {
+        const overlay = document.getElementById("mainLoadingOverlay");
+        if(overlay) overlay.style.display = "none";
       }
     </script>
   </body>

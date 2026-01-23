@@ -276,44 +276,37 @@
                     // 若未登入，點擊時會由下方的 EventListener 觸發登入
                 }
 
-                // [新增] 您的跳轉程式碼 (已整合進來)
-                if (avatarEl) {
+                //大頭貼跳傳頁面設定
+                avatarEl &&
                     avatarEl.addEventListener("click", () => {
-                        if (liff.isLoggedIn()) {
-                            localStorage.setItem("fromPage", "bookvolunteer");
-                            console.log("目前身分:", identify); // Debug 用
-
-                            switch (identify) {
-                                case "志工":
-                                    window.location.href = "../../Login-or-register/志工資料顯示.html";
-                                    break;
-                                case "長者":
-                                    window.location.href = "../../Login-or-register/長輩資料顯示.html";
-                                    break;
-                                default:
-                                    // 若 identify 為空或未註冊，導回首頁/登入頁
-                                    window.location.href = "../../Login-or-register/index.html";
-                            }
-                        } else {
-                            liff.login({ redirectUri: window.location.href });
+                    if (liff.isLoggedIn()) {
+                        localStorage.setItem("fromPage", "calendar");
+                        switch (identify) {
+                        case "志工":
+                            window.location.href =
+                            "../../Login-or-register/志工資料顯示.html";
+                            break;
+                        case "長者":
+                            window.location.href =
+                            "../../Login-or-register/長輩資料顯示.html";
+                            break;
+                        default:
+                            // "未註冊" 或 undefined 都導往登入
+                            window.location.href = "../../Login-or-register/index.html";
                         }
+                    } else {
+                        liff.login({ redirectUri: window.location.href });
+                    }
                     });
-                }
 
-                if (nameEl) {
+                nameEl &&
                     nameEl.addEventListener("click", () => {
-                        if (!liff.isLoggedIn()) {
-                            liff.login({ redirectUri: window.location.href });
-                        } else {
-                            // 這裡可以改成登出功能，或者維持顯示名稱
-                            if(confirm(`已登入為：${userName}\n是否要登出？`)) {
-                                liff.logout();
-                                window.location.reload();
-                            }
-                        }
+                    if (!liff.isLoggedIn()) {
+                        liff.login({ redirectUri: window.location.href });
+                    } else {
+                        alert("已登入：" + (nameEl.innerText || "使用者"));
+                    }
                     });
-                }
-
             } catch (err) { 
                 console.error("LIFF error", err); 
             }
