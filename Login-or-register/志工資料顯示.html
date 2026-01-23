@@ -404,16 +404,22 @@
       }
 
       //close modal
-      function closeElderModal() {
-        document.getElementById("elderModal").style.display = "none";
+      function closeVolunteerModal() {
+        document.getElementById("VolunteerModal").style.display = "none";
       }
 
 
       //修改api
-        document.querySelector("#volunteerForm").addEventListener("submit", async (e) => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("volunteerForm");
+        if (!form) {
+          console.error("找不到 volunteerForm");
+          return;
+        }
+
+        form.addEventListener("submit", async (e) => {
           e.preventDefault();
-      
-          const formData = new FormData(volunteerForm);
+           const formData = new FormData(volunteerForm);
       
           const payload = {
             volunteer_name: formData.get("volunteer_name"),
@@ -450,12 +456,12 @@
               console.error(err);
               alert("系統錯誤 "+ err);
             });
+          
         });
+      });
 
 
 
-
-      
 </script>
     <!-- Modal 遮罩 -->
 <div id="volunteerModal" class="modal-overlay">
