@@ -385,7 +385,7 @@
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
 
-      //modal
+      // openmodal
       function openElderModal() {
         if (!currentElder) return;
       
@@ -402,16 +402,14 @@
         f.health_note.value = currentElder.health_note || "";
       }
       
+      //close modal
       function closeElderModal() {
         document.getElementById("elderModal").style.display = "none";
       }
 
       //修改功能api
-      
-        const elderForm = document.getElementById("elderForm");
-      
-        elderForm.addEventListener("submit", function (e) {
-          e.preventDefault();
+      document.querySelector("[action=submit]").addEventListener("click", async (e)  => {
+        e.preventDefault();
       
           const formData = new FormData(elderForm);
       
@@ -434,7 +432,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
-          });
+          })
             .then(res => res.json())
             .then(result => {
               console.log("API 回傳 👉", result);
@@ -452,9 +450,7 @@
               console.error(err);
               alert("系統錯誤 "+ err);
             });
-      })
-
-
+     })
 
       
     </script>
@@ -495,7 +491,7 @@
             <textarea name="health_note" rows="3"></textarea>
           </div>
         
-          <button type="submit" class="btn">儲存修改</button>
+          <button type="submit" action="submit" class="btn">儲存修改</button>
         </form>
         
           </div>

@@ -157,6 +157,64 @@
         font-size: 24px;
         cursor: pointer;
       }
+      /* modal 表單 */
+      .elder-form {
+        max-width: 500px;
+        margin: 30px auto;
+        padding: 24px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        font-family: Arial, sans-serif;
+      }
+      
+      .elder-form h3 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #4a90e2;
+      }
+      
+      .btn {
+        width: 100%;
+        padding: 10px;
+        background-color: #4a90e2;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      
+      .btn:hover {
+        background-color: #357abd;
+      }
       
     </style>
   </head>
@@ -327,12 +385,13 @@
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
 
-      //修改功能
+      //openmodal
         function openVolunteerModal() {
           if (!currentVolunteer) return;
 
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
+        const f = document.getElementById("volunteerForm");
       
         // 帶入目前資料
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
@@ -344,10 +403,14 @@
           currentVolunteer.partner_experience || "";
       }
 
-      //修改modal
-        const volunteerForm = document.getElementById("volunteerForm");
-      
-        elderForm.addEventListener("submit", function (e) {
+      //close modal
+      function closeElderModal() {
+        document.getElementById("elderModal").style.display = "none";
+      }
+
+
+      //修改api
+        document.querySelector("#volunteerForm").addEventListener("submit", async (e) => {
           e.preventDefault();
       
           const formData = new FormData(volunteerForm);
@@ -369,7 +432,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
-          });
+          })
             .then(res => res.json())
             .then(result => {
               console.log("API 回傳 👉", result);
@@ -403,23 +466,35 @@
     <form id="volunteerForm" class="form-section">
            <h3>志工資料修改</h3>
       
+      <div class="form-group">
       <label class="required">姓名</label>
       <input type="text" name="volunteer_name" required />
+      </div>
       
+      <div class="form-group">
       <label class="required">電子郵件 Email</label>
       <input type="email" name="email" required />
+      </div>
       
+      <div class="form-group">
       <label class="required">連絡電話</label>
       <input type="tel" name="phone" pattern="09[0-9]{8}" required />
+      </div>
       
+      <div class="form-group">
       <label class="required">出生年月日</label>
       <input type="date" name="birthday" required />
+      </div>
       
+      <div class="form-group">
       <label class="required">地址</label>
       <input type="text" name="address" required />
+      </div>
       
+      <div class="form-group">
       <label>簡介與經驗</label>
       <textarea name="partner_experience" rows="3"></textarea>
+      </div>
       
       <div class="button-group">
         <button type="submit" class="submit-btn">儲存修改</button>
