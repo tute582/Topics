@@ -26,14 +26,16 @@
         }
         .nav-1 h1 { font-size: 20px; margin: 0; }
         
+        /* 修改 cursor 讓使用者知道可以點擊 */
         .volunteer-area {
-            display: flex; align-items: center; gap: 8px; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; 
             max-width: 50%;
         }
-        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none; cursor: pointer; }
         #volunteerName { 
             font-size: 16px; font-weight: bold; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            cursor: pointer;
         }
         
         .container { 
@@ -86,39 +88,24 @@
 
         /* --- 優化標籤樣式 --- */
         label { 
-            display: flex; /* 讓圖示與文字水平排列 */
-            align-items: center; /* 垂直置中 */
-            font-weight: 600; 
-            margin-bottom: 6px; /* 標籤與輸入框的距離 */
-            margin-top: 15px; /* 每個欄位之間的距離 */
-            color: #444; 
-            font-size: 15px; 
+            display: flex; align-items: center; font-weight: 600; 
+            margin-bottom: 6px; margin-top: 15px; 
+            color: #444; font-size: 15px; 
         }
         
-        /* --- 圖示樣式 --- */
         label i {
-            margin-right: 10px; /* 圖示與文字的間距 (您要求的重點) */
-            width: 24px; /* 固定圖示寬度，讓文字對齊 */
-            text-align: center;
-            color: #666; /* 圖示顏色 */
-            font-size: 16px;
+            margin-right: 10px; width: 24px; text-align: center;
+            color: #666; font-size: 16px;
         }
 
-        /* 輸入框樣式優化 */
         input[type="text"], input[type="date"], input[type="time"], select { 
-            width: 100%; 
-            padding: 12px 12px; /* 加大內距更舒適 */
-            margin: 0; /* 移除預設 margin，改由 label 控制間距 */
-            border-radius: 10px; 
-            border: 1px solid #ddd; 
-            font-size: 16px; 
-            background-color: #fdfdfd;
+            width: 100%; padding: 12px 12px; margin: 0; 
+            border-radius: 10px; border: 1px solid #ddd; 
+            font-size: 16px; background-color: #fdfdfd;
             transition: border-color 0.2s;
         }
         input:focus, select:focus {
-            outline: none;
-            border-color: #4a90e2;
-            background-color: #fff;
+            outline: none; border-color: #4a90e2; background-color: #fff;
         }
         
         .event-item { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; overflow: hidden; }
@@ -135,7 +122,7 @@
 <body>
     <nav class="nav-1">
         <h1>行事曆</h1>
-        <div class="volunteer-area" onclick="handleLoginClick()">
+        <div class="volunteer-area">
             <img id="volunteerAvatar" class="avatar" src="" alt="avatar" />
             <span id="volunteerName">載入中</span>
         </div>
@@ -152,7 +139,6 @@
             <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
             <h3 id="modalTitle" style="margin-bottom:10px; font-size: 1.3em;">新增行程</h3>
             <form id="dataForm">
-                
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
                 
@@ -208,49 +194,43 @@
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         let userId = ""; 
         let userName = ""; 
+        let identify = ""; // [新增] 用來儲存身分 (志工/長者)
         let calendar, isEditing = false, currentEventId = null, selectedDateStr = "";
-        const API_BASE_URL = "https://supabase-api-six.vercel.app/schedules";
-
-        function handleLoginClick() {
-            if (!liff.isLoggedIn()) liff.login({ redirectUri: window.location.href });
-            else if (confirm("確定要登出嗎？")) { liff.logout(); window.location.reload(); }
-        }
+        
+        // 基礎 API 路徑 (用來做 CRUD 行程)
+        const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
+        // 驗證 API 路徑 (用來確認身分)
+        const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
 
         document.addEventListener('DOMContentLoaded', function() {
+            // (Calendar 初始化保持不變)
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth', 
                 locale: 'zh-tw', 
                 height: 'auto', 
-                
                 headerToolbar: { 
                     left: 'prev,next', 
                     center: 'title', 
                     right: 'dayGridMonth,listMonth' 
                 },
-                
                 buttonText: {
                     dayGridMonth: '月曆',
                     listMonth: '列表顯示',
                     today: '今天'
                 },
-
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: (arg) => arg.dayNumberText.replace('日', ''),
-                
                 titleFormat: function(info) {
                     const date = info.date.marker;
                     return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                 },
-
                 dayMaxEvents: 2, 
                 moreLinkContent: '...', 
-                
                 moreLinkClick: function(info) {
                     const dateStr = info.date.toISOString().split('T')[0];
                     openDayView(dateStr);
                     return 'none'; 
                 },
-
                 dateClick: (info) => openDayView(info.dateStr),
                 eventClick: (info) => openModal(true, info.event)
             });
@@ -261,28 +241,87 @@
         async function initLiff() {
             try {
                 await liff.init({ liffId: LIFF_ID });
+                
+                // [新增] 取得 DOM 元素
+                const avatarEl = document.getElementById("volunteerAvatar");
+                const nameEl = document.getElementById("volunteerName");
+
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     userId = profile.userId; 
                     userName = profile.displayName; 
-                    document.getElementById("volunteerName").innerText = userName;
+                    nameEl.innerText = userName;
                     if (profile.pictureUrl) {
-                        const avatar = document.getElementById("volunteerAvatar");
-                        avatar.src = profile.pictureUrl; avatar.style.display = "inline-block";
+                        avatarEl.src = profile.pictureUrl; 
+                        avatarEl.style.display = "inline-block";
                     }
+
+                    // [新增] 呼叫 API 確認身分 (取得 identify)
+                    try {
+                        const idRes = await fetch(`${IDENTIFY_API_BASE}/${userId}`);
+                        const idData = await idRes.json();
+                        if(idData.success) {
+                            identify = idData.role; // 例如 "志工" 或 "長者"
+                            console.log("使用者身分:", identify);
+                        }
+                    } catch(e) {
+                        console.error("身分驗證失敗", e);
+                    }
+
+                    // 載入行程
+                    loadRecords();
+
                 } else {
-                    document.getElementById("volunteerName").innerText = "未登入";
+                    nameEl.innerText = "未登入";
+                    // 若未登入，點擊時會由下方的 EventListener 觸發登入
                 }
-                loadRecords();
+
+                // [新增] 您的跳轉程式碼 (已整合進來)
+                if (avatarEl) {
+                    avatarEl.addEventListener("click", () => {
+                        if (liff.isLoggedIn()) {
+                            localStorage.setItem("fromPage", "bookvolunteer");
+                            console.log("目前身分:", identify); // Debug 用
+
+                            switch (identify) {
+                                case "志工":
+                                    window.location.href = "../../Login-or-register/志工資料顯示.html";
+                                    break;
+                                case "長者":
+                                    window.location.href = "../../Login-or-register/長輩資料顯示.html";
+                                    break;
+                                default:
+                                    // 若 identify 為空或未註冊，導回首頁/登入頁
+                                    window.location.href = "../../Login-or-register/index.html";
+                            }
+                        } else {
+                            liff.login({ redirectUri: window.location.href });
+                        }
+                    });
+                }
+
+                if (nameEl) {
+                    nameEl.addEventListener("click", () => {
+                        if (!liff.isLoggedIn()) {
+                            liff.login({ redirectUri: window.location.href });
+                        } else {
+                            // 這裡可以改成登出功能，或者維持顯示名稱
+                            if(confirm(`已登入為：${userName}\n是否要登出？`)) {
+                                liff.logout();
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+
             } catch (err) { 
                 console.error("LIFF error", err); 
-                loadRecords(); 
             }
         }
 
         async function loadRecords() {
             try {
-                const res = await fetch(`${API_BASE_URL}/elder/${userId}`);
+                const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}`);
                 const result = await res.json();
                 if (result.success && Array.isArray(result.data)) {
                     const events = result.data.map(item => ({
@@ -301,6 +340,7 @@
             } catch (e) { console.error(e); }
         }
 
+        // (CRUD 操作保持不變，注意 API URL 變數名稱修正為 SCHEDULE_API_URL)
         document.getElementById("saveBtn").onclick = async function() {
             const dateVal = document.getElementById("date").value;
             const timeVal = document.getElementById("time").value;
@@ -317,10 +357,10 @@
 
             let url, method;
             if (isEditing) {
-                url = `${API_BASE_URL}/elder/${userId}/${currentEventId}`;
+                url = `${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}`;
                 method = "PATCH";
             } else {
-                url = API_BASE_URL;
+                url = SCHEDULE_API_URL;
                 method = "POST";
                 payload.elder_user_id = userId;
                 payload.elder_name = userName; 
@@ -342,13 +382,14 @@
 
         document.getElementById("deleteBtn").onclick = async function() {
             if (!confirm("確定刪除？")) return;
-            const url = `${API_BASE_URL}/elder/${userId}/${currentEventId}`;
+            const url = `${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}`;
             try {
                 const res = await fetch(url, { method: "DELETE" });
                 if (res.ok) { alert("已刪除"); closeModal('dataModal'); loadRecords(); }
             } catch (err) { alert("連線錯誤"); }
         };
 
+        // (其他 UI 函式保持不變)
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
