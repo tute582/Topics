@@ -401,14 +401,21 @@
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
       }
-      
+
       //close modal
       function closeElderModal() {
         document.getElementById("elderModal").style.display = "none";
       }
 
       //修改功能api
-      document.querySelector("[action=submit]").addEventListener("click", async (e)  => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("elderForm");
+        if (!form) {
+          console.error("找不到 elderForm");
+          return;
+        }
+
+        form.addEventListener("submit", async (e) => {
         e.preventDefault();
       
           const formData = new FormData(elderForm);
@@ -426,7 +433,7 @@
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
       
-         fetch(`https://supabase-api-six.vercel.app/elders/${elderId}`, {
+         fetch(`https://supabase-api-six.vercel.app/elders/${userId}`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -450,7 +457,9 @@
               console.error(err);
               alert("系統錯誤 "+ err);
             });
-     })
+     });
+    })
+     
 
       
     </script>
@@ -491,7 +500,7 @@
             <textarea name="health_note" rows="3"></textarea>
           </div>
         
-          <button type="submit" action="submit" class="btn">儲存修改</button>
+          <button type="submit"  class="btn">儲存修改</button>
         </form>
         
           </div>
