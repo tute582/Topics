@@ -192,7 +192,7 @@
 
     <script>
         const LIFF_ID = "2008484068-Kp57RrAr"; 
-        let userId = ""; 
+        let userId = ""; // 從 LIFF 取得，測試時手動輸入自己的userId
         let userName = ""; 
         let identify = ""; // [新增] 用來儲存身分 (志工/長者)
         let calendar, isEditing = false, currentEventId = null, selectedDateStr = "";
@@ -272,8 +272,7 @@
                     loadRecords();
 
                 } else {
-                    nameEl.innerText = "未登入";
-                    // 若未登入，點擊時會由下方的 EventListener 觸發登入
+                    liff.login(); // 強制登入，測試時前註解掉後續打開
                 }
 
                 //大頭貼跳傳頁面設定

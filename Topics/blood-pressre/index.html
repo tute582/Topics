@@ -632,7 +632,7 @@
       const adviceText = document.getElementById("advice-text");
 
       // 狀態變數
-      let userId = "";
+      let userId = "";   //測試時可設定自己的userId
       let userName = null;
       let liffProfile = null;
       let records = [];
@@ -710,6 +710,8 @@
           await liff.init({ liffId: LIFF_ID });
 
           if (!liff.isLoggedIn()) {
+            liff.login(); // 強制登入，測試時前註解掉後續打開
+            //以下為測試用
             nameEl.innerText = "未登入";
             avatarEl.style.display = "none";
             return;

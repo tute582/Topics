@@ -148,15 +148,14 @@
       /* 5. Modal 樣式系統 */
       .modal-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background-color: rgba(0, 0, 0, 0.4); /* 半透明黑 */
-        backdrop-filter: blur(5px);           /* 背景模糊特效 */
-        -webkit-backdrop-filter: blur(5px);   /* 支援 Safari */
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);        
+        -webkit-backdrop-filter: blur(5px);
         z-index: 2000; 
         display: none; 
         justify-content: center; align-items: center; 
       }
       
-      /* 確保警告視窗層級最高 */
       #alertModal.modal-overlay, #confirmModal.modal-overlay { z-index: 4000; }
 
       .modal-overlay.show { display: flex; }
@@ -177,15 +176,12 @@
       .modal-footer { padding: 15px; text-align: right; border-top: 1px solid #eee; flex-shrink: 0; background: #fff; }
       .modal-btn { background: #0984e3; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
 
-      /* 刪除按鈕樣式 (紅色) */
       .btn-delete { background: #ef4444 !important; color: white !important; }
       .btn-delete:hover { background: #dc2626 !important; }
       .btn-delete:disabled { background: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed; }
       
-      /* 取消按鈕樣式 (灰色) */
       .btn-cancel { background: #9ca3af !important; color: white !important; margin-right: 10px; }
 
-      /* 卡片樣式 */
       .event-card { 
         box-shadow: none; 
         border: 1px solid #ddd;
@@ -203,7 +199,6 @@
       .event-card.clickable { cursor: pointer; transition: background-color 0.2s; }
       .event-card.clickable:hover { filter: brightness(0.95); }
 
-      /* 選取狀態樣式 */
       .event-card.selected { border: 2px solid #0984e3; background-color: #e3f2fd !important; }
 
       .card-main { display: flex; flex-direction: column; gap: 6px; padding-left: 10px; width: 100%; }
@@ -211,7 +206,6 @@
       .card-info { font-size: 0.95rem; color: #555; display: flex; flex-direction: column; gap: 4px; }
       .detail-row { display: flex; align-items: center; gap: 8px; }
 
-      /* Checkbox 樣式 */
       .card-checkbox { 
         width: 20px; height: 20px; 
         border: 2px solid #ccc; border-radius: 4px; 
@@ -220,17 +214,52 @@
       }
       .event-card.selected .card-checkbox { border-color: #0984e3; background-color: #0984e3; }
       .event-card.selected .card-checkbox::after { content: '✔'; color: white; font-size: 14px; }
+      
+      /* Loading Overlay */
+      .loading-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(255,255,255,0.9);
+          z-index: 9999;
+          display: none;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+      }
+      .spinner {
+          border: 5px solid #f3f3f3;
+          border-top: 5px solid #0984e3;
+          border-radius: 50%;
+          width: 50px; height: 50px;
+          animation: spin 1s linear infinite;
+          margin-bottom: 15px;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+      /* 鎖定時段樣式：代表該時段內已有任務，整段時間被佔用 */
+      .occupied-slot { 
+          background-color: #f3f4f6 !important; /* 很淺的灰 */
+          border-left: 4px solid #6b7280 !important; /* 深灰邊框 */
+          color: #9ca3af !important; /* 文字顏色變淡 */
+          pointer-events: none !important; /* 禁止點擊 */
+          text-decoration: line-through; /* (選項) 加上刪除線代表不可再選 */
+      }
     </style>
   </head>
   <body>
+
+    <div id="mainLoadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loadingTitle" style="font-weight: bold; color: #333; font-size: 18px;">載入中</div>
+        <div id="loadingSubtitle" style="color: #666; font-size: 14px; margin-top: 5px;"></div>
+    </div>
 
     <nav class="nav-1">
       <div><h1 style="margin: 0; font-size: 28px">志工管理系統</h1></div>
       <div style="display: flex; align-items: center">
         <h1 style="margin: 0; text-align: right">
           <span class="volunteer-area" style="display: flex; align-items: center; gap: 8px">
-            <img id="volunteerAvatar" class="avatar" src="default-avatar.png" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none;" />
+            <img id="volunteerAvatar" class="avatar" src="" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #0984e3; display: none;" />
             <span id="volunteerName" style="cursor: pointer; font-size: 26px">未登入</span>
           </span>
         </h1>
@@ -243,7 +272,6 @@
         <div class="schedule-legend">
           <span class="legend-item" id="legend-free"><span class="dot dot-free"></span> 可服務</span>
           <span class="legend-item" id="legend-busy"><span class="dot dot-busy"></span> 已預約</span>
-          <span class="legend-item"><span class="dot dot-none"></span> 更多</span>
         </div>
       </div>
       <div class="month-scroll-wrapper" id="monthNav">
@@ -266,19 +294,6 @@
         <div id="calendar-book"></div>
       </div>
     </section>
-
-    <div id="eventModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
-      <div class="modal-box">
-        <div class="modal-header">
-          <div class="modal-title" id="detail-title">詳細資訊</div>
-          <span class="close-icon" onclick="closeModal('eventModal')">×</span>
-        </div>
-        <div class="modal-body" id="detail-body"></div>
-        <div class="modal-footer">
-           <button id="btn-delete-single" class="modal-btn btn-delete">刪除</button>
-        </div>
-      </div>
-    </div>
 
     <div id="moreListModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
       <div class="modal-box large-modal">
@@ -329,6 +344,175 @@
       let confirmCallback = null;
       let currentListDateStr = '';
 
+      // LIFF 初始化設定
+      const LIFF_ID = "2008484068-vazlor5r";
+      const avatarEl = document.getElementById("volunteerAvatar");
+      const nameEl = document.getElementById("volunteerName");
+
+      // 身分與使用者資訊
+      let userId = ""; // 從 LIFF 取得，測試時手動輸入自己的userId
+      let userName = "";
+      // 【修改】強制設定身分為志工，忽略上一頁的檢查
+      let identify = "志工"; 
+
+      // ==========================================================
+      // API 整合區塊
+      // ==========================================================
+      const BASE_API_URL = "https://supabase-api-six.vercel.app";
+
+      // 1. 取得志工可服務時段 (GET)
+      async function fetchVolunteerInfo(uid) {
+          try {
+              showLoading("載入資料中", "正在取得班表...");
+              
+              const res = await fetch(`${BASE_API_URL}/volunteers/${uid}`);
+              const json = await res.json();
+              
+              if (json.success && json.data && json.data.available_time) {
+                  if (!calendarAvail) return;
+
+                  // 【關鍵修改 1】只清除 'available' 類型的事件，保留 'booked-sync' (灰色的預約)
+                  const currentEvents = calendarAvail.getEvents();
+                  currentEvents.forEach(e => {
+                      if (e.extendedProps.type === 'available') {
+                          e.remove();
+                      }
+                  });
+                  
+                  // 整理新資料
+                  const newEvents = json.data.available_time.map((slot, index) => ({
+                      id: `avail-${index}-${Date.now()}`,
+                      title: "可服務時段",
+                      start: slot.start, 
+                      end: slot.end,
+                      classNames: ['available-slot'],
+                      extendedProps: { note: "可預約", type: 'available' }
+                  }));
+                  
+                  // 新增事件到行事曆
+                  newEvents.forEach(ev => calendarAvail.addEvent(ev));
+
+                  // 自動跳轉到最新資料日期
+                  if (newEvents.length > 0) {
+                      const firstEventDate = newEvents[0].start; 
+                      calendarAvail.gotoDate(firstEventDate);
+                  }
+              }
+          } catch (error) {
+              console.error("Fetch Volunteer Info Error:", error);
+              showCustomAlert("無法取得志工資料");
+          } finally {
+              hideLoading();
+              if (typeof updateMonthProgress === 'function') updateMonthProgress();
+          }
+      }
+
+      // 2. 更新志工可服務時段 (PATCH) - 新增或刪除後呼叫
+      async function updateAvailableTimeAPI(uid) {
+        if (!calendarAvail) return;
+
+        // 從 Calendar 取出所有 'available' 的事件，轉回 API 需要的格式
+        const allAvailEvents = calendarAvail.getEvents().filter(e => e.extendedProps.type === 'available');
+        
+        const payloadData = allAvailEvents.map(e => ({
+            start: e.startStr, // ISO String (含時區)
+            end: e.endStr
+        }));
+
+        try {
+            showLoading("更新中", "正在儲存您的班表...");
+            const res = await fetch(`${BASE_API_URL}/volunteers/${uid}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ available_time: payloadData })
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                // 成功，不需要做什麼，因為 UI 已經先變更了
+                // 為了保險起見，也可以重新 fetch 一次，但為了流暢度先不做
+            } else {
+                showCustomAlert("更新失敗，請檢查網路連線");
+            }
+        } catch (error) {
+            console.error("Update API Error:", error);
+            showCustomAlert("更新發生錯誤");
+        } finally {
+            hideLoading();
+            updateMonthProgress();
+        }
+      }
+
+      // 3. 取得所有預約資料 (GET)
+      async function fetchAppointments(uid) {
+        try {
+            const res = await fetch(`${BASE_API_URL}/appointments/volunteer/${uid}`);
+            const json = await res.json();
+
+            if (json.success && json.data) {
+                // 1. 整理預約資料 (給 Tab 2 紅色行事曆用)
+                const bookEvents = json.data.map((appt, index) => {
+                    const startTime = new Date(appt.appointment_time);
+                    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 預設 1 小時
+
+                    return {
+                        id: `book-${index}-${Date.now()}`,
+                        title: `${appt.visit_type} - ${appt.elder_name}`,
+                        start: appt.appointment_time,
+                        end: endTime.toISOString(),
+                        classNames: ['booked-slot'], 
+                        extendedProps: { 
+                            location: appt.meeting_address, 
+                            elder: appt.elder_name, 
+                            type: 'booked' 
+                        }
+                    };
+                });
+
+                // 2. 渲染 Tab 2 (預約紀錄)
+                if(calendarBook) {
+                    calendarBook.getEvents().forEach(e => e.remove());
+                    bookEvents.forEach(ev => calendarBook.addEvent(ev));
+                }
+
+                // 3. 【關鍵邏輯】處理 Tab 1 (可服務時段) 的佔用顯示
+                if(calendarAvail) {
+                    // 取得目前所有綠色的可服務時段
+                    const availEvents = calendarAvail.getEvents();
+
+                    availEvents.forEach(availEv => {
+                        // 檢查：是否有任何一個預約，時間落在這個可服務時段內？
+                        // 邏輯：預約開始時間 < 可服務結束時間 AND 預約結束時間 > 可服務開始時間
+                        const isOverlap = bookEvents.some(bookEv => {
+                             const bStart = new Date(bookEv.start).getTime();
+                             const bEnd = new Date(bookEv.end).getTime();
+                             const aStart = availEv.start.getTime();
+                             const aEnd = availEv.end.getTime();
+                             return (bStart < aEnd && bEnd > aStart);
+                        });
+
+                        if (isOverlap) {
+                            // 如果有重疊，代表這個大時段要被「鎖定」
+                            // 不再新增額外的 event，而是直接修改原本綠色 event 的屬性
+                            availEv.setProp('title', '已被預約時段');
+                            availEv.setProp('classNames', ['occupied-slot']); // 變成灰色
+                            availEv.setExtendedProp('type', 'occupied'); // 標記為佔用，避免被誤刪
+                            availEv.setExtendedProp('note', '此時段已有預約行程，無法預約');
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Fetch Appointments Error:", error);
+        } finally {
+            updateMonthProgress();
+        }
+      }
+
+      // ==========================================================
+      // UI 邏輯區塊
+      // ==========================================================
+
       function updateMonthProgress() {
         const availEvs = calendarAvail ? calendarAvail.getEvents() : [];
         const bookEvs = calendarBook ? calendarBook.getEvents() : [];
@@ -346,8 +530,8 @@
             return start && start.getFullYear() === year && (start.getMonth() + 1) === month;
           });
 
-          const bookedCount = monthEvents.filter(e => e.classNames.includes('booked-slot')).length;
-          const availableCount = monthEvents.filter(e => e.classNames.includes('available-slot')).length;
+          const bookedCount = monthEvents.filter(e => e.extendedProps.type === 'booked').length;
+          const availableCount = monthEvents.filter(e => e.extendedProps.type === 'available').length;
           
           const pBusy = card.querySelector('.p-busy');
           const pFree = card.querySelector('.p-free');
@@ -422,61 +606,13 @@
          closeModal('confirmModal');
       };
 
-      function generateMonthlyData(baseDate) {
-        const events = [];
-        const taskTitles = ["醫院陪診", "居家清潔", "代購物資", "電話問安", "活動支援", "行政協助"];
-        const locations = ["亞東醫院", "板橋區", "活動中心", "衛生所", "服務中心"];
-        
-        for (let i = 0; i < 6; i++) {
-          const targetMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
-          const year = targetMonth.getFullYear();
-          const month = targetMonth.getMonth(); 
-          const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-          const bookedCount = Math.floor(Math.random() * 6) + 3;
-          const availableCount = Math.floor(Math.random() * 5) + 2;
-
-          for (let b = 0; b < bookedCount; b++) {
-            const day = Math.floor(Math.random() * (daysInMonth - 1)) + 1; 
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const randomTitle = taskTitles[Math.floor(Math.random() * taskTitles.length)];
-            events.push({
-              id: `booked-${i}-${b}`, 
-              title: randomTitle,
-              start: `${dateStr}T${9 + Math.floor(Math.random()*8)}:00:00`,
-              end: `${dateStr}T${12 + Math.floor(Math.random()*4)}:00:00`, 
-              classNames: ['booked-slot'], 
-              extendedProps: { location: locations[Math.floor(Math.random()*locations.length)], elder: "某長者", type: 'booked' }
-            });
-          }
-
-          for (let a = 0; a < availableCount; a++) {
-            const day = Math.floor(Math.random() * (daysInMonth - 1)) + 1;
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            events.push({
-              id: `avail-${i}-${a}`, 
-              title: "可服務時段",
-              start: `${dateStr}T${9 + Math.floor(Math.random()*8)}:00:00`,
-              end: `${dateStr}T${12 + Math.floor(Math.random()*4)}:00:00`, 
-              classNames: ['available-slot'], 
-              extendedProps: { note: "自行排班", location: "未定", type: 'available' }
-            });
-          }
-        }
-        return events;
-      }
-
       document.addEventListener("DOMContentLoaded", function () {
         try {
           const availEl = document.getElementById("calendar-avail");
           const bookEl = document.getElementById("calendar-book");
           const now = new Date();
-          const allEvents = generateMonthlyData(now);
 
-          const availOnlyEvents = allEvents.filter(e => e.extendedProps.type === 'available');
-          const bookedOnlyEvents = allEvents.filter(e => e.extendedProps.type === 'booked');
-
-          function createCalendarConfig(eventsData, isInteractive) {
+          function createCalendarConfig(isInteractive) {
              return {
                 initialView: "dayGridMonth",
                 initialDate: now, 
@@ -486,32 +622,30 @@
                 headerToolbar: { left: "prev,next", center: "title", right: "today" },
                 titleFormat: { year: 'numeric', month: 'long' },
                 eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
-
-                events: eventsData, 
                 fixedWeekCount: false, 
-                
                 dayMaxEvents: 2, 
                 
                 moreLinkContent: function() { return ''; },
 
                 moreLinkClick: function(info) {
                     info.jsEvent.preventDefault();
-                    openMoreListModal(info.date, info.allSegs);
+                    // 點擊 "+more" 時，需要過濾出屬於該日曆類型的事件
+                    const typeFilter = isInteractive ? 'available' : 'booked';
+                    const filteredSegs = info.allSegs.filter(seg => seg.event.extendedProps.type === typeFilter);
+                    const mockSegments = filteredSegs.map(seg => ({ event: seg.event }));
+                    openMoreListModal(info.date, mockSegments);
                 },
 
                 dayHeaderContent: function(arg) { return arg.text.slice(-1); },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 
-                // 【關鍵修改】：移除 eventClick 的 showModal 行為，統一走 dateClick 流程
-                // eventClick 只是把事件傳給 openMoreListModal
                 eventClick: function(info) { 
-                   // 找到當天所有事件
+                   // 點擊事件本身
                    const dateStr = info.event.startStr.split('T')[0];
                    const currentCalendar = isInteractive ? calendarAvail : calendarBook;
                    const allEvs = currentCalendar.getEvents();
                    const todayEvs = allEvs.filter(ev => ev.startStr.split('T')[0] === dateStr);
                    
-                   // 統一打開列表視窗
                    const mockSegments = todayEvs.map(ev => ({ event: ev }));
                    openMoreListModal(info.event.start, mockSegments);
                 },
@@ -549,19 +683,22 @@
                    }
                 },
                 eventsSet: function() {
+                    // 事件變動時更新統計
+                    // 注意：API 載入也會觸發這裡
                     if (typeof updateMonthProgress === 'function') updateMonthProgress();
                 }
              };
           }
 
-          calendarAvail = new FullCalendar.Calendar(availEl, createCalendarConfig(availOnlyEvents, true));
+          calendarAvail = new FullCalendar.Calendar(availEl, createCalendarConfig(true));
           calendarAvail.render();
 
-          calendarBook = new FullCalendar.Calendar(bookEl, createCalendarConfig(bookedOnlyEvents, false));
+          calendarBook = new FullCalendar.Calendar(bookEl, createCalendarConfig(false));
           calendarBook.render();
           
           document.getElementById('legend-busy').style.display = 'none';
 
+          // 產生上方月份導覽列
           (function createMonthNav() {
             const monthNav = document.getElementById('monthNav');
             if (!monthNav) return;
@@ -593,78 +730,56 @@
               });
               monthNav.appendChild(card);
             }
-            setTimeout(updateMonthProgress, 100);
           })();
-
-          // LIFF
-          const LIFF_ID = "2008484068-vazlor5r";
-          const avatarEl = document.getElementById("volunteerAvatar");
-          const nameEl = document.getElementById("volunteerName");
+          
+          // ==========================================
+          // 初始化流程控制 - 修改版
+          // ==========================================
           async function initLiffAndSetProfile() {
             try {
-              if (typeof liff === 'undefined') return;
-              await liff.init({ liffId: LIFF_ID });
-              if (!liff.isLoggedIn()) {
-                nameEl.innerText = "未登入"; avatarEl.style.display = "none"; return;
+              if (typeof liff === 'undefined') {
+                  console.warn("LIFF not loaded.");
+                  return;
               }
-              const profile = await liff.getProfile();
-              nameEl.innerText = profile.displayName || "志工";
-              if (profile.pictureUrl) { avatarEl.src = profile.pictureUrl; avatarEl.style.display = "inline-block"; }
+              await liff.init({ liffId: LIFF_ID });
               
-              // 4. 呼叫後端 API 檢查身分
-              fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
-                .then((res) => res.json())
-                .then((result) => {
-                  
-                  if (!result.success) {
-                    // --- 情況 A：未註冊 ---
-                    hideLoading(); // 關閉動畫讓使用者看 Alert
-                    alert(
-                      "首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。"
-                    );
-                    window.location.href = "../../Login-or-register/index.html";
-                  } else {
-                    identify = result.role;
-                    console.log("登入角色 role：", result.role);
+              if (!liff.isLoggedIn()) {
+                liff.login(); // 強制登入，測試時前註解掉後續打開
+                // 測試模式：
+                // nameEl.innerText = "未登入"; 
+                // avatarEl.style.display = "none"; 
+                // if(userId) {
+                //     await fetchVolunteerInfo(userId); // 等待班表載入完成
+                //     await fetchAppointments(userId);  // 再載入預約並執行變色邏輯
+                // }
+                return;
+              }
 
-                    if (identify === "志工") {
-                      // --- 情況 B：是志工 (需要跳轉) ---
-                      // 更新 Loading 文字，且「不要」關閉 Loading
-                      // 這樣畫面會一直轉圈直到跳轉完成，不會露出長者介面
-                      showLoading("身分確認：志工", "正在前往志工專區...");
-                      
-                      setTimeout(() => {
-                          window.location.href = "Volunteer.html"; 
-                      }, 800); // 稍微延遲讓使用者看清楚文字
+              const profile = await liff.getProfile();
+              userId = profile.userId;
+              userName = profile.displayName;
+              
+              nameEl.innerText = userName || "志工";
+              if (profile.pictureUrl) { 
+                  avatarEl.src = profile.pictureUrl; 
+                  avatarEl.style.display = "inline-block"; 
+              }
+              
+              console.log("LIFF initialized. User:", userId);
 
-                    } else if (identify === "長者") {
-                      // --- 情況 C：是長者 (留在本頁) ---
-                      console.log("以長者身份登入，歡迎使用預約志工服務！");
+              // 【關鍵修改】正式環境也要確保順序
+              if(userId) {
+                  await fetchVolunteerInfo(userId); // 1. 先畫綠色格子
+                  await fetchAppointments(userId);  // 2. 再拿紅色格子去把綠色變灰
+              }
 
-                      // 填入地址
-                      const address = result.data.address || "";
-                      const addressInput = document.getElementById("addressFull");
-                      if (addressInput && address) {
-                        addressInput.value = address;
-                      }
-
-                      // 重要：身分確認是長者，這時候才把 Loading 關掉，顯示頁面
-                      hideLoading();
-                    }
-                  }
-                })
-                .catch((err) => {
-                  console.error("身分檢查 API 錯誤：", err);
-                  hideLoading(); // 出錯也要關掉動畫
-                  window.location.href = "../../Login-or-register/index.html";
-                });
-            } catch (err) { console.error("LIFF error:", err); }
+            } catch (err) { console.error('LIFF/API 初始化錯誤:', err); }
           }
-          nameEl.addEventListener("click", () => {
-            if (typeof liff !== 'undefined' && !liff.isLoggedIn()) liff.login({ redirectUri: window.location.href });
-          });
+
+          // 啟動
           initLiffAndSetProfile();
-        } catch (err) { console.error('初始化錯誤:', err); }
+
+        } catch (err) { console.error('DOM Ready Error:', err); }
       });
 
       //大頭貼跳傳頁面設定
@@ -672,30 +787,7 @@
         avatarEl.addEventListener("click", () => {
           if (liff.isLoggedIn()) {
             localStorage.setItem("fromPage", "bookvolunteer");
-            switch (identify) {
-              case "志工":
-                window.location.href =
-                  "../../Login-or-register/志工資料顯示.html";
-                break;
-              case "長者":
-                window.location.href =
-                  "../../Login-or-register/長輩資料顯示.html";
-                break;
-              default:
-                // "未註冊" 或 undefined 都導往登入
-                window.location.href = "../../Login-or-register/index.html";
-            }
-          } else {
-            liff.login({ redirectUri: window.location.href });
-          }
-        });
-
-      nameEl &&
-        nameEl.addEventListener("click", () => {
-          if (!liff.isLoggedIn()) {
-            liff.login({ redirectUri: window.location.href });
-          } else {
-            alert("已登入：" + (nameEl.innerText || "使用者"));
+            window.location.href = "../../Login-or-register/志工資料顯示.html";
           }
         });
 
@@ -707,7 +799,7 @@
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay show';
         overlay.style.zIndex = 3000;
-        // 【關鍵修改】：調整視窗寬度適配手機
+        
         overlay.innerHTML = `
           <div class="modal-box" style="width: 85%; max-width: 300px; padding: 18px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -758,17 +850,7 @@
           if (startDt >= endDt) { showCustomAlert('結束時間必須晚於開始時間'); return; }
           if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
 
-          const allEvents = calendarAvail.getEvents();
-          const todayEvents = allEvents.filter(ev => {
-             const evDateStr = ev.startStr.split('T')[0];
-             return evDateStr === dateStr && ev.extendedProps.type === 'available';
-          });
-
-          if (todayEvents.length >= 2) {
-             showCustomAlert('一天最多只能新增 2 筆可服務時段！');
-             return;
-          }
-
+          // 前端先新增到介面
           const newEvent = {
             id: `new-${Date.now()}`,
             title: `可服務 ${s}-${e}`, 
@@ -779,13 +861,12 @@
           };
           
           calendarAvail.addEvent(newEvent);
+          
+          // ** 呼叫 API 更新 **
+          updateAvailableTimeAPI(userId);
+
           overlay.remove();
         });
-      }
-
-      function showModal(info) {
-        // 此函式保留，但不會被呼叫了，因為 eventClick 已經改為打開列表
-        // 若未來需要單一事件視窗，可再啟用
       }
       
       // --- 多選刪除功能 (改用客製化 Confirm) ---
@@ -804,6 +885,7 @@
         updateDeleteButton();
 
         const btnAdd = document.getElementById('btn-add-in-list');
+        // 只有在「可服務時段」分頁才允許新增
         if (currentTabMode === 'booking') {
             btnAdd.style.display = 'none';
         } else {
@@ -821,13 +903,18 @@
             if(selectedEventIds.size === 0) return;
             
             showCustomConfirm(`確定要刪除選取的 ${selectedEventIds.size} 筆事件嗎？`, () => {
-                [calendarAvail, calendarBook].forEach(cal => {
+                // 從日曆上移除
+                [calendarAvail].forEach(cal => { // 只從 Available 刪除，預約紀錄不給刪
                     if(!cal) return;
                     selectedEventIds.forEach(id => {
                         const ev = cal.getEventById(id);
                         if(ev) ev.remove();
                     });
                 });
+                
+                // ** 呼叫 API 更新 **
+                updateAvailableTimeAPI(userId);
+
                 closeModal('moreListModal');
             });
         };
@@ -839,16 +926,19 @@
           const card = document.createElement('div');
           const bgColor = (props.type === 'available') ? '#f0fdf4' : '#fef2f2';
           
-          card.className = `event-card clickable`;
+          // 只有 'available' 類型且在可服務模式下才允許點擊選擇刪除
+          const isSelectable = (props.type === 'available' && currentTabMode === 'avail');
+          
+          card.className = `event-card ${isSelectable ? 'clickable' : ''}`;
           card.style.cssText = `border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 0; box-shadow: none; background-color: ${bgColor}; border-left: 1px solid #eee !important; display: flex; align-items: center;`;
           
           const startStr = formatTime(ev.start);
           const endStr = ev.end ? formatTime(ev.end) : '';
           const timeDisplay = endStr ? `${startStr} - ${endStr}` : startStr;
-          const locText = props.location ? `地點：${props.location}` : '';
+          const locText = props.location ? `地點：${props.location}` : (props.note || '');
 
           card.innerHTML = `
-            <div class="card-checkbox"></div>
+            ${isSelectable ? '<div class="card-checkbox"></div>' : ''}
             <div class="card-main">
               <div class="card-title">${ev.title}</div>
               <div class="card-info">
@@ -858,16 +948,18 @@
             </div>
           `;
           
-          card.addEventListener('click', () => {
-             if (selectedEventIds.has(ev.id)) {
-                 selectedEventIds.delete(ev.id);
-                 card.classList.remove('selected');
-             } else {
-                 selectedEventIds.add(ev.id);
-                 card.classList.add('selected');
-             }
-             updateDeleteButton();
-          });
+          if(isSelectable) {
+              card.addEventListener('click', () => {
+                 if (selectedEventIds.has(ev.id)) {
+                     selectedEventIds.delete(ev.id);
+                     card.classList.remove('selected');
+                 } else {
+                     selectedEventIds.add(ev.id);
+                     card.classList.add('selected');
+                 }
+                 updateDeleteButton();
+              });
+          }
           
           listBody.appendChild(card);
         });
@@ -891,8 +983,7 @@
         }
       }
 
-      // 載入動畫Loading 控制函式
-      function showLoading(title = "正在處理中...", subtitle = "請稍候") {
+      function showLoading(title, subtitle) {
         const overlay = document.getElementById("mainLoadingOverlay");
         if(overlay) {
             document.getElementById("loadingTitle").innerText = title;

@@ -1013,7 +1013,7 @@
 
       let volunteers = [];
       let bookedList = [];
-      let userId = "";
+      let userId = "";  //測試時請輸入自己的userId
       let userName = "";
       let currentEditEventId = "";
       let identify = "未註冊";
@@ -1190,9 +1190,10 @@
 
           // 2. 判斷是否登入
           if (!liff.isLoggedIn()) {
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            // 未登入就不需要轉圈，直接顯示頁面
+            liff.login(); // 強制登入，測試時前註解掉後續打開
+            //以下測試用
+            // nameEl.innerText = "未登入";
+            // avatarEl.style.display = "none";
             return; 
           }
 
@@ -1264,7 +1265,6 @@
         } catch (err) {
           console.error("LIFF init error:", err);
           hideLoading();
-          // userId = "test_line_id_002o"; // 測試用
         }
       }
       

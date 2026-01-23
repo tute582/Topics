@@ -355,7 +355,7 @@
       const POST_SUPABASE_API_URL =
         "https://supabase-api-six.vercel.app/consultations";
 
-      let userId = "";
+      let userId = ""; // 從 LIFF 取得，測試時手動輸入自己的userId
       let userName = "";
       let currentEditEventId = "";
       let editRowIndex = null;
@@ -375,10 +375,12 @@
           await liff.init({ liffId: LIFF_ID });
 
           if (!liff.isLoggedIn()) {
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            // 加入這行：如果沒登入，嘗試載入資料（看診進度），但不顯示控制項
-            checkUserRole("");
+            liff.login(); // 強制登入，測試時註解這行
+            // 測試用
+            // nameEl.innerText = "未登入";
+            // avatarEl.style.display = "none";
+            // // 加入這行：如果沒登入，嘗試載入資料（看診進度），但不顯示控制項
+            // checkUserRole("");
             return;
           }
 
