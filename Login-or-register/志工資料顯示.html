@@ -335,72 +335,62 @@
         modal.style.display = "flex";
       
         // 帶入目前資料
-        document.querySelector('[name="volunteerId"]').value =
-          currentVolunteer.vcode || "";
-      
-        document.querySelector('[name="name"]').value =
-          currentVolunteer.volunteer_name || "";
-      
-        document.querySelector('[name="email"]').value =
-          currentVolunteer.email || "";
-      
-        document.querySelector('[name="phone"]').value =
-          currentVolunteer.phone || "";
-      
-        document.querySelector('[name="birthday"]').value =
-          currentVolunteer.birthday || "";
-      
-        document.querySelector('[name="gender"]').value =
-          currentVolunteer.gender || "";
-      
-        document.querySelector('[name="address"]').value =
-          currentVolunteer.address || "";
-      
-        document.querySelector("textarea").value =
+        f.volunteer_name.value = currentVolunteer.volunteer_name || "";
+        f.email.value = currentVolunteer.email || "";
+        f.phone.value = currentVolunteer.phone || "";
+        f.birthday.value = currentVolunteer.birthday || "";
+        f.address.value = currentVolunteer.address || "";
+        f.partner_experience.value =
           currentVolunteer.partner_experience || "";
       }
 
       //修改modal
-      document.getElementById("volunteerForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+      document.addEventListener("DOMContentLoaded", () => {
+        const volunteerForm = document.getElementById("volunteerForm");
       
-        const formData = new FormData(e.target);
+        elderForm.addEventListener("submit", function (e) {
+          e.preventDefault();
       
-        const payload = {
-          volunteer_name: formData.get("name"),
-          email: formData.get("email"),
-          phone: formData.get("phone"),
-          birthday: formData.get("birthday"),
-          gender: formData.get("gender"),
-          address: formData.get("address"),
-          partner_experience: document.querySelector("textarea").value,
-        };
+          const formData = new FormData(volunteerForm);
       
-        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        })
-          .then((res) => res.json())
-          .then((result) => {
-            if (!result.success) {
-              alert("更新失敗");
-              return;
-            }
+          const payload = {
+            volunteer_name: formData.get("volunteer_name"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            birthday: formData.get("birthday"),
+            address: formData.get("address"),
+            partner_experience: formData.get("partner_experience"),           
+          };
       
-            alert("修改成功 ✅");
-            closeVolunteerModal();
+          console.log("送出 payload 👉", payload); // 🔥一定要看
       
-            // 重新載入畫面資料
-            location.reload();
-          })
-          .catch((err) => {
-            console.error(err);
-            alert("系統錯誤");
+         fetch(`https://supabase-api-six.vercel.app/elders/${elderId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
           });
+            .then(res => res.json())
+            .then(result => {
+              console.log("API 回傳 👉", result);
+      
+              if (!result.success) {
+                alert("更新失敗");
+                return;
+              }
+      
+              alert("修改成功 ✅");
+              closeElderModal();
+              location.reload();
+            })
+            .catch(err => {
+              console.error(err);
+              alert("系統錯誤 "+ err);
+            });
+        });
       });
+
 
 
       
@@ -412,40 +402,30 @@
 
     <!-- 你的原本表單，直接放進來 -->
     <form id="volunteerForm" class="form-section">
-      <h3>志工資料修改</h3>
-
-      <label class="required">志工代碼</label>
-      <input type="text" name="volunteerId" required readonly />
-
+           <h3>志工資料修改</h3>
+      
       <label class="required">姓名</label>
-      <input type="text" name="name" required />
-
+      <input type="text" name="volunteer_name" required />
+      
       <label class="required">電子郵件 Email</label>
       <input type="email" name="email" required />
-
+      
       <label class="required">連絡電話</label>
       <input type="tel" name="phone" pattern="09[0-9]{8}" required />
-
+      
       <label class="required">出生年月日</label>
       <input type="date" name="birthday" required />
-
-      <label class="required">性別</label>
-      <select name="gender" required>
-        <option value="">請選擇</option>
-        <option value="男性">男性</option>
-        <option value="女性">女性</option>
-        <option value="其他">其他</option>
-      </select>
-
+      
       <label class="required">地址</label>
       <input type="text" name="address" required />
-
+      
       <label>簡介與經驗</label>
-      <textarea rows="3"></textarea>
-
+      <textarea name="partner_experience" rows="3"></textarea>
+      
       <div class="button-group">
         <button type="submit" class="submit-btn">儲存修改</button>
       </div>
+
     </form>
   </div>
 </div>
