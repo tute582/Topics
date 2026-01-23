@@ -254,11 +254,12 @@
 
       <!-- 這裡放使用者詳細資料 -->
       <div id="content"></div>
-      </div>
+      
+    </div>
 
       <!-- 返回原本頁面按鈕 -->
     <div>
-    <button onclick="openElderModal()" class="btn btn-primary">修改資料</button>
+    <button onclick="openElderModal()" class="btn btn-primary btn-sm">修改資料</button>
       <a id="backBtn" class="back">回到原頁面</a>
     </div>
 
@@ -385,8 +386,6 @@
       
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
-        f.birthday.value = currentElder.birthday || "";
-        f.gender.value = currentElder.gender || "";
         f.address.value = currentElder.address || "";
         f.emergency_contact.value = currentElder.emergency_contact || "";
         f.emergency_contact_phone.value =
@@ -409,8 +408,6 @@
           const payload = {
             elder_name: formData.get("elder_name"),
             phone: formData.get("phone"),
-            birthday: formData.get("birthday"),
-            gender: formData.get("gender"),
             address: formData.get("address"),
             emergency_contact: formData.get("emergency_contact"),
             emergency_contact_phone: formData.get(
@@ -461,20 +458,6 @@
           <div class="form-group">
             <label>連絡電話</label>
             <input type="tel" name="phone" required />
-          </div>
-        
-          <div class="form-group">
-            <label>出生年月日</label>
-            <input type="date" name="birthday" required />
-          </div>
-        
-          <div class="form-group">
-            <label>性別</label>
-            <select name="gender" required>
-              <option value="">請選擇</option>
-              <option value="男性">男性</option>
-              <option value="女性">女性</option>
-            </select>
           </div>
         
           <div class="form-group">
