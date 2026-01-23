@@ -429,7 +429,7 @@
           console.log("送出 payload 👉", payload); // 🔥一定要看
       
           fetch(`https://supabase-api-six.vercel.app/elders/${userId}`, {
-            method: "PUT",
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           })
