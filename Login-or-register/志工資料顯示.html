@@ -369,7 +369,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
-          });
+          })
             .then(res => res.json())
             .then(result => {
               console.log("API 回傳 👉", result);
