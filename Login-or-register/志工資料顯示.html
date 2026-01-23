@@ -405,7 +405,12 @@
 
       //close modal
       function closeVolunteerModal() {
-        document.getElementById("VolunteerModal").style.display = "none";
+        const modal = document.getElementById("volunteerModal");
+        if (!modal) {
+          console.error("找不到 volunteerModal");
+          return;
+        }
+        modal.style.display = "none";
       }
 
 
