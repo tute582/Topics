@@ -138,6 +138,67 @@
         font-size: 24px;
         cursor: pointer;
       }
+
+        /* modal 表單 */
+      .elder-form {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 24px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            font-family: Arial, sans-serif;
+          }
+          
+          .elder-form h3 {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          
+          .form-group {
+            margin-bottom: 15px;
+          }
+          
+          .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+          }
+          
+          .form-group input,
+          .form-group select,
+          .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+          
+          .form-group input:focus,
+          .form-group select:focus,
+          .form-group textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+          }
+          
+          .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+          }
+          
+          .btn:hover {
+            background-color: #357abd;
+          }
+
+      
     </style>
   </head>
 
@@ -382,45 +443,62 @@
 
       
     </script>
-  <div id="elderModal" class="modal-overlay">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeElderModal()">×</span>
-
-    <form id="elderForm">
-      <h3>長輩資料修改</h3>
-
-      <label>姓名</label>
-      <input type="text" name="elder_name" required />
-
-      <label>連絡電話</label>
-      <input type="tel" name="phone" required />
-
-      <label>出生年月日</label>
-      <input type="date" name="birthday" required />
-
-      <label>性別</label>
-      <select name="gender" required>
-        <option value="">請選擇</option>
-        <option value="男性">男性</option>
-        <option value="女性">女性</option>
-      </select>
-
-      <label>地址</label>
-      <input type="text" name="address" />
-
-      <label>緊急聯絡人</label>
-      <input type="text" name="emergency_contact" />
-
-      <label>緊急聯絡人電話</label>
-      <input type="text" name="emergency_contact_phone" />
-
-      <label>健康備註</label>
-      <textarea name="health_note" rows="3"></textarea>
-
-      <button type="submit" class="btn">儲存修改</button>
-    </form>
-  </div>
-</div>
+          <div id="elderModal" class="modal-overlay">
+          <div class="modal-content">
+            <span class="modal-close" onclick="closeElderModal()">×</span>
+        
+            <form id="elderForm" class="elder-form">
+          <h3>長輩資料修改</h3>
+        
+          <div class="form-group">
+            <label>姓名</label>
+            <input type="text" name="elder_name" required />
+          </div>
+        
+          <div class="form-group">
+            <label>連絡電話</label>
+            <input type="tel" name="phone" required />
+          </div>
+        
+          <div class="form-group">
+            <label>出生年月日</label>
+            <input type="date" name="birthday" required />
+          </div>
+        
+          <div class="form-group">
+            <label>性別</label>
+            <select name="gender" required>
+              <option value="">請選擇</option>
+              <option value="男性">男性</option>
+              <option value="女性">女性</option>
+            </select>
+          </div>
+        
+          <div class="form-group">
+            <label>地址</label>
+            <input type="text" name="address" />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人</label>
+            <input type="text" name="emergency_contact" />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人電話</label>
+            <input type="text" name="emergency_contact_phone" />
+          </div>
+        
+          <div class="form-group">
+            <label>健康備註</label>
+            <textarea name="health_note" rows="3"></textarea>
+          </div>
+        
+          <button type="submit" class="btn">儲存修改</button>
+        </form>
+        
+          </div>
+        </div>
 
   </body>
 </html>
