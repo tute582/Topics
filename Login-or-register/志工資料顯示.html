@@ -297,7 +297,7 @@
         content.innerHTML = '<p class="empty">目前沒有任何使用者資料。</p>';
       } else {
         // 使用 fetch 從 API 取得資料
-        fetch(`https://supabase-api-six.vercel.app/volunteers/${userId}`)
+        fetch(`https://supabase-api-six.vercel.app/volunteers/${volunteerId}`)
           .then((res) => res.json())
           .then((result) => {
             // API 回傳失敗
