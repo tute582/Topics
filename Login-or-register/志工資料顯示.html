@@ -367,7 +367,6 @@
         const formData = new FormData(e.target);
       
         const payload = {
-          vcode: formData.get("volunteerId"),
           volunteer_name: formData.get("name"),
           email: formData.get("email"),
           phone: formData.get("phone"),
@@ -416,7 +415,7 @@
       <h3>志工資料修改</h3>
 
       <label class="required">志工代碼</label>
-      <input type="text" name="volunteerId" required />
+      <input type="text" name="volunteerId" required readonly />
 
       <label class="required">姓名</label>
       <input type="text" name="name" required />
