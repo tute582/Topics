@@ -579,11 +579,11 @@
           await liff.init({ liffId: LIFF_ID });
 
           if (!liff.isLoggedIn()) {
-            //liff.login(); // 強制登入
+            liff.login(); // 強制登入
             //下方為測試用start
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            checkIdentity(userId);
+            // nameEl.innerText = "未登入";
+            // avatarEl.style.display = "none";
+            // checkIdentity(userId);
             //上方為測試用end
             return;
           }
@@ -630,7 +630,7 @@
             }
         } catch (err) {
             console.error("Identity Check Error:", err);
-            alert("身分驗證失敗，請檢查網路連線");
+            alert("目前無法通過身分驗證，請確認登入狀態或重新登入。");
         } finally {
             hideLoading();
         }
