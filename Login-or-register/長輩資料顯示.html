@@ -118,7 +118,7 @@
         display: none;
         justify-content: center;
         align-items: center;
-        z-index: 999;
+        z-index: 2000;
       }
       
       .modal-content {
@@ -260,7 +260,6 @@
     <div>
     <button onclick="openElderModal()" class="btn btn-primary">修改資料</button>
       <a id="backBtn" class="back">回到原頁面</a>
-    <div>
     </div>
 
     <!-- JavaScript 區域 -->
@@ -271,6 +270,8 @@
       const avatar = document.getElementById("avatar"); // 導覽列頭像
       const volunteerAvatar = document.getElementById("volunteerAvatar"); // 卡片大頭像
       const raw = localStorage.getItem("seniors"); // 從 localStorage 取資料（JSON 字串）
+      const volunteerName = document.getElementById("volunteerName");
+
 
       // 從 localStorage 取得上次儲存的志工資料
       const userId = localStorage.getItem("userId");
@@ -333,7 +334,9 @@
                 }
               </dd>
               <dt>使用者ID</dt>
-              <dd> ${d.elder_user_id || ""}  <a href='https://line.me/R/share?text=${d.elder_user_id || ""}'>  <button>分享</button></a></dd>
+              <dd> ${d.elder_user_id || ""}  <a href='https://line.me/R/share?text=${d.elder_user_id || ""}'>  <button onclick="location.href='https://line.me/R/share?text=...'">分享</button>
+
+
               </dl>
           `;
 
