@@ -428,11 +428,13 @@
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
       
-          fetch(`https://supabase-api-six.vercel.app/elders/${userId}`, {
+         fetch(`https://supabase-api-six.vercel.app/elders/${elderId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify(payload),
-          })
+          });
             .then(res => res.json())
             .then(result => {
               console.log("API 回傳 👉", result);
