@@ -67,38 +67,27 @@
 
       .tab-nav {
         display: flex;
-        padding: 0 25px;
-        margin-top: 20px;
+        padding: 0 20px;
+        background-color: #ffffff;
         border-bottom: 2px solid #ddd;
+        margin-bottom: 15px;
       }
 
       .tab-link {
-        display: block;
+        flex: 1;
+        text-align: center;
         text-decoration: none;
-        padding: 12px 24px;
-        background-color: #f1f1f1;
-        color: #666;
-        font-size: 18px;
+        padding: 20px 0;
+        font-size: 20px;
         font-weight: bold;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-        border: 1px solid #ddd;
-        border-bottom: none;
-        margin-right: 5px;
-        position: relative;
-        top: 2px;
+        color: #666;
+        border-bottom: 4px solid transparent;
         transition: all 0.2s ease;
       }
 
-      .tab-link:hover {
-        background-color: #e9e9e9;
-      }
-
       .tab-link.active {
-        background-color: white;
         color: #4a90e2;
-        border-bottom: 2px solid white;
-        z-index: 1;
+        border-bottom-color: #4a90e2;
       }
 
 
@@ -234,7 +223,7 @@
     
     <div class="tab-nav">
       <a href="./index.html" class="tab-link">看診紀錄</a>
-      <a href="#" class="tab-link active">看診進度</a>
+      <a href="./family-view.html" class="tab-link active">看診進度</a>
     </div>
 
     <div class="container">
