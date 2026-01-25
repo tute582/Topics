@@ -117,7 +117,9 @@
         font-size: 18px;
       }
 
-      .volunteer-select-box input {
+      /* 修改：同時支援 input 與 select */
+      .volunteer-select-box input,
+      .volunteer-select-box select {
         width: 100%;
         padding: 10px;
         border: 2px solid #bbdefb;
@@ -125,6 +127,15 @@
         font-size: 16px;
         box-sizing: border-box;
         background: #fff;
+        cursor: pointer;
+        /* 移除 iOS 預設圓角與樣式 */
+        -webkit-appearance: none; 
+        appearance: none;
+        /* 加個箭頭讓它看起來像下拉選單 (選用) */
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px top 50%;
+        background-size: 12px auto;
       }
 
       /* =========================================
@@ -171,7 +182,7 @@
       
       .notes-title { font-weight: bold; color: #4a90e2; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
-      /* [新增] 回診資訊樣式 */
+      /* 回診資訊樣式 */
       .next-visit-box {
         color: #27ae60;
         font-weight: bold;
@@ -182,7 +193,7 @@
         gap: 8px;
       }
 
-      /* [新增] 底部並排區域 (提醒 + 按鈕) */
+      /* 底部並排區域 (提醒 + 按鈕) */
       .card-footer-row {
         display: flex;
         justify-content: space-between; /* 左右推開 */
@@ -193,7 +204,7 @@
         min-height: 36px;
       }
 
-      /* [修改] 提醒文字盒 */
+      /* 提醒文字盒 */
       .remark-box { 
         color: #e67e22; 
         font-weight: bold; 
@@ -206,7 +217,7 @@
         flex: 1;           /* 佔據剩餘空間 */
       }
 
-      /* [修改] 編輯按鈕 */
+      /* 編輯按鈕 */
       .edit-btn {
         position: static;  /* 移除絕對定位 */
         background: #4a90e2;
@@ -260,7 +271,7 @@
         top: 15px;
         right: 15px;
         width: 40px;        
-        height: 40px;      
+        height: 40px;       
         border-radius: 10px; 
         background-color: #e74c3c; 
         color: #ffffff;
@@ -323,7 +334,7 @@
       }
       .add-fab:active { transform: scale(0.95); }
 
-      /* [新增] 全螢幕 Loading 樣式 */
+      /* 全螢幕 Loading 樣式 */
       .loading-overlay {
         position: fixed;
         top: 0;
@@ -415,13 +426,10 @@
     <div class="container">
       
       <div id="volunteerOnlyArea" class="volunteer-select-box">
-        <label><i class="fa-solid fa-user-tag"></i> 切換檢視個案 (志工專用)</label>
-        <input list="patient_list" id="volunteer_patient_input" placeholder="請選擇或輸入個案姓名...">
-        <datalist id="patient_list">
-          <option value="王大明 (A001)">
-          <option value="李小美 (A002)">
-          <option value="張三豐 (B005)">
-        </datalist>
+        <label><i class="fa-solid fa-user-tag"></i> 切換檢視個案</label>
+        <select id="volunteer_patient_select" onchange="handlePatientChange()">
+            <option value="" disabled selected>請選擇個案...</option>
+        </select>
       </div>
 
       <h2 class="page-title">就醫紀錄管理</h2>
@@ -543,18 +551,30 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
       const LIFF_ID = "2008484068-qkydRNYN";
-      // API Base Urls
       const API_BASE_URL = "https://supabase-api-six.vercel.app";
       
-      let userId = ""; // 從 LIFF 取得，測試時手動輸入自己的userId
+      let userId = ""; 
       let userName = "";
+      let pictureUrl = "";
       let identifyRole = "";
+
+      // ★★★ 新增變數：目前正在檢視的長輩 ID 與 名稱 ★★★
+      let currentViewingId = ""; 
+      let currentViewingName = ""; 
+
+      // ★★★ 模擬長輩資料 (後續可改為 API) ★★★
+      const MOCK_ELDER_LIST = [
+          { id: "A001", name: "王大明 (A001)" },
+          { id: "A002", name: "李小美 (A002)" },
+          { id: "B005", name: "張三豐 (B005)" },
+          { id: "C008", name: "陳阿姨 (C008)" }
+      ];
 
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
       
       let dummyData = [];
-      let currentBase64 = ""; // [新增] 用來暫存 Iframe 傳來的圖片 Base64
+      let currentBase64 = "";
 
       /* -----------------------------------------
          統一控制 Loading 的函式
@@ -579,12 +599,7 @@
           await liff.init({ liffId: LIFF_ID });
 
           if (!liff.isLoggedIn()) {
-            liff.login(); // 強制登入
-            //下方為測試用start
-            // nameEl.innerText = "未登入";
-            // avatarEl.style.display = "none";
-            // checkIdentity(userId);
-            //上方為測試用end
+            liff.login(); 
             return;
           }
 
@@ -595,7 +610,6 @@
           localStorage.setItem("userId", userId);
           console.log("LIFF Profile userId:", userId, "userName:", userName);
 
-          // 檢查後端是否有這個userId註冊
           checkIdentity(userId);
 
         } catch (err) {
@@ -622,11 +636,15 @@
 
                 if (identifyRole === "志工") {
                     document.getElementById("volunteerOnlyArea").style.display = "block";
+                    // ★★★ 如果是志工，載入長輩清單 ★★★
+                    loadElderOptions(uid); 
                 } else {
                     document.getElementById("volunteerOnlyArea").style.display = "none";
+                    // 長輩身分，設定目前的 viewingId 為自己，並載入資料
+                    currentViewingId = uid;
+                    currentViewingName = userName;
+                    fetchConsultations(uid);
                 }
-
-                fetchConsultations(uid);
             }
         } catch (err) {
             console.error("Identity Check Error:", err);
@@ -636,39 +654,64 @@
         }
       }
 
+      // ★★★ 新增：載入長輩選項到下拉選單 ★★★
+      function loadElderOptions(volunteerId) {
+          const selectEl = document.getElementById("volunteer_patient_select");
+          selectEl.innerHTML = '<option value="" disabled selected>請選擇個案...</option>';
+
+          MOCK_ELDER_LIST.forEach(elder => {
+              const option = document.createElement("option");
+              option.value = elder.id;
+              option.textContent = elder.name;
+              selectEl.appendChild(option);
+          });
+
+          // 預設選取第一位，方便操作
+          if (MOCK_ELDER_LIST.length > 0) {
+              selectEl.value = MOCK_ELDER_LIST[0].id;
+              currentViewingId = MOCK_ELDER_LIST[0].id;
+              currentViewingName = MOCK_ELDER_LIST[0].name;
+              fetchConsultations(currentViewingId);
+          }
+      }
+
+      // ★★★ 新增：處理切換長輩 ★★★
+      function handlePatientChange() {
+          const selectEl = document.getElementById("volunteer_patient_select");
+          const selectedId = selectEl.value;
+          const selectedOption = selectEl.options[selectEl.selectedIndex];
+          
+          if (selectedId) {
+              console.log(`切換檢視長輩：${selectedOption.text} (${selectedId})`);
+              currentViewingId = selectedId;
+              currentViewingName = selectedOption.text;
+              fetchConsultations(selectedId);
+          }
+      }
+
       avatarEl.addEventListener("click", () => {
           if (liff.isLoggedIn()) {
-            // 檢查後端是否有這個userId註冊
-            fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+            fetch(`${API_BASE_URL}/identify/${userId}`)
               .then((res) => res.json())
               .then((result) => {
                 if (!result.success) {
-                  // 無效身分，導向註冊頁面
-                  alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
                   window.location.href = "../../Login-or-register/index.html";
                 } else {
-                  // 已註冊，取得身分
-                  let identify = result.role; //回傳文字(志工或長者)
-                  console.log("登入角色 role：", result.role);
+                  let identify = result.role; 
                   localStorage.setItem("fromPage", "family-view");
                   switch (identify) {
                     case "志工":
-                      window.location.href =
-                        "../../Login-or-register/志工資料顯示.html";
+                      window.location.href = "../../Login-or-register/志工資料顯示.html";
                       break;
                     case "長者":
-                      window.location.href =
-                        "../../Login-or-register/長輩資料顯示.html";
+                      window.location.href = "../../Login-or-register/長輩資料顯示.html";
                       break;
                     default:
-                      // "未註冊" 或 undefined 都導往登入
                       window.location.href = "../../Login-or-register/index.html";
                   }
                 }
               })
-              .catch((err) => {
-                console.error("身分檢查 API 錯誤：", err);
-                // API 出錯也視為無效身分
+              .catch(() => {
                 window.location.href = "../../Login-or-register/index.html";
               });
           } else {
@@ -684,10 +727,11 @@
         }
       });
 
-      async function fetchConsultations(uid) {
+      // ★★★ 修改：根據傳入的 uid 抓資料 ★★★
+      async function fetchConsultations(targetUid) {
         showLoading("正在載入看診紀錄...", "請稍候");
         try {
-            const response = await fetch(`${API_BASE_URL}/consultations/${uid}`);
+            const response = await fetch(`${API_BASE_URL}/consultations/${targetUid}`);
             const result = await response.json();
             
             if (result.success && Array.isArray(result.data)) {
@@ -700,7 +744,7 @@
                     visit_details: item.visit_details,
                     remarks: item.remarks,
                     next_visit: item.next_visit_time,
-                    image_base64: item.image_base64 // 假設後端有回傳這欄位，雖不一定用到
+                    image_base64: item.image_base64
                 }));
                 renderCards(dummyData);
             } else {
@@ -828,14 +872,12 @@
           document.getElementById("field_date").value = today;
           document.getElementById("field_time").value = currentTime;
 
-          // 清空其他欄位
           document.getElementById("field_hospital").value = ""; 
           document.getElementById("field_dept").value = "";
           document.getElementById("field_doctor").value = "";
           document.getElementById("field_details").value = "";
           document.getElementById("field_remarks").value = "";
           
-          // 清空回診欄位
           document.getElementById("field_next_date").value = "";
           document.getElementById("field_next_time").value = "";
 
@@ -907,16 +949,33 @@
 
         const fullVisitTime = `${datePart}T${timePart}`;
 
+        // ★★★ 判斷目標長輩 ID ★★★
+        // 若身分為志工，使用 currentViewingId；若為長輩，使用自己的 userId
+        let targetElderId = "";
+        let targetElderName = "";
+
+        if (identifyRole === "志工") {
+            if (!currentViewingId) {
+                alert("請先選擇一位長輩！");
+                return;
+            }
+            targetElderId = currentViewingId;
+            targetElderName = currentViewingName.split(' ')[0]; // 簡單取名
+        } else {
+            targetElderId = userId;
+            targetElderName = userName;
+        }
+
         showLoading("正在儲存資料...", "請稍候");
 
         try {
             if (index === -1) {
                 // ================= 新增 (POST) =================
                 const payload = {
-                    "elder_user_id": userId,
-                    "elder_name": userName,
-                    "volunteer_user_id": null,
-                    "volunteer_name": null,
+                    "elder_user_id": targetElderId,  // 使用選定的長輩 ID
+                    "elder_name": targetElderName,
+                    "volunteer_user_id": identifyRole === "志工" ? userId : null,
+                    "volunteer_name": identifyRole === "志工" ? userName : null,
                     "visit_time": fullVisitTime,
                     "hospital_name": hospitalPart,
                     "doctor_name": doctorName,
@@ -924,7 +983,7 @@
                     "visit_details": visitDetails,
                     "remarks": remark,
                     "next_visit_time": nextVisitStr,
-                    "image_base64": currentBase64 // [新增] 將圖片 base64 送出
+                    "image_base64": currentBase64 
                 };
 
                 const res = await fetch(`${API_BASE_URL}/consultations`, {
@@ -936,12 +995,12 @@
 
                 if (result.success) {
                     if (nextVisitStr) {
-                        await addToSchedule(nextVisitStr, remark);
+                        await addToSchedule(targetElderId, targetElderName, nextVisitStr, remark);
                     } else {
                         alert("✅ 新增成功！");
                     }
                     closeModal();
-                    fetchConsultations(userId); 
+                    fetchConsultations(targetElderId); // 重新載入目標長輩資料
                 } else {
                     alert("新增失敗：" + (result.message || "未知錯誤"));
                 }
@@ -952,9 +1011,9 @@
                 const eventId = item.event_id; 
 
                 const payload = {
-                    "elder_name": userName || "訪客",
-                    "volunteer_user_id": null,
-                    "volunteer_name": null,
+                    "elder_name": targetElderName,
+                    "volunteer_user_id": identifyRole === "志工" ? userId : null,
+                    "volunteer_name": identifyRole === "志工" ? userName : null,
                     "visit_time": fullVisitTime,
                     "hospital_name": hospitalPart,
                     "doctor_name": doctorName,
@@ -962,10 +1021,11 @@
                     "visit_details": visitDetails,
                     "remarks": remark,
                     "next_visit_time": nextVisitStr,
-                    "image_base64": currentBase64 // [新增] 將圖片 base64 送出 (若有新圖)
+                    "image_base64": currentBase64 
                 };
 
-                const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
+                // 注意：API url 需要傳入該筆資料所屬的 user_id (即 targetElderId)
+                const res = await fetch(`${API_BASE_URL}/consultations/${targetElderId}/${eventId}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
@@ -975,7 +1035,7 @@
                 if (result.success) {
                     alert("✅ 更新成功！");
                     closeModal();
-                    fetchConsultations(userId); 
+                    fetchConsultations(targetElderId); 
                 } else {
                     alert("更新失敗：" + (result.message || "未知錯誤"));
                 }
@@ -988,13 +1048,13 @@
         }
       }
 
-      // [獨立函式] 加入行事曆
-      async function addToSchedule(nextTime, remarkText) {
+      // [獨立函式] 加入行事曆 (記得傳入正確的 elderId)
+      async function addToSchedule(eId, eName, nextTime, remarkText) {
          showLoading("正在加入行事曆提醒...", "請稍候");
          try {
             const apiPayload = {
-                "elder_user_id": userId, 
-                "elder_name": userName,
+                "elder_user_id": eId, 
+                "elder_name": eName,
                 "schedule_time": nextTime,
                 "schedule_note": "回診",
                 "is_reminded": true,
@@ -1027,12 +1087,16 @@
         const item = dummyData[index];
         const eventId = item.event_id;
 
+        // 判斷當前操作對象 ID
+        let targetId = (identifyRole === "志工") ? currentViewingId : userId;
+
         showLoading("正在刪除...", "請稍候");
         try {
-            const res = await fetch(`${API_BASE_URL}/consultations/${userId}/${eventId}`, {
+            const res = await fetch(`${API_BASE_URL}/consultations/${targetId}/${eventId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" }
             });
+            
             try {
                 const result = await res.json(); 
                 if(!result.success) throw new Error("Delete failed");
@@ -1042,7 +1106,7 @@
 
             alert("刪除成功");
             closeModal();
-            fetchConsultations(userId);
+            fetchConsultations(targetId);
 
         } catch (err) {
             console.error("Delete Error:", err);
@@ -1052,7 +1116,6 @@
         }
       }
 
-      // 監聽來自 iframe 的訊息
       window.addEventListener('message', function(event) {
         if (!event.data) return;
 
