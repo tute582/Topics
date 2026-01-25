@@ -28,7 +28,8 @@
         top: 0;
         z-index: 1001;
         width: 100%;
-        padding: 10px 25px;
+        /* ★★★ 修改重點：固定 Padding 為 10px 25px，不再隨手機縮小 ★★★ */
+        padding: 10px 25px; 
         background-color: white;
         border-bottom: 1px solid #ddd;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -106,22 +107,22 @@
       .timeline-marker { position: absolute; left: -33px; top: 0; width: 18px; height: 18px; border-radius: 50%; background: white; border: 4px solid #ccc; z-index: 2; }
       .timeline-item.current .timeline-marker { background: #4a90e2; border-color: #4a90e2; box-shadow: 0 0 0 5px rgba(74, 144, 226, 0.2); transform: scale(1.1); }
 
-      /* 主要修改：讓 H3 變成 Flex 佈局，可以讓時間靠左或靠右 */
+      /* 讓 H3 變成 Flex 佈局 */
       .timeline-content h3 {
         margin: 0 0 5px 0;
         font-size: 18px;
-        display: flex;       /* 使用 Flexbox */
-        align-items: center; /* 垂直置中 */
-        flex-wrap: wrap;     /* 手機寬度不夠時自動換行 */
+        display: flex;       
+        align-items: center; 
+        flex-wrap: wrap;     
       }
 
-      /* 修改：時間顯示樣式 (移到標題旁邊) */
+      /* 時間顯示樣式 */
       .time-record {
         color: #e67e22;
-        font-weight: bold; /* 不要太粗 */
-        font-size: 16px;     /* 字體比標題稍微小一點點 */
-        margin-left: 12px;   /* 與左邊標題保持距離 */
-        display: none;       /* 預設隱藏 */
+        font-weight: bold; 
+        font-size: 16px;     
+        margin-left: 12px;   
+        display: none;       
       }
       
       .timeline-content p {
@@ -164,9 +165,7 @@
          6. 響應式設計 (手機版調整)
          ========================================= */
       @media (max-width: 768px) {
-        .nav-1 {
-          padding: 8px 15px;
-        }
+        /* ★★★ 已移除針對 .nav-1 的 padding 縮小設定，保持原樣 ★★★ */
 
         .tab-nav {
           padding: 0 15px;
@@ -174,9 +173,7 @@
       }
 
       @media (max-width: 480px) {
-        .nav-1 {
-          padding: 6px 10px;
-        }
+        /* ★★★ 已移除針對 .nav-1 的 padding 縮小設定，保持原樣 ★★★ */
 
         .tab-nav {
           padding: 0 10px;
@@ -188,36 +185,34 @@
   <body>
     <nav class="nav-1">
       <div>
-        <h1 style="margin: 0; font-size: 28px">看診資訊</h1>
+        <h1 style="margin: 0; font-size: 28px; font-weight: bold; color: #333;">看診資訊</h1>
       </div>
 
-      <div style="display: flex; align-items: center">
-        <h1 style="margin: 0; text-align: right">
-          <span
-            class="volunteer-area"
-            style="display: flex; align-items: center; gap: 8px"
-          >
-            <img
-              id="volunteerAvatar"
-              class="avatar"
-              src="../bookvolunteer/default-avatar.png"
-              alt="avatar"
-              style="
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 2px solid #0984e3;
-              "
-            />
-            <span
-              id="volunteerName"
-              title="點此以 Line 登入"
-              style="cursor: pointer; font-size: 26px"
-              >未登入</span
-            >
-          </span>
-        </h1>
+      <div class="volunteer-area" style="display: flex; align-items: center; gap: 10px;">
+        <img
+          id="volunteerAvatar"
+          class="avatar"
+          src="../bookvolunteer/default-avatar.png"
+          alt="avatar"
+          style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #0984e3;
+            display: none;
+          "
+        />
+        <span
+          id="volunteerName"
+          title="點此以 Line 登入"
+          style="
+            cursor: pointer; 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: #333;
+          "
+        >未登入</span>
       </div>
     </nav>
     
