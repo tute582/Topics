@@ -71,7 +71,7 @@
       }
 
       /* 修改按鈕 */
-      .editBtn{
+      .edit{
         display: inline-block;
         margin-top: 20px;
         padding: 8px 14px;
@@ -117,16 +117,7 @@
         box-sizing: border-box; /* 避免padding撐爆 */
         border-bottom: 1px solid #ddd; /* 下邊界線 */
       }
-      .updataBtn
-      {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 8px 14px;
-        background: red;
-        color: #fff;
-        border-radius: 6px;
-        text-decoration: none;
-      }
+     
       /* 修改modal */
       .modal-overlay {
         position: fixed;
@@ -409,8 +400,7 @@
       const backBtn = document.getElementById("backBtn");
       backBtn.href = targetUrl;
 
-      // 點選修改按鈕
-      const editBtn = document.getElementById("editBtn")
+           
       //openmodal
         function openVolunteerModal() {
           if (!currentVolunteer) return;
