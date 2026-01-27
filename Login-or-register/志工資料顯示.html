@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>志工資料顯示</title>
 
     <style>
@@ -172,14 +173,7 @@
         cursor: pointer;
         z-index: 10; }
       
-      /* span (x)
-      .modal-close {
-        position: absolute;
-        right: 12px;
-        top: 8px;
-        font-size: 24px;
-        cursor: pointer;
-      } */
+      
       /* modal 表單 */
       .elder-form {
         max-width: 500px;
@@ -494,7 +488,6 @@
     <!-- Modal 遮罩 -->
 <div id="volunteerModal" class="modal-overlay">
   <div class="modal-content">
-    <!-- <span class="modal-close" onclick="closeVolunteerModal()">×</span> -->
     <button class="close-btn" onclick="closeVolunteerModal()"><i class="fas fa-times"></i></button>
     <!-- 你的原本表單，直接放進來 -->
     <form id="volunteerForm" class="form-section">
