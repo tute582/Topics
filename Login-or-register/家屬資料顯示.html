@@ -211,7 +211,7 @@
         content.innerHTML = '<p class="empty">尚未登入，無法取得資料。</p>';
       } else {
         // ★★★ 修改：呼叫家屬 API ★★★
-        fetch(`https://supabase-api-six.vercel.app/family_members/${userId}`)
+        fetch(`https://supabase-api-six.vercel.app/familys/${userId}`)
           .then((res) => res.json())
           .then((result) => {
             if (!result.success || !result.data) {
@@ -297,7 +297,7 @@
 
           console.log("送出 payload 👉", payload);
 
-          fetch(`https://supabase-api-six.vercel.app/family_members/${userId}`, {
+          fetch(`https://supabase-api-six.vercel.app/familys/${userId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
