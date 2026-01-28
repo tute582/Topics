@@ -4,9 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>家屬個人資料</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
-      /* --- 沿用長輩頁面的 CSS 樣式 --- */
+      /* --- 沿用之前的 CSS --- */
       body {
         font-family: "Arial", sans-serif;
         background: #f4f6f8;
@@ -90,10 +91,15 @@
         display: none;
         justify-content: center;
         align-items: center;
-        z-index:2000;
+        z-index: 2000; /* 第一層 Modal */
         backdrop-filter: blur(4px); 
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch;
+      }
+
+      /* ★★★ 新增：教學 Modal 的層級要比一般 Modal 高 ★★★ */
+      #helpModal {
+        z-index: 2100; 
       }
       
       .modal-content {
@@ -166,6 +172,35 @@
         font-weight: bold;
         background-color: #4a90e2;
       }
+
+      /* ★★★ 新增：問號圖示與教學圖片樣式 ★★★ */
+      .input-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* 輸入框與問號的間距 */
+      }
+      .help-btn {
+        color: #aaa; /* 淺灰色 */
+        font-size: 20px;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .help-btn:hover {
+        color: #0984e3; /* 點擊或滑過變深色 */
+      }
+      .tutorial-img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-top: 10px;
+        border: 1px solid #eee;
+      }
+      .tutorial-step {
+        margin-bottom: 15px;
+        text-align: left;
+        line-height: 1.5;
+        color: #444;
+      }
     </style>
   </head>
 
@@ -201,7 +236,6 @@
       const mainAvatar = document.getElementById("mainAvatar");
       const navName = document.getElementById("navName");
 
-      // 從 localStorage 取得 UserID
       const userId = localStorage.getItem("userId");
       console.log("取得的 userId：", userId);
 
@@ -210,7 +244,6 @@
       if (!userId) {
         content.innerHTML = '<p class="empty">尚未登入，無法取得資料。</p>';
       } else {
-        // 呼叫家屬 API
         fetch(`https://supabase-api-six.vercel.app/familys/${userId}`)
           .then((res) => res.json())
           .then((result) => {
@@ -222,15 +255,12 @@
             const d = result.data;
             currentFamily = d;
 
-            /* 頭像處理 */
             const avatarUrl = d.image_url && d.image_url.trim() !== "" ? d.image_url : "default-avatar.png";
             navAvatar.src = avatarUrl;
             mainAvatar.src = avatarUrl;
 
-            /* 名稱顯示 */
             navName.textContent = d.family_name || "未登入";
 
-            /* 顯示家屬欄位 */
             const html = `
             <dl>
               <dt>姓名</dt><dd>${d.family_name || ""}</dd>
@@ -252,10 +282,8 @@
           });
       }
 
-      // 返回按鈕邏輯
       const fromPage = localStorage.getItem("fromPage");
       let targetUrl = "../../Topics/Topics/bookvolunteer/index.html"; 
-      // 可根據需求增加 case
       document.getElementById("backBtn").href = targetUrl;
 
       /* ================= Modal 邏輯 ================= */
@@ -264,19 +292,24 @@
         document.getElementById("familyModal").style.display = "flex";
         
         const f = document.forms.familyForm;
-        // 填入現有資料
         f.family_name.value = currentFamily.family_name || "";
         f.phone.value = currentFamily.phone || "";
         f.email.value = currentFamily.email || "";
         f.address.value = currentFamily.address || "";
         f.relationship.value = currentFamily.relationship || "";
-        
-        // ★★★ 新增：將長者 ID 填入欄位 ★★★
         f.elder_user_id.value = currentFamily.elder_user_id || "";
       }
 
       function closeFamilyModal() {
         document.getElementById("familyModal").style.display = "none";
+      }
+
+      /* ★★★ 新增：開啟/關閉教學視窗邏輯 ★★★ */
+      function openHelpModal() {
+        document.getElementById("helpModal").style.display = "flex";
+      }
+      function closeHelpModal() {
+        document.getElementById("helpModal").style.display = "none";
       }
 
       /* ================= 修改資料 API ================= */
@@ -288,14 +321,12 @@
           e.preventDefault();
           const formData = new FormData(form);
 
-          // 準備 Patch Payload
           const payload = {
             family_name: formData.get("family_name"),
             phone: formData.get("phone"),
             email: formData.get("email"),
             address: formData.get("address"),
             relationship: formData.get("relationship"),
-            // ★★★ 新增：加入長者 ID 到更新 payload ★★★
             elder_user_id: formData.get("elder_user_id") 
           };
 
@@ -326,7 +357,7 @@
 
     <div id="familyModal" class="modal-overlay">
       <div class="modal-content">
-        <button class="close-btn" onclick="closeFamilyModal()"><i class="fas fa-times"></i>✕</button>
+        <button class="close-btn" onclick="closeFamilyModal()"><i class="fas fa-times"></i></button>
         <form id="familyForm" class="family-form" name="familyForm">
           <h3>家屬資料修改</h3>
         
@@ -354,7 +385,10 @@
 
           <div class="form-group">
             <label style="color: #0984e3;">綁定長者 ID</label>
-            <input type="text" name="elder_user_id" placeholder="請輸入長輩的 ID 以進行綁定" />
+            <div class="input-with-icon">
+                <input type="text" name="elder_user_id" placeholder="請輸入長輩的 ID" style="flex: 1;" />
+                <i class="fa-solid fa-circle-question help-btn" onclick="openHelpModal()" title="如何取得 ID？"></i>
+            </div>
           </div>
 
           <div class="form-group">
@@ -371,6 +405,30 @@
           <button type="submit" class="btn">儲存修改</button>
         </form>
       </div>
+    </div>
+
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeHelpModal()"><i class="fas fa-times"></i></button>
+            <h3 style="text-align: center; margin-bottom: 15px; color: #333;">如何取得長者 ID？</h3>
+            
+            <div style="text-align: left; padding: 0 10px;">
+                <div class="tutorial-step">
+                    <strong>步驟 1：</strong> 請長者打開LINE官方網站中的"選單"，點擊上方的「個人資料」。
+                </div>
+                <div class="tutorial-step">
+                    <strong>步驟 2：</strong> 在個人資料頁面最下方，會看到一串 <strong>使用者 ID</strong>。
+                </div>
+                <div class="tutorial-step">
+                    <strong>步驟 3：</strong> 請長者點擊旁邊的「分享」或複製該 ID 傳送給您。
+                </div>
+                
+                <p style="font-size: 14px; color: #666; margin-bottom: 5px;">參考畫面：</p>
+                <img src="" class="tutorial-img" alt="教學示意圖">
+            </div>
+
+            <button class="btn" onclick="closeHelpModal()" style="background-color: #888; margin-top: 20px;">我知道了</button>
+        </div>
     </div>
 
   </body>
