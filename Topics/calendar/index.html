@@ -85,7 +85,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 基礎修正 --- */
+        /* --- FullCalendar 樣式 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -118,40 +118,22 @@
 
         .fc-daygrid-day-top { display: flex !important; justify-content: center !important; padding-top: 8px !important; }
         .fc-daygrid-day-number { font-size: 15px; color: #555; text-decoration: none !important; }
-        .fc-daygrid-day-frame { min-height: 110px !important; overflow: hidden !important; }
+        .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 核心修正：仿照左圖紅框樣式 --- */
-        .fc-daygrid-event-harness {
-            margin: 0 !important; /* 消除 FullCalendar 預設的事件外距 */
-        }
-
+        /* 修正：防止字體跑出來 */
         .fc-daygrid-event {
-            background-color: #79f2c0 !important; /* 淺綠色背景 */
+            background-color: #79f2c0 !important;
             border: none !important;
-            border-radius: 0px !important; /* 移除圓角，使其填滿格子邊緣 */
+            border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 8px 4px !important; /* 增加內距，讓背景色更明顯 */
-            margin: 0 !important;
-            font-size: 0.85em !important;
-            display: flex !important; /* 使用 Flex 讓內容容易置中 */
-            justify-content: center !important; /* 水平置中 */
-            align-items: center !important; /* 垂直置中 */
-            min-height: 35px !important; /* 給予一定高度 */
-        }
-
-        /* 隱藏時間與點點，只留下內容標題 */
-        .fc-event-time, .fc-daygrid-event-dot { 
-            display: none !important; 
-        }
-
-        .fc-event-title {
-            font-weight: bold !important;
-            text-align: center !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            flex-grow: 1;
+            padding: 3px 6px !important;
+            margin: 2px 4px !important;
+            font-size: 0.85em; /* 稍微縮小字體 */
+            display: block;
+            white-space: nowrap; /* 不換行 */
+            overflow: hidden; /* 隱藏溢出 */
+            text-overflow: ellipsis; /* 顯示... */
         }
 
         /* --- Modal 修正：視窗置中 --- */
@@ -164,15 +146,16 @@
             backdrop-filter: blur(4px); 
             z-index: 2000; 
             overflow-y: auto; 
-            align-items: center; 
-            justify-content: center; 
+            display: none; /* 下方 JS 控制 */
+            align-items: center; /* 垂直置中 */
+            justify-content: center; /* 水平置中 */
         }
 
         .modal-content { 
             background: #fff; 
             width: 92%;
             max-width: 400px; 
-            margin: auto; 
+            margin: auto; /* 配合 flex 置中 */
             padding: 20px 15px;
             border-radius: 16px; 
             position: relative; 
@@ -199,6 +182,7 @@
             display: block;
         }
 
+        /* 修正：下拉選單倒三角形 */
         select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -325,6 +309,7 @@
                     right: 'dayGridMonth,listMonth'
                 },
                 buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
+                // 修正：將 more 改成中文
                 moreLinkText: "更多",
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
@@ -441,7 +426,7 @@
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'flex';
+            document.getElementById('dayViewModal').style.display = 'flex'; // 修正：顯示為 flex 以配合置中
         }
 
         function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
@@ -449,7 +434,7 @@
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "flex";
+            document.getElementById("dataModal").style.display = "flex"; // 修正：顯示為 flex 以配合置中
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
