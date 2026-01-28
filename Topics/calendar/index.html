@@ -85,7 +85,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式 --- */
+        /* --- FullCalendar 基礎修正 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -121,26 +121,38 @@
         .fc-daygrid-day-frame { min-height: 110px !important; overflow: hidden !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 核心修正：仿照紅框樣式，讓行程背景填滿並文字置中 --- */
+        /* --- 核心修正：仿照左圖紅框樣式 --- */
+        .fc-daygrid-event-harness {
+            margin: 0 !important; /* 消除 FullCalendar 預設的事件外距 */
+        }
+
         .fc-daygrid-event {
             background-color: #79f2c0 !important; /* 淺綠色背景 */
             border: none !important;
-            border-radius: 0px !important; /* 移除圓角讓它更填滿 */
+            border-radius: 0px !important; /* 移除圓角，使其填滿格子邊緣 */
             color: #2c3e50 !important;
-            padding: 4px 2px !important; /* 增加上下間距 */
-            margin: 1px 0px !important; /* 左右不留白，上下留極小縫隙 */
+            padding: 8px 4px !important; /* 增加內距，讓背景色更明顯 */
+            margin: 0 !important;
             font-size: 0.85em !important;
-            display: block !important;
-            text-align: center !important; /* 文字置中 */
+            display: flex !important; /* 使用 Flex 讓內容容易置中 */
+            justify-content: center !important; /* 水平置中 */
+            align-items: center !important; /* 垂直置中 */
+            min-height: 35px !important; /* 給予一定高度 */
+        }
+
+        /* 隱藏時間與點點，只留下內容標題 */
+        .fc-event-time, .fc-daygrid-event-dot { 
+            display: none !important; 
+        }
+
+        .fc-event-title {
+            font-weight: bold !important;
+            text-align: center !important;
             white-space: nowrap !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
+            flex-grow: 1;
         }
-
-        /* 隱藏時間點的小圓點 (如有出現) */
-        .fc-daygrid-event-dot { display: none !important; }
-        /* 隱藏行程內建的時間文字，讓標題更清楚 */
-        .fc-event-time { display: none !important; }
 
         /* --- Modal 修正：視窗置中 --- */
         .modal { 
