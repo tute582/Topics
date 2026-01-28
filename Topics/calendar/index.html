@@ -22,12 +22,12 @@
             padding-bottom: 80px;
         }
 
-        /* --- 導覽列 --- */
+        /* --- 導覽列修正 --- */
         .nav-1 {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
+            padding: 0 15px; /* 稍微縮小內距增加空間 */
             background: #ffffff;
             border-bottom: 1px solid #dddddd;
             position: sticky;
@@ -35,20 +35,24 @@
             z-index: 1001;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             height: 75px;
+            flex-wrap: nowrap; /* 強制不換行 */
         }
 
         .nav-1 h1 {
-            font-size: 28px !important;
+            font-size: 22px !important; /* 稍微調小一點點以確保同一行 */
             font-weight: bold;
             color: #222;
             margin: 0;
+            white-space: nowrap;
+            flex-shrink: 1; /* 允許標題在極小螢幕縮小 */
         }
 
         .volunteer-area {
             display: flex;
             align-items: center;
             gap: 8px;
-            max-width: 60%;
+            flex-shrink: 0; /* 確保頭像與名字不會被擠扁 */
+            margin-left: 10px;
         }
 
         .avatar {
@@ -62,13 +66,14 @@
         }
 
         #volunteerName {
-            font-size: 26px !important;
+            font-size: 18px !important; /* 名稱字體調至適中 */
             font-weight: bold;
             color: #222;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
+            max-width: 120px; /* 限制名字最大寬度防止擠爆 */
         }
 
         .container {
@@ -121,17 +126,16 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* 修正綠色底色高度與文字 */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important; /* 縮減內距 */
+            padding: 2px 6px !important;
             margin: 1px 4px !important;
-            font-size: 0.85em; /* 稍微縮小字體防止溢出 */
+            font-size: 0.85em;
             display: block;
-            line-height: 1.4 !important; /* 控制行高 */
+            line-height: 1.4 !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -159,11 +163,11 @@
             border-radius: 16px; 
             position: relative; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            text-align: left; /* 內容置左，容器置中 */
+            text-align: left;
         }
 
         #modalTitle, #dayViewTitle {
-            text-align: center; /* 標題置中 */
+            text-align: center;
             margin-bottom: 15px;
         }
 
@@ -187,7 +191,6 @@
             display: block;
         }
 
-        /* 下拉選單倒三角形 (右一) */
         .select-wrapper {
             position: relative;
             width: 100%;
@@ -330,7 +333,6 @@
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
                 dayMaxEvents: 2,
-                // 修改 More 按鈕為中文
                 moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
