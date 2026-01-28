@@ -22,12 +22,12 @@
             padding-bottom: 80px;
         }
 
-        /* --- 導覽列修正 --- */
+        /* --- 導覽列 --- */
         .nav-1 {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 15px; /* 稍微縮小內距增加空間 */
+            padding: 0 15px;
             background: #ffffff;
             border-bottom: 1px solid #dddddd;
             position: sticky;
@@ -35,23 +35,23 @@
             z-index: 1001;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             height: 75px;
-            flex-wrap: nowrap; /* 強制不換行 */
+            flex-wrap: nowrap;
         }
 
         .nav-1 h1 {
-            font-size: 22px !important; /* 稍微調小一點點以確保同一行 */
+            font-size: 22px !important;
             font-weight: bold;
             color: #222;
             margin: 0;
             white-space: nowrap;
-            flex-shrink: 1; /* 允許標題在極小螢幕縮小 */
+            flex-shrink: 1;
         }
 
         .volunteer-area {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-shrink: 0; /* 確保頭像與名字不會被擠扁 */
+            flex-shrink: 0;
             margin-left: 10px;
         }
 
@@ -66,14 +66,14 @@
         }
 
         #volunteerName {
-            font-size: 18px !important; /* 名稱字體調至適中 */
+            font-size: 18px !important;
             font-weight: bold;
             color: #222;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
-            max-width: 120px; /* 限制名字最大寬度防止擠爆 */
+            max-width: 120px;
         }
 
         .container {
@@ -90,7 +90,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式修正 --- */
+        /* --- FullCalendar 樣式 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -141,7 +141,7 @@
             text-overflow: ellipsis;
         }
 
-        /* --- Modal 修正 --- */
+        /* --- Modal 樣式 --- */
         .modal { 
             display: none; 
             position: fixed; 
@@ -166,20 +166,12 @@
             text-align: left;
         }
 
-        #modalTitle, #dayViewTitle {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
         .close-btn { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; background-color: #f37a7a; color: white; border-radius: 50%; border: none; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         
         label { display: flex; align-items: center; font-weight: 600; margin-bottom: 6px; margin-top: 15px; color: #444; font-size: 15px; }
         label i { margin-right: 6px; width: 20px; text-align: center; }
 
-        input[type="text"], 
-        input[type="date"], 
-        input[type="time"], 
-        select { 
+        input[type="text"], input[type="date"], input[type="time"], select { 
             width: 100%; 
             padding: 12px; 
             border-radius: 10px; 
@@ -191,33 +183,34 @@
             display: block;
         }
 
-        .select-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .select-wrapper::after {
-            content: '\25BC';
-            font-size: 12px;
-            color: #888;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-
-        input[type="date"], input[type="time"] {
-            min-height: 45px;
-        }
-
         .btn { padding: 14px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; }
         #saveBtn { background: #4a90e2; }
         #deleteBtn { background: #ff7675; }
 
         .fab { position: fixed; bottom: 30px; right: 20px; width: 55px; height: 55px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999; }
-        .event-item { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
-        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
+
+        /* --- 重要：修改此處樣式以達成單行顯示 --- */
+        .event-item { 
+            padding: 12px 5px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            cursor: pointer;
+            white-space: nowrap; 
+            overflow: hidden;
+        }
+        .event-time { 
+            font-weight: bold; 
+            color: #4a90e2; 
+            margin-right: 12px; 
+            flex-shrink: 0; /* 防止時間被擠壓 */
+        }
+        .event-title {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            flex-grow: 1;
+        }
     </style>
 </head>
 <body>
@@ -243,7 +236,7 @@
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="color: #2c3e50;">新增行程</h3>
+            <h3 id="modalTitle" style="text-align: center; margin-bottom: 15px; color: #2c3e50;">新增行程</h3>
             <form id="dataForm">
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
@@ -258,34 +251,26 @@
                 <input type="text" id="note" placeholder="備註事項 (限 25 字)" maxlength="25">
 
                 <label><i class="fa-solid fa-rotate"></i> 重複</label>
-                <div class="select-wrapper">
-                    <select id="repeat">
-                        <option value="none">不重複</option>
-                        <option value="daily">每天</option>
-                        <option value="weekly">每週</option>
-                        <option value="monthly">每月</option>
-                        <option value="yearly">每年</option>
-                    </select>
-                </div>
+                <select id="repeat">
+                    <option value="none">不重複</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每週</option>
+                    <option value="monthly">每月</option>
+                    <option value="yearly">每年</option>
+                </select>
 
                 <label><i class="fa-regular fa-bell"></i> 提醒類型</label>
-                <div class="select-wrapper">
-                    <select id="reminder">
-                        <option value="none">無</option>
-                        <option value="0min">當下提醒</option>
-                        <option value="30min">30 分鐘前</option>
-                        <option value="1h">1 小時前</option>
-                        <option value="day">1 天前</option>
-                    </select>
-                </div>
+                <select id="reminder">
+                    <option value="none">無</option>
+                    <option value="0min">當下提醒</option>
+                    <option value="30min">30 分鐘前</option>
+                    <option value="1h">1 小時前</option>
+                    <option value="day">1 天前</option>
+                </select>
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn" id="saveBtn" style="flex: 1;">
-                        <i class="fas fa-check"></i> 儲存
-                    </button>
-                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;">
-                        <i class="fas fa-trash-alt"></i> 刪除
-                    </button>
+                    <button type="button" class="btn" id="saveBtn" style="flex: 1;"><i class="fas fa-check"></i> 儲存</button>
+                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;"><i class="fas fa-trash-alt"></i> 刪除</button>
                 </div>
             </form>
         </div>
@@ -294,7 +279,7 @@
     <div id="dayViewModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dayViewModal')"><i class="fas fa-times"></i></button>
-            <h3 id="dayViewTitle" style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
+            <h3 id="dayViewTitle" style="text-align: center; border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50; margin-bottom: 15px;"></h3>
             <div id="dayEventList" style="max-height: 300px; overflow-y: auto;"></div>
             <div style="margin-top: 15px;">
                 <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">
@@ -345,18 +330,13 @@
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
+                if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
                 
-                const nameEl = document.getElementById("volunteerName");
+                document.getElementById("volunteerName").innerText = userName;
                 const avatarEl = document.getElementById("volunteerAvatar");
-
-                nameEl.innerText = userName;
                 if (profile.pictureUrl) {
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
@@ -366,23 +346,17 @@
                     .then((res) => res.json())
                     .then((result) => {
                         if (!result.success) {
-                            alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。");
                             window.location.href = "../../Login-or-register/index.html";
                         } else {
                             identify = result.role;
                             loadRecords();
                         }
                     })
-                    .catch((err) => {
-                        console.error("身分檢查 API 錯誤：", err);
-                        window.location.href = "../../Login-or-register/index.html";
-                    });
-
-            } catch (err) {
-                console.error("LIFF init error:", err);
-            }
+                    .catch((err) => { window.location.href = "../../Login-or-register/index.html"; });
+            } catch (err) { console.error("LIFF init error:", err); }
         }
 
+        // --- 保留原本所有的頭像與名稱點擊邏輯 ---
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
             if (liff.isLoggedIn()) {
                 localStorage.setItem("fromPage", "calendar");
@@ -449,6 +423,7 @@
             } catch (err) {}
         };
 
+        // --- 重點修改：改為同一行顯示，時間轉換為「下午2時」 ---
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
@@ -461,7 +436,13 @@
                 dayEvents.sort((a, b) => a.start - b.start).forEach(e => {
                     const item = document.createElement('div');
                     item.className = 'event-item';
-                    item.innerHTML = `<span class="event-time">${e.start.toTimeString().substring(0, 5)}</span><div class="event-title">${e.title}</div>`;
+                    
+                    const hours = e.start.getHours();
+                    const ampm = hours >= 12 ? '下午' : '上午';
+                    const displayHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                    const timeStr = `${ampm}${displayHour}時`;
+
+                    item.innerHTML = `<span class="event-time">${timeStr}</span><div class="event-title">${e.title}</div>`;
                     item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
                     listEl.appendChild(item);
                 });
