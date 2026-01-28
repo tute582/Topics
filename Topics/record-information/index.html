@@ -562,13 +562,6 @@
       let currentViewingId = ""; 
       let currentViewingName = ""; 
 
-      // ★★★ 模擬長輩資料 (後續可改為 API) ★★★
-      const MOCK_ELDER_LIST = [
-          { id: "A001", name: "王大明 (A001)" },
-          { id: "A002", name: "李小美 (A002)" },
-          { id: "B005", name: "張三豐 (B005)" },
-          { id: "C008", name: "陳阿姨 (C008)" }
-      ];
 
       const avatarEl = document.getElementById("volunteerAvatar");
       const nameEl = document.getElementById("volunteerName");
@@ -636,8 +629,8 @@
 
                 if (identifyRole === "志工") {
                     document.getElementById("volunteerOnlyArea").style.display = "block";
-                    // ★★★ 如果是志工，載入長輩清單 ★★★
-                    loadElderOptions(uid); 
+                    // ★★★ 如果是志工，呼叫 API 載入長輩清單 ★★★
+                    await loadElderOptions(uid); 
                 } else {
                     document.getElementById("volunteerOnlyArea").style.display = "none";
                     // 長輩身分，設定目前的 viewingId 為自己，並載入資料
@@ -654,24 +647,48 @@
         }
       }
 
-      // ★★★ 新增：載入長輩選項到下拉選單 ★★★
-      function loadElderOptions(volunteerId) {
+      // ★★★ 修改：呼叫 API 取得志工對應的長輩清單 ★★★
+      async function loadElderOptions(volunteerId) {
           const selectEl = document.getElementById("volunteer_patient_select");
-          selectEl.innerHTML = '<option value="" disabled selected>請選擇個案...</option>';
+          selectEl.innerHTML = '<option value="" disabled selected>載入中...</option>';
 
-          MOCK_ELDER_LIST.forEach(elder => {
-              const option = document.createElement("option");
-              option.value = elder.id;
-              option.textContent = elder.name;
-              selectEl.appendChild(option);
-          });
+          try {
+            // 呼叫你的 API
+            const response = await fetch(`${API_BASE_URL}/appointments/by-volunteer/${volunteerId}`);
+            const result = await response.json();
 
-          // 預設選取第一位，方便操作
-          if (MOCK_ELDER_LIST.length > 0) {
-              selectEl.value = MOCK_ELDER_LIST[0].id;
-              currentViewingId = MOCK_ELDER_LIST[0].id;
-              currentViewingName = MOCK_ELDER_LIST[0].name;
-              fetchConsultations(currentViewingId);
+            selectEl.innerHTML = '<option value="" disabled selected>請選擇個案...</option>';
+
+            if (result.success && result.data && result.data.length > 0) {
+                // 將回傳的資料加入下拉選單
+                result.data.forEach(elder => {
+                    const option = document.createElement("option");
+                    option.value = elder.elder_id;
+                    const displaySuffix = elder.elder_display_id ? `(${elder.elder_display_id})` : "";
+                    option.textContent = `${elder.elder_name} ${displaySuffix}`;
+                    selectEl.appendChild(option);
+                });
+
+                // 自動選取第一位長輩並載入資料
+                selectEl.value = result.data[0].elder_id;
+                currentViewingId = result.data[0].elder_id;
+                currentViewingName = result.data[0].elder_name;
+                fetchConsultations(currentViewingId);
+                
+            } else {
+                // 如果志工沒有綁定長輩
+                const option = document.createElement("option");
+                option.text = "目前無綁定的長者";
+                option.disabled = true;
+                selectEl.appendChild(option);
+                // 清空下方列表
+                renderCards([]);
+            }
+
+          } catch (err) {
+            console.error("Load Elders Error:", err);
+            selectEl.innerHTML = '<option value="" disabled selected>載入失敗</option>';
+            alert("無法取得長者列表，請檢查網路連線");
           }
       }
 
@@ -682,9 +699,10 @@
           const selectedOption = selectEl.options[selectEl.selectedIndex];
           
           if (selectedId) {
-              console.log(`切換檢視長輩：${selectedOption.text} (${selectedId})`);
+              let showName = selectedOption.text;
+              console.log(`切換檢視長輩：${showName} (${selectedId})`);
               currentViewingId = selectedId;
-              currentViewingName = selectedOption.text;
+              currentViewingName = showName;
               fetchConsultations(selectedId);
           }
       }
