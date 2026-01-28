@@ -12,7 +12,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent; /* 優化 iOS 點擊效果 */
         }
 
         body {
@@ -121,7 +121,6 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* 修正：防止字體跑出來 */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
@@ -129,14 +128,11 @@
             color: #2c3e50 !important;
             padding: 3px 6px !important;
             margin: 2px 4px !important;
-            font-size: 0.85em; /* 稍微縮小字體 */
+            font-size: 0.9em;
             display: block;
-            white-space: nowrap; /* 不換行 */
-            overflow: hidden; /* 隱藏溢出 */
-            text-overflow: ellipsis; /* 顯示... */
         }
 
-        /* --- Modal 修正：視窗置中 --- */
+        /* --- Modal 修正：針對 iPhone 超出問題 --- */
         .modal { 
             display: none; 
             position: fixed; 
@@ -146,17 +142,15 @@
             backdrop-filter: blur(4px); 
             z-index: 2000; 
             overflow-y: auto; 
-            display: none; /* 下方 JS 控制 */
-            align-items: center; /* 垂直置中 */
-            justify-content: center; /* 水平置中 */
+            -webkit-overflow-scrolling: touch; /* iOS 滑順滾動 */
         }
 
         .modal-content { 
             background: #fff; 
-            width: 92%;
+            width: 92%; /* 稍微縮小寬度 */
             max-width: 400px; 
-            margin: auto; /* 配合 flex 置中 */
-            padding: 20px 15px;
+            margin: 40px auto; 
+            padding: 20px 15px; /* 縮小 Padding */
             border-radius: 16px; 
             position: relative; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
@@ -167,6 +161,7 @@
         label { display: flex; align-items: center; font-weight: 600; margin-bottom: 6px; margin-top: 15px; color: #444; font-size: 15px; }
         label i { margin-right: 6px; width: 20px; text-align: center; }
 
+        /* 關鍵修正：針對 iPhone 的 Input 設定 */
         input[type="text"], 
         input[type="date"], 
         input[type="time"], 
@@ -177,20 +172,12 @@
             border: 1px solid #ddd; 
             font-size: 16px; 
             background-color: #fdfdfd; 
-            -webkit-appearance: none;
+            -webkit-appearance: none; /* 移除 iOS 內建陰影與外觀 */
             appearance: none;
             display: block;
         }
 
-        /* 修正：下拉選單倒三角形 */
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 18px;
-            padding-right: 40px;
-        }
-
+        /* 針對 Date/Time 在 iPhone 的特殊高度修正 */
         input[type="date"], input[type="time"] {
             min-height: 45px;
         }
@@ -285,18 +272,24 @@
     </div>
 
     <script>
+        /* =========================================
+           1. 全域設定與常數
+           ========================================= */
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
         const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
 
         let userId = "";
         let userName = "";
-        let identify = ""; 
+        let identify = ""; // 儲存身分 (志工/長者/家屬)
         let calendar;
         let isEditing = false;
         let currentEventId = null;
         let selectedDateStr = "";
 
+        /* =========================================
+           2. 初始化流程 (Calendar & LIFF)
+           ========================================= */
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -309,8 +302,6 @@
                     right: 'dayGridMonth,listMonth'
                 },
                 buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
-                // 修正：將 more 改成中文
-                moreLinkText: "更多",
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
@@ -320,49 +311,97 @@
                 eventClick: function(info) { openModal(true, info.event); }
             });
             calendar.render();
+            
+            // 啟動 LIFF 與身分驗證
             initLiffAndSetProfile();
         });
 
+        /* =========================================
+           3. LIFF 初始化與身分驗證邏輯 (修改重點)
+           ========================================= */
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // 1. 取得基本資料與更新 UI
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
-                document.getElementById("volunteerName").innerText = userName;
+                
+                const nameEl = document.getElementById("volunteerName");
+                const avatarEl = document.getElementById("volunteerAvatar");
+
+                nameEl.innerText = userName;
                 if (profile.pictureUrl) {
-                    const avatarEl = document.getElementById("volunteerAvatar");
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
                 }
+
+                // 2. ★ 強制身分驗證 ★
+                // 檢查後端是否有註冊資料
                 fetch(`${IDENTIFY_API_BASE}/${userId}`)
                     .then((res) => res.json())
                     .then((result) => {
                         if (!result.success) {
-                            alert("請先完成註冊");
+                            alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。");
                             window.location.href = "../../Login-or-register/index.html";
                         } else {
                             identify = result.role;
+                            console.log("登入角色 role：", identify);
+                            
                             loadRecords();
                         }
                     })
-                    .catch((err) => { window.location.href = "../../Login-or-register/index.html"; });
-            } catch (err) { console.error(err); }
+                    .catch((err) => {
+                        console.error("身分檢查 API 錯誤：", err);
+                        window.location.href = "../../Login-or-register/index.html";
+                    });
+
+            } catch (err) {
+                console.error("LIFF init error:", err);
+            }
         }
 
+        /* =========================================
+           4. 導覽列點擊事件 (頭像與名稱)
+           ========================================= */
+        // 點擊頭像：根據 identify 導向對應頁面
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
             if (liff.isLoggedIn()) {
                 localStorage.setItem("fromPage", "calendar");
                 switch (identify) {
-                    case "志工": window.location.href = "../../Login-or-register/志工資料顯示.html"; break;
-                    case "長者": window.location.href = "../../Login-or-register/長輩資料顯示.html"; break;
-                    case "家屬": window.location.href = "../../Login-or-register/家屬資料顯示.html"; break;
-                    default: window.location.href = "../../Login-or-register/index.html";
+                    case "志工":
+                        window.location.href = "../../Login-or-register/志工資料顯示.html";
+                        break;
+                    case "長者":
+                        window.location.href = "../../Login-or-register/長輩資料顯示.html";
+                        break;
+                    case "家屬":
+                        window.location.href = "../../Login-or-register/家屬資料顯示.html";
+                        break;
+                    default:
+                        // 若無身分或未知，導向登入/註冊頁
+                        window.location.href = "../../Login-or-register/index.html";
                 }
             }
         });
 
+        document.getElementById("volunteerName").addEventListener("click", () => {
+            if (typeof liff !== "undefined" && liff.isLoggedIn && !liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+            } else {
+                alert("已登入：" + userName);
+            }
+        });
+
+        /* =========================================
+           5. 資料載入與 CRUD (維持原樣)
+           ========================================= */
         async function loadRecords() {
             try {
                 const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}`);
@@ -377,7 +416,7 @@
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) {}
+            } catch (e) { console.error("Load records error:", e); }
         }
 
         document.getElementById("saveBtn").onclick = async function() {
@@ -409,6 +448,9 @@
             } catch (err) {}
         };
 
+        /* =========================================
+           6. Modal 與 UI 操作
+           ========================================= */
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
@@ -426,7 +468,7 @@
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'flex'; // 修正：顯示為 flex 以配合置中
+            document.getElementById('dayViewModal').style.display = 'block';
         }
 
         function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
@@ -434,7 +476,7 @@
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "flex"; // 修正：顯示為 flex 以配合置中
+            document.getElementById("dataModal").style.display = "block";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
