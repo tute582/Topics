@@ -412,6 +412,10 @@
                     window.location.href =
                       "../../Login-or-register/長輩資料顯示.html";
                     break;
+                  case "家屬":
+                    window.location.href =
+                      "../../Login-or-register/家屬資料顯示.html";
+                    break;
                   default:
                     // "未註冊" 或 undefined 都導往登入
                     window.location.href = "../../Login-or-register/index.html";
@@ -440,7 +444,7 @@
       const statusSteps = ["到見面地點", "已到醫院", "等待看診", "看診中", "看診結束", "等待拿藥", "已結束就醫陪伴"];
       let currentStatusIndex = -1;
       let pendingIndex = -1;
-      let userRole = ""; // "志工" 或 "長者"
+      let userRole = ""; // "志工" 或 "長者" 或 "家屬"
 
       window.onload = function() {
           setSystemDate();
@@ -465,6 +469,7 @@
                       if (userRole === "志工" || userRole === "長輩") {
                           document.getElementById("editControls").style.display = "block";
                       } else {
+                          // 如果身分為"家屬"，不可編輯
                           document.getElementById("editControls").style.display = "none";
                       }
                   }

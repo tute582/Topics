@@ -333,8 +333,23 @@
 
                 document.querySelector(".volunteer-area").onclick = () => {
                     localStorage.setItem("fromPage", "calendar");
-                    let dest = (identify === "志工") ? "志工資料顯示.html" : (identify === "長者" ? "長輩資料顯示.html" : "index.html");
-                    window.location.href = `../../Login-or-register/${dest}`;
+                    switch (identify) {
+                    case "志工":
+                        window.location.href =
+                        "../../Login-or-register/志工資料顯示.html";
+                        break;
+                    case "長者":
+                        window.location.href =
+                        "../../Login-or-register/長輩資料顯示.html";
+                        break;
+                    case "家屬":
+                        window.location.href =
+                        "../../Login-or-register/家屬資料顯示.html";
+                        break;
+                    default:
+                        // "未註冊" 或 undefined 都導往登入
+                        window.location.href = "../../Login-or-register/index.html";
+                    }
                 };
             } catch (err) { console.error(err); }
         }

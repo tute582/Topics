@@ -751,7 +751,7 @@
                 window.location.href = "../../Login-or-register/index.html";
               } else {
                 // 已註冊，取得身分
-                let identify = result.role; //回傳文字(志工或長者)
+                let identify = result.role; //回傳文字(志工或長者或家屬)
                 localStorage.setItem("fromPage", "blood-pressre");
                 console.log("登入角色 role：", result.role);
                 switch (identify) {
@@ -762,6 +762,10 @@
                   case "長者":
                     window.location.href =
                       "../../Login-or-register/長輩資料顯示.html";
+                    break;
+                  case "家屬":
+                    window.location.href =
+                      "../../Login-or-register/家屬資料顯示.html";
                     break;
                   default:
                     // "未註冊" 或 undefined 都導往登入

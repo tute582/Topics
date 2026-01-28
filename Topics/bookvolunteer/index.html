@@ -1231,18 +1231,14 @@
                 console.log("登入角色 role：", result.role);
 
                 if (identify === "志工") {
-                  // --- 情況 B：是志工 (需要跳轉) ---
-                  // 更新 Loading 文字，且「不要」關閉 Loading
-                  // 這樣畫面會一直轉圈直到跳轉完成，不會露出長者介面
                   showLoading("身分確認：志工", "正在前往志工專區...");
                   
                   setTimeout(() => {
                       window.location.href = "Volunteer.html"; 
                   }, 800); // 稍微延遲讓使用者看清楚文字
 
-                } else if (identify === "長者") {
-                  // --- 情況 C：是長者 (留在本頁) ---
-                  console.log("以長者身份登入，歡迎使用預約志工服務！");
+                } else if (identify === "長者" || identify === "家屬") {
+                  console.log("以長者或家屬身份登入，歡迎使用預約志工服務！");
 
                   // 填入地址
                   const address = result.data.address || "";
@@ -1281,6 +1277,10 @@
               case "長者":
                 window.location.href =
                   "../../Login-or-register/長輩資料顯示.html";
+                break;
+              case "家屬":
+                window.location.href =
+                  "../../Login-or-register/家屬資料顯示.html";
                 break;
               default:
                 // "未註冊" 或 undefined 都導往登入
