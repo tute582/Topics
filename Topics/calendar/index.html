@@ -85,7 +85,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式 --- */
+        /* --- FullCalendar 樣式修正 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -121,22 +121,23 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* 修正：防止字體跑出來 */
+        /* 修正綠色底色高度與文字 */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 3px 6px !important;
-            margin: 2px 4px !important;
-            font-size: 0.85em; /* 稍微縮小字體 */
+            padding: 2px 6px !important; /* 縮減內距 */
+            margin: 1px 4px !important;
+            font-size: 0.85em; /* 稍微縮小字體防止溢出 */
             display: block;
-            white-space: nowrap; /* 不換行 */
-            overflow: hidden; /* 隱藏溢出 */
-            text-overflow: ellipsis; /* 顯示... */
+            line-height: 1.4 !important; /* 控制行高 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* --- Modal 修正：視窗置中 --- */
+        /* --- Modal 修正 --- */
         .modal { 
             display: none; 
             position: fixed; 
@@ -146,20 +147,24 @@
             backdrop-filter: blur(4px); 
             z-index: 2000; 
             overflow-y: auto; 
-            display: none; /* 下方 JS 控制 */
-            align-items: center; /* 垂直置中 */
-            justify-content: center; /* 水平置中 */
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-content { 
             background: #fff; 
             width: 92%;
             max-width: 400px; 
-            margin: auto; /* 配合 flex 置中 */
-            padding: 20px 15px;
+            margin: 40px auto; 
+            padding: 20px 20px; 
             border-radius: 16px; 
             position: relative; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            text-align: left; /* 內容置左，容器置中 */
+        }
+
+        #modalTitle, #dayViewTitle {
+            text-align: center; /* 標題置中 */
+            margin-bottom: 15px;
         }
 
         .close-btn { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; background-color: #f37a7a; color: white; border-radius: 50%; border: none; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
@@ -182,13 +187,21 @@
             display: block;
         }
 
-        /* 修正：下拉選單倒三角形 */
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 18px;
-            padding-right: 40px;
+        /* 下拉選單倒三角形 (右一) */
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper::after {
+            content: '\25BC';
+            font-size: 12px;
+            color: #888;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
         }
 
         input[type="date"], input[type="time"] {
@@ -227,7 +240,7 @@
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="margin-bottom:10px; font-size: 1.3em; color: #2c3e50;">新增行程</h3>
+            <h3 id="modalTitle" style="color: #2c3e50;">新增行程</h3>
             <form id="dataForm">
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
@@ -242,22 +255,26 @@
                 <input type="text" id="note" placeholder="備註事項 (限 25 字)" maxlength="25">
 
                 <label><i class="fa-solid fa-rotate"></i> 重複</label>
-                <select id="repeat">
-                    <option value="none">不重複</option>
-                    <option value="daily">每天</option>
-                    <option value="weekly">每週</option>
-                    <option value="monthly">每月</option>
-                    <option value="yearly">每年</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="repeat">
+                        <option value="none">不重複</option>
+                        <option value="daily">每天</option>
+                        <option value="weekly">每週</option>
+                        <option value="monthly">每月</option>
+                        <option value="yearly">每年</option>
+                    </select>
+                </div>
 
                 <label><i class="fa-regular fa-bell"></i> 提醒類型</label>
-                <select id="reminder">
-                    <option value="none">無</option>
-                    <option value="0min">當下提醒</option>
-                    <option value="30min">30 分鐘前</option>
-                    <option value="1h">1 小時前</option>
-                    <option value="day">1 天前</option>
-                </select>
+                <div class="select-wrapper">
+                    <select id="reminder">
+                        <option value="none">無</option>
+                        <option value="0min">當下提醒</option>
+                        <option value="30min">30 分鐘前</option>
+                        <option value="1h">1 小時前</option>
+                        <option value="day">1 天前</option>
+                    </select>
+                </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="button" class="btn" id="saveBtn" style="flex: 1;">
@@ -274,7 +291,7 @@
     <div id="dayViewModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dayViewModal')"><i class="fas fa-times"></i></button>
-            <h3 id="dayViewTitle" style="margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
+            <h3 id="dayViewTitle" style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
             <div id="dayEventList" style="max-height: 300px; overflow-y: auto;"></div>
             <div style="margin-top: 15px;">
                 <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">
@@ -309,12 +326,12 @@
                     right: 'dayGridMonth,listMonth'
                 },
                 buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
-                // 修正：將 more 改成中文
-                moreLinkText: "更多",
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
                 dayMaxEvents: 2,
+                // 修改 More 按鈕為中文
+                moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
                 eventClick: function(info) { openModal(true, info.event); }
@@ -326,29 +343,42 @@
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
-                document.getElementById("volunteerName").innerText = userName;
+                
+                const nameEl = document.getElementById("volunteerName");
+                const avatarEl = document.getElementById("volunteerAvatar");
+
+                nameEl.innerText = userName;
                 if (profile.pictureUrl) {
-                    const avatarEl = document.getElementById("volunteerAvatar");
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
                 }
+
                 fetch(`${IDENTIFY_API_BASE}/${userId}`)
                     .then((res) => res.json())
                     .then((result) => {
                         if (!result.success) {
-                            alert("請先完成註冊");
+                            alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。");
                             window.location.href = "../../Login-or-register/index.html";
                         } else {
                             identify = result.role;
                             loadRecords();
                         }
                     })
-                    .catch((err) => { window.location.href = "../../Login-or-register/index.html"; });
-            } catch (err) { console.error(err); }
+                    .catch((err) => {
+                        console.error("身分檢查 API 錯誤：", err);
+                        window.location.href = "../../Login-or-register/index.html";
+                    });
+
+            } catch (err) {
+                console.error("LIFF init error:", err);
+            }
         }
 
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
@@ -360,6 +390,14 @@
                     case "家屬": window.location.href = "../../Login-or-register/家屬資料顯示.html"; break;
                     default: window.location.href = "../../Login-or-register/index.html";
                 }
+            }
+        });
+
+        document.getElementById("volunteerName").addEventListener("click", () => {
+            if (typeof liff !== "undefined" && liff.isLoggedIn && !liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+            } else {
+                alert("已登入：" + userName);
             }
         });
 
@@ -377,7 +415,7 @@
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) {}
+            } catch (e) { console.error("Load records error:", e); }
         }
 
         document.getElementById("saveBtn").onclick = async function() {
@@ -426,7 +464,7 @@
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'flex'; // 修正：顯示為 flex 以配合置中
+            document.getElementById('dayViewModal').style.display = 'block';
         }
 
         function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
@@ -434,7 +472,7 @@
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "flex"; // 修正：顯示為 flex 以配合置中
+            document.getElementById("dataModal").style.display = "block";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
