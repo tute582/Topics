@@ -561,9 +561,8 @@
         try {
           await liff.init({ liffId: LIFF_ID });
 
-          // 檢查是否登入
           if (!liff.isLoggedIn()) {
-            console.log("使用者未登入");
+            liff.login();
             return;
           }
 
