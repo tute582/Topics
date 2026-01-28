@@ -612,180 +612,158 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <script>
-      /* =================================================================
-       1. 全域變數與設定
-       ================================================================= */
-      const LIFF_ID = "2008484068-DEJL7363";
+    /* =================================================================
+    1. 全域變數與設定
+    ================================================================= */
+    const LIFF_ID = "2008484068-DEJL7363";
 
-      // DOM 元素
-      const form = document.getElementById("bpForm");
-      const table = document.getElementById("recordTable");
-      const ctx = document.getElementById("bpChart").getContext("2d");
-      const chartContainer = document.querySelector(".chart-container");
-      const tableContainer = document.querySelector(".allTable-div");
-      const noRecordMsg = document.getElementById("no-record-msg");
-      const avatarEl = document.getElementById("volunteerAvatar");
-      const nameEl = document.getElementById("volunteerName");
-      // AI 建議 DOM
-      const adviceOutput = document.getElementById("advice-output");
-      const adviceButton = document.getElementById("advice-button");
-      const adviceText = document.getElementById("advice-text");
+    // DOM 元素
+    const form = document.getElementById("bpForm");
+    const table = document.getElementById("recordTable");
+    const ctx = document.getElementById("bpChart").getContext("2d");
+    const chartContainer = document.querySelector(".chart-container");
+    const tableContainer = document.querySelector(".allTable-div");
+    const noRecordMsg = document.getElementById("no-record-msg");
+    const avatarEl = document.getElementById("volunteerAvatar");
+    const nameEl = document.getElementById("volunteerName");
+    // AI 建議 DOM
+    const adviceOutput = document.getElementById("advice-output");
+    const adviceButton = document.getElementById("advice-button");
+    const adviceText = document.getElementById("advice-text");
 
-      // 狀態變數
-      let userId = "";   //測試時可設定自己的userId
-      let userName = null;
-      let liffProfile = null;
-      let records = [];
-      let viewEndDateStr = null;
-      let viewDays = null;
-      let chart;
-      let fp = null;
-      let userSelectedRange = false;
+    // 狀態變數
+    let userId = "";
+    let userName = null;
+    let identify = "";
+    let records = [];
+    let viewEndDateStr = null;
+    let viewDays = null;
+    let chart;
+    let fp = null;
+    let userSelectedRange = false;
 
-      // 初始化 UI 狀態
-      if (chartContainer) chartContainer.style.display = "none";
-      if (tableContainer) tableContainer.style.display = "none";
-      if (noRecordMsg) noRecordMsg.style.display = "none";
-      if (adviceOutput) adviceOutput.style.display = "none";
-      if (adviceButton) adviceButton.disabled = true;
+    // 初始化 UI 狀態
+    if (chartContainer) chartContainer.style.display = "none";
+    if (tableContainer) tableContainer.style.display = "none";
+    if (noRecordMsg) noRecordMsg.style.display = "none";
+    if (adviceOutput) adviceOutput.style.display = "none";
+    if (adviceButton) adviceButton.disabled = true;
 
-      // 初始化自定義日期/時間選擇器
-      initDateTimePickers();
+    // 初始化日期與時間
+    initDateTimePickers();
+    setDateMax();
+    setDefaultDateTime();
 
-      // 設定日期上限為今天（不可選未來）
-      setDateMax();
+    function setDateMax() {
+      const dateEl = document.getElementById("date");
+      if (!dateEl) return;
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      dateEl.max = `${yyyy}-${mm}-${dd}`;
+    }
 
-      // ★★★ 新增：設定預設時間為當下 ★★★
-      setDefaultDateTime();
+    function setDefaultDateTime() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      const todayStr = `${yyyy}-${mm}-${dd}`;
 
-      function setDateMax() {
-        const dateEl = document.getElementById("date");
-        if (!dateEl) return;
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const todayStr = `${yyyy}-${mm}-${dd}`;
-        dateEl.max = todayStr;
-        // 注意：這裡只設定 max，不設定 value，value 交給 setDefaultDateTime 處理
+      const hh = String(now.getHours()).padStart(2, "0");
+      const min = String(now.getMinutes()).padStart(2, "0");
+      const timeStr = `${hh}:${min}`;
+
+      const dateEl = document.getElementById("date");
+      const timeEl = document.getElementById("time");
+
+      if (dateEl) {
+        dateEl.value = todayStr;
+        updateDateDisplay(todayStr, "dateDisplay");
       }
+      if (timeEl) {
+        timeEl.value = timeStr;
+        updateTimeDisplay(timeStr, "timeDisplay");
+      }
+    }
 
-      // ★★★ 新增這個函式：取得現在時間並填入 ★★★
-      function setDefaultDateTime() {
-        const now = new Date();
+    /* =================================================================
+    2. LIFF 初始化 與 身分驗證
+    ================================================================= */
+    async function initLiffAndSetProfile() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
 
-        // 1. 處理日期 (YYYY-MM-DD)
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const todayStr = `${yyyy}-${mm}-${dd}`;
-
-        // 2. 處理時間 (HH:MM)
-        const hh = String(now.getHours()).padStart(2, "0");
-        const min = String(now.getMinutes()).padStart(2, "0");
-        const timeStr = `${hh}:${min}`;
-
-        // 3. 填入 Input 欄位
-        const dateEl = document.getElementById("date");
-        const timeEl = document.getElementById("time");
-
-        if (dateEl) {
-          dateEl.value = todayStr;
-          // 重要：手動呼叫更新畫面的函式，不然使用者看到的會是空白
-          updateDateDisplay(todayStr, "dateDisplay");
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
         }
 
-        if (timeEl) {
-          timeEl.value = timeStr;
-          // 重要：手動呼叫更新畫面的函式
-          updateTimeDisplay(timeStr, "timeDisplay");
+        const profile = await liff.getProfile();
+        userId = profile.userId;
+        userName = profile.displayName;
+        localStorage.setItem("userId", userId);
+        console.log("LIFF Profile userId:", userId);
+
+        nameEl.innerText = profile.displayName || "使用者";
+        if (profile.pictureUrl) {
+          avatarEl.src = profile.pictureUrl;
+          avatarEl.style.display = "inline-block";
         }
-      }
 
-      /* =================================================================
-       2. LIFF 初始化
-       ================================================================= */
-      async function initLiffAndSetProfile() {
-        try {
-          await liff.init({ liffId: LIFF_ID });
-
-          if (!liff.isLoggedIn()) {
-            liff.login(); // 強制登入，測試時前註解掉後續打開
-            //以下為測試用
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            return;
-          }
-
-          const profile = await liff.getProfile();
-          userId = profile.userId;
-          userName = profile.displayName;
-          localStorage.setItem("userId", userId);
-          console.log("LIFF Profile userId:", userId, "userName:", userName);
-
-          nameEl.innerText = profile.displayName || "志工";
-          if (profile.pictureUrl) {
-            avatarEl.src = profile.pictureUrl;
-            avatarEl.style.display = "inline-block";
-          } else {
-            avatarEl.style.display = "none";
-          }
-        } catch (err) {
-          console.error("LIFF init error:", err);
-        }
-      }
-
-      avatarEl.addEventListener("click", () => {
-        if (
-          typeof liff !== "undefined" &&
-          liff.isLoggedIn &&
-          liff.isLoggedIn()
-        ) {
-          // 檢查後端是否有這個userId註冊
-          fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
-            .then((res) => res.json())
-            .then((result) => {
-              if (!result.success) {
-                // 無效身分，導向註冊頁面
-                alert("第一次將為您導入註冊頁面，點擊「確定」前往註冊頁面。");
-                window.location.href = "../../Login-or-register/index.html";
-              } else {
-                // 已註冊，取得身分
-                let identify = result.role; //回傳文字(志工或長者或家屬)
-                localStorage.setItem("fromPage", "blood-pressre");
-                console.log("登入角色 role：", result.role);
-                switch (identify) {
-                  case "志工":
-                    window.location.href =
-                      "../../Login-or-register/志工資料顯示.html";
-                    break;
-                  case "長者":
-                    window.location.href =
-                      "../../Login-or-register/長輩資料顯示.html";
-                    break;
-                  case "家屬":
-                    window.location.href =
-                      "../../Login-or-register/家屬資料顯示.html";
-                    break;
-                  default:
-                    // "未註冊" 或 undefined 都導往登入
-                    window.location.href = "../../Login-or-register/index.html";
-                }
-              }
-            })
-            .catch((err) => {
-              console.error("身分檢查 API 錯誤：", err);
-              // API 出錯也視為無效身分
+        // -----------------------------------------------------------
+        // ★ 新增：初始化時的身分驗證邏輯
+        // -----------------------------------------------------------
+        fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
+          .then((res) => res.json())
+          .then((result) => {
+            
+            if (!result.success) {
+              alert(
+                "首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。"
+              );
               window.location.href = "../../Login-or-register/index.html";
-            });
-        } else if (typeof liff !== "undefined" && liff.login) {
-          liff.login({ redirectUri: window.location.href });
-        } else {
-          alert("無法使用 LINE 登入");
-        }
-      });
+            } else {
+              identify = result.role;
+              console.log("登入角色 role：", result.role);
+              // 若驗證成功，才開始載入血壓紀錄
+              loadRecords();
+            }
+          })
+          .catch((err) => {
+            console.error("身分檢查 API 錯誤：", err);
+            window.location.href = "../../Login-or-register/index.html";
+          });
+      } catch (err) {
+        console.error("LIFF init error:", err);
+      }
+    }
 
-      nameEl.addEventListener("click", () => {
+    avatarEl.addEventListener("click", () => {
+      if (liff.isLoggedIn()) {
+        localStorage.setItem("fromPage", "blood-pressre");
+        switch (identify) {
+          case "志工":
+            window.location.href =
+              "../../Login-or-register/志工資料顯示.html";
+            break;
+          case "長者":
+            window.location.href =
+              "../../Login-or-register/長輩資料顯示.html";
+            break;
+          case "家屬":
+            window.location.href =
+              "../../Login-or-register/家屬資料顯示.html";
+            break;
+          default:
+            // "未註冊" 或 undefined 都導往登入
+            window.location.href = "../../Login-or-register/index.html";
+        }
+      }
+    });
+
+    nameEl.addEventListener("click", () => {
         if (
           typeof liff !== "undefined" &&
           liff.isLoggedIn &&
@@ -797,101 +775,102 @@
         }
       });
 
-      initLiffAndSetProfile();
+    initLiffAndSetProfile();
 
-      /* =================================================================
-       3. 資料初始化 (SupabaseAPI)
-       ================================================================= */
-      (async function loadRecords() {
-        const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}`;
-        try {
-          const response = await fetch(GET_SUPABASE_API_URL);
-          const result = await response.json();
+    /* =================================================================
+    3. 資料初始化 (SupabaseAPI)
+    ================================================================= */
+    async function loadRecords() {
+      if (!userId) return; // 雙重確認
+      
+      const GET_SUPABASE_API_URL = `https://supabase-api-six.vercel.app/bloodPressre/${userId}`;
+      try {
+        const response = await fetch(GET_SUPABASE_API_URL);
+        const result = await response.json();
 
-          if (result.success && Array.isArray(result.data)) {
-            records = result.data.map((r) => ({
-              uuid: r.uuid,
-              elder_user_id: r.elder_user_id,
-              elder_name: r.elder_name,
-              systolic: r.systolic,
-              diastolic: r.diastolic,
-              recorded_time: r.recorded_time,
-              status: getStatus(r.systolic, r.diastolic),
-              created_at: r.created_at,
-              remarks: r.remarks,
-              pulse: r.pulse,
-              event_id: r.event_id,
-            }));
+        if (result.success && Array.isArray(result.data)) {
+          records = result.data.map((r) => ({
+            uuid: r.uuid,
+            elder_user_id: r.elder_user_id,
+            elder_name: r.elder_name,
+            systolic: r.systolic,
+            diastolic: r.diastolic,
+            recorded_time: r.recorded_time,
+            status: getStatus(r.systolic, r.diastolic),
+            created_at: r.created_at,
+            remarks: r.remarks,
+            pulse: r.pulse,
+            event_id: r.event_id,
+          }));
 
-            initViewControlsAndRender();
-            return;
-          } else {
-            console.warn("API did not return success", result);
-          }
-        } catch (e) {
-          console.error("Fetch API error:", e);
+          initViewControlsAndRender();
+        } else {
+          console.warn("API did not return success", result);
         }
-      })();
-
-      /* =================================================================
-       4. UI 互動邏輯：Picker Hack & View Controls
-       ================================================================= */
-      function initDateTimePickers() {
-        const dateInput = document.getElementById("date");
-        dateInput.addEventListener("input", function () {
-          updateDateDisplay(this.value, "dateDisplay");
-        });
-
-        const timeInput = document.getElementById("time");
-        timeInput.addEventListener("input", function () {
-          updateTimeDisplay(this.value, "timeDisplay");
-        });
+      } catch (e) {
+        console.error("Fetch API error:", e);
       }
+    }
 
-      function updateDateDisplay(dateValue, displayElementId) {
-        const displayEl = document.getElementById(displayElementId);
-        if (!dateValue) {
-          displayEl.textContent = "";
-          displayEl.style.color = "#888";
-          return;
-        }
-        const [year, month, day] = dateValue.split("-");
-        displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
-        displayEl.style.color = "#222";
+    /* =================================================================
+    4. UI 互動邏輯：Picker Hack & View Controls
+    ================================================================= */
+    function initDateTimePickers() {
+      const dateInput = document.getElementById("date");
+      dateInput.addEventListener("input", function () {
+        updateDateDisplay(this.value, "dateDisplay");
+      });
+
+      const timeInput = document.getElementById("time");
+      timeInput.addEventListener("input", function () {
+        updateTimeDisplay(this.value, "timeDisplay");
+      });
+    }
+
+    function updateDateDisplay(dateValue, displayElementId) {
+      const displayEl = document.getElementById(displayElementId);
+      if (!dateValue) {
+        displayEl.textContent = "";
+        displayEl.style.color = "#888";
+        return;
       }
+      const [year, month, day] = dateValue.split("-");
+      displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
+      displayEl.style.color = "#222";
+    }
 
-      function updateTimeDisplay(timeValue, displayElementId) {
-        const displayEl = document.getElementById(displayElementId);
-        if (!timeValue) {
-          displayEl.textContent = "";
-          displayEl.style.color = "#888";
-          return;
-        }
-        const [hourStr, minuteStr] = timeValue.split(":");
-        let hour = parseInt(hourStr);
-        let period = "上午";
-        if (hour >= 12) {
-          period = "下午";
-          if (hour > 12) hour -= 12;
-        }
-        if (hour === 0) hour = 12;
-        const formattedHour = hour.toString().padStart(2, "0");
-        displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
-        displayEl.style.color = "#222";
+    function updateTimeDisplay(timeValue, displayElementId) {
+      const displayEl = document.getElementById(displayElementId);
+      if (!timeValue) {
+        displayEl.textContent = "";
+        displayEl.style.color = "#888";
+        return;
       }
+      const [hourStr, minuteStr] = timeValue.split(":");
+      let hour = parseInt(hourStr);
+      let period = "上午";
+      if (hour >= 12) {
+        period = "下午";
+        if (hour > 12) hour -= 12;
+      }
+      if (hour === 0) hour = 12;
+      const formattedHour = hour.toString().padStart(2, "0");
+      displayEl.textContent = `${period} ${formattedHour}:${minuteStr}`;
+      displayEl.style.color = "#222";
+    }
 
-      function initViewControlsAndRender() {
-        const viewControlsEl = document.getElementById("viewControls");
-        const viewNoteEl = document.getElementById("viewNote");
-        const viewRangeEl = document.getElementById("dateRange");
+    function initViewControlsAndRender() {
+      const viewControlsEl = document.getElementById("viewControls");
+      const viewNoteEl = document.getElementById("viewNote");
+      const viewRangeEl = document.getElementById("dateRange");
 
-        const today = new Date();
+      const today = new Date();
         const endStr = `${today.getFullYear()}-${String(
           today.getMonth() + 1
         ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
         viewEndDateStr = endStr;
 
-        if (viewRangeEl && typeof flatpickr === "function") {
+      if (viewRangeEl && typeof flatpickr === "function") {
           if (records && records.length) {
             const times = records
               .filter((r) => r.recorded_time)
@@ -905,109 +884,109 @@
             }
           }
 
-          fp = flatpickr(viewRangeEl, {
-            locale: "zh_tw",
-            mode: "range",
-            dateFormat: "Y/m/d",
-            onChange: function (selectedDates, dateStr, instance) {
-              if (!selectedDates || selectedDates.length === 0) {
-                userSelectedRange = false;
-                viewDays = null;
-                viewEndDateStr = null;
-                renderTable();
-                renderChart();
-                return;
-              }
-              userSelectedRange = true;
-              const s = selectedDates[0];
-              const e = selectedDates[1] || selectedDates[0];
-              viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
-
-              const y2 = e.getFullYear(),
-                m2 = String(e.getMonth() + 1).padStart(2, "0"),
-                d2 = String(e.getDate()).padStart(2, "0");
-              viewEndDateStr = `${y2}-${m2}-${d2}`;
-
+        fp = flatpickr(viewRangeEl, {
+          locale: "zh_tw",
+          mode: "range",
+          dateFormat: "Y/m/d",
+          onChange: function (selectedDates) {
+            if (!selectedDates || selectedDates.length === 0) {
+              userSelectedRange = false;
+              viewDays = null;
+              viewEndDateStr = null;
               renderTable();
               renderChart();
-            },
-          });
-        }
-
-        const quickOptions = [
-          { key: "7", label: "最近 7 天" },
-          { key: "30", label: "最近 30 天" },
-          { key: "thisMonth", label: "本月" },
-          { key: "lastMonth", label: "上個月" },
-        ];
-        let currentQuickIndex = 0;
-
-        function applyQuick(rangeKey) {
-          const t = new Date();
-          let s, e;
-          if (rangeKey === "7" || rangeKey === "30") {
-            const days = parseInt(rangeKey, 10);
-            e = new Date();
-            s = new Date();
-            s.setDate(e.getDate() - (days - 1));
-          } else if (rangeKey === "thisMonth") {
-            s = new Date(t.getFullYear(), t.getMonth(), 1);
-            e = new Date(t.getFullYear(), t.getMonth() + 1, 0);
-          } else if (rangeKey === "lastMonth") {
-            s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
-            e = new Date(t.getFullYear(), t.getMonth(), 0);
-          }
-
-          if (fp) {
-            fp.setDate([s, e], true, "Y-m-d");
-            const opt = quickOptions.find((o) => o.key === rangeKey);
-            if (opt) {
-              currentQuickIndex = quickOptions.indexOf(opt);
-              document.getElementById("rangeLabel").textContent = opt.label;
+              return;
             }
-          }
+            userSelectedRange = true;
+            const s = selectedDates[0];
+            const e = selectedDates[1] || selectedDates[0];
+            viewDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+
+            const y2 = e.getFullYear(),
+              m2 = String(e.getMonth() + 1).padStart(2, "0"),
+              d2 = String(e.getDate()).padStart(2, "0");
+            viewEndDateStr = `${y2}-${m2}-${d2}`;
+
+            renderTable();
+            renderChart();
+          },
+        });
+      }
+
+      const quickOptions = [
+        { key: "7", label: "最近 7 天" },
+        { key: "30", label: "最近 30 天" },
+        { key: "thisMonth", label: "本月" },
+        { key: "lastMonth", label: "上個月" },
+      ];
+      let currentQuickIndex = 0;
+
+      function applyQuick(rangeKey) {
+        const t = new Date();
+        let s, e;
+        if (rangeKey === "7" || rangeKey === "30") {
+          const days = parseInt(rangeKey, 10);
+          e = new Date();
+          s = new Date();
+          s.setDate(e.getDate() - (days - 1));
+        } else if (rangeKey === "thisMonth") {
+          s = new Date(t.getFullYear(), t.getMonth(), 1);
+          e = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+        } else if (rangeKey === "lastMonth") {
+          s = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+          e = new Date(t.getFullYear(), t.getMonth(), 0);
         }
 
-        document.getElementById("rangePrev").addEventListener("click", () => {
+        if (fp) {
+          fp.setDate([s, e], true, "Y-m-d");
+          const opt = quickOptions.find((o) => o.key === rangeKey);
+          if (opt) {
+            currentQuickIndex = quickOptions.indexOf(opt);
+            document.getElementById("rangeLabel").textContent = opt.label;
+          }
+        }
+      }
+      
+      document.getElementById("rangePrev").addEventListener("click", () => {
           currentQuickIndex =
             (currentQuickIndex - 1 + quickOptions.length) % quickOptions.length;
           applyQuick(quickOptions[currentQuickIndex].key);
         });
-        document.getElementById("rangeNext").addEventListener("click", () => {
-          currentQuickIndex = (currentQuickIndex + 1) % quickOptions.length;
-          applyQuick(quickOptions[currentQuickIndex].key);
-        });
+      document.getElementById("rangeNext").addEventListener("click", () => {
+        currentQuickIndex = (currentQuickIndex + 1) % quickOptions.length;
+        applyQuick(quickOptions[currentQuickIndex].key);
+      });
 
-        const viewRecords = getViewRecords(viewDays, viewEndDateStr);
-        const hasViewRecords =
+      const viewRecords = getViewRecords(viewDays, viewEndDateStr);
+      const hasViewRecords =
           Array.isArray(viewRecords) && viewRecords.length > 0;
         if (viewControlsEl)
           viewControlsEl.style.display =
             hasViewRecords || userSelectedRange ? "flex" : "none";
         if (viewNoteEl) viewNoteEl.style.display = hasViewRecords ? "" : "none";
 
-        if (!hasViewRecords) {
-          if (noRecordMsg) noRecordMsg.style.display = "block";
-          return;
-        }
-
-        applyQuick("7");
+      if (!hasViewRecords) {
+        if (noRecordMsg) noRecordMsg.style.display = "block";
+        return;
       }
 
-      /* =================================================================
-       5. 資料 CRUD 功能
-       ================================================================= */
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const dateVal = document.getElementById("date").value;
-        // 防呆：若為未來日期則阻止送出
-        const dateEl = document.getElementById("date");
-        if (dateVal && dateEl && dateEl.max && dateVal > dateEl.max) {
-          alert("日期不可為未來，請選擇今天或以前的日期。");
-          dateEl.focus();
-          return;
-        }
-        const timeVal = document.getElementById("time")
+      applyQuick("7");
+    }
+
+    /* =================================================================
+    5. 資料 CRUD 功能
+    ================================================================= */
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const dateVal = document.getElementById("date").value;
+      // 防呆：若為未來日期則阻止送出
+      const dateEl = document.getElementById("date");
+      if (dateVal && dateEl && dateEl.max && dateVal > dateEl.max) {
+        alert("日期不可為未來，請選擇今天或以前的日期。");
+        dateEl.focus();
+        return;
+      }
+      const timeVal = document.getElementById("time")
           ? document.getElementById("time").value
           : "";
         const systolic = parseInt(document.getElementById("systolic").value);
@@ -1023,15 +1002,15 @@
           recorded_time = new Date().toISOString();
         }
 
-        const payload = {
-          elder_user_id: userId,
-          elder_name: userName,
-          systolic: systolic,
-          diastolic: diastolic,
-          recorded_time: recorded_time,
-        };
+      const payload = {
+        elder_user_id: userId,
+        elder_name: userName,
+        systolic: systolic,
+        diastolic: diastolic,
+        recorded_time: recorded_time,
+      };
 
-        const tempRecord = {
+      const tempRecord = {
           uuid: null,
           systolic,
           diastolic,

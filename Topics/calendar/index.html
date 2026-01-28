@@ -272,18 +272,24 @@
     </div>
 
     <script>
+        /* =========================================
+           1. 全域設定與常數
+           ========================================= */
         const LIFF_ID = "2008484068-Kp57RrAr"; 
+        const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
+        const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
+
         let userId = "";
         let userName = "";
-        let identify = "";
+        let identify = ""; // 儲存身分 (志工/長者/家屬)
         let calendar;
         let isEditing = false;
         let currentEventId = null;
         let selectedDateStr = "";
 
-        const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
-        const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
-
+        /* =========================================
+           2. 初始化流程 (Calendar & LIFF)
+           ========================================= */
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -305,55 +311,97 @@
                 eventClick: function(info) { openModal(true, info.event); }
             });
             calendar.render();
-            initLiff();
+            
+            // 啟動 LIFF 與身分驗證
+            initLiffAndSetProfile();
         });
 
-        async function initLiff() {
+        /* =========================================
+           3. LIFF 初始化與身分驗證邏輯 (修改重點)
+           ========================================= */
+        async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    userId = profile.userId;
-                    userName = profile.displayName;
-                    document.getElementById("volunteerName").innerText = userName;
-                    if (profile.pictureUrl) {
-                        const avatarEl = document.getElementById("volunteerAvatar");
-                        avatarEl.src = profile.pictureUrl;
-                        avatarEl.style.display = "inline-block";
-                    }
-                    try {
-                        const idRes = await fetch(`${IDENTIFY_API_BASE}/${userId}`);
-                        const idData = await idRes.json();
-                        if (idData.success) identify = idData.role;
-                    } catch (e) {}
-                    loadRecords();
-                } else {
+
+                if (!liff.isLoggedIn()) {
                     liff.login();
+                    return;
                 }
 
-                document.querySelector(".volunteer-area").onclick = () => {
-                    localStorage.setItem("fromPage", "calendar");
-                    switch (identify) {
-                    case "志工":
-                        window.location.href =
-                        "../../Login-or-register/志工資料顯示.html";
-                        break;
-                    case "長者":
-                        window.location.href =
-                        "../../Login-or-register/長輩資料顯示.html";
-                        break;
-                    case "家屬":
-                        window.location.href =
-                        "../../Login-or-register/家屬資料顯示.html";
-                        break;
-                    default:
-                        // "未註冊" 或 undefined 都導往登入
+                // 1. 取得基本資料與更新 UI
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+                userName = profile.displayName;
+                
+                const nameEl = document.getElementById("volunteerName");
+                const avatarEl = document.getElementById("volunteerAvatar");
+
+                nameEl.innerText = userName;
+                if (profile.pictureUrl) {
+                    avatarEl.src = profile.pictureUrl;
+                    avatarEl.style.display = "inline-block";
+                }
+
+                // 2. ★ 強制身分驗證 ★
+                // 檢查後端是否有註冊資料
+                fetch(`${IDENTIFY_API_BASE}/${userId}`)
+                    .then((res) => res.json())
+                    .then((result) => {
+                        if (!result.success) {
+                            alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。");
+                            window.location.href = "../../Login-or-register/index.html";
+                        } else {
+                            identify = result.role;
+                            console.log("登入角色 role：", identify);
+                            
+                            loadRecords();
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("身分檢查 API 錯誤：", err);
                         window.location.href = "../../Login-or-register/index.html";
-                    }
-                };
-            } catch (err) { console.error(err); }
+                    });
+
+            } catch (err) {
+                console.error("LIFF init error:", err);
+            }
         }
 
+        /* =========================================
+           4. 導覽列點擊事件 (頭像與名稱)
+           ========================================= */
+        // 點擊頭像：根據 identify 導向對應頁面
+        document.getElementById("volunteerAvatar").addEventListener("click", () => {
+            if (liff.isLoggedIn()) {
+                localStorage.setItem("fromPage", "calendar");
+                switch (identify) {
+                    case "志工":
+                        window.location.href = "../../Login-or-register/志工資料顯示.html";
+                        break;
+                    case "長者":
+                        window.location.href = "../../Login-or-register/長輩資料顯示.html";
+                        break;
+                    case "家屬":
+                        window.location.href = "../../Login-or-register/家屬資料顯示.html";
+                        break;
+                    default:
+                        // 若無身分或未知，導向登入/註冊頁
+                        window.location.href = "../../Login-or-register/index.html";
+                }
+            }
+        });
+
+        document.getElementById("volunteerName").addEventListener("click", () => {
+            if (typeof liff !== "undefined" && liff.isLoggedIn && !liff.isLoggedIn()) {
+                liff.login({ redirectUri: window.location.href });
+            } else {
+                alert("已登入：" + userName);
+            }
+        });
+
+        /* =========================================
+           5. 資料載入與 CRUD (維持原樣)
+           ========================================= */
         async function loadRecords() {
             try {
                 const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}`);
@@ -368,7 +416,7 @@
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) {}
+            } catch (e) { console.error("Load records error:", e); }
         }
 
         document.getElementById("saveBtn").onclick = async function() {
@@ -400,6 +448,9 @@
             } catch (err) {}
         };
 
+        /* =========================================
+           6. Modal 與 UI 操作
+           ========================================= */
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
