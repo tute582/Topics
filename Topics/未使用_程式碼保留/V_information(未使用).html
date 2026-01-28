@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>志工端管理介面</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #ffffff;
+    margin: 0;
+    padding: 0px;
+    
+  }
+/* 新增一個主要區塊包容容器，用來置中 */
+.main-content {
+  display: flex;
+  justify-content: center;
+  padding: 30px 20px; /* 讓內容與導覽列間有間距 */
+}
+  .container {
+    max-width: 450px;
+    width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2d3436;
+    margin-bottom: 15px;
+  }
+
+  .editor {
+    /* 表單欄位對齊：每個欄位為 .field，兩欄佈局用 .two-col */
+  }
+  .editor .field {
+    margin-bottom: 12px;
+  }
+  .editor label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #222;
+  }
+  .editor input,
+  .editor select,
+  .editor textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 兩欄佈局（供縣市/行政區、巷弄號樓那種） */
+  .editor .two-col {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .editor .two-col .col {
+    flex: 1;
+    min-width: 0; /* 讓 flex item 在窄螢幕縮小 */
+  }
+
+  .editor button {
+    background: #0984e3;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .editor button:hover {
+    background: #74b9ff;
+  }
+
+  .preview-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid #0984e3;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .card {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    margin-top: 30px;
+  }
+
+  .card-cover {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background-color: #c2dfff;
+  }
+
+  .card-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid rgb(94, 131, 252);
+    position: absolute;
+    top: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    object-fit: cover;
+  }
+
+  .card-content {
+    padding: 60px 20px 20px;
+    text-align: center;
+  }
+
+  .card-title {
+    font-size: 1.3em;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-text {
+    margin-top: 10px;
+    color: #636e72;
+    text-align: center;
+  }
+
+  .special {
+    background: #ffeaa7;
+    color: #2d3436;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.8em;
+  }
+
+  /* 標籤樣式 */
+  .tag-section { margin-top: 15px; }
+
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+  }
+
+  .tag {
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+  }
+
+  .tag:hover {
+    background-color: #d8d8d8;
+  }
+
+  .tag.selected {
+    background-color: #007bff;
+    color: white;
+  }
+
+  #newTagInput {
+    margin-top: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+  }
+
+  #newTagInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .card-tags .tag {
+    background: #74b9ff;
+    color: white;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+/* 統一輸入框與下拉選單外觀 */
+input, input[type="email"], input[type="tel"], input[type="date"], input[type="text"],
+input[type="file"], select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db; /* 灰色邊框 */
+  border-radius: 10px;          /* 統一圓角 */
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+/* 聚焦時邊框變藍 */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* 選擇檔案按鈕統一外觀 */
+input[type="file"]::file-selector-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #1e40af;
+}
+
+   /* 導覽列 */
+  .nav-1{
+    display: flex;                 /* 水平排列內容 */
+   /* font-weight: 500;*/
+    align-items: center;           /* 垂直置中 */
+    justify-content: space-between;/* 兩端對齊：左/右 */
+    padding: 10px 25px;           /* 右側保留內距，左側移除讓內容靠近頁邊 */
+    position: sticky;              /* 滾動時吸附上方 */
+    top: 0;                        /* 吸附頂部 */
+    z-index: 1001;                 /* 保證在其他元素之上 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    left: 0;
+    right: 0;
+    color: black;
+    background-color: white;
+    box-sizing: border-box; /* 確保padding不會超出寬度 */
+    border-bottom: 1px solid #ddd; /* 建議加這行讓導覽列更明顯 */
+  }
+
+  @media (max-width: 500px) {
+    body { padding: 10px; }
+    .container { padding: 15px; box-shadow: none; }
+    .editor button { font-size: 15px; }
+  }
+
+  /* 響應式：小螢幕切換為單欄 */
+  @media (max-width: 560px) {
+    .editor .two-col { flex-direction: column; gap: 10px; }
+    .address-section .controls { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 導覽列 -->
+<nav class="nav-1" >
+  <div>
+    <h1 style="margin:0; font-size: 28px;">志工管理介面</h1>
+  </div>
+
+  <div style="display:flex; align-items:center;">
+    <h1 style="margin:0; text-align:right;">
+      <span class="volunteer-area" style="display:flex; align-items:center; gap:8px;">
+        <img id="volunteerAvatar" class="avatar" src="../bookvolunteer/default-avatar.png" alt="avatar" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #0984e3;">
+        <span id="volunteerName" title="點此以 Line 登入" style="cursor:pointer; font-size: 26px;">未登入</span>
+      </span>
+    </h1>
+  </div>
+</nav>
+ <!-- 新增 main-content 包起容器 -->
+  <div class="main-content">
+  <div class="container">
+    <h1>志工管理介面</h1>
+
+    <div class="editor">
+      <label>頭像圖片：</label>
+      <img id="avatarPreview" class="preview-img" src="https://i.pravatar.cc/150?img=32">
+      <input type="file" id="avatarInput" accept="image/*" onchange="previewImage(event)">
+
+      
+      <label>姓名：</label>
+      <input type="text" id="name" placeholder="請輸入姓名" required>
+
+      <label>Email：</label>
+      <input type="email" id="email" placeholder="請輸入電子郵件" required>
+
+      <label>電話：</label>
+      <input type="tel" id="phone" placeholder="請輸入電話號碼" required>
+
+      <label>生日：</label>
+      <input type="date" id="birthday" required>
+
+      <label>性別：</label>
+      <select id="gender" required>
+        <option value="">請選擇性別</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
+      <label>擁有證照：</label>
+      <select id="vCert">
+        <option value="">無</option>
+        <option value="醫護證照">醫護證照</option>
+        <option value="心理輔導證照">心理輔導證照</option>
+      </select>
+      
+     <!-- 新增：縣市與行政區（改為與其他欄位相同的直列樣式） -->
+   <label>縣市：</label>
+   <select id="citySelect" name="city" aria-label="縣市">
+     <option value="" selected disabled>請選擇縣市</option>
+   </select>
+
+   <label style="margin-top:10px;">行政區：</label>
+   <select id="districtSelect" name="district" aria-label="行政區">
+     <option value="" selected disabled>請先選縣市</option>
+   </select>
+
+  <!-- 新增：道路 / 街名 / 村里名稱 與 巷/弄/號/樓/室（已移除「使用說明」按鈕） -->
+  <div class="address-section" style="margin-top:10px;">
+    <label style="display:block;font-weight:600;margin-bottom:6px;">請輸入道路或街名或村里名稱</label>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="streetType" style="width:120px;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+        <option value="road">道路</option>
+        <option value="street">街</option>
+        <option value="village">村里</option>
+      </select>
+      <input id="streetName" type="text" placeholder="請輸入中文路/街/村里名稱" 
+             style="flex:1;padding:8px;border-radius:8px;border:1px solid #888;background:#fff;">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <input id="lane" type="text" placeholder="巷" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="alley" type="text" placeholder="弄" style="width:80px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="number" type="text" placeholder="號" style="width:110px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="floor" type="text" placeholder="樓之" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+      <input id="room" type="text" placeholder="室" style="width:90px;padding:8px;border-radius:8px;border:1px solid #888;">
+    </div>
+  </div>
+
+
+      <!-- 標籤區 -->
+      <div class="tag-section">
+        <label>標籤：</label>
+        <div class="tag-container" id="tagContainer">
+          <div class="tag" onclick="toggleTag(this)">親切</div>
+          <div class="tag" onclick="toggleTag(this)">細心</div>
+          <div class="tag" onclick="toggleTag(this)">熱心助人</div>
+          <div class="tag" onclick="toggleTag(this)">有責任感</div>
+          <div class="tag" onclick="toggleTag(this)">善於傾聽</div>
+        </div>
+        <input type="text" id="newTagInput" placeholder="輸入自訂標籤並按 Enter" />
+      </div>
+
+      <label>簡介：</label>
+      <textarea id="vDesc" rows="3">擁有豐富的醫院志工經驗，熱愛幫助他人。</textarea>
+
+      <button onclick="updateCard()">更新卡片</button>
+    </div>
+
+
+   
+
+    <!-- 志工卡片 -->
+    <div class="card" id="volunteerCard">
+      <img class="card-cover">
+      <img class="card-avatar" id="cardAvatar" src="https://i.pravatar.cc/150?img=32">
+      <div class="card-content">
+        <h2 class="card-title">
+          <span id="cardName">王小明</span>
+          <span id="cardCert" class="special">醫護證照</span>
+        </h2>
+        <div class="card-tags" id="cardTags">
+          <span class="tag">親切</span>
+          <span class="tag">細心</span>
+        </div>
+        <p class="card-text" id="cardDesc">擁有豐富的醫院志工經驗，熱愛幫助他人。</p>
+      </div>
+    </div>
+  </div>
+ </div>
+<script>
+  // 頭像預覽
+  function previewImage(event) {
+    const file = event.target.files[0];
+    const img = document.getElementById("avatarPreview");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.src = reader.result;
+        document.getElementById("cardAvatar").src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // 標籤互動
+  const tagContainer = document.getElementById("tagContainer");
+  const newTagInput = document.getElementById("newTagInput");
+
+  function toggleTag(tagElement) {
+    tagElement.classList.toggle("selected");
+  }
+
+  newTagInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter" && this.value.trim() !== "") {
+      const newTag = document.createElement("div");
+      newTag.className = "tag selected";
+      newTag.textContent = this.value.trim();
+      newTag.onclick = function () {
+        toggleTag(newTag);
+      };
+      tagContainer.appendChild(newTag);
+      this.value = "";
+    }
+  });
+
+  // 更新卡片內容
+  function updateCard() {
+    // 必填驗證：若欄位存在則視為必填（兼容 vName 作為姓名欄位）
+    const name = (document.getElementById("vname") || document.getElementById("vName"))?.value.trim() || "";
+    const email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
+    const phone = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
+    const birthday = document.getElementById("birthday") ? document.getElementById("birthday").value : "";
+    const gender = document.getElementById("gender") ? document.getElementById("gender").value : "";
+    const city = document.getElementById("citySelect") ? document.getElementById("citySelect").value.trim() : "";
+    const district = document.getElementById("districtSelect") ? document.getElementById("districtSelect").value.trim() : "";
+
+    if (!name || !email || !phone || !birthday || !gender || !city || !district) {
+      alert("請完整填寫所有欄位！");
+      return;
+    }
+
+    document.getElementById("cardName").textContent = document.getElementById("vName").value;
+    const cert = document.getElementById("vCert").value;
+    const certLabel = document.getElementById("cardCert");
+    certLabel.textContent = cert || "";
+    certLabel.style.display = cert ? "inline-block" : "none";
+
+    // ✅ 抓取所有被選取的標籤
+    const selectedTags = Array.from(document.querySelectorAll(".tag.selected")).map(tag => tag.textContent);
+    const tagHTML = selectedTags.map(t => `<span class='tag'>${t}</span>`).join("");
+    document.getElementById("cardTags").innerHTML = tagHTML;
+
+    document.getElementById("cardDesc").textContent = document.getElementById("vDesc").value;
+  }
+
+  /* ==============================
+   ✅ LIFF 初始化
+   ============================== */
+const LIFF_ID = "2008228534-R8763A2n";
+const avatarEl = document.getElementById("volunteerAvatar");
+const nameEl = document.getElementById("volunteerName");
+
+async function initLiffAndSetProfile() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      nameEl.innerText = "未登入";
+      avatarEl.style.display = "none";
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    nameEl.innerText = profile.displayName || "志工";
+    if (profile.pictureUrl) {
+      avatarEl.src = profile.pictureUrl;
+      avatarEl.style.display = "inline-block";
+    } else {
+      avatarEl.style.display = "none";
+    }
+  } catch (err) {
+    console.error("LIFF init error:", err);
+  }
+}
+
+avatarEl.addEventListener("click", () => {
+  if (liff.isLoggedIn()) {
+    window.location.href = "index.html";
+  } else {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Login-or-register/index.html"
+    });
+  }
+});
+
+nameEl.addEventListener("click", () => {
+  if (!liff.isLoggedIn()) {
+    liff.login({
+      redirectUri: "https://tute582.github.io/Topics/Login-or-register/index.html"
+    });
+  } else {
+    alert("已登入：" + (nameEl.innerText || "志工"));
+  }
+});
+
+initLiffAndSetProfile();
+
+// 縣市與行政區選單初始化
+  (function() {
+    const cities = {
+      "台北市": ["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
+      "新北市": ["板橋區","新莊區","中和區","永和區","三重區","蘆洲區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","泰山區","林口區","八里區","平溪區","貢寮區","雙溪區","深坑區","石碇區","坪林區","三芝區","石門區","萬里區","金山區","烏來區"],
+      "基隆市": ["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"],
+      "桃園市": ["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","龍潭區","龜山區","大溪區","大園區","觀音區","新屋區","復興區"],
+      "新竹市": ["東區","北區","香山區"],
+      "新竹縣": ["竹北市","湖口鄉","新豐鄉","新埔鎮","關西鎮","芎林鄉","寶山鄉","竹東鎮","五峰鄉","橫山鄉","尖石鄉","峨眉鄉","北埔鄉"],
+      "苗栗縣": ["苗栗市","頭份市","竹南鎮","後龍鎮","通霄鎮","苑裡鎮","造橋鄉","西湖鄉","頭屋鄉","公館鄉","銅鑼鄉","三義鄉","卓蘭鎮","南庄鄉","三灣鄉","獅潭鄉","苑裡鄉"],
+      "台中市": ["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","新社區","神岡區","大雅區","潭子區","大肚區","沙鹿區","梧棲區","清水區","外埔區","大安區"],
+      "彰化縣": ["彰化市","員林市","和美鎮","鹿港鎮","溪湖鎮","二林鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","大村鄉","埔心鄉","埔鹽鄉","永靖鄉","社頭鄉","二水鄉","田中鎮","北斗鎮"],
+      "南投縣": ["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","國姓鄉","仁愛鄉","魚池鄉","水里鄉","信義鄉","玄奘鄉"],
+      "雲林縣": ["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","莿桐鄉","林內鄉","古坑鄉","二崙鄉","元長鄉","四湖鄉","口湖鄉","臺西鄉","崙背鄉","麥寮鄉","褒忠鄉"],
+      "嘉義市": ["東區","西區"],
+      "嘉義縣": ["太保市","朴子市","布袋鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","大埔鄉","竹崎鄉","梅山鄉","番路鄉","阿里山鄉"],
+      "台南市": ["中西區","東區","南區","北區","安平區","安南區","永康區","歸仁區","新化區","左鎮區","玉井區","楠西區","南化區","仁德區","關廟區","龍崎區","官田區","麻豆區","佳里區","西港區","七股區","將軍區","學甲區","北門區","新營區","後壁區","白河區","東山區","六甲區","下營區","柳營區","鹽水區","善化區","大內區","山上區","新市區","安定區"],
+      "高雄市": ["新興區","前金區","苓雅區","鹽埕區","鼓山區","左營區","楠梓區","三民區","前鎮區","旗津區","小港區","鳳山區","大寮區","林園區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區"],
+      "屏東縣": ["屏東市","東港鎮","潮州鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新園鄉","枋寮鄉","枋山鄉","春日鄉","獅子鄉","車城鄉","牡丹鄉","滿州鄉"],
+      "花蓮縣": ["花蓮市","吉安鄉","鳳林鎮","玉里鎮","新城鄉","壽豐鄉","光復鄉","富里鄉","秀林鄉","卓溪鄉","秀林鄉"],
+      "台東縣": ["台東市","關山鎮","成功鎮","長濱鄉","池上鄉","東河鄉","鹿野鄉","卑南鄉","大武鄉","太麻里鄉","綠島鄉","蘭嶼鄉","延平鄉","海端鄉"],
+      "宜蘭縣": ["宜蘭市","頭城鎮","礁溪鄉","壯圍鄉","羅東鎮","五結鄉","冬山鄉","蘇澳鎮","南澳鄉","大同鄉","員山鄉"],
+      "澎湖縣": ["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"],
+      "金門縣": ["金沙鎮","金城鎮","金寧鄉","金湖鎮","烈嶼鄉"],
+      "連江縣": ["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
+    };
+
+    const citySelect = document.getElementById('citySelect');
+    const districtSelect = document.getElementById('districtSelect');
+    if (!citySelect || !districtSelect) return;
+
+    // 建立縣市選項
+    Object.keys(cities).forEach(city => {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = city;
+      citySelect.appendChild(opt);
+    });
+
+    // 當縣市改變時填入行政區
+    citySelect.addEventListener('change', function() {
+      const selected = this.value;
+      districtSelect.innerHTML = '';
+      if (!selected || !cities[selected]) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.disabled = true;
+        opt.selected = true;
+        opt.textContent = '請先選縣市';
+        districtSelect.appendChild(opt);
+        return;
+      }
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.disabled = true;
+      defaultOpt.selected = true;
+      defaultOpt.textContent = '請選擇行政區';
+      districtSelect.appendChild(defaultOpt);
+
+      cities[selected].forEach(d => {
+        const o = document.createElement('option');
+        o.value = d;
+        o.textContent = d;
+        districtSelect.appendChild(o);
+      });
+    });
+  })();
+</script>
+
+</script>
+</body>
+</html>

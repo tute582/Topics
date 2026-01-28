@@ -670,6 +670,58 @@
           transform: rotate(360deg);
         }
       }
+
+      /* =========================================
+         [新增] 全螢幕 Loading 樣式
+         ========================================= */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95); /* 不透明度高一點，遮住背後的內容 */
+        display: none; /* 預設隱藏 */
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      .loading-box {
+        text-align: center;
+        padding: 30px 40px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      /* 這裡使用一個新的 class 名稱 main-spinner 避免跟您原本的衝突 */
+      .main-spinner {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #e0e0e0;
+        border-top-color: #0984e3; /* 改用您的藍色系 */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      .loading-text {
+        font-size: 16px;
+        color: #333;
+        font-weight: bold;
+        line-height: 1.6;
+      }
+
+      .loading-text span {
+        font-size: 14px;
+        color: #777;
+        font-weight: normal;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -942,6 +994,16 @@
       </div>
     </div>
 
+    <div id="mainLoadingOverlay" class="loading-overlay">
+      <div class="loading-box">
+        <div class="main-spinner"></div>
+        <div class="loading-text">
+          <div id="loadingTitle">正在驗證身分...</div>
+          <span id="loadingSubtitle">請稍候</span>
+        </div>
+      </div>
+    </div>
+
     <script>
       /* =================================================================
        1. 全域變數與設定 (Global Config)
@@ -951,7 +1013,7 @@
 
       let volunteers = [];
       let bookedList = [];
-      let userId = "";
+      let userId = "";  //測試時請輸入自己的userId
       let userName = "";
       let currentEditEventId = "";
       let identify = "未註冊";
@@ -1123,13 +1185,20 @@
 
       async function initLiffAndSetProfile() {
         try {
+          // 1. 初始化 LIFF
           await liff.init({ liffId: LIFF_ID });
 
+          // 2. 判斷是否登入
           if (!liff.isLoggedIn()) {
-            nameEl.innerText = "未登入";
-            avatarEl.style.display = "none";
-            return;
+            liff.login(); // 強制登入，測試時前註解掉後續打開
+            //以下測試用
+            // nameEl.innerText = "未登入";
+            // avatarEl.style.display = "none";
+            return; 
           }
+
+          // 3. 已登入，開始顯示 Loading 動畫，遮住長者介面
+          showLoading("正在驗證身分...", "系統處理中");
 
           const profile = await liff.getProfile();
           userId = profile.userId;
@@ -1145,32 +1214,56 @@
             avatarEl.style.display = "none";
           }
 
-          // 檢查後端是否有這個userId註冊
+          // 4. 呼叫後端 API 檢查身分
           fetch(`https://supabase-api-six.vercel.app/identify/${userId}`)
             .then((res) => res.json())
             .then((result) => {
+              
               if (!result.success) {
+                // --- 情況 A：未註冊 ---
+                hideLoading(); // 關閉動畫讓使用者看 Alert
                 alert(
                   "首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。"
                 );
-                // API 判定不存在 / 驗證失敗 → 導回登入頁面
                 window.location.href = "../../Login-or-register/index.html";
               } else {
-                identify = result.role; //回傳文字(志工或長者)
+                identify = result.role;
                 console.log("登入角色 role：", result.role);
+
+                if (identify === "志工") {
+                  showLoading("身分確認：志工", "正在前往志工專區...");
+                  
+                  setTimeout(() => {
+                      window.location.href = "Volunteer.html"; 
+                  }, 800); // 稍微延遲讓使用者看清楚文字
+
+                } else if (identify === "長者" || identify === "家屬") {
+                  console.log("以長者或家屬身份登入，歡迎使用預約志工服務！");
+
+                  // 填入地址
+                  const address = result.data.address || "";
+                  const addressInput = document.getElementById("addressFull");
+                  if (addressInput && address) {
+                    addressInput.value = address;
+                  }
+
+                  // 重要：身分確認是長者，這時候才把 Loading 關掉，顯示頁面
+                  hideLoading();
+                }
               }
             })
             .catch((err) => {
               console.error("身分檢查 API 錯誤：", err);
-              // API 出錯也視為無效身分
+              hideLoading(); // 出錯也要關掉動畫
               window.location.href = "../../Login-or-register/index.html";
             });
+
         } catch (err) {
           console.error("LIFF init error:", err);
-          userId = "test_line_id_002o";
+          hideLoading();
         }
       }
-
+      
       //大頭貼跳傳頁面設定
       avatarEl &&
         avatarEl.addEventListener("click", () => {
@@ -1184,6 +1277,10 @@
               case "長者":
                 window.location.href =
                   "../../Login-or-register/長輩資料顯示.html";
+                break;
+              case "家屬":
+                window.location.href =
+                  "../../Login-or-register/家屬資料顯示.html";
                 break;
               default:
                 // "未註冊" 或 undefined 都導往登入
@@ -1906,6 +2003,25 @@
           setTimeout(() => setSelect("districtSelect", district), 100);
         }
       })();
+
+      /* =================================================================
+       10. 載入動畫Loading 控制函式
+       ================================================================= */
+      // [新增] 
+      function showLoading(title = "正在處理中...", subtitle = "請稍候") {
+        const overlay = document.getElementById("mainLoadingOverlay");
+        if(overlay) {
+            document.getElementById("loadingTitle").innerText = title;
+            document.getElementById("loadingSubtitle").innerText = subtitle;
+            overlay.style.display = "flex";
+        }
+      }
+
+      function hideLoading() {
+        const overlay = document.getElementById("mainLoadingOverlay");
+        if(overlay) overlay.style.display = "none";
+      }
+
     </script>
   </body>
 </html>

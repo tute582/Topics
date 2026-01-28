@@ -355,6 +355,7 @@
         <option value="">請選擇</option>
         <option value="volunteer">志工</option>
         <option value="senior">長輩</option>
+        <option value="family">家屬</option>
       </select>
 
       <form id="volunteerForm" class="form-section">
@@ -370,7 +371,7 @@
         <input type="email" name="email" required />
 
         <label class="required">連絡電話</label>
-        <input type="tel" name="phone" required />
+        <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required /> 
 
         <label class="required">出生年月日</label>
         <div class="picker-wrapper">
@@ -431,7 +432,7 @@
         <input type="text" name="name" required />
 
         <label class="required">連絡電話</label>
-        <input type="tel" name="phone" required />
+        <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
 
         <label class="required">出生年月日</label>
         <div class="picker-wrapper">
@@ -463,7 +464,7 @@
         <input type="text" name="emergencyContact" required />
 
         <label class="required">緊急聯絡人電話</label>
-        <input type="tel" name="emergencyContactPhone" required />
+        <input type="tel" name="emergencyContactPhone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
 
         <label>健康狀況備註</label>
         <textarea name="healthNote" rows="3"></textarea>
@@ -486,6 +487,41 @@
           <button type="submit" class="submit-btn">送出</button>
         </div>
       </form>
+
+      <form id="familyForm" class="form-section">
+        <h3>家屬資料填寫</h3>
+
+        <label class="required">姓名</label>
+        <input type="text" name="name" required />
+
+        <label class="required">連絡電話</label>
+        <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
+        
+        <label>電子郵件 Email</label>
+        <input type="email" name="email" />
+
+        <label class="required">地址</label>
+        <input type="text" name="address" required />
+
+        <label style="color: #0984e3;">綁定長者 User ID</label>
+        <input type="text" name="boundElderId" placeholder="請輸入長輩的 LINE User ID"/>
+        <small style="color: #666; display: block; margin-top: 5px;">※ 請向長輩取得其個人資料頁面上的 ID(可未來點擊頭像進行填寫)</small>
+
+        <label class="required">與長者關係</label>
+        <select name="relationship" required>
+            <option value="">請選擇</option>
+            <option value="配偶">配偶</option>
+            <option value="子女">子女</option>
+            <option value="孫子女">孫子女</option>
+            <option value="兄弟姊妹">兄弟姊妹</option>
+            <option value="其他">其他</option>
+        </select>
+
+        <div class="button-group">
+          <button type="submit" class="submit-btn">送出</button>
+        </div>
+      </form>
+
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -525,9 +561,8 @@
         try {
           await liff.init({ liffId: LIFF_ID });
 
-          // 檢查是否登入
           if (!liff.isLoggedIn()) {
-            console.log("使用者未登入");
+            liff.login();
             return;
           }
 
@@ -566,11 +601,14 @@
         const role = document.getElementById("role").value;
         document.getElementById("volunteerForm").classList.remove("active");
         document.getElementById("seniorForm").classList.remove("active");
+        document.getElementById("familyForm").classList.remove("active"); // 新增移除
 
         if (role === "volunteer") {
           document.getElementById("volunteerForm").classList.add("active");
         } else if (role === "senior") {
           document.getElementById("seniorForm").classList.add("active");
+        } else if (role === "family") {
+          document.getElementById("familyForm").classList.add("active"); // 新增顯示
         }
       }
       window.toggleForm = toggleForm;
@@ -687,6 +725,28 @@
             preference_tags: getSelectedTags("seniorTags"),
           };
           postData("/elders", payload, "長輩資料顯示.html", "長者資料新增");
+        });
+
+      document
+        .getElementById("familyForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const form = e.target;
+          
+          // 準備傳送給後端的資料
+          // 假設後端 API 路徑為 /familys
+          const payload = {
+            family_user_id: userId,          // LIFF 取得的 User ID
+            family_name: form.elements["name"].value.trim(),
+            image_url: avatarPreviewEl.src,
+            phone: form.elements["phone"].value.trim(),
+            email: form.elements["email"].value.trim(),
+            address: form.elements["address"].value.trim(),
+            elder_user_id: form.elements["boundElderId"].value.trim(), // 綁定的長輩 ID
+            relationship: form.elements["relationship"].value
+          };
+
+          postData("/familys", payload, "家屬資料顯示.html", "家屬資料新增");
         });
     </script>
   </body>

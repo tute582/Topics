@@ -153,7 +153,7 @@
         border-radius: 20px;
         background-color: white;
         /* 如果希望分頁看起來完全連在一起，可以把上面圓角拿掉，但保留也好看 */
-        border-top-left-radius: 0; 
+        border-top-left-radius: 0;
       }
 
       label {
@@ -453,7 +453,7 @@
           min-width: 0;
           width: 100%;
         }
-        
+
         /* 手機版分頁調整 */
         .tab-link {
           padding: 10px 15px;
@@ -711,6 +711,25 @@
         <button id="continueEditBtn">繼續編輯</button>
         <button id="confirmDiscardBtn">放棄</button>
       </div>
+    </div>
+
+    <div class="input-container">
+      <h1 class="title" style="font-size: 24px">📷 上傳並遮蔽看診單</h1>
+      <form>
+        <div id="camera-area" style="margin-top: 15px">
+          <iframe
+            src="./TestimageC.html"
+            style="
+              width: 100%;
+              max-width: 700px;
+              height: 800px;
+              border: none;
+              border-radius: 12px;
+              background: #fff;
+            "
+          ></iframe>
+        </div>
+      </form>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -1185,13 +1204,7 @@
       }
 
       function clearInputs() {
-        [
-          "elderName",
-          "name",
-          "department",
-          "record",
-          "note",
-        ].forEach((id) => {
+        ["elderName", "name", "department", "record", "note"].forEach((id) => {
           document.getElementById(id).value = "";
         });
 
