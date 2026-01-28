@@ -121,21 +121,26 @@
         .fc-daygrid-day-frame { min-height: 110px !important; overflow: hidden !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 核心修正：防止字體跑出來 --- */
+        /* --- 核心修正：仿照紅框樣式，讓行程背景填滿並文字置中 --- */
         .fc-daygrid-event {
-            background-color: #79f2c0 !important;
+            background-color: #79f2c0 !important; /* 淺綠色背景 */
             border: none !important;
-            border-radius: 4px !important;
+            border-radius: 0px !important; /* 移除圓角讓它更填滿 */
             color: #2c3e50 !important;
-            padding: 2px 4px !important;
-            margin: 1px 2px !important;
-            font-size: 0.75em !important; /* 手機上字體縮小 */
+            padding: 4px 2px !important; /* 增加上下間距 */
+            margin: 1px 0px !important; /* 左右不留白，上下留極小縫隙 */
+            font-size: 0.85em !important;
             display: block !important;
-            white-space: nowrap !important; /* 強制不換行 */
-            overflow: hidden !important; /* 隱藏超出部分 */
-            text-overflow: ellipsis !important; /* 超出顯示 ... */
-            width: auto !important;
+            text-align: center !important; /* 文字置中 */
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
+
+        /* 隱藏時間點的小圓點 (如有出現) */
+        .fc-daygrid-event-dot { display: none !important; }
+        /* 隱藏行程內建的時間文字，讓標題更清楚 */
+        .fc-event-time { display: none !important; }
 
         /* --- Modal 修正：視窗置中 --- */
         .modal { 
