@@ -210,7 +210,7 @@
       if (!userId) {
         content.innerHTML = '<p class="empty">尚未登入，無法取得資料。</p>';
       } else {
-        // ★★★ 修改：呼叫家屬 API ★★★
+        // 呼叫家屬 API
         fetch(`https://supabase-api-six.vercel.app/familys/${userId}`)
           .then((res) => res.json())
           .then((result) => {
@@ -230,7 +230,7 @@
             /* 名稱顯示 */
             navName.textContent = d.family_name || "未登入";
 
-            /* ★★★ 修改：顯示家屬欄位 ★★★ */
+            /* 顯示家屬欄位 */
             const html = `
             <dl>
               <dt>姓名</dt><dd>${d.family_name || ""}</dd>
@@ -240,7 +240,7 @@
               
               <hr style="grid-column: 1 / -1; width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">
               
-              <dt style="color: #0984e3;">綁定長者 ID</dt><dd>${d.elder_user_id || "未綁定"}</dd>
+              <dt style="color: #0984e3;">綁定長者 ID</dt><dd>${d.elder_user_id || "<span style='color:#999'>(尚未綁定)</span>"}</dd>
               <dt>與長者關係</dt><dd>${d.relationship || ""}</dd>
             </dl>
           `;
@@ -270,7 +270,9 @@
         f.email.value = currentFamily.email || "";
         f.address.value = currentFamily.address || "";
         f.relationship.value = currentFamily.relationship || "";
-        // 注意：elder_user_id 通常不讓使用者隨意修改，若要修改可能需要重新綁定流程，這裡先不放
+        
+        // ★★★ 新增：將長者 ID 填入欄位 ★★★
+        f.elder_user_id.value = currentFamily.elder_user_id || "";
       }
 
       function closeFamilyModal() {
@@ -292,7 +294,9 @@
             phone: formData.get("phone"),
             email: formData.get("email"),
             address: formData.get("address"),
-            relationship: formData.get("relationship")
+            relationship: formData.get("relationship"),
+            // ★★★ 新增：加入長者 ID 到更新 payload ★★★
+            elder_user_id: formData.get("elder_user_id") 
           };
 
           console.log("送出 payload 👉", payload);
@@ -344,6 +348,13 @@
           <div class="form-group">
             <label>地址</label>
             <input type="text" name="address" required />
+          </div>
+
+          <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+          <div class="form-group">
+            <label style="color: #0984e3;">綁定長者 ID</label>
+            <input type="text" name="elder_user_id" placeholder="請輸入長輩的 ID 以進行綁定" />
           </div>
 
           <div class="form-group">
