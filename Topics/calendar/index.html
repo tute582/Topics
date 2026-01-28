@@ -27,7 +27,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 15px;
+            padding: 12px 20px;
             background: #ffffff;
             border-bottom: 1px solid #dddddd;
             position: sticky;
@@ -35,24 +35,20 @@
             z-index: 1001;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             height: 75px;
-            flex-wrap: nowrap;
         }
 
         .nav-1 h1 {
-            font-size: 22px !important;
+            font-size: 28px !important;
             font-weight: bold;
             color: #222;
             margin: 0;
-            white-space: nowrap;
-            flex-shrink: 1;
         }
 
         .volunteer-area {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-shrink: 0;
-            margin-left: 10px;
+            max-width: 60%;
         }
 
         .avatar {
@@ -66,14 +62,13 @@
         }
 
         #volunteerName {
-            font-size: 18px !important;
+            font-size: 26px !important;
             font-weight: bold;
             color: #222;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
-            max-width: 120px;
         }
 
         .container {
@@ -126,22 +121,22 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
+        /* 修正：防止字體跑出來 */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important;
-            margin: 1px 4px !important;
-            font-size: 0.85em;
+            padding: 3px 6px !important;
+            margin: 2px 4px !important;
+            font-size: 0.85em; /* 稍微縮小字體 */
             display: block;
-            line-height: 1.4 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: nowrap; /* 不換行 */
+            overflow: hidden; /* 隱藏溢出 */
+            text-overflow: ellipsis; /* 顯示... */
         }
 
-        /* --- Modal 樣式 --- */
+        /* --- Modal 修正：視窗置中 --- */
         .modal { 
             display: none; 
             position: fixed; 
@@ -151,19 +146,20 @@
             backdrop-filter: blur(4px); 
             z-index: 2000; 
             overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
+            display: none; /* 下方 JS 控制 */
+            align-items: center; /* 垂直置中 */
+            justify-content: center; /* 水平置中 */
         }
 
         .modal-content { 
             background: #fff; 
             width: 92%;
             max-width: 400px; 
-            margin: 40px auto; 
-            padding: 20px 20px; 
+            margin: auto; /* 配合 flex 置中 */
+            padding: 20px 15px;
             border-radius: 16px; 
             position: relative; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            text-align: left;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
         }
 
         .close-btn { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; background-color: #f37a7a; color: white; border-radius: 50%; border: none; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
@@ -171,7 +167,10 @@
         label { display: flex; align-items: center; font-weight: 600; margin-bottom: 6px; margin-top: 15px; color: #444; font-size: 15px; }
         label i { margin-right: 6px; width: 20px; text-align: center; }
 
-        input[type="text"], input[type="date"], input[type="time"], select { 
+        input[type="text"], 
+        input[type="date"], 
+        input[type="time"], 
+        select { 
             width: 100%; 
             padding: 12px; 
             border-radius: 10px; 
@@ -183,34 +182,26 @@
             display: block;
         }
 
+        /* 修正：下拉選單倒三角形 */
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            padding-right: 40px;
+        }
+
+        input[type="date"], input[type="time"] {
+            min-height: 45px;
+        }
+
         .btn { padding: 14px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; }
         #saveBtn { background: #4a90e2; }
         #deleteBtn { background: #ff7675; }
 
         .fab { position: fixed; bottom: 30px; right: 20px; width: 55px; height: 55px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999; }
-
-        /* --- 重要：修改此處樣式以達成單行顯示 --- */
-        .event-item { 
-            padding: 12px 5px; 
-            border-bottom: 1px solid #eee; 
-            display: flex; 
-            align-items: center; 
-            cursor: pointer;
-            white-space: nowrap; 
-            overflow: hidden;
-        }
-        .event-time { 
-            font-weight: bold; 
-            color: #4a90e2; 
-            margin-right: 12px; 
-            flex-shrink: 0; /* 防止時間被擠壓 */
-        }
-        .event-title {
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            flex-grow: 1;
-        }
+        .event-item { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
     </style>
 </head>
 <body>
@@ -236,7 +227,7 @@
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="text-align: center; margin-bottom: 15px; color: #2c3e50;">新增行程</h3>
+            <h3 id="modalTitle" style="margin-bottom:10px; font-size: 1.3em; color: #2c3e50;">新增行程</h3>
             <form id="dataForm">
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
@@ -269,8 +260,12 @@
                 </select>
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn" id="saveBtn" style="flex: 1;"><i class="fas fa-check"></i> 儲存</button>
-                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;"><i class="fas fa-trash-alt"></i> 刪除</button>
+                    <button type="button" class="btn" id="saveBtn" style="flex: 1;">
+                        <i class="fas fa-check"></i> 儲存
+                    </button>
+                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;">
+                        <i class="fas fa-trash-alt"></i> 刪除
+                    </button>
                 </div>
             </form>
         </div>
@@ -279,7 +274,7 @@
     <div id="dayViewModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dayViewModal')"><i class="fas fa-times"></i></button>
-            <h3 id="dayViewTitle" style="text-align: center; border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50; margin-bottom: 15px;"></h3>
+            <h3 id="dayViewTitle" style="margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
             <div id="dayEventList" style="max-height: 300px; overflow-y: auto;"></div>
             <div style="margin-top: 15px;">
                 <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">
@@ -314,11 +309,12 @@
                     right: 'dayGridMonth,listMonth'
                 },
                 buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
+                // 修正：將 more 改成中文
+                moreLinkText: "更多",
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
                 dayMaxEvents: 2,
-                moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
                 eventClick: function(info) { openModal(true, info.event); }
@@ -334,18 +330,17 @@
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
-                
                 document.getElementById("volunteerName").innerText = userName;
-                const avatarEl = document.getElementById("volunteerAvatar");
                 if (profile.pictureUrl) {
+                    const avatarEl = document.getElementById("volunteerAvatar");
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
                 }
-
                 fetch(`${IDENTIFY_API_BASE}/${userId}`)
                     .then((res) => res.json())
                     .then((result) => {
                         if (!result.success) {
+                            alert("請先完成註冊");
                             window.location.href = "../../Login-or-register/index.html";
                         } else {
                             identify = result.role;
@@ -353,10 +348,9 @@
                         }
                     })
                     .catch((err) => { window.location.href = "../../Login-or-register/index.html"; });
-            } catch (err) { console.error("LIFF init error:", err); }
+            } catch (err) { console.error(err); }
         }
 
-        // --- 保留原本所有的頭像與名稱點擊邏輯 ---
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
             if (liff.isLoggedIn()) {
                 localStorage.setItem("fromPage", "calendar");
@@ -366,14 +360,6 @@
                     case "家屬": window.location.href = "../../Login-or-register/家屬資料顯示.html"; break;
                     default: window.location.href = "../../Login-or-register/index.html";
                 }
-            }
-        });
-
-        document.getElementById("volunteerName").addEventListener("click", () => {
-            if (typeof liff !== "undefined" && liff.isLoggedIn && !liff.isLoggedIn()) {
-                liff.login({ redirectUri: window.location.href });
-            } else {
-                alert("已登入：" + userName);
             }
         });
 
@@ -391,7 +377,7 @@
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) { console.error("Load records error:", e); }
+            } catch (e) {}
         }
 
         document.getElementById("saveBtn").onclick = async function() {
@@ -423,7 +409,6 @@
             } catch (err) {}
         };
 
-        // --- 重點修改：改為同一行顯示，時間轉換為「下午2時」 ---
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
@@ -436,18 +421,12 @@
                 dayEvents.sort((a, b) => a.start - b.start).forEach(e => {
                     const item = document.createElement('div');
                     item.className = 'event-item';
-                    
-                    const hours = e.start.getHours();
-                    const ampm = hours >= 12 ? '下午' : '上午';
-                    const displayHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
-                    const timeStr = `${ampm}${displayHour}時`;
-
-                    item.innerHTML = `<span class="event-time">${timeStr}</span><div class="event-title">${e.title}</div>`;
+                    item.innerHTML = `<span class="event-time">${e.start.toTimeString().substring(0, 5)}</span><div class="event-title">${e.title}</div>`;
                     item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'block';
+            document.getElementById('dayViewModal').style.display = 'flex'; // 修正：顯示為 flex 以配合置中
         }
 
         function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
@@ -455,7 +434,7 @@
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "block";
+            document.getElementById("dataModal").style.display = "flex"; // 修正：顯示為 flex 以配合置中
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
