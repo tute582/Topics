@@ -121,20 +121,24 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 修正綠色底色高度與文字 --- */
+        /* --- 修改後：呈現如紅框般的單行膠囊樣式 --- */
         .fc-daygrid-event {
-            background-color: #79f2c0 !important;
+            background-color: #b2f2d8 !important; /* 淺綠色底 */
             border: none !important;
-            border-radius: 4px !important;
+            border-radius: 20px !important;        /* 圓角膠囊狀 */
             color: #2c3e50 !important;
-            padding: 4px 6px !important;     /* 增加上下間距 */
-            margin: 2px 4px !important;
-            font-size: 0.88em;               /* 微調字體大小 */
+            padding: 2px 8px !important;
+            margin: 2px 2px !important;
+            font-size: 0.85em;
             display: block;
-            line-height: 1.4 !important;     /* 設定舒適的行高 */
-            white-space: normal !important;  /* 允許文字換行 */
-            word-break: break-all;           /* 強制換行避免溢出 */
-            min-height: 1.5em;               /* 基本高度保證 */
+            white-space: nowrap !important;        /* 強制單行，不換行 */
+            overflow: hidden !important;           /* 超出隱藏 */
+            text-overflow: ellipsis !important;    /* 超出顯示省略號 */
+        }
+        
+        /* 隱藏行程內的小圓點 (FullCalendar 預設) */
+        .fc-daygrid-event-dot {
+            display: none !important;
         }
 
         /* --- Modal 修正 --- */
