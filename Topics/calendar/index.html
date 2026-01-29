@@ -121,24 +121,28 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 修改後：呈現如紅框般的單行膠囊樣式 --- */
+        /* --- 修正綠色底色高度與文字：單行顯示 & 降低高度 --- */
         .fc-daygrid-event {
-            background-color: #b2f2d8 !important; /* 淺綠色底 */
+            background-color: #79f2c0 !important;
             border: none !important;
-            border-radius: 20px !important;        /* 圓角膠囊狀 */
+            border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 8px !important;
-            margin: 2px 2px !important;
-            font-size: 0.85em;
-            display: block;
-            white-space: nowrap !important;        /* 強制單行，不換行 */
-            overflow: hidden !important;           /* 超出隱藏 */
-            text-overflow: ellipsis !important;    /* 超出顯示省略號 */
+            padding: 2px 6px !important;     /* 縮減上下間距以降低高度 */
+            margin: 1px 4px !important;
+            font-size: 0.85em !important;    /* 稍微縮小字體以利單行顯示 */
+            display: block !important;
+            line-height: 1.3 !important;     /* 緊湊行高 */
+            white-space: nowrap !important;  /* 強制不換行 */
+            overflow: hidden !important;     /* 超出隱藏 */
+            text-overflow: ellipsis !important; /* 顯示省略號 */
+            min-height: 0 !important;        /* 移除基本高度限制 */
         }
         
-        /* 隱藏行程內的小圓點 (FullCalendar 預設) */
-        .fc-daygrid-event-dot {
-            display: none !important;
+        /* 內部文字容器同步修正 */
+        .fc-event-main {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         /* --- Modal 修正 --- */
