@@ -121,20 +121,20 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* 修正綠色底色高度與文字 */
+        /* --- 修正綠色底色高度與文字 --- */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important; /* 縮減內距 */
-            margin: 1px 4px !important;
-            font-size: 0.85em; /* 稍微縮小字體防止溢出 */
+            padding: 4px 6px !important;     /* 增加上下間距 */
+            margin: 2px 4px !important;
+            font-size: 0.88em;               /* 微調字體大小 */
             display: block;
-            line-height: 1.4 !important; /* 控制行高 */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            line-height: 1.4 !important;     /* 設定舒適的行高 */
+            white-space: normal !important;  /* 允許文字換行 */
+            word-break: break-all;           /* 強制換行避免溢出 */
+            min-height: 1.5em;               /* 基本高度保證 */
         }
 
         /* --- Modal 修正 --- */
@@ -159,11 +159,11 @@
             border-radius: 16px; 
             position: relative; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            text-align: left; /* 內容置左，容器置中 */
+            text-align: left; 
         }
 
         #modalTitle, #dayViewTitle {
-            text-align: center; /* 標題置中 */
+            text-align: center; 
             margin-bottom: 15px;
         }
 
@@ -187,7 +187,6 @@
             display: block;
         }
 
-        /* 下拉選單倒三角形 (右一) */
         .select-wrapper {
             position: relative;
             width: 100%;
@@ -330,7 +329,6 @@
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
                 dayMaxEvents: 2,
-                // 修改 More 按鈕為中文
                 moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
