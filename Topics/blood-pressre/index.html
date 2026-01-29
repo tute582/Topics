@@ -691,6 +691,7 @@
     /* =================================================================
     2. LIFF 初始化 與 身分驗證
     ================================================================= */
+    showLoading("載入中...", "請稍候");
     async function initLiffAndSetProfile() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -727,6 +728,7 @@
             } else {
               identify = result.role;
               console.log("登入角色 role：", result.role);
+              hideLoading();
               // 若驗證成功，才開始載入血壓紀錄
               loadRecords();
             }
