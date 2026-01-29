@@ -85,7 +85,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式修正 --- */
+        /* --- FullCalendar 樣式強力修正 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -121,28 +121,30 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 修正綠色底色高度與文字：單行顯示 & 降低高度 --- */
+        /* 🔥 🔥 🔥 重點修正：讓行程強制變回單行細條狀 🔥 🔥 🔥 */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important;     /* 縮減上下間距以降低高度 */
+            padding: 2px 6px !important;     
             margin: 1px 4px !important;
-            font-size: 0.85em !important;    /* 稍微縮小字體以利單行顯示 */
+            font-size: 0.85em !important;    
             display: block !important;
-            line-height: 1.3 !important;     /* 緊湊行高 */
+            line-height: 1.2 !important;     
             white-space: nowrap !important;  /* 強制不換行 */
             overflow: hidden !important;     /* 超出隱藏 */
             text-overflow: ellipsis !important; /* 顯示省略號 */
-            min-height: 0 !important;        /* 移除基本高度限制 */
+            height: 22px !important;         /* 固定高度防止撐開 */
         }
-        
-        /* 內部文字容器同步修正 */
-        .fc-event-main {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+
+        /* 確保內部容器也不要換行 */
+        .fc-event-main, .fc-event-title {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: inline-block !important;
+            width: 100%;
         }
 
         /* --- Modal 修正 --- */
@@ -261,7 +263,7 @@
                 <label><i class="fa-regular fa-comment-dots"></i> 備註</label>
                 <input type="text" id="note" placeholder="備註事項 (限 25 字)" maxlength="25">
 
-                <label><i class="fa-solid fa-rotate"></i> 重複</label>
+                <label><i class="fa-solid fa-rotate"></i> 重重複</label>
                 <div class="select-wrapper">
                     <select id="repeat">
                         <option value="none">不重複</option>
@@ -340,7 +342,11 @@
                 moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
-                eventClick: function(info) { openModal(true, info.event); }
+                eventClick: function(info) { 
+                    // 為了防止日期點擊事件同時觸發，點擊行程時取消冒泡
+                    info.jsEvent.stopPropagation();
+                    openModal(true, info.event); 
+                }
             });
             calendar.render();
             initLiffAndSetProfile();
