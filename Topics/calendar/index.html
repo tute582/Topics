@@ -85,7 +85,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式強力修正 --- */
+        /* --- FullCalendar 樣式修正 --- */
         .fc-theme-standard .fc-scrollgrid { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
@@ -121,30 +121,38 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* 🔥 🔥 🔥 重點修正：讓行程強制變回單行細條狀 🔥 🔥 🔥 */
+        /* --- 核心修改：比照圖片樣式 --- */
         .fc-daygrid-event {
-            background-color: #79f2c0 !important;
+            background-color: #79f2c0 !important; /* 綠色背景 */
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important;     
-            margin: 1px 4px !important;
-            font-size: 0.85em !important;    
-            display: block !important;
-            line-height: 1.2 !important;     
+            padding: 4px 8px !important;
+            margin: 2px 4px !important;
+            font-size: 12px !important;
+            display: flex !important;       /* 使用 flex 讓圓點與文字並排 */
+            align-items: center !important;
             white-space: nowrap !important;  /* 強制不換行 */
-            overflow: hidden !important;     /* 超出隱藏 */
-            text-overflow: ellipsis !important; /* 顯示省略號 */
-            height: 22px !important;         /* 固定高度防止撐開 */
+            overflow: hidden !important;     /* 溢出隱藏 */
+            height: 24px !important;         /* 固定高度 */
         }
 
-        /* 確保內部容器也不要換行 */
-        .fc-event-main, .fc-event-title {
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            display: inline-block !important;
-            width: 100%;
+        /* 在文字前加上藍色圓點 */
+        .fc-daygrid-event::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #3498db;     /* 藍色圓點 */
+            border-radius: 50%;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .fc-event-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         /* --- Modal 修正 --- */
@@ -263,7 +271,7 @@
                 <label><i class="fa-regular fa-comment-dots"></i> 備註</label>
                 <input type="text" id="note" placeholder="備註事項 (限 25 字)" maxlength="25">
 
-                <label><i class="fa-solid fa-rotate"></i> 重重複</label>
+                <label><i class="fa-solid fa-rotate"></i> 重複</label>
                 <div class="select-wrapper">
                     <select id="repeat">
                         <option value="none">不重複</option>
@@ -342,11 +350,7 @@
                 moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
-                eventClick: function(info) { 
-                    // 為了防止日期點擊事件同時觸發，點擊行程時取消冒泡
-                    info.jsEvent.stopPropagation();
-                    openModal(true, info.event); 
-                }
+                eventClick: function(info) { openModal(true, info.event); }
             });
             calendar.render();
             initLiffAndSetProfile();
