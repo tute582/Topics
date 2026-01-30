@@ -121,24 +121,31 @@
         .fc-daygrid-day-frame { min-height: 110px !important; }
         .fc-day-today { background-color: #fffde7 !important; }
 
-        /* --- 核心修改：保持綠色背景但移除圓點 --- */
+        /* --- 核心修改：優化事件顯示 --- */
         .fc-daygrid-event {
-            background-color: #79f2c0 !important; /* 綠色背景 */
+            background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 4px 8px !important;
-            margin: 2px 4px !important;
-            font-size: 12px !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            height: 24px !important;
+            padding: 2px 6px !important;
+            margin: 1px 2px !important;
+            font-size: 11px !important; /* 縮小字體以適應手機 */
+            display: flex !important;
+            align-items: center;
+            height: 22px !important;
+        }
+
+        .fc-event-time {
+            font-weight: bold !important;
+            margin-right: 4px !important;
+            flex-shrink: 0; /* 防止時間被擠壓 */
         }
 
         .fc-event-title {
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            flex-grow: 1;
         }
 
         /* --- Modal 修正 --- */
@@ -333,6 +340,12 @@
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
                 dayMaxEvents: 2,
+                eventTimeFormat: { // 強制月曆上的時間為 24 小時制 (14:00)
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false,
+                    hour12: false
+                },
                 moreLinkText: "更多",
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
@@ -459,9 +472,11 @@
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
                 dayEvents.sort((a, b) => a.start - b.start).forEach(e => {
+                    // 將 Date 轉為 24 小時制 (例如 14:00)
+                    const timeStr = e.start.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
                     const item = document.createElement('div');
                     item.className = 'event-item';
-                    item.innerHTML = `<span class="event-time">${e.start.toTimeString().substring(0, 5)}</span><div class="event-title">${e.title}</div>`;
+                    item.innerHTML = `<span class="event-time">${timeStr}</span><div class="event-title">${e.title}</div>`;
                     item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
                     listEl.appendChild(item);
                 });
@@ -480,7 +495,10 @@
             if (editMode) {
                 currentEventId = data.id;
                 document.getElementById("date").value = data.start.toISOString().split('T')[0];
-                document.getElementById("time").value = data.start.toTimeString().substring(0, 5);
+                // 確保 Input 控制項抓取正確的 24 小時制時間
+                const hh = String(data.start.getHours()).padStart(2, '0');
+                const mm = String(data.start.getMinutes()).padStart(2, '0');
+                document.getElementById("time").value = `${hh}:${mm}`;
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note || "";
                 document.getElementById("repeat").value = data.extendedProps.repeat || "none";
