@@ -155,7 +155,7 @@
             background-color: #fffde7 !important;
         }
 
-        /* --- 綠色標籤字體與 iPhone 溢出修正 --- */
+        /* --- 綠色標籤樣式 --- */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
@@ -177,20 +177,19 @@
         }
 
         .fc-event-title {
-            font-size: 14px !important; /* 加大字體 */
+            font-size: 14px !important;
             font-weight: 600 !important;
             white-space: nowrap !important;
             overflow: hidden !important;
-            text-overflow: ellipsis !important; /* iPhone 太長顯示... */
+            text-overflow: ellipsis !important;
             flex-grow: 1 !important;
-            min-width: 0 !important; /* 核心修正：防止 flex 子元素溢出 */
+            min-width: 0 !important;
         }
 
-        /* --- 修正：+更多 字體顏色改為黑色 --- */
         .fc-daygrid-more-link {
             font-size: 13px !important;
             font-weight: bold !important;
-            color: #222 !important; /* 改為黑色 */
+            color: #222 !important;
             padding-left: 5px !important;
             text-decoration: none !important;
         }
@@ -257,19 +256,28 @@
             text-align: center;
         }
 
+        /* --- 核心修正：統一 iPhone 上的框框大小 --- */
         input[type="text"], 
         input[type="date"], 
         input[type="time"], 
         select {
             width: 100%;
-            padding: 12px;
+            height: 48px; /* 強制固定高度 */
+            padding: 0 12px; /* 調整內置中 */
             border-radius: 10px;
             border: 1px solid #ddd;
             font-size: 16px;
             background-color: #fdfdfd;
-            -webkit-appearance: none;
+            -webkit-appearance: none; /* 移除 iOS 預設樣式 */
             appearance: none;
             display: block;
+            line-height: normal; /* 修正日期文字垂直對齊 */
+        }
+
+        /* 針對 iOS date/time 內部預設文字對齊的細微調整 */
+        input[type="date"], input[type="time"] {
+            display: flex;
+            align-items: center;
         }
 
         .select-wrapper {
@@ -517,7 +525,6 @@
             }
         }
 
-        // 頭像點擊跳轉邏輯
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
             if (liff.isLoggedIn()) {
                 localStorage.setItem("fromPage", "calendar");
