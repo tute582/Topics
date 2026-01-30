@@ -155,7 +155,7 @@
             background-color: #fffde7 !important;
         }
 
-        /* --- 綠色標籤文字加大修正 (針對 iPhone 溢出優化) --- */
+        /* --- 綠色標籤字體與 iPhone 溢出修正 --- */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
@@ -165,7 +165,7 @@
             margin: 2px 1px !important;
             display: flex !important;
             align-items: center !important;
-            min-height: 28px !important; /* 增加高度防止字體溢出 */
+            min-height: 28px !important;
             overflow: hidden !important;
         }
 
@@ -173,7 +173,7 @@
             font-weight: bold !important;
             margin-right: 4px !important;
             flex-shrink: 0 !important;
-            font-size: 12px !important; /* 時間稍微縮小維持比例 */
+            font-size: 12px !important;
         }
 
         .fc-event-title {
@@ -181,15 +181,18 @@
             font-weight: 600 !important;
             white-space: nowrap !important;
             overflow: hidden !important;
-            text-overflow: ellipsis !important; /* 太長顯示...防止 iPhone 跑版 */
+            text-overflow: ellipsis !important; /* iPhone 太長顯示... */
             flex-grow: 1 !important;
+            min-width: 0 !important; /* 核心修正：防止 flex 子元素溢出 */
         }
 
+        /* --- 修正：+更多 字體顏色改為黑色 --- */
         .fc-daygrid-more-link {
             font-size: 13px !important;
             font-weight: bold !important;
-            color: #4a90e2 !important;
+            color: #222 !important; /* 改為黑色 */
             padding-left: 5px !important;
+            text-decoration: none !important;
         }
 
         /* --- Modal 樣式 --- */
@@ -514,7 +517,7 @@
             }
         }
 
-        // 頭像點擊跳轉邏輯 (完整保留)
+        // 頭像點擊跳轉邏輯
         document.getElementById("volunteerAvatar").addEventListener("click", () => {
             if (liff.isLoggedIn()) {
                 localStorage.setItem("fromPage", "calendar");
