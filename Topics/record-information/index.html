@@ -530,24 +530,33 @@
           <input type="text" id="field_remarks">
         </div>
 
+        <div class="form-group">
+            <label><i class="fa-solid fa-camera"></i> 選擇檔案 / 拍照</label>
+            <div style="
+                background-color: #e3f2fd; /* 藍色底 */
+                border: 2px solid #90caf9; /* 藍色邊框 */
+                border-radius: 12px;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            ">
+                <iframe
+                  id="cameraFrame"
+                  src="./UpdateImage.html"
+                  style="
+                    width: 100%;
+                    height: 50px; 
+                    border: none;
+                    background: transparent;
+                  "
+                  scrolling="no"
+                ></iframe>
+            </div>
+        </div>
+
         <div class="modal-btns">
           <button class="btn btn-delete" id="deleteBtn" onclick="deleteRecord()">刪除</button>
-          
-          <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
-            <iframe
-              id="cameraFrame"
-              src="./UpdateImage.html"
-              style="
-                width: 100%;
-                height: 55px; /* 設定與按鈕相近的高度 */
-                border: none;
-                background: transparent;
-                transition: height 0.3s ease;
-              "
-              scrolling="no"
-            ></iframe>
-          </div>
-
           <button class="btn btn-save" onclick="saveRecord()">儲存</button>
         </div>
       </div>
