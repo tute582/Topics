@@ -98,24 +98,34 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* 工具列調整 */
+        /* 工具列調整：解決標題擠壓問題 */
         .fc-toolbar {
             display: flex;
+            flex-wrap: wrap; /* 允許小螢幕換行 */
             justify-content: space-between;
             align-items: center;
             padding: 0 5px;
             margin-bottom: 20px !important;
+            gap: 5px;
+        }
+
+        /* 強制標題區域不換行並增加空間 */
+        .fc-toolbar-chunk:nth-child(2) {
+            flex-grow: 1;
+            text-align: center;
+            min-width: 120px;
         }
 
         .fc-toolbar-title {
             font-size: 1.25em !important;
             font-weight: bold;
             color: #2c3e50;
+            white-space: nowrap; /* 禁止標題文字內部換行 */
         }
 
         .fc-button {
-            padding: 8px 12px !important;
-            font-size: 0.95em !important;
+            padding: 8px 10px !important; /* 稍微縮減 padding 增加寬度空間 */
+            font-size: 0.9em !important;
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
@@ -256,28 +266,28 @@
             text-align: center;
         }
 
-        /* --- 核心修正：統一 iPhone 上的框框大小 --- */
+        /* --- 核心修正：統一 iPhone 上的框框大小與對齊 --- */
         input[type="text"], 
         input[type="date"], 
         input[type="time"], 
         select {
             width: 100%;
-            height: 48px; /* 強制固定高度 */
-            padding: 0 12px; /* 調整內置中 */
+            height: 48px; 
+            padding: 0 12px; 
             border-radius: 10px;
             border: 1px solid #ddd;
             font-size: 16px;
             background-color: #fdfdfd;
-            -webkit-appearance: none; /* 移除 iOS 預設樣式 */
+            -webkit-appearance: none; 
             appearance: none;
-            display: block;
-            line-height: normal; /* 修正日期文字垂直對齊 */
-        }
-
-        /* 針對 iOS date/time 內部預設文字對齊的細微調整 */
-        input[type="date"], input[type="time"] {
             display: flex;
             align-items: center;
+            line-height: normal;
+        }
+
+        /* 針對 iOS date/time 內部預設文字對齊 */
+        input[type="date"], input[type="time"] {
+            min-height: 48px;
         }
 
         .select-wrapper {
@@ -466,7 +476,6 @@
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { 
-                    // 修正：在數字與中文間加入空格
                     return info.date.marker.getFullYear() + ' 年 ' + (info.date.marker.getMonth() + 1) + ' 月'; 
                 },
                 dayMaxEvents: 2,
@@ -616,15 +625,10 @@
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
-            
-            // 修正：彈窗標題日期格式加入空格 (例如 2026-01-31 -> 2026 年 01 月 31 日)
             const parts = dateStr.split('-');
             document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
-            
             listEl.innerHTML = '';
-            
             const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
-            
             if (dayEvents.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
