@@ -465,7 +465,10 @@
                 buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
-                titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
+                titleFormat: function(info) { 
+                    // 修正：在數字與中文間加入空格
+                    return info.date.marker.getFullYear() + ' 年 ' + (info.date.marker.getMonth() + 1) + ' 月'; 
+                },
                 dayMaxEvents: 2,
                 eventTimeFormat: { 
                     hour: '2-digit', 
@@ -613,7 +616,11 @@
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
-            document.getElementById('dayViewTitle').innerText = dateStr;
+            
+            // 修正：彈窗標題日期格式加入空格 (例如 2026-01-31 -> 2026 年 01 月 31 日)
+            const parts = dateStr.split('-');
+            document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
+            
             listEl.innerHTML = '';
             
             const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
