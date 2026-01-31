@@ -98,29 +98,51 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        .fc-toolbar {
+        /* 🔥 修正：箭頭左右排列並置中 🔥 */
+        .fc .fc-toolbar {
             display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
             justify-content: space-between !important;
             align-items: center !important;
-            flex-wrap: nowrap !important; 
             padding: 0 5px;
             margin-bottom: 20px !important;
         }
 
-        .fc-toolbar-chunk:nth-child(2) {
+        /* 讓左右區塊等寬，確保中間區塊真正置中 */
+        .fc .fc-toolbar-chunk:nth-child(1),
+        .fc .fc-toolbar-chunk:nth-child(3) {
+            flex: 1 1 20% !important;
             display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-grow: 1 !important;
         }
 
+        .fc .fc-toolbar-chunk:nth-child(3) {
+            justify-content: flex-end !important;
+        }
+
+        /* 中間區塊：強制箭頭和標題在同一行 */
+        .fc .fc-toolbar-chunk:nth-child(2) {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex: 0 1 auto !important;
+        }
+
+        /* 移除 FullCalendar 內部的按鈕組邊距，確保緊貼標題 */
         .fc-toolbar-title {
-            font-size: 1.25em !important;
+            font-size: 1.2em !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap;
-            margin: 0 12px !important; 
+            margin: 0 10px !important; 
+            order: 2; /* 標題在中間 */
         }
+
+        /* 讓按鈕在標題兩側 */
+        .fc-prev-button { order: 1 !important; }
+        .fc-next-button { order: 3 !important; }
 
         .fc-button {
             padding: 8px 10px !important;
