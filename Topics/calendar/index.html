@@ -98,59 +98,53 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* 🔥 核心修正：強制工具列對稱置中 🔥 */
+        /* 🔥 核心修正：工具列重新配置 🔥 */
         .fc .fc-toolbar {
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
             padding: 0 5px;
             margin-bottom: 20px !important;
-            position: relative;
         }
 
-        /* 左右兩側塊分配固定寬度，確保中間塊能真正居中 */
+        /* 1. 左側佔位(空) */
         .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 1 1 20% !important;
-            display: flex !important;
+            flex: 0 0 10% !important; /* 縮小左側佔位 */
         }
 
+        /* 2. 中間：標題與導覽按鈕 */
+        .fc .fc-toolbar-chunk:nth-child(2) {
+            flex: 1 1 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 12px !important; /* 🔥 固定左右箭頭與字的平均間距 */
+        }
+
+        /* 3. 右側：視圖切換按鈕 */
         .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 1 1 20% !important;
+            flex: 0 0 auto !important;
             display: flex !important;
             justify-content: flex-end !important;
         }
 
-        /* 中間標題與箭頭塊：使用對稱間距 */
-        .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 0 0 auto !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 15px !important; /* 🔥 強制設定箭頭與標題的對稱距離 */
-        }
-
         .fc-toolbar-title {
-            font-size: 1.15em !important;
+            font-size: 1.1em !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
-            margin: 0 !important; /* 清除所有預設邊距 */
+            margin: 0 !important;
             order: 2; 
         }
 
-        /* 確保按鈕本身不帶額外邊距 */
-        .fc-prev-button { 
-            order: 1 !important; 
-            margin: 0 !important;
-        }
-        .fc-next-button { 
-            order: 3 !important; 
-            margin: 0 !important;
-        }
+        /* 強制箭頭按鈕順序 */
+        .fc-prev-button { order: 1 !important; margin: 0 !important; }
+        .fc-next-button { order: 3 !important; margin: 0 !important; }
 
+        /* 按鈕樣式優化，避免擠壓 */
         .fc-button {
-            padding: 8px 10px !important;
-            font-size: 0.9em !important;
+            padding: 6px 8px !important; /* 稍微縮小內距避免超出畫面 */
+            font-size: 0.85em !important;
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
@@ -168,6 +162,11 @@
             background-color: #2c3e50 !important;
             color: #ffffff !important;
             border-color: #2c3e50 !important;
+        }
+
+        /* 列表按鈕間距 */
+        .fc-button-group {
+            gap: 2px !important;
         }
 
         .fc-daygrid-day-top {
@@ -245,12 +244,10 @@
             background: #fff;
             width: 92%;
             max-width: 400px;
-            margin: 0; 
-            padding: 20px 20px;
+            padding: 20px;
             border-radius: 16px;
             position: relative;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            text-align: left;
         }
 
         .close-btn {
@@ -266,7 +263,6 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 10;
         }
 
         label {
@@ -279,16 +275,9 @@
             font-size: 15px;
         }
 
-        label i {
-            margin-right: 6px;
-            width: 20px;
-            text-align: center;
-        }
+        label i { margin-right: 6px; width: 20px; text-align: center; }
 
-        input[type="text"], 
-        input[type="date"], 
-        input[type="time"], 
-        select {
+        input[type="text"], input[type="date"], input[type="time"], select {
             width: 100%;
             height: 48px; 
             padding: 0 12px; 
@@ -297,16 +286,9 @@
             font-size: 16px;
             background-color: #fdfdfd;
             -webkit-appearance: none; 
-            appearance: none;
-            display: flex;
-            align-items: center;
         }
 
-        .select-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
+        .select-wrapper { position: relative; width: 100%; }
         .select-wrapper::after {
             content: '\25BC';
             font-size: 12px;
@@ -370,10 +352,7 @@
             font-size: 16px;
         }
         
-        .event-title-list {
-            font-size: 16px;
-            color: #333;
-        }
+        .event-title-list { font-size: 16px; color: #333; }
     </style>
 </head>
 <body>
