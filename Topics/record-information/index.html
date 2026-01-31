@@ -208,13 +208,13 @@
       .remark-box { 
         color: #e67e22; 
         font-weight: bold; 
-        font-size: 16px;   /* 字體縮小 */
-        margin: 0;         /* 移除外距 */
+        font-size: 16px;    /* 字體縮小 */
+        margin: 0;          /* 移除外距 */
         padding: 0;
         display: flex; 
         align-items: center; 
         gap: 6px;
-        flex: 1;           /* 佔據剩餘空間 */
+        flex: 1;            /* 佔據剩餘空間 */
       }
 
       /* 編輯按鈕 */
@@ -466,21 +466,6 @@
         <div id="modalTitle" class="modal-title">修改看診紀錄</div>
         <input type="hidden" id="editIndex">
         
-        <div id="camera-area" style="margin-top: 0px">
-        <iframe
-          id="cameraFrame"
-          src="./UpdateImage.html"
-          style="
-            width: 100%;
-            max-width: 700px;
-            height: 60px; /* 稍微增加高度以免按鈕被切到 */
-            border: none;
-            background: transparent; /* 修改這裡：改為透明，才不會有白色方塊底色 */
-            transition: height 0.3s ease;
-          "
-          ></iframe>
-        </div>
-
         <div class="form-group">
           <label><i class="fa-regular fa-calendar-days"></i> 看診日期</label>
           <input type="date" id="field_date">
@@ -547,6 +532,22 @@
 
         <div class="modal-btns">
           <button class="btn btn-delete" id="deleteBtn" onclick="deleteRecord()">刪除</button>
+          
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <iframe
+              id="cameraFrame"
+              src="./UpdateImage.html"
+              style="
+                width: 100%;
+                height: 55px; /* 設定與按鈕相近的高度 */
+                border: none;
+                background: transparent;
+                transition: height 0.3s ease;
+              "
+              scrolling="no"
+            ></iframe>
+          </div>
+
           <button class="btn btn-save" onclick="saveRecord()">儲存</button>
         </div>
       </div>
@@ -886,7 +887,7 @@
 
         const iframe = document.getElementById("cameraFrame");
         if (iframe) {
-          iframe.style.height = "50px"; 
+          iframe.style.height = "55px"; 
           iframe.src = iframe.src; 
         }
 
@@ -1157,7 +1158,9 @@
         if (event.data.type === 'resize-iframe') {
           const iframe = document.getElementById('cameraFrame');
           if (iframe) {
-            iframe.style.height = (event.data.height + 20) + 'px';
+            // 注意：因為我們已經設定了固定高度來對齊按鈕，這裡的自動調整高度可以視情況保留或註解掉
+            // 如果您的 UpdateImage.html 內容會變很多，可能需要特別處理，但目前為按鈕形式建議固定
+            // iframe.style.height = (event.data.height + 20) + 'px';
           }
         }
 
