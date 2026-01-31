@@ -119,123 +119,114 @@
       }
      
       /* 修改modal */
-    /* ===============================
-   志工 Modal 背景
-   =============================== */
-body.modal-open {
-  overflow: hidden;
-  height: 100vh;
-}
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center; /* 讓 modal-content 垂直置中 */
+        z-index: 2000;
+        backdrop-filter: blur(4px); 
+        padding: 20px; /* 增加四周間距，確保不會貼邊 */
+        box-sizing: border-box;
+      }
       
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: none;                 /* JS 開啟時改成 flex */
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  padding: 20px;
-  box-sizing: border-box;
-  inset: 0;  
-}
+      .modal-content {
+        background: #fff;
+        /* margin: 40px auto;  <-- 這一行可以拿掉，由 overlay 的 padding 控制 */
+        padding: 20px 15px;
+        border-radius: 16px;
+        position: relative;
+        width: 90%;
+        max-width: 400px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        
+        /* --- 關鍵修改點 --- */
+        max-height: 90vh;      /* 限制最大高度為螢幕高度的 90% */
+        overflow-y: auto;      /* 當內容超過 max-height 時，自動顯示垂直捲軸 */
+        display: flex;         /* 確保內部排版穩定 */
+        flex-direction: column;
+      }
 
-/* ===============================
-   志工 Modal 內容卡片
-   =============================== */
-.modal-content {
-  background: #fff;
-  width: 92%;
-  max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  position: relative; /* 給 close-btn 定位用 */
-}
-
-/* ===============================
-   標題
-   =============================== */
-#modalTitle {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-/* ===============================
-   關閉按鈕
-   =============================== */
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #f37a7a;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-}
-
-/* ===============================
-   表單標籤
-   =============================== */
-label {
-  display: block;
-  font-weight: 600;
-  margin: 15px 0 6px;
-  color: #444;
-  font-size: 15px;
-}
-
-/* ===============================
-   表單欄位
-   =============================== */
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #4a90e2;
-}
-
-/* ===============================
-   textarea
-   =============================== */
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-/* ===============================
-   捲動條美化（可留可刪）
-   =============================== */
-.modal-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 3px;
-}
+      .close-btn {
+        position: absolute;
+        top: 12px; 
+        right: 12px; 
+        width: 30px; 
+        height: 30px; 
+        background-color: #f37a7a;
+        color: white;
+        border-radius: 50%; 
+        border: none; 
+        font-size: 14px; 
+        isplay: flex; 
+        align-items: center; 
+        ustify-content: center;
+        cursor: pointer;
+        z-index: 10; }
+      
+      
+      /* modal 表單 */
+      .form-section {
+        max-width: 100%;      /* 改為 100% 配合父容器 */
+        margin: 10px 0;       /* 稍微調整間距 */
+        padding: 10px;        /* 縮減一些內距，把空間留給內容 */
+        box-shadow: none;     /* 因為外面已經有 modal-content 的陰影了 */
+      }
+      
+      .form-section h3 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #4a90e2;
+      }
+      
+      .btn {
+        padding: 14px;
+        border: none; 
+        border-radius: 12px; 
+        color: #fff; 
+        cursor: pointer; 
+        font-size: 16px; 
+        width: 100%; 
+        margin-top: 25px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 8px; 
+        font-weight: bold;
+        background-color: #4a90e2;
+      }
 
     </style>
   </head>
@@ -415,8 +406,6 @@ textarea {
 
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
-        // document.body.classList.add("modal-open");
-        document.body.style.overflow = "hidden";
         const f = document.getElementById("volunteerForm");
       
         // 帶入目前資料
@@ -437,8 +426,6 @@ textarea {
           return;
         }
         modal.style.display = "none";
-        // document.body.classList.remove("modal-open");
-        document.body.style.overflow = "";
       }
 
 
