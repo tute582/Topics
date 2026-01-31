@@ -467,18 +467,17 @@
         <input type="hidden" id="editIndex">
         
         <div id="camera-area" style="margin-top: 0px">
-          <iframe
+        <iframe
           id="cameraFrame"
-            src="./UpdateImage.html"
-            style="
-              width: 100%;
-              max-width: 700px;
-              height: 50px;
-              border: none;
-              border-radius: 12px;
-              background: #fff;
-              transition: height 0.3s ease;
-            "
+          src="./UpdateImage.html"
+          style="
+            width: 100%;
+            max-width: 700px;
+            height: 60px; /* 稍微增加高度以免按鈕被切到 */
+            border: none;
+            background: transparent; /* 修改這裡：改為透明，才不會有白色方塊底色 */
+            transition: height 0.3s ease;
+          "
           ></iframe>
         </div>
 

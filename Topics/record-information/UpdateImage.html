@@ -4,41 +4,73 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>隱私資料遮蔽工具 (UI優化版)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       body {
-        font-family: sans-serif;
+        font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
         padding: 0px;
-        text-align: left;
+        text-align: center; /*讓內容置中*/
         overscroll-behavior: none;
-        /* [新增] 隱藏子頁面的捲軸，交給 iframe 自動長高 */
         overflow: hidden; 
-        margin: 0; /* 建議歸零 */
+        margin: 0;
+        background-color: transparent; /* [修改] 背景透明 */
+        
+        /* [修改] 讓初始按鈕垂直置中 */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px; /* 配合 iframe 高度 */
       }
 
       .container {
-        /* [修改] 移除 max-width 和 margin: 0 auto，讓它自然靠左並填滿 iframe */
         width: 100%;
         margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* [修改] 自訂上傳按鈕樣式 (綠色、圓角、不貼邊) */
+      .custom-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background-color: #2ecc71; /* 綠色 */
+        color: white;
+        padding: 10px 25px;
+        border-radius: 15px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        transition: transform 0.1s;
+        margin-bottom: 10px; /* 與下方內容的間距 */
+      }
+
+      .custom-upload-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* [修改] 隱藏原本的 input */
+      #imageInput {
+        display: none;
       }
 
       /* --- 工具列 (上方) --- */
       .tools-bar {
         display: none;
-        /* [修改] 靠左排列 */
-        justify-content: flex-start;
-        gap: 15px; /* 增加一點間距 */
+        justify-content: center; /* 置中 */
+        gap: 15px;
         align-items: center;
         margin-bottom: 5px;
         padding: 10px;
         background-color: #f8f9fa;
         border-radius: 8px;
         border: 1px solid #ddd;
-      }
-
-      .tool-label {
-        font-size: 14px;
-        color: #555;
-        font-weight: bold;
+        width: 90%; /* 寬度限制 */
       }
 
       /* 畫布容器 */
@@ -49,15 +81,14 @@
         touch-action: none;
         display: none;
         background-color: #eee;
-        margin-top: 10px;
+        margin-top: 5px;
       }
 
       canvas {
         max-width: 100%;
         height: auto;
         display: block;
-        /* [修改] 移除 margin: 0 auto (置中)，改為靠左 */
-        margin: 0;
+        margin: 0 auto; /* 置中 */
         cursor: crosshair;
       }
 
@@ -92,89 +123,59 @@
         background-color: #4caf50;
         color: white;
         display: none;
-        width: 100%;
+        width: 90%; /* 配合整體寬度 */
         margin-top: 15px;
         padding: 15px;
         font-size: 18px;
         font-weight: bold;
+        border-radius: 15px;
       }
 
       /* 提示文字 */
       #hintText {
         display: none;
         color: #d9534f;
-        margin: 15px 0;
-        text-align: left; /* 保持靠左 */
+        margin: 10px 0;
+        text-align: center;
         font-size: 14px;
         background: #fff5f5;
         padding: 10px;
         border-radius: 5px;
-      }
-
-      h2 {
-        margin-top: 0;
-        font-size: 20px; /* 稍微調整標題大小以配合整體 */
-      }
-
-      input[type="file"] {
-          margin-top: 5px;
-          display: block; 
+        width: 90%;
       }
 
       /* Loading Overlay */
       .loading-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(255, 255, 255, 0.85);
         display: none;
-        align-items: center;
-        justify-content: center;
+        align-items: center; justify-content: center;
         z-index: 9999;
       }
-
       .loading-box {
-        text-align: center;
-        padding: 30px 40px;
-        background: #ffffff;
-        border-radius: 12px;
+        text-align: center; padding: 30px 40px;
+        background: #ffffff; border-radius: 12px;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
       }
-
       .spinner {
-        width: 48px;
-        height: 48px;
-        border: 5px solid #e0e0e0;
-        border-top-color: #4caf50;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+        width: 48px; height: 48px;
+        border: 5px solid #e0e0e0; border-top-color: #4caf50;
+        border-radius: 50%; animation: spin 1s linear infinite;
         margin: 0 auto 20px;
       }
-
-      .loading-text {
-        font-size: 15px;
-        color: #333;
-        line-height: 1.6;
-      }
-
-      .loading-text span {
-        font-size: 13px;
-        color: #777;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+      .loading-text { font-size: 15px; color: #333; line-height: 1.6; }
+      .loading-text span { font-size: 13px; color: #777; }
+      @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
   </head>
   <body>
     <div class="container">
-      <h2>可透過上傳看診單、藥袋
+      
+      <label class="custom-upload-btn" id="uploadLabel">
+        <i class="fa-solid fa-camera"></i>
+        <span>選擇檔案 / 拍照</span>
         <input
           type="file"
           id="imageInput"
@@ -182,7 +183,7 @@
           capture="environment"
           multiple
         />
-      </h2>
+      </label>
       
       <div id="hintText">
         <strong>💡 遮蔽個資</strong><br />
@@ -208,6 +209,7 @@
           </div>
         </div>
       </div>
+    </div>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -221,6 +223,7 @@
       const undoBtn = document.getElementById("undoBtn");
       const hintText = document.getElementById("hintText");
       const loadingOverlay = document.getElementById("loadingOverlay");
+      const uploadLabel = document.getElementById("uploadLabel"); // 取得按鈕 Label
 
       // 變數設定
       let isDrawing = false;
@@ -233,18 +236,13 @@
       const brushSize = 35;
       const brushColor = "#000000";
 
-      // [新增] 這是核心功能：計算當前高度並傳給外層
+      // 核心功能：計算當前高度並傳給外層
       function sendHeightToParent() {
-        // 取得 body 的完整高度
         const height = document.body.scrollHeight;
-        // 發送訊息給父視窗 (index.html)
-        // 傳送內容包含 type 和 height 數值
         window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
       }
 
-      // [新增] 1. 畫面剛載入時，先傳一次 (這時只有上傳按鈕，高度很矮)
       window.addEventListener('load', sendHeightToParent);
-      // [新增] 2. 視窗大小改變時，也重新計算
       window.addEventListener('resize', sendHeightToParent);
 
       // --- 1. 圖片載入 ---
@@ -256,7 +254,6 @@
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
-            // ... 原本的 Canvas 處理邏輯 ...
             canvas.width = img.width;
             canvas.height = img.height;
             baseImage = img;
@@ -270,8 +267,11 @@
             canvasContainer.style.display = "block";
             confirmBtn.style.display = "block";
             setupBrush();
+            
+            // 圖片載入後，可以考慮隱藏上傳按鈕，或是改變文字(視需求而定)
+            // 這裡保留按鈕以便重新上傳，但文字可以改成 "重新上傳"
+            uploadLabel.querySelector('span').innerText = "重新選擇圖片";
 
-            // [新增] 3. 重要！元件顯示出來後，等一小段時間讓畫面渲染完，再傳一次新高度
             setTimeout(sendHeightToParent, 100);
           };
           img.src = event.target.result;
@@ -377,7 +377,7 @@
         const base64Full = canvas.toDataURL("image/jpeg", 0.8);
         const base64Data = base64Full.split(",")[1];
 
-        // [修改] 改為發送訊息通知 index.html 顯示 loading
+        // 通知 parent 顯示 loading
         window.parent.postMessage({ type: 'show-loading' }, '*');
         
         confirmBtn.disabled = true;
@@ -406,13 +406,11 @@
           } else {
             console.log("AI 辨識成功：", result.data);
             
-            // ==========================================
-            // [修改] 將 AI 辨識出的資料 與 圖片 Base64 一併傳送
-            // ==========================================
+            // 回傳資料給 parent
             window.parent.postMessage({
                 type: 'fill-data',
                 data: result.data,
-                base64: base64Data // <--- 這裡加入了 base64 資料
+                base64: base64Data 
             }, '*');
             
             alert("辨識完成！");
@@ -421,7 +419,7 @@
           console.error("API 呼叫失敗:", err);
           alert("系統連線失敗，請檢查網路");
         } finally {
-          // [修改] 發送訊息通知 index.html 關閉 loading
+          // 通知 parent 隱藏 loading
           window.parent.postMessage({ type: 'hide-loading' }, '*');
           
           confirmBtn.disabled = false;
