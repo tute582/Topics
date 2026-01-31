@@ -405,6 +405,7 @@
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
         const f = document.getElementById("volunteerForm");
+            
       
         // 帶入目前資料
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
@@ -414,6 +415,9 @@
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
+        const birthday = document.getElementById('birthday');
+        
+        birthday.max = new Date().toISOString().split('T')[0];
       }
 
       //close modal
