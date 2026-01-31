@@ -204,7 +204,7 @@
             text-decoration: none !important;
         }
 
-        /* --- Modal 樣式 --- */
+        /* --- Modal 樣式：修正置中 --- */
         .modal {
             display: none;
             position: fixed;
@@ -213,15 +213,18 @@
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(4px);
             z-index: 2000;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            /* 使用 Flexbox 確保內容置中 */
+            display: none; 
+            align-items: center; 
+            justify-content: center;
         }
 
         .modal-content {
             background: #fff;
             width: 92%;
             max-width: 400px;
-            margin: 40px auto;
+            /* 移除原本的 margin: 40px auto，改由 flex 控制 */
+            margin: 0; 
             padding: 20px 20px;
             border-radius: 16px;
             position: relative;
@@ -644,12 +647,12 @@
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'block';
+            document.getElementById('dayViewModal').style.display = 'flex'; // 修改為 flex 觸發置中
         }
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "block";
+            document.getElementById("dataModal").style.display = "flex"; // 修改為 flex 觸發置中
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
 
