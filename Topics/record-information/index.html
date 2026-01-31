@@ -255,14 +255,16 @@
         align-items: center;
       }
       .modal-content {
-        position: relative; 
+        position: relative;
         background: white;
-        width: 90%;
+        width: 90%;           /* 寬度 90%，確保左右有 5% 的留白，不會貼手機邊緣 */
         max-width: 450px;
         border-radius: 25px;
-        padding: 25px;
+        /* 修改這裡：增加左右內距 (上下 25px，左右 35px)，防止內容貼邊 */
+        padding: 25px 35px;   
         max-height: 90vh;
         overflow-y: auto;
+        box-sizing: border-box; /* 確保 padding 不會撐破寬度 */
       }
 
       /* 右上角叉叉按鈕 */
@@ -286,6 +288,19 @@
       }
       .close-btn:hover { background-color: #e2e6ea; }
       .close-btn:active { transform: scale(0.95); }
+
+      /* 新增：無資料顯示區的樣式設定 */
+      .no-data {
+        display: none;        /* 預設隱藏，由 JS 控制顯示 (display: flex) */
+        flex-direction: row;  /* 水平排列 */
+        align-items: center;  /* 垂直置中 */
+        justify-content: center; /* 水平置中 */
+        gap: 15px;            /* Icon 與文字的間距 */
+        padding: 60px 20px;
+        color: #999;
+        font-size: 18px;      /* 字體大小 */
+        font-weight: bold;
+      }
 
       .modal-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; text-align: center; color: #2c3e50; }
       .form-group { margin-bottom: 18px; }
@@ -434,9 +449,9 @@
 
       <h2 class="page-title">就醫紀錄管理</h2>
       <div id="recordList"></div>
-      <div id="noDataMsg" class="no-data" style="display: none; text-align:center; padding: 50px; color:#999;">
-        <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 10px; display:block;"></i>
-        目前沒有紀錄喔！
+      <div id="noDataMsg" class="no-data">
+        <i class="fa-regular fa-folder-open" style="font-size: 30px;"></i>
+        <span>目前沒有紀錄喔！</span>
       </div>
     </div>
 
@@ -856,7 +871,7 @@
         });
 
         if (data.length === 0) {
-            document.getElementById("noDataMsg").style.display = "block";
+            document.getElementById("noDataMsg").style.display = "flex";
         } else {
             document.getElementById("noDataMsg").style.display = "none";
         }
