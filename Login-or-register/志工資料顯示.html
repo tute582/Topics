@@ -141,6 +141,7 @@ body.modal-open {
   z-index: 2000;
   padding: 20px;
   box-sizing: border-box;
+  inset: 0;  
 }
 
 /* ===============================
@@ -150,17 +151,12 @@ body.modal-open {
   background: #fff;
   width: 92%;
   max-width: 400px;
-  padding: 20px;
-  border-radius: 16px;
-  position: relative;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-
-  /* 與行事曆一致的關鍵 */
   max-height: 90vh;
   overflow-y: auto;
-
-  display: flex;
-  flex-direction: column;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  position: relative; /* 給 close-btn 定位用 */
 }
 
 /* ===============================
@@ -182,16 +178,11 @@ body.modal-open {
   right: 12px;
   width: 30px;
   height: 30px;
-  background-color: #f37a7a;
-  color: #fff;
   border-radius: 50%;
+  background: #f37a7a;
+  color: #fff;
   border: none;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  z-index: 10;
 }
 
 /* ===============================
@@ -424,7 +415,8 @@ textarea {
 
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
-        document.body.classList.add("modal-open");
+        // document.body.classList.add("modal-open");
+        document.body.style.overflow = "hidden";
         const f = document.getElementById("volunteerForm");
       
         // 帶入目前資料
@@ -445,7 +437,8 @@ textarea {
           return;
         }
         modal.style.display = "none";
-        document.body.classList.remove("modal-open");
+        // document.body.classList.remove("modal-open");
+        document.body.style.overflow = "";
       }
 
 
