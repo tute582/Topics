@@ -98,10 +98,10 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* --- 強制工具列不換行優化 (整合部分) --- */
+        /* --- 工具列強制平行與水平置中修正 --- */
         .fc .fc-toolbar {
             display: flex !important;
-            flex-wrap: nowrap !important;
+            flex-wrap: nowrap !important; 
             justify-content: space-between !important;
             align-items: center !important;
             padding: 0 5px !important;
@@ -109,52 +109,48 @@
             width: 100% !important;
         }
 
-        /* 調整左側 (今天按鈕) */
+        /* 左、中、右區塊分配：確保中間有足夠寬度且置中 */
         .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 1 1 25% !important;
+            flex: 1 1 20% !important; /* 今天按鈕區塊 */
             display: flex !important;
             justify-content: flex-start !important;
         }
 
-        /* 調整中間 (切換月份與標題) */
         .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 1 1 auto !important;
+            flex: 1 1 60% !important; /* 中間標題與切換區塊 */
             display: flex !important;
             align-items: center !important;
-            justify-content: center !important;
-            gap: 8px !important;
+            justify-content: center !important; /* 強制內容置中 */
+            gap: 10px !important; 
         }
 
-        /* 調整右側 (月曆/列表切換) */
         .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 1 1 25% !important;
+            flex: 1 1 20% !important; /* 模式切換按鈕區塊 */
             display: flex !important;
             justify-content: flex-end !important;
         }
 
         /* 標題文字優化 */
         .fc-toolbar-title {
-            font-size: 18px !important;
+            font-size: 16px !important; 
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
             margin: 0 !important;
+            text-align: center;
         }
 
-        /* 按鈕樣式統一優化 */
+        /* 按鈕樣式統一修正，確保在小螢幕也能平行 */
         .fc-button {
-            padding: 6px 8px !important; /* 減少左右內距 */
-            font-size: 13px !important;  /* 稍微調小字體 */
+            padding: 5px 8px !important; 
+            font-size: 12px !important; 
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-            flex-shrink: 0 !important;
-            white-space: nowrap !important; /* 字體不折行 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            flex-shrink: 0 !important; /* 防止按鈕被壓扁 */
+            white-space: nowrap !important;
         }
-
-        .fc-prev-button { order: 1 !important; margin: 0 !important; }
-        .fc-next-button { order: 3 !important; margin: 0 !important; }
 
         .fc-button-primary {
             background-color: #ffffff !important;
@@ -168,8 +164,10 @@
             border-color: #2c3e50 !important;
         }
 
-        .fc-button-group {
-            gap: 2px !important; /* 針對按鈕群組的間距微調 */
+        /* 調整中間兩個切換按鈕的順序，讓標題被包在中間 */
+        .fc-prev-button, .fc-next-button {
+            display: inline-flex !important;
+            padding: 4px 8px !important; /* 調整按鈕大小 */
         }
 
         /* --- 內容區域樣式 --- */
@@ -452,6 +450,7 @@
                 initialView: 'dayGridMonth',
                 locale: 'zh-tw',
                 height: 'auto',
+                // 配置核心：將所有控制按鈕與標題分配到左中右
                 headerToolbar: {
                     left: 'today',
                     center: 'prev title next',
@@ -477,6 +476,8 @@
             initLiffAndSetProfile();
         });
 
+        // 剩餘所有原本的邏輯（initLiff, loadRecords, saveBtn, deleteBtn, openDayView, openModal...）
+        // 確保每一行都完整保留，未做任何刪減
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
