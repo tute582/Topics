@@ -86,7 +86,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 基礎樣式客製化 --- */
+        /* --- FullCalendar 樣式客製化 --- */
         .fc-theme-standard .fc-scrollgrid {
             border: none !important;
         }
@@ -98,55 +98,57 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* --- 工具列佈局 --- */
         .fc .fc-toolbar {
-            display: grid !important;
-            grid-template-columns: 1fr auto 1fr !important; 
+            display: flex !important;
+            justify-content: space-between !important;
             align-items: center !important;
-            padding: 0 5px !important;
+            padding: 0 2px !important;
             margin-bottom: 20px !important;
             width: 100% !important;
         }
 
         .fc .fc-toolbar-chunk:nth-child(1) {
-            justify-self: start !important;
-            display: flex !important;
+            flex: 1 1 10% !important; 
         }
 
         .fc .fc-toolbar-chunk:nth-child(2) {
-            justify-self: center !important;
+            flex: 2 1 auto !important;
             display: flex !important;
             align-items: center !important;
+            justify-content: center !important;
+            gap: 10px !important;
         }
 
         .fc .fc-toolbar-chunk:nth-child(3) {
-            justify-self: end !important;
+            flex: 1 1 10% !important;
             display: flex !important;
-            gap: 4px !important;
+            justify-content: flex-end !important;
         }
 
-        /* 標題文字優化：增加左內距讓它往右移一點點，達成視覺平均 */
         .fc-toolbar-title {
-            font-size: 20px !important; 
+            font-size: 1.1em !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
             margin: 0 !important;
-            text-align: center;
-            padding-left: 27px !important; /* <--- 讓文字向右移的核心修正 */
-            padding-right: 10px !important;
+            order: 2; 
         }
 
-        /* 按鈕樣式 */
+        .fc-prev-button { order: 1 !important; margin: 0 !important; }
+        .fc-next-button { order: 3 !important; margin: 0 !important; }
+
         .fc-button {
-            padding: 6px 12px !important; 
-            font-size: 18px !important; 
+            padding: 8px 12px !important; 
+            font-size: 14px !important;   
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             flex-shrink: 0 !important;
-            white-space: nowrap !important;
+        }
+
+        .fc-prev-button, .fc-next-button {
+            padding: 6px 8px !important; 
         }
 
         .fc-button-primary {
@@ -161,17 +163,10 @@
             border-color: #2c3e50 !important;
         }
 
-        /* 箭頭按鈕點擊區域優化 */
-        .fc-prev-button, .fc-next-button {
-            padding: 6px 8px !important;
-            background-color: #ffffff !important;
-            border: 1px solid #dcdde1 !important;
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
+        .fc-button-group {
+            gap: 5px !important; 
         }
 
-        /* --- 內容區域樣式 --- */
         .fc-daygrid-day-top {
             display: flex !important;
             justify-content: center !important;
