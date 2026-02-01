@@ -449,9 +449,9 @@
                 headerToolbar: {
                     left: 'today',
                     center: 'prev title next',
-                    right: 'listMonth'
+                    right: 'dayGridMonth,listMonth'
                 },
-                buttonText: { today: '今天',listMonth: '列表' },
+                buttonText: { today: '今天', dayGridMonth: '月曆', listMonth: '列表' },
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { 
