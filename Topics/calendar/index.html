@@ -98,57 +98,39 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* 🔥 修正：工具列重新配置 - 同時相容手機與電腦 🔥 */
+        /* 🔥 核心修正：工具列水平併排且標題置中 🔥 */
         .fc .fc-toolbar {
             display: flex !important;
-            flex-direction: column !important; /* 手機版預設上下分層 */
-            gap: 12px;
-            padding: 0 5px;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 0 2px !important;
             margin-bottom: 20px !important;
+            width: 100% !important;
         }
 
-        @media (min-width: 480px) {
-            .fc .fc-toolbar {
-                flex-direction: row !important; /* 電腦版恢復橫排 */
-                justify-content: space-between !important;
-            }
-        }
-
-        /* 左側隱藏避免手機版多出空白 */
+        /* 1. 左側佔位 */
         .fc .fc-toolbar-chunk:nth-child(1) {
-            display: none !important;
-        }
-        @media (min-width: 480px) {
-            .fc .fc-toolbar-chunk:nth-child(1) {
-                display: block !important;
-                flex: 0 0 10% !important;
-            }
+            flex: 1 1 10% !important; 
         }
 
-        /* 中間：月份導覽區塊 */
+        /* 2. 中間：標題與導覽按鈕 (強制絕對居中) */
         .fc .fc-toolbar-chunk:nth-child(2) {
+            flex: 2 1 auto !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 15px !important;
-            flex: 1;
+            gap: 10px !important;
         }
 
-        /* 右側：顯示模式區塊 */
+        /* 3. 右側：視圖切換按鈕 (靠右呈現) */
         .fc .fc-toolbar-chunk:nth-child(3) {
+            flex: 1 1 10% !important;
             display: flex !important;
-            justify-content: center !important;
-            flex: 1;
-        }
-        @media (min-width: 480px) {
-            .fc .fc-toolbar-chunk:nth-child(3) {
-                justify-content: flex-end !important;
-                flex: 0 0 auto !important;
-            }
+            justify-content: flex-end !important;
         }
 
         .fc-toolbar-title {
-            font-size: 1.15em !important;
+            font-size: 1.1em !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
@@ -156,19 +138,25 @@
             order: 2; 
         }
 
+        /* 強制箭頭按鈕順序 */
         .fc-prev-button { order: 1 !important; margin: 0 !important; }
         .fc-next-button { order: 3 !important; margin: 0 !important; }
 
-        /* 按鈕樣式微調 */
+        /* 按鈕樣式優化，縮小內距確保水平能擠下 */
         .fc-button {
-            padding: 6px 12px !important;
-            font-size: 0.85em !important;
+            padding: 6px 4px !important; 
+            font-size: 0.8em !important;
             border-radius: 8px !important;
-            border: 1px solid #dcdde1 !important;
+            border: none !important;
             font-weight: bold !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            flex-shrink: 0 !important;
+        }
+
+        .fc-button-primary {
             background-color: #ffffff !important;
             color: #2c3e50 !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+            border: 1px solid #dcdde1 !important;
         }
 
         .fc-button-active {
@@ -178,7 +166,7 @@
         }
 
         .fc-button-group {
-            gap: 4px !important;
+            gap: 2px !important;
         }
 
         .fc-daygrid-day-top {
@@ -256,7 +244,6 @@
             background: #fff;
             width: 92%;
             max-width: 400px;
-            margin: 0; 
             padding: 20px;
             border-radius: 16px;
             position: relative;
@@ -299,7 +286,6 @@
             font-size: 16px;
             background-color: #fdfdfd;
             -webkit-appearance: none; 
-            appearance: none;
         }
 
         .select-wrapper { position: relative; width: 100%; }
@@ -444,7 +430,6 @@
     </div>
 
     <script>
-        // JS 邏輯完全保留您的原始版本
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
         const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
@@ -468,7 +453,7 @@
                     center: 'prev title next',
                     right: 'dayGridMonth,listMonth'
                 },
-                buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示' },
+                buttonText: { dayGridMonth: '月曆', listMonth: '列表' },
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { 
