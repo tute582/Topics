@@ -556,7 +556,10 @@
             const parts = dateStr.split('-');
             document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
             listEl.innerHTML = '';
-            const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
+            const dayEvents = calendar.getEvents().filter(e => {
+                const d = e.start.getFullYear() + '-' + String(e.start.getMonth() + 1).padStart(2, '0') + '-' + String(e.start.getDate()).padStart(2, '0');
+                return d === dateStr;
+            });
             if (dayEvents.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
@@ -579,9 +582,10 @@
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
                 currentEventId = data.id;
-                document.getElementById("date").value = data.start.toISOString().split('T')[0];
-                const hh = String(data.start.getHours()).padStart(2, '0');
-                const mm = String(data.start.getMinutes()).padStart(2, '0');
+                const d = data.start;
+                document.getElementById("date").value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mm = String(d.getMinutes()).padStart(2, '0');
                 document.getElementById("time").value = `${hh}:${mm}`;
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note || "";
@@ -592,7 +596,8 @@
                 if (typeof data === 'string') {
                     document.getElementById("date").value = data;
                 } else {
-                    document.getElementById("date").value = new Date().toISOString().split('T')[0];
+                    const now = new Date();
+                    document.getElementById("date").value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                 }
             }
         }
