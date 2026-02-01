@@ -86,7 +86,7 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式客製化 --- */
+        /* --- FullCalendar 基礎樣式客製化 --- */
         .fc-theme-standard .fc-scrollgrid {
             border: none !important;
         }
@@ -98,58 +98,65 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
+        /* --- 🚀 強制工具列不換行優化 (整合部分) --- */
         .fc .fc-toolbar {
             display: flex !important;
+            flex-wrap: nowrap !important; /* 強制不換行 */
             justify-content: space-between !important;
             align-items: center !important;
             padding: 0 2px !important;
             margin-bottom: 20px !important;
             width: 100% !important;
+            gap: 2px !important; /* 縮小區塊間距 */
         }
 
+        /* 調整左側 (今天按鈕) */
         .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 1 1 10% !important; 
+            flex: 0 0 auto !important; 
         }
 
+        /* 調整中間 (切換月份與標題) */
         .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 2 1 auto !important;
+            flex: 1 1 auto !important; /* 具備伸縮性 */
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 10px !important;
+            gap: 4px !important; /* 縮小按鈕與文字間距 */
+            min-width: 0 !important;   /* 防止內容撐開 */
         }
 
+        /* 調整右側 (月曆/列表切換) */
         .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 1 1 10% !important;
+            flex: 0 0 auto !important;
             display: flex !important;
             justify-content: flex-end !important;
         }
 
+        /* 標題文字優化 */
         .fc-toolbar-title {
-            font-size: 1.1em !important;
+            font-size: 15px !important; /* 調小年份月份字體 */
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
             margin: 0 !important;
+            padding: 0 5px !important;
             order: 2; 
         }
 
-        .fc-prev-button { order: 1 !important; margin: 0 !important; }
-        .fc-next-button { order: 3 !important; margin: 0 !important; }
-
+        /* 按鈕樣式統一優化 */
         .fc-button {
-            padding: 8px 12px !important; 
-            font-size: 14px !important;   
+            padding: 6px 8px !important; /* 減少左右內距 */
+            font-size: 13px !important;  /* 稍微調小字體 */
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             flex-shrink: 0 !important;
+            white-space: nowrap !important; /* 字體不折行 */
         }
 
-        .fc-prev-button, .fc-next-button {
-            padding: 6px 8px !important; 
-        }
+        .fc-prev-button { order: 1 !important; margin: 0 !important; }
+        .fc-next-button { order: 3 !important; margin: 0 !important; }
 
         .fc-button-primary {
             background-color: #ffffff !important;
@@ -164,9 +171,10 @@
         }
 
         .fc-button-group {
-            gap: 5px !important; 
+            gap: 2px !important; /* 針對按鈕群組的間距微調 */
         }
 
+        /* --- 內容區域樣式 --- */
         .fc-daygrid-day-top {
             display: flex !important;
             justify-content: center !important;
@@ -556,10 +564,7 @@
             const parts = dateStr.split('-');
             document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
             listEl.innerHTML = '';
-            const dayEvents = calendar.getEvents().filter(e => {
-                const d = e.start.getFullYear() + '-' + String(e.start.getMonth() + 1).padStart(2, '0') + '-' + String(e.start.getDate()).padStart(2, '0');
-                return d === dateStr;
-            });
+            const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
             if (dayEvents.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
@@ -582,10 +587,9 @@
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
                 currentEventId = data.id;
-                const d = data.start;
-                document.getElementById("date").value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                const hh = String(d.getHours()).padStart(2, '0');
-                const mm = String(d.getMinutes()).padStart(2, '0');
+                document.getElementById("date").value = data.start.toISOString().split('T')[0];
+                const hh = String(data.start.getHours()).padStart(2, '0');
+                const mm = String(data.start.getMinutes()).padStart(2, '0');
                 document.getElementById("time").value = `${hh}:${mm}`;
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note || "";
@@ -596,8 +600,7 @@
                 if (typeof data === 'string') {
                     document.getElementById("date").value = data;
                 } else {
-                    const now = new Date();
-                    document.getElementById("date").value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                    document.getElementById("date").value = new Date().toISOString().split('T')[0];
                 }
             }
         }
