@@ -98,7 +98,7 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* 🔥 核心修正：工具列水平併排且標題置中 🔥 */
+        /* 核心修正：工具列水平併排且標題置中 */
         .fc .fc-toolbar {
             display: flex !important;
             justify-content: space-between !important;
@@ -113,7 +113,7 @@
             flex: 1 1 10% !important; 
         }
 
-        /* 2. 中間：標題與導覽按鈕 (強制絕對居中) */
+        /* 2. 中間：標題與導覽按鈕 */
         .fc .fc-toolbar-chunk:nth-child(2) {
             flex: 2 1 auto !important;
             display: flex !important;
@@ -122,7 +122,7 @@
             gap: 10px !important;
         }
 
-        /* 3. 右側：視圖切換按鈕 (靠右呈現) */
+        /* 3. 右側：視圖切換按鈕 (這裡包含月曆/列表) */
         .fc .fc-toolbar-chunk:nth-child(3) {
             flex: 1 1 10% !important;
             display: flex !important;
@@ -142,15 +142,20 @@
         .fc-prev-button { order: 1 !important; margin: 0 !important; }
         .fc-next-button { order: 3 !important; margin: 0 !important; }
 
-        /* 按鈕樣式優化，縮小內距確保水平能擠下 */
+        /* 🔥 調大「月曆」與「列表」按鈕的樣式 🔥 */
         .fc-button {
-            padding: 6px 4px !important; 
-            font-size: 0.8em !important;
+            padding: 8px 12px !important; /* 增加左右內距 */
+            font-size: 14px !important;   /* 增加字體大小 */
             border-radius: 8px !important;
             border: none !important;
             font-weight: bold !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             flex-shrink: 0 !important;
+        }
+
+        /* 針對左右箭頭按鈕維持較小的圓形或方形感，不隨文字按鈕過大 */
+        .fc-prev-button, .fc-next-button {
+            padding: 6px 8px !important; 
         }
 
         .fc-button-primary {
@@ -166,7 +171,7 @@
         }
 
         .fc-button-group {
-            gap: 2px !important;
+            gap: 5px !important; /* 增加按鈕之間的間距 */
         }
 
         .fc-daygrid-day-top {
