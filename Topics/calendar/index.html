@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
     <style>
+        /* --- 全域設定 --- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -22,7 +24,7 @@
             padding-bottom: 80px; 
         }
 
-        /* --- 導覽列 --- */
+        /* --- 導覽列 (與原始 75px 高度一致) --- */
         .nav-1 {
             display: flex;
             align-items: center;
@@ -98,69 +100,44 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
+        /* --- 工具列修正 (解決按鈕超出範圍) --- */
         .fc .fc-toolbar {
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
-            padding: 0 5px !important;
+            padding: 0 2px !important;
             margin-bottom: 15px !important;
-            flex-wrap: wrap; /* 增加彈性，防止手機版擠壓 */
+            flex-wrap: nowrap !important; /* 禁止換行 */
         }
 
         .fc .fc-toolbar-chunk {
             display: flex !important;
             align-items: center !important;
-            gap: 5px !important;
-        }
-
-        .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 1 1 10% !important; 
-        }
-
-        .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 2 1 auto !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 10px !important;
-        }
-
-        .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 1 1 10% !important;
-            display: flex !important;
-            justify-content: flex-end !important;
+            gap: 2px !important; /* 縮小按鈕間距 */
         }
 
         .fc-toolbar-title {
-            font-size: 1.1em !important;
+            font-size: 1.0rem !important; /* 微調標題字體大小 */
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
-            margin: 0 10px !important;
-            order: 2; 
+            margin: 0 4px !important;
         }
-
-        .fc-prev-button { order: 1 !important; margin: 0 !important; }
-        .fc-next-button { order: 3 !important; margin: 0 !important; }
 
         .fc-button {
-            padding: 8px 12px !important; 
-            font-size: 14px !important;   
+            padding: 6px 10px !important; 
+            font-size: 13px !important;   
             border-radius: 8px !important;
-            border: none !important;
+            border: 1px solid #dcdde1 !important;
             font-weight: bold !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-            flex-shrink: 0 !important;
-        }
-
-        .fc-prev-button, .fc-next-button {
-            padding: 6px 8px !important; 
-        }
-
-        .fc-button-primary {
             background-color: #ffffff !important;
             color: #2c3e50 !important;
-            border: 1px solid #dcdde1 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+            flex-shrink: 0 !important; /* 防止按鈕被壓縮 */
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .fc-button-active {
@@ -169,10 +146,7 @@
             border-color: #2c3e50 !important;
         }
 
-        .fc-button-group {
-            gap: 5px !important; 
-        }
-
+        /* --- 日曆格子樣式 --- */
         .fc-daygrid-day-top {
             display: flex !important;
             justify-content: center !important;
@@ -206,32 +180,7 @@
             overflow: hidden !important;
         }
 
-        .fc-event-time {
-            font-weight: bold !important;
-            margin-right: 4px !important;
-            flex-shrink: 0 !important;
-            font-size: 12px !important;
-        }
-
-        .fc-event-title {
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            flex-grow: 1 !important;
-            min-width: 0 !important;
-        }
-
-        .fc-daygrid-more-link {
-            font-size: 13px !important;
-            font-weight: bold !important;
-            color: #222 !important;
-            padding-left: 5px !important;
-            text-decoration: none !important;
-        }
-
-        /* --- Modal 樣式 --- */
+        /* --- Modal 樣式 (新增與編輯) --- */
         .modal {
             display: none;
             position: fixed;
@@ -292,18 +241,6 @@
             -webkit-appearance: none; 
         }
 
-        .select-wrapper { position: relative; width: 100%; }
-        .select-wrapper::after {
-            content: '\25BC';
-            font-size: 12px;
-            color: #888;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-
         .btn {
             padding: 14px;
             border: none;
@@ -323,6 +260,7 @@
         #saveBtn { background: #4a90e2; }
         #deleteBtn { background: #ff7675; }
 
+        /* --- 懸浮按鈕 --- */
         .fab {
             position: fixed;
             bottom: 30px;
@@ -340,6 +278,7 @@
             z-index: 999;
         }
 
+        /* --- 日檢視樣式 --- */
         .event-item {
             padding: 12px 0;
             border-bottom: 1px solid #eee;
@@ -386,32 +325,34 @@
             <form id="dataForm">
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
+                
                 <label><i class="fa-regular fa-clock"></i> 時間</label>
                 <input type="time" id="time" required>
+                
                 <label><i class="fa-solid fa-pen"></i> 行程內容</label>
                 <input type="text" id="event" placeholder="例如：看醫生(限25字)" maxlength="25">
+                
                 <label><i class="fa-regular fa-comment-dots"></i> 備註</label>
                 <input type="text" id="note" placeholder="備註事項(限25字)" maxlength="25">
+                
                 <label><i class="fa-solid fa-rotate"></i> 重複</label>
-                <div class="select-wrapper">
-                    <select id="repeat">
-                        <option value="none">不重複</option>
-                        <option value="daily">每天</option>
-                        <option value="weekly">每週</option>
-                        <option value="monthly">每月</option>
-                        <option value="yearly">每年</option>
-                    </select>
-                </div>
+                <select id="repeat">
+                    <option value="none">不重複</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每週</option>
+                    <option value="monthly">每月</option>
+                    <option value="yearly">每年</option>
+                </select>
+                
                 <label><i class="fa-regular fa-bell"></i> 提醒類型</label>
-                <div class="select-wrapper">
-                    <select id="reminder">
-                        <option value="none">無</option>
-                        <option value="0min">當下提醒</option>
-                        <option value="30min">30 分鐘前</option>
-                        <option value="1h">1 小時前</option>
-                        <option value="day">1 天前</option>
-                    </select>
-                </div>
+                <select id="reminder">
+                    <option value="none">無</option>
+                    <option value="0min">當下提醒</option>
+                    <option value="30min">30 分鐘前</option>
+                    <option value="1h">1 小時前</option>
+                    <option value="day">1 天前</option>
+                </select>
+
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="button" class="btn" id="saveBtn" style="flex: 1;"><i class="fas fa-check"></i> 儲存</button>
                     <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;"><i class="fas fa-trash-alt"></i> 刪除</button>
@@ -434,6 +375,7 @@
     </div>
 
     <script>
+        // --- 設定參數 ---
         const LIFF_ID = "2008484068-Kp57RrAr"; 
         const SCHEDULE_API_URL = "https://supabase-api-six.vercel.app/schedules";
         const IDENTIFY_API_BASE = "https://supabase-api-six.vercel.app/identify";
@@ -446,6 +388,7 @@
         let currentEventId = null;
         let selectedDateStr = "";
 
+        // --- 初始化 FullCalendar ---
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -457,17 +400,33 @@
                     center: 'prev title next',
                     right: 'dayGridMonth,listMonth'
                 },
-                buttonText: { today: '今天', dayGridMonth: '月曆', listMonth: '列表' },
+                buttonText: {
+                    today: '今天',
+                    dayGridMonth: '月曆',
+                    listMonth: '列表'
+                },
                 dayHeaderFormat: { weekday: 'narrow' },
-                dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
+                dayCellContent: function(arg) {
+                    return arg.dayNumberText.replace('日', '');
+                },
                 titleFormat: function(info) { 
                     return info.date.marker.getFullYear() + ' 年 ' + (info.date.marker.getMonth() + 1) + ' 月'; 
                 },
                 dayMaxEvents: 2,
-                eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false,
+                    hour12: false
+                },
                 moreLinkText: function(n) { return "+ " + n + " 更多"; },
-                moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
-                dateClick: function(info) { openDayView(info.dateStr); },
+                moreLinkClick: function(info) {
+                    openDayView(info.date.toISOString().split('T')[0]);
+                    return 'none';
+                },
+                dateClick: function(info) {
+                    openDayView(info.dateStr);
+                },
                 eventClick: function(info) {
                     info.jsEvent.stopPropagation();
                     openModal(true, info.event);
@@ -477,19 +436,26 @@
             initLiffAndSetProfile();
         });
 
+        // --- LIFF & 個人資料邏輯 ---
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
+
                 document.getElementById("volunteerName").innerText = userName;
                 if (profile.pictureUrl) {
                     const avatarEl = document.getElementById("volunteerAvatar");
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
                 }
+
+                // 身分識別 API
                 const res = await fetch(`${IDENTIFY_API_BASE}/${userId}`);
                 const result = await res.json();
                 if (!result.success) {
@@ -499,9 +465,12 @@
                     identify = result.role;
                     loadRecords();
                 }
-            } catch (err) { console.error("LIFF 初始化錯誤:", err); }
+            } catch (err) {
+                console.error("LIFF 初始化錯誤:", err);
+            }
         }
 
+        // --- 資料 CRUD 邏輯 ---
         async function loadRecords() {
             try {
                 const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}`);
@@ -520,49 +489,80 @@
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) { console.error("載入行程失敗:", e); }
+            } catch (e) {
+                console.error("載入行程失敗:", e);
+            }
         }
 
+        // 儲存/更新行程
         document.getElementById("saveBtn").onclick = async function() {
             const dateVal = document.getElementById("date").value;
             const timeVal = document.getElementById("time").value;
-            if (!dateVal || !timeVal) { alert("請填寫日期與時間"); return; }
+            const eventVal = document.getElementById("event").value;
+            
+            if (!dateVal || !timeVal) {
+                alert("請填寫日期與時間");
+                return;
+            }
+
             const payload = {
                 schedule_time: `${dateVal}T${timeVal}`,
-                schedule_note: document.getElementById("event").value,
+                schedule_note: eventVal,
                 remark: document.getElementById("note").value,
                 repeat: document.getElementById("repeat").value,
                 reminder_method: document.getElementById("reminder").value,
                 elder_user_id: userId,
                 elder_name: userName
             };
+
             let url = isEditing ? `${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}` : SCHEDULE_API_URL;
             let method = isEditing ? "PATCH" : "POST";
+
             try {
                 const res = await fetch(url, {
                     method: method,
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
-                if (res.ok) { closeModal('dataModal'); loadRecords(); } else { alert("儲存失敗"); }
-            } catch (err) { alert("連線失敗"); }
+                if (res.ok) {
+                    closeModal('dataModal');
+                    loadRecords();
+                } else {
+                    alert("儲存失敗");
+                }
+            } catch (err) {
+                alert("連線失敗，請檢查網路");
+            }
         };
 
+        // 刪除行程
         document.getElementById("deleteBtn").onclick = async function() {
             if (!confirm("確定要刪除這條行程嗎？")) return;
             try {
-                const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}`, { method: "DELETE" });
-                if (res.ok) { closeModal('dataModal'); loadRecords(); }
-            } catch (err) { alert("刪除失敗"); }
+                const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}`, {
+                    method: "DELETE"
+                });
+                if (res.ok) {
+                    closeModal('dataModal');
+                    loadRecords();
+                } else {
+                    alert("刪除失敗");
+                }
+            } catch (err) {
+                alert("刪除失敗，連線異常");
+            }
         };
 
+        // --- 視窗操作邏輯 ---
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
             const parts = dateStr.split('-');
             document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
+            
             listEl.innerHTML = '';
             const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
+            
             if (dayEvents.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
@@ -571,7 +571,10 @@
                     const item = document.createElement('div');
                     item.className = 'event-item';
                     item.innerHTML = `<span class="event-time">${timeStr}</span><span class="event-title-list">${e.title}</span>`;
-                    item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
+                    item.onclick = () => {
+                        closeModal('dayViewModal');
+                        openModal(true, e);
+                    };
                     listEl.appendChild(item);
                 });
             }
@@ -583,6 +586,7 @@
             document.getElementById("dataModal").style.display = "flex";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
+
             if (editMode) {
                 currentEventId = data.id;
                 document.getElementById("date").value = data.start.toISOString().split('T')[0];
@@ -600,12 +604,22 @@
                 } else {
                     document.getElementById("date").value = new Date().toISOString().split('T')[0];
                 }
+                document.getElementById("repeat").value = "none";
+                document.getElementById("reminder").value = "none";
             }
         }
 
-        function closeModal(id) { document.getElementById(id).style.display = "none"; }
-        function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        function openAddFromDayView() {
+            closeModal('dayViewModal');
+            openModal(false, selectedDateStr);
+        }
+
         document.getElementById("fabAdd").onclick = () => openModal(false);
+
     </script>
 </body>
 </html>
