@@ -98,49 +98,47 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        /* --- 🚀 強制工具列不換行優化 (整合部分) --- */
+        /* --- 強制工具列不換行優化 (整合部分) --- */
         .fc .fc-toolbar {
             display: flex !important;
-            flex-wrap: nowrap !important; /* 強制不換行 */
+            flex-wrap: nowrap !important;
             justify-content: space-between !important;
             align-items: center !important;
-            padding: 0 2px !important;
+            padding: 0 5px !important;
             margin-bottom: 20px !important;
             width: 100% !important;
-            gap: 2px !important; /* 縮小區塊間距 */
         }
 
         /* 調整左側 (今天按鈕) */
         .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 0 0 auto !important; 
+            flex: 1 1 25% !important;
+            display: flex !important;
+            justify-content: flex-start !important;
         }
 
         /* 調整中間 (切換月份與標題) */
         .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 1 1 auto !important; /* 具備伸縮性 */
+            flex: 1 1 auto !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 4px !important; /* 縮小按鈕與文字間距 */
-            min-width: 0 !important;   /* 防止內容撐開 */
+            gap: 8px !important;
         }
 
         /* 調整右側 (月曆/列表切換) */
         .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 0 0 auto !important;
+            flex: 1 1 25% !important;
             display: flex !important;
             justify-content: flex-end !important;
         }
 
         /* 標題文字優化 */
         .fc-toolbar-title {
-            font-size: 15px !important; /* 調小年份月份字體 */
+            font-size: 18px !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
             margin: 0 !important;
-            padding: 0 5px !important;
-            order: 2; 
         }
 
         /* 按鈕樣式統一優化 */
