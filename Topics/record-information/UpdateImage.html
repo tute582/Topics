@@ -9,7 +9,7 @@
       body {
         font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
         padding: 0px;
-        text-align: center; /*讓內容置中*/
+        text-align: left; /*讓內容靠左*/
         overscroll-behavior: none;
         overflow: hidden; 
         margin: 0;
@@ -18,7 +18,7 @@
         /* [修改] 讓初始按鈕垂直置中 */
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         min-height: 50px; /* 配合 iframe 高度 */
       }
@@ -28,7 +28,7 @@
         margin: 0;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
       }
 
       /* [修改] 自訂上傳按鈕樣式 (綠色、圓角、不貼邊) */
