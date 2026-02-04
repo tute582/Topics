@@ -115,30 +115,30 @@
 
         /* 關鍵修正：讓按鈕之間產生間距，不再黏在一起 */
         .fc-button {
-            margin: 0 4px !important; /* 增加左右間距 */
-            border-radius: 8px !important; /* 確保圓角不會因為群組化被切掉 */
+            margin: 0 !important;
+            border-radius: 10px !important;
+            /* 增加字體大小 */
+            font-size: 17px !important;
+            padding: 8px 16px !important;
+            font-weight: 600 !important;
         }
 
-        /* 1. 移除按鈕之間的間距 */
+        /* 確保切換按鈕（月曆/列表）組合起來的樣式符合截圖 */
         .fc .fc-button-group {
-            display: inline-flex !important;
-            vertical-align: middle !important;
-            gap: 0 !important; /* 這是重點，必須為 0 */
+            gap: 0 !important;
         }
 
-        /* 2. 移除中間相連處的圓角 */
-        .fc .fc-button-group > .fc-button:not(:first-child) {
-            margin-left: -1px !important; /* 讓邊框重疊，避免中間線變粗 */
-            border-top-left-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
+        .fc .fc-button-group > .fc-button:first-child {
+            border-top-left-radius: 10px !important;
+            border-bottom-left-radius: 10px !important;
         }
 
-        .fc .fc-button-group > .fc-button:not(:last-child) {
-            border-top-right-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
+        .fc .fc-button-group > .fc-button:last-child {
+            border-top-right-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
         }
 
-        /* 3. 設定最左側與最右側的圓角 */
+        /* 設定最左側與最右側的圓角 */
         .fc .fc-button-group > .fc-button:first-child {
             border-top-left-radius: 10px !important;
             border-bottom-left-radius: 10px !important;
@@ -152,13 +152,12 @@
         /* 針對小螢幕優化 */
         @media (max-width: 480px) {
             .fc .fc-toolbar-title {
-                font-size: 1.0em !important;
-                margin: 0 2px !important;
+                font-size: 1.1em !important;
+                margin: 0 4px !important;
             }
             .fc-button {
-                padding: 6px 8px !important;
-                font-size: 12px !important;
-                margin: 0 2px !important; /* 手機端間距微調小一點點以免溢出 */
+                padding: 6px 12px !important;
+                font-size: 16px !important;
             }
             .fc .fc-toolbar-chunk:nth-child(2) {
                 gap: 2px !important;
