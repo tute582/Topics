@@ -119,14 +119,34 @@
             border-radius: 8px !important; /* 確保圓角不會因為群組化被切掉 */
         }
 
-        /* 取消按鈕群組的黏合效果 */
+        /* 1. 移除按鈕之間的間距 */
         .fc .fc-button-group {
-            gap: 5px; /* 設定群組內按鈕的間距 */
+            display: inline-flex !important;
+            vertical-align: middle !important;
+            gap: 0 !important; /* 這是重點，必須為 0 */
         }
-        
-        .fc .fc-button-group > .fc-button {
-            flex: none !important;
-            border-radius: 8px !important; /* 強制所有按鈕維持圓角 */
+
+        /* 2. 移除中間相連處的圓角 */
+        .fc .fc-button-group > .fc-button:not(:first-child) {
+            margin-left: -1px !important; /* 讓邊框重疊，避免中間線變粗 */
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+
+        .fc .fc-button-group > .fc-button:not(:last-child) {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+
+        /* 3. 設定最左側與最右側的圓角 */
+        .fc .fc-button-group > .fc-button:first-child {
+            border-top-left-radius: 10px !important;
+            border-bottom-left-radius: 10px !important;
+        }
+
+        .fc .fc-button-group > .fc-button:last-child {
+            border-top-right-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
         }
 
         /* 針對小螢幕優化 */
@@ -167,6 +187,7 @@
             border: 1px solid #dcdde1 !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             font-weight: bold !important;
+            margin: 0 !important; /* 移除外邊距，這是黏合的關鍵 */
         }
 
         .fc-button-active {
