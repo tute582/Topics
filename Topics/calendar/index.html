@@ -102,31 +102,38 @@
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
-            padding: 0 2px !important;
+            padding: 0 !important;
             margin-bottom: 20px !important;
             width: 100% !important;
+            flex-wrap: nowrap !important; /* 強制不換行 */
         }
 
-        .fc .fc-toolbar-chunk:nth-child(1) {
-            flex: 1 1 10% !important; 
-        }
-
-        .fc .fc-toolbar-chunk:nth-child(2) {
-            flex: 2 1 auto !important;
+        .fc .fc-toolbar-chunk {
             display: flex !important;
             align-items: center !important;
-            justify-content: center !important;
-            gap: 10px !important;
         }
 
-        .fc .fc-toolbar-chunk:nth-child(3) {
-            flex: 1 1 10% !important;
-            display: flex !important;
-            justify-content: flex-end !important;
+        /* 針對小螢幕優化按鈕寬度 */
+        @media (max-width: 480px) {
+            .fc .fc-toolbar-title {
+                font-size: 1.0em !important;
+                margin: 0 5px !important;
+            }
+            .fc-button {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+            }
+            .fc .fc-toolbar-chunk:nth-child(2) {
+                gap: 4px !important;
+            }
         }
+
+        .fc .fc-toolbar-chunk:nth-child(1) { flex: 0 0 auto !important; }
+        .fc .fc-toolbar-chunk:nth-child(2) { flex: 1 1 auto !important; justify-content: center !important; gap: 8px !important; }
+        .fc .fc-toolbar-chunk:nth-child(3) { flex: 0 0 auto !important; justify-content: flex-end !important; }
 
         .fc-toolbar-title {
-            font-size: 1.1em !important;
+            font-size: 1.15em !important;
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap !important;
@@ -147,10 +154,6 @@
             flex-shrink: 0 !important;
         }
 
-        .fc-prev-button, .fc-next-button {
-            padding: 6px 8px !important; 
-        }
-
         .fc-button-primary {
             background-color: #ffffff !important;
             color: #2c3e50 !important;
@@ -161,10 +164,6 @@
             background-color: #2c3e50 !important;
             color: #ffffff !important;
             border-color: #2c3e50 !important;
-        }
-
-        .fc-button-group {
-            gap: 5px !important; 
         }
 
         .fc-daygrid-day-top {
@@ -451,7 +450,12 @@
                     center: 'prev title next',
                     right: 'dayGridMonth,listMonth'
                 },
-                buttonText: { today: '今天', dayGridMonth: '月曆', listMonth: '列表' },
+                // 這裡微調按鈕文字，手機版建議用短一點的字
+                buttonText: { 
+                    today: '今天', 
+                    dayGridMonth: window.innerWidth < 400 ? '月' : '月曆', 
+                    listMonth: window.innerWidth < 400 ? '列' : '列表' 
+                },
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
                 titleFormat: function(info) { 
