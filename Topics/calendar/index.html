@@ -19,7 +19,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f7f9fb;
             color: #222;
-            padding-bottom: 80px;
+            padding-bottom: 80px; 
         }
 
         /* --- 導覽列 --- */
@@ -57,7 +57,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #0984e3;
-            display: none;
+            display: none; 
             cursor: pointer;
         }
 
@@ -71,6 +71,7 @@
             cursor: pointer;
         }
 
+        /* --- 主容器 --- */
         .container {
             max-width: 1200px;
             width: 100%;
@@ -85,8 +86,11 @@
             padding: 0 10px;
         }
 
-        /* --- FullCalendar 樣式修正 --- */
-        .fc-theme-standard .fc-scrollgrid { border: none !important; }
+        /* --- FullCalendar 樣式客製化 --- */
+        .fc-theme-standard .fc-scrollgrid {
+            border: none !important;
+        }
+
         .fc-theme-standard td, .fc-theme-standard th {
             border-left: none !important;
             border-right: none !important;
@@ -94,105 +98,229 @@
             border-bottom: 1px solid #f0f0f0 !important;
         }
 
-        .fc-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 5px;
+        .fc .fc-toolbar {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 0 !important;
             margin-bottom: 20px !important;
+            width: 100% !important;
+            flex-wrap: nowrap !important; 
         }
 
-        .fc-toolbar-title { font-size: 1.25em !important; font-weight: bold; color: #2c3e50; }
+        .fc .fc-toolbar-chunk {
+            display: flex !important;
+            align-items: center !important;
+        }
 
+        /* 關鍵修正：讓按鈕之間產生間距，不再黏在一起 */
         .fc-button {
-            padding: 8px 12px !important;
-            font-size: 0.95em !important;
-            border-radius: 8px !important;
-            border: none !important;
-            font-weight: bold !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            margin: 0 4px !important; /* 增加左右間距 */
+            border-radius: 8px !important; /* 確保圓角不會因為群組化被切掉 */
         }
 
-        .fc-button-primary { background-color: #ffffff !important; color: #2c3e50 !important; border: 1px solid #dcdde1 !important; }
-        .fc-button-active { background-color: #2c3e50 !important; color: #ffffff !important; border-color: #2c3e50 !important; }
+        /* 1. 移除按鈕之間的間距 */
+        .fc .fc-button-group {
+            display: inline-flex !important;
+            vertical-align: middle !important;
+            gap: 0 !important; /* 這是重點，必須為 0 */
+        }
 
-        .fc-daygrid-day-top { display: flex !important; justify-content: center !important; padding-top: 8px !important; }
-        .fc-daygrid-day-number { font-size: 15px; color: #555; text-decoration: none !important; }
-        .fc-daygrid-day-frame { min-height: 110px !important; }
-        .fc-day-today { background-color: #fffde7 !important; }
+        /* 2. 移除中間相連處的圓角 */
+        .fc .fc-button-group > .fc-button:not(:first-child) {
+            margin-left: -1px !important; /* 讓邊框重疊，避免中間線變粗 */
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
 
-        /* 修正綠色底色高度與文字 */
+        .fc .fc-button-group > .fc-button:not(:last-child) {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+
+        /* 3. 設定最左側與最右側的圓角 */
+        .fc .fc-button-group > .fc-button:first-child {
+            border-top-left-radius: 10px !important;
+            border-bottom-left-radius: 10px !important;
+        }
+
+        .fc .fc-button-group > .fc-button:last-child {
+            border-top-right-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
+        }
+
+        /* 針對小螢幕優化 */
+        @media (max-width: 480px) {
+            .fc .fc-toolbar-title {
+                font-size: 1.0em !important;
+                margin: 0 2px !important;
+            }
+            .fc-button {
+                padding: 6px 8px !important;
+                font-size: 14px !important;
+                margin: 0 2px !important; /* 手機端間距微調小一點點以免溢出 */
+            }
+            .fc .fc-toolbar-chunk:nth-child(2) {
+                gap: 2px !important;
+            }
+        }
+
+        .fc .fc-toolbar-chunk:nth-child(1) { flex: 0 0 auto !important; }
+        .fc .fc-toolbar-chunk:nth-child(2) { flex: 1 1 auto !important; justify-content: center !important; gap: 4px !important; }
+        .fc .fc-toolbar-chunk:nth-child(3) { flex: 0 0 auto !important; justify-content: flex-end !important; }
+
+        .fc-toolbar-title {
+            font-size: 1.15em !important;
+            font-weight: bold;
+            color: #2c3e50;
+            white-space: nowrap !important;
+            margin: 0 !important;
+            order: 2; 
+        }
+
+        .fc-prev-button { order: 1 !important; }
+        .fc-next-button { order: 3 !important; }
+
+        .fc-button-primary {
+            background-color: #ffffff !important;
+            color: #2c3e50 !important;
+            border: 1px solid #dcdde1 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            font-weight: bold !important;
+            margin: 0 !important; /* 移除外邊距，這是黏合的關鍵 */
+        }
+
+        .fc-button-active {
+            background-color: #2c3e50 !important;
+            color: #ffffff !important;
+            border-color: #2c3e50 !important;
+        }
+
+        /* 修正點擊狀態 */
+        .fc-button:focus, .fc-button:active {
+            box-shadow: none !important;
+        }
+
+        /* --- 以下維持原樣 --- */
+        .fc-daygrid-day-top {
+            display: flex !important;
+            justify-content: center !important;
+            padding-top: 8px !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 15px;
+            color: #555;
+            text-decoration: none !important;
+        }
+
+        .fc-daygrid-day-frame {
+            min-height: 110px !important;
+        }
+
+        .fc-day-today {
+            background-color: #fffde7 !important;
+        }
+
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 6px !important; /* 縮減內距 */
-            margin: 1px 4px !important;
-            font-size: 0.85em; /* 稍微縮小字體防止溢出 */
-            display: block;
-            line-height: 1.4 !important; /* 控制行高 */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 4px 6px !important; 
+            margin: 2px 1px !important;
+            display: flex !important;
+            align-items: center !important;
+            min-height: 28px !important;
+            overflow: hidden !important;
         }
 
-        /* --- Modal 修正 --- */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0, 0, 0, 0.4); 
-            backdrop-filter: blur(4px); 
-            z-index: 2000; 
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
+        .fc-event-time {
+            font-weight: bold !important;
+            margin-right: 4px !important;
+            flex-shrink: 0 !important;
+            font-size: 12px !important;
         }
 
-        .modal-content { 
-            background: #fff; 
+        .fc-event-title {
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            flex-grow: 1 !important;
+            min-width: 0 !important;
+        }
+
+        .fc-daygrid-more-link {
+            font-size: 13px !important;
+            font-weight: bold !important;
+            color: #222 !important;
+            padding-left: 5px !important;
+            text-decoration: none !important;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center; 
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #fff;
             width: 92%;
-            max-width: 400px; 
-            margin: 40px auto; 
-            padding: 20px 20px; 
-            border-radius: 16px; 
-            position: relative; 
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 16px;
+            position: relative;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            text-align: left; /* 內容置左，容器置中 */
         }
 
-        #modalTitle, #dayViewTitle {
-            text-align: center; /* 標題置中 */
-            margin-bottom: 15px;
+        .close-btn {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 30px; height: 30px;
+            background-color: #f37a7a;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
-        .close-btn { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; background-color: #f37a7a; color: white; border-radius: 50%; border: none; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
-        
-        label { display: flex; align-items: center; font-weight: 600; margin-bottom: 6px; margin-top: 15px; color: #444; font-size: 15px; }
+        label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 6px;
+            margin-top: 15px;
+            color: #444;
+            font-size: 15px;
+        }
+
         label i { margin-right: 6px; width: 20px; text-align: center; }
 
-        input[type="text"], 
-        input[type="date"], 
-        input[type="time"], 
-        select { 
-            width: 100%; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: 1px solid #ddd; 
-            font-size: 16px; 
-            background-color: #fdfdfd; 
-            -webkit-appearance: none;
-            appearance: none;
-            display: block;
-        }
-
-        /* 下拉選單倒三角形 (右一) */
-        .select-wrapper {
-            position: relative;
+        input[type="text"], input[type="date"], input[type="time"], select {
             width: 100%;
+            height: 48px; 
+            padding: 0 12px; 
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #fdfdfd;
+            -webkit-appearance: none; 
         }
 
+        .select-wrapper { position: relative; width: 100%; }
         .select-wrapper::after {
             content: '\25BC';
             font-size: 12px;
@@ -204,17 +332,59 @@
             pointer-events: none;
         }
 
-        input[type="date"], input[type="time"] {
-            min-height: 45px;
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: bold;
         }
 
-        .btn { padding: 14px; border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 16px; width: 100%; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; }
         #saveBtn { background: #4a90e2; }
         #deleteBtn { background: #ff7675; }
 
-        .fab { position: fixed; bottom: 30px; right: 20px; width: 55px; height: 55px; background: #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999; }
-        .event-item { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
-        .event-time { font-weight: bold; color: #4a90e2; margin-right: 12px; min-width: 50px; }
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background: #4a90e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 999;
+        }
+
+        .event-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .event-time {
+            font-weight: bold;
+            color: #4a90e2;
+            margin-right: 12px;
+            min-width: 55px;
+            font-size: 16px;
+        }
+        
+        .event-title-list { font-size: 16px; color: #333; }
     </style>
 </head>
 <body>
@@ -240,20 +410,16 @@
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></button>
-            <h3 id="modalTitle" style="color: #2c3e50;">新增行程</h3>
+            <h3 id="modalTitle" style="text-align: center; color: #2c3e50;">新增行程</h3>
             <form id="dataForm">
                 <label><i class="fa-regular fa-calendar-days"></i> 日期</label>
                 <input type="date" id="date" required>
-
                 <label><i class="fa-regular fa-clock"></i> 時間</label>
                 <input type="time" id="time" required>
-
                 <label><i class="fa-solid fa-pen"></i> 行程內容</label>
-                <input type="text" id="event" placeholder="例如：看醫生 (限 25 字)" maxlength="25">
-
+                <input type="text" id="event" placeholder="例如：看醫生(限25字)" maxlength="25">
                 <label><i class="fa-regular fa-comment-dots"></i> 備註</label>
-                <input type="text" id="note" placeholder="備註事項 (限 25 字)" maxlength="25">
-
+                <input type="text" id="note" placeholder="備註事項(限25字)" maxlength="25">
                 <label><i class="fa-solid fa-rotate"></i> 重複</label>
                 <div class="select-wrapper">
                     <select id="repeat">
@@ -264,7 +430,6 @@
                         <option value="yearly">每年</option>
                     </select>
                 </div>
-
                 <label><i class="fa-regular fa-bell"></i> 提醒類型</label>
                 <div class="select-wrapper">
                     <select id="reminder">
@@ -275,14 +440,9 @@
                         <option value="day">1 天前</option>
                     </select>
                 </div>
-
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn" id="saveBtn" style="flex: 1;">
-                        <i class="fas fa-check"></i> 儲存
-                    </button>
-                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;">
-                        <i class="fas fa-trash-alt"></i> 刪除
-                    </button>
+                    <button type="button" class="btn" id="saveBtn" style="flex: 1;"><i class="fas fa-check"></i> 儲存</button>
+                    <button type="button" class="btn" id="deleteBtn" style="flex: 1; display:none;"><i class="fas fa-trash-alt"></i> 刪除</button>
                 </div>
             </form>
         </div>
@@ -291,7 +451,7 @@
     <div id="dayViewModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('dayViewModal')"><i class="fas fa-times"></i></button>
-            <h3 id="dayViewTitle" style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
+            <h3 id="dayViewTitle" style="text-align: center; border-bottom: 2px solid #4a90e2; padding-bottom: 10px; color: #2c3e50;"></h3>
             <div id="dayEventList" style="max-height: 300px; overflow-y: auto;"></div>
             <div style="margin-top: 15px;">
                 <button type="button" class="btn" onclick="openAddFromDayView()" style="background: #4a90e2; width: 100%;">
@@ -321,20 +481,29 @@
                 locale: 'zh-tw',
                 height: 'auto',
                 headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
+                    left: 'today',
+                    center: 'prev title next',
                     right: 'dayGridMonth,listMonth'
                 },
-                buttonText: { dayGridMonth: '月曆', listMonth: '列表顯示', today: '今天' },
+                buttonText: { 
+                    today: '今天', 
+                    dayGridMonth: '月曆', 
+                    listMonth: '列表' 
+                },
                 dayHeaderFormat: { weekday: 'narrow' },
                 dayCellContent: function(arg) { return arg.dayNumberText.replace('日', ''); },
-                titleFormat: function(info) { return info.date.marker.getFullYear() + '年 ' + (info.date.marker.getMonth() + 1) + '月'; },
+                titleFormat: function(info) { 
+                    return info.date.marker.getFullYear() + ' 年 ' + (info.date.marker.getMonth() + 1) + ' 月'; 
+                },
                 dayMaxEvents: 2,
-                // 修改 More 按鈕為中文
-                moreLinkText: "更多",
+                eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
+                moreLinkText: function(n) { return "+ " + n + " 更多"; },
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
-                eventClick: function(info) { openModal(true, info.event); }
+                eventClick: function(info) {
+                    info.jsEvent.stopPropagation();
+                    openModal(true, info.event);
+                }
             });
             calendar.render();
             initLiffAndSetProfile();
@@ -343,63 +512,27 @@
         async function initLiffAndSetProfile() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
+                if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 userName = profile.displayName;
-                
-                const nameEl = document.getElementById("volunteerName");
-                const avatarEl = document.getElementById("volunteerAvatar");
-
-                nameEl.innerText = userName;
+                document.getElementById("volunteerName").innerText = userName;
                 if (profile.pictureUrl) {
+                    const avatarEl = document.getElementById("volunteerAvatar");
                     avatarEl.src = profile.pictureUrl;
                     avatarEl.style.display = "inline-block";
                 }
-
-                fetch(`${IDENTIFY_API_BASE}/${userId}`)
-                    .then((res) => res.json())
-                    .then((result) => {
-                        if (!result.success) {
-                            alert("首次使用需先完成個人資料註冊，\n並同意我們存取您的個人資料。\n請點擊「前往註冊」開始。");
-                            window.location.href = "../../Login-or-register/index.html";
-                        } else {
-                            identify = result.role;
-                            loadRecords();
-                        }
-                    })
-                    .catch((err) => {
-                        console.error("身分檢查 API 錯誤：", err);
-                        window.location.href = "../../Login-or-register/index.html";
-                    });
-
-            } catch (err) {
-                console.error("LIFF init error:", err);
-            }
-        }
-
-        document.getElementById("volunteerAvatar").addEventListener("click", () => {
-            if (liff.isLoggedIn()) {
-                localStorage.setItem("fromPage", "calendar");
-                switch (identify) {
-                    case "志工": window.location.href = "../../Login-or-register/志工資料顯示.html"; break;
-                    case "長者": window.location.href = "../../Login-or-register/長輩資料顯示.html"; break;
-                    case "家屬": window.location.href = "../../Login-or-register/家屬資料顯示.html"; break;
-                    default: window.location.href = "../../Login-or-register/index.html";
+                const res = await fetch(`${IDENTIFY_API_BASE}/${userId}`);
+                const result = await res.json();
+                if (!result.success) {
+                    alert("首次使用需先完成個人資料註冊");
+                    window.location.href = "../../Login-or-register/index.html";
+                } else {
+                    identify = result.role;
+                    loadRecords();
                 }
-            }
-        });
-
-        document.getElementById("volunteerName").addEventListener("click", () => {
-            if (typeof liff !== "undefined" && liff.isLoggedIn && !liff.isLoggedIn()) {
-                liff.login({ redirectUri: window.location.href });
-            } else {
-                alert("已登入：" + userName);
-            }
-        });
+            } catch (err) { console.error("LIFF 初始化錯誤:", err); }
+        }
 
         async function loadRecords() {
             try {
@@ -410,12 +543,16 @@
                         id: item.event_id,
                         title: item.schedule_note,
                         start: item.schedule_time,
-                        extendedProps: { note: item.remark, repeat: item.repeat, reminder: item.reminder_method }
+                        extendedProps: { 
+                            note: item.remark, 
+                            repeat: item.repeat, 
+                            reminder: item.reminder_method 
+                        }
                     }));
                     calendar.removeAllEvents();
                     calendar.addEventSource(events);
                 }
-            } catch (e) { console.error("Load records error:", e); }
+            } catch (e) { console.error("載入行程失敗:", e); }
         }
 
         document.getElementById("saveBtn").onclick = async function() {
@@ -428,15 +565,19 @@
                 remark: document.getElementById("note").value,
                 repeat: document.getElementById("repeat").value,
                 reminder_method: document.getElementById("reminder").value,
-                elder_user_id: userId, elder_name: userName
+                elder_user_id: userId,
+                elder_name: userName
             };
-            let url = SCHEDULE_API_URL;
+            let url = isEditing ? `${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}` : SCHEDULE_API_URL;
             let method = isEditing ? "PATCH" : "POST";
-            if (isEditing) url += `/elder/${userId}/${currentEventId}`;
             try {
-                const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                if (res.ok) { closeModal('dataModal'); loadRecords(); }
-            } catch (err) { alert("連線錯誤"); }
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { closeModal('dataModal'); loadRecords(); } else { alert("儲存失敗"); }
+            } catch (err) { alert("連線失敗"); }
         };
 
         document.getElementById("deleteBtn").onclick = async function() {
@@ -444,50 +585,63 @@
             try {
                 const res = await fetch(`${SCHEDULE_API_URL}/elder/${userId}/${currentEventId}`, { method: "DELETE" });
                 if (res.ok) { closeModal('dataModal'); loadRecords(); }
-            } catch (err) {}
+            } catch (err) { alert("刪除失敗"); }
         };
 
         function openDayView(dateStr) {
             selectedDateStr = dateStr;
             const listEl = document.getElementById('dayEventList');
-            document.getElementById('dayViewTitle').innerText = dateStr;
+            const parts = dateStr.split('-');
+            document.getElementById('dayViewTitle').innerText = `${parts[0]} 年 ${parts[1]} 月 ${parts[2]} 日`;
             listEl.innerHTML = '';
-            const dayEvents = calendar.getEvents().filter(e => e.start.toISOString().split('T')[0] === dateStr);
+            const dayEvents = calendar.getEvents().filter(e => {
+                const d = e.start.getFullYear() + '-' + String(e.start.getMonth() + 1).padStart(2, '0') + '-' + String(e.start.getDate()).padStart(2, '0');
+                return d === dateStr;
+            });
             if (dayEvents.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">本日無行程</div>';
             } else {
                 dayEvents.sort((a, b) => a.start - b.start).forEach(e => {
+                    const timeStr = e.start.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
                     const item = document.createElement('div');
                     item.className = 'event-item';
-                    item.innerHTML = `<span class="event-time">${e.start.toTimeString().substring(0, 5)}</span><div class="event-title">${e.title}</div>`;
+                    item.innerHTML = `<span class="event-time">${timeStr}</span><span class="event-title-list">${e.title}</span>`;
                     item.onclick = () => { closeModal('dayViewModal'); openModal(true, e); };
                     listEl.appendChild(item);
                 });
             }
-            document.getElementById('dayViewModal').style.display = 'block';
+            document.getElementById('dayViewModal').style.display = 'flex';
         }
-
-        function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
-        function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
         function openModal(editMode, data) {
             isEditing = editMode;
-            document.getElementById("dataModal").style.display = "block";
+            document.getElementById("dataModal").style.display = "flex";
             document.getElementById("deleteBtn").style.display = editMode ? "block" : "none";
             document.getElementById("modalTitle").innerText = editMode ? "編輯行程" : "新增行程";
             if (editMode) {
                 currentEventId = data.id;
-                document.getElementById("date").value = data.start.toISOString().split('T')[0];
-                document.getElementById("time").value = data.start.toTimeString().substring(0, 5);
+                const d = data.start;
+                document.getElementById("date").value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mm = String(d.getMinutes()).padStart(2, '0');
+                document.getElementById("time").value = `${hh}:${mm}`;
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note || "";
                 document.getElementById("repeat").value = data.extendedProps.repeat || "none";
                 document.getElementById("reminder").value = data.extendedProps.reminder || "none";
             } else {
                 document.getElementById("dataForm").reset();
-                if (typeof data === 'string') document.getElementById("date").value = data;
+                if (typeof data === 'string') {
+                    document.getElementById("date").value = data;
+                } else {
+                    const now = new Date();
+                    document.getElementById("date").value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                }
             }
         }
+
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        function openAddFromDayView() { closeModal('dayViewModal'); openModal(false, selectedDateStr); }
         document.getElementById("fabAdd").onclick = () => openModal(false);
     </script>
 </body>

@@ -65,7 +65,7 @@
       .fc-toolbar-title { 
         font-size: 1.5em !important; 
         font-weight: 600 !important; 
-        letter-spacing: 1px;         
+        letter-spacing: 1px;        
         font-feature-settings: "tnum"; 
       }
 
@@ -600,8 +600,8 @@
 
       document.getElementById('btn-confirm-yes').onclick = function() {
          if (confirmCallback) {
-            confirmCallback();
-            confirmCallback = null;
+           confirmCallback();
+           confirmCallback = null;
          }
          closeModal('confirmModal');
       };
@@ -749,8 +749,8 @@
                 // nameEl.innerText = "未登入"; 
                 // avatarEl.style.display = "none"; 
                 // if(userId) {
-                //     await fetchVolunteerInfo(userId); // 等待班表載入完成
-                //     await fetchAppointments(userId);  // 再載入預約並執行變色邏輯
+                //    await fetchVolunteerInfo(userId); // 等待班表載入完成
+                //    await fetchAppointments(userId);  // 再載入預約並執行變色邏輯
                 // }
                 return;
               }
@@ -796,6 +796,7 @@
       }
 
       function showTimeSlotModal(dateStr) {
+        // 建立 Modal 介面
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay show';
         overlay.style.zIndex = 3000;
@@ -831,6 +832,7 @@
         overlay.querySelector('#slotClose').addEventListener('click', closeFunc);
         overlay.querySelector('#slotCancel').addEventListener('click', closeFunc);
 
+        // 快速按鈕事件
         overlay.querySelectorAll('.slot-select').forEach(btn => {
           btn.addEventListener('click', () => {
             startTimeInput.value = btn.dataset.start;
@@ -840,29 +842,70 @@
           });
         });
 
+        // =============== 確認按鈕的核心邏輯 ===============
         overlay.querySelector('#slotConfirm').addEventListener('click', () => {
           const s = startTimeInput.value;
           const e = endTimeInput.value;
+          
+          // 1. 基礎驗證
           if (!s || !e) { showCustomAlert('請填寫完整時間'); return; }
           
           const startDt = new Date(`${dateStr}T${s}:00`);
           const endDt = new Date(`${dateStr}T${e}:00`);
+          
           if (startDt >= endDt) { showCustomAlert('結束時間必須晚於開始時間'); return; }
           if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
 
-          // 前端先新增到介面
+          // 2. 取得當天所有事件 (包含綠色Available 與 灰色Occupied)
+          // 這裡使用 "當天起始" 與 "當天結束" 的時間範圍比對，最為精準
+          const dayStart = new Date(`${dateStr}T00:00:00`);
+          const dayEnd = new Date(`${dateStr}T23:59:59`);
+          
+          const allEvents = calendarAvail ? calendarAvail.getEvents() : [];
+
+          // 過濾出落在當天範圍內的事件
+          const dailyEvents = allEvents.filter(ev => {
+             // 只要事件的開始時間 >= 當天0點 且 <= 當天23點59分，就算當天
+             return ev.start >= dayStart && ev.start <= dayEnd;
+          });
+
+          // 3. 【每日上限檢查】
+          if (dailyEvents.length >= 2) {
+            showCustomAlert(`新增失敗！\n日期：${dateStr}\n當天已排定 ${dailyEvents.length} 個時段\n(每日上限為 2 次)`);
+            return; // 強制中斷
+          }
+
+          // 4. 【時段重疊檢查】
+          const newStartMs = startDt.getTime();
+          const newEndMs = endDt.getTime();
+
+          const hasOverlap = dailyEvents.some(ev => {
+            const exStartMs = ev.start.getTime();
+            // 如果事件沒有結束時間，預設給它 1 小時長度來計算
+            const exEndMs = ev.end ? ev.end.getTime() : (exStartMs + 60 * 60 * 1000);
+            
+            // 重疊公式：(新開始 < 舊結束) 且 (新結束 > 舊開始)
+            return (newStartMs < exEndMs && newEndMs > exStartMs);
+          });
+
+          if (hasOverlap) {
+            showCustomAlert('新增失敗：該時段與現有行程重疊！');
+            return; // 強制中斷
+          }
+
+          // 5. 通過所有檢查，執行新增
           const newEvent = {
             id: `new-${Date.now()}`,
             title: `可服務 ${s}-${e}`, 
-            start: startDt.toISOString(), 
-            end: endDt.toISOString(), 
+            start: startDt, 
+            end: endDt, 
             classNames: ['available-slot'], 
             extendedProps: { note: '排班 (自訂)', type: 'available' }
           };
           
           calendarAvail.addEvent(newEvent);
           
-          // ** 呼叫 API 更新 **
+          // 呼叫 API 更新後端
           updateAvailableTimeAPI(userId);
 
           overlay.remove();
