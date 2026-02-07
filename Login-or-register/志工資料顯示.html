@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+<html lang="zh-Hant"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <title>志工資料顯示</title>
 
     <style>
@@ -120,29 +121,36 @@
      
       /* 修改modal */
       .modal-overlay {
-        display: none; 
-        position: fixed; 
-        top: 0; left: 0; 
-        width: 100%; height: 100%; 
-        background: rgba(0, 0, 0, 0.4); 
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center; /* 讓 modal-content 垂直置中 */
+        z-index: 2000;
         backdrop-filter: blur(4px); 
-        z-index: 2000; 
-        overflow-y: auto; 
-        -webkit-overflow-scrolling: touch; /* iOS 滑順滾動 */
-        /* justify-content: center;
-        align-items: center; */
+        padding: 20px; /* 增加四周間距，確保不會貼邊 */
+        box-sizing: border-box;
       }
       
       .modal-content {
         background: #fff;
-        margin: 40px auto; 
-        overflow-y: auto;
+        /* margin: 40px auto;  <-- 這一行可以拿掉，由 overlay 的 padding 控制 */
         padding: 20px 15px;
         border-radius: 16px;
         position: relative;
-        width: 90%; /* 稍微縮小寬度 */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+        width: 90%;
         max-width: 400px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        
+        /* --- 關鍵修改點 --- */
+        max-height: 90vh;      /* 限制最大高度為螢幕高度的 90% */
+        overflow-y: auto;      /* 當內容超過 max-height 時，自動顯示垂直捲軸 */
+        display: flex;         /* 確保內部排版穩定 */
+        flex-direction: column;
       }
 
       .close-btn {
@@ -165,13 +173,10 @@
       
       /* modal 表單 */
       .form-section {
-        max-width: 500px;
-        margin: 30px auto;
-        padding: 24px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        font-family: Arial, sans-serif;
+        max-width: 100%;      /* 改為 100% 配合父容器 */
+        margin: 10px 0;       /* 稍微調整間距 */
+        padding: 10px;        /* 縮減一些內距，把空間留給內容 */
+        box-shadow: none;     /* 因為外面已經有 modal-content 的陰影了 */
       }
       
       .form-section h3 {
@@ -189,11 +194,11 @@
         font-weight: 600;
         color: #333;
       }
-      
+      /* 確認寬度 */
       .form-group input,
       .form-group select,
       .form-group textarea {
-        width: 100%;
+        width: 93%;
         padding: 8px 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -214,7 +219,7 @@
         color: #fff; 
         cursor: pointer; 
         font-size: 16px; 
-        width: 100%; 
+        width: 98%; 
         margin-top: 25px; 
         display: flex; 
         align-items: center; 
@@ -235,31 +240,17 @@
 
       <div style="display: flex; align-items: center">
         <h1 style="margin: 0; text-align: right">
-          <span
-            class="volunteer-area"
-            style="display: flex; align-items: center; gap: 8px"
-          >
+          <span class="volunteer-area" style="display: flex; align-items: center; gap: 8px">
             <!-- 導覽列頭像（小尺寸） -->
-            <img
-              id="volunteerAvatar"
-              class="avatar"
-              src="default-avatar.png"
-              alt="avatar"
-              style="
+            <img id="volunteerAvatar" class="avatar" src="https://profile.line-scdn.net/0hKmzN9JSnFEJXNweFvphqPSdnFyh0Rk1QeFhTIWIzSiU-VFQQfgVccWplQiBqBAMQegEIdmAwTnVbJGMkSWHodlAHSXNrDlYdflBcrQ" alt="avatar" style="
                 width: 40px;
                 height: 40px;
                 border-radius: 50%;
                 object-fit: cover;
                 border: 2px solid #0984e3;
-              "
-            />
+              ">
             <!-- 志工名稱或登入提示 -->
-            <span
-              id="volunteerName"
-              title="點此以 Line 登入"
-              style="cursor: pointer"
-              >未登入</span
-            >
+            <span id="volunteerName" title="點此以 Line 登入" style="cursor: pointer">S</span>
           </span>
         </h1>
       </div>
@@ -268,21 +259,34 @@
     <!-- ======== 主卡片內容區 ======== -->
     <div class="card">
       <!-- 大頭貼（主要展示） -->
-      <img
-        id="avatar"
-        class="avatar"
-        src="default-avatar.png"
-        alt="使用者頭像"
-      />
+      <img id="avatar" class="avatar" src="https://profile.line-scdn.net/0hKmzN9JSnFEJXNweFvphqPSdnFyh0Rk1QeFhTIWIzSiU-VFQQfgVccWplQiBqBAMQegEIdmAwTnVbJGMkSWHodlAHSXNrDlYdflBcrQ" alt="使用者頭像">
       <!-- 志工詳細資料將動態插入此處 -->
-      <div id="content"></div>
+      <div id="content">
+            <dl>
+              <dt>志工代碼</dt><dd>S</dd>
+              <dt>姓名</dt><dd class="edit">S</dd>
+              <dt>電子郵件Email</dt><dd class="edit">S@s.com</dd>
+              <dt>連絡電話</dt><dd class="edit">0911222333</dd>
+              <dt>出生年月日</dt><dd class="edit">2026-01-31</dd>
+              <dt>性別</dt><dd>女性</dd>
+              <dt>地址</dt><dd class="edit">S</dd>
+              <dt>簡介</dt><dd class="edit">—</dd>
+
+              <dt>服務特質</dt>
+              <dd class="edit-t">
+                
+              </dd>
+              <dt>使用者ID</dt>
+              <dd> U593e97466ef378f3bf5f6f1c1190e108  <a href="https://line.me/R/share?text=U593e97466ef378f3bf5f6f1c1190e108">  <button>分享</button></a></dd>
+            </dl>
+          </div>
 
            
       <!-- 返回原本頁面按鈕 -->
      <div>
        <!-- <button onclick="openVolunteerModal()">修改資料</button> -->
        <a id="editBtn" class="edit" onclick="openVolunteerModal()">修改資料</a>
-       <a id="backBtn" class="back">回到原頁面</a>
+       <a id="backBtn" class="back" href="../../Topics/Topics/bookvolunteer/index.html">回到原頁面</a>
     </div>
      </div>
 
@@ -403,6 +407,7 @@
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
         const f = document.getElementById("volunteerForm");
+            
       
         // 帶入目前資料
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
@@ -412,6 +417,9 @@
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
+        const birthday = document.getElementById('birthday');
+        
+        birthday.max = new Date().toISOString().split('T')[0];
       }
 
       //close modal
@@ -480,36 +488,43 @@
 
 </script>
     <!-- Modal 遮罩 -->
-<div id="volunteerModal" class="modal-overlay">
+<div id="volunteerModal" class="modal-overlay" style="display: none;;">
   <div class="modal-content">
     <button class="close-btn" onclick="closeVolunteerModal()"><i class="fas fa-times"></i></button>
+    <h3 style="
+    margin: 0;
+    text-align: center;
+    color:#2c3e50
+">志工資料修改</h3>
     <!-- 你的原本表單，直接放進來 -->
     <form id="volunteerForm" class="form-section">
-           <h3>志工資料修改</h3>
+           
       
-      <div class="form-group">
+      <div class="form-group" style="
+    /* width: 100%; */
+">
       <label class="required">姓名</label>
-      <input type="text" name="volunteer_name" required />
+      <input type="text" name="volunteer_name" required="">
       </div>
       
       <div class="form-group">
       <label class="required">電子郵件 Email</label>
-      <input type="email" name="email" required />
+      <input type="email" name="email" required="">
       </div>
       
       <div class="form-group">
       <label class="required">連絡電話</label>
-      <input type="tel" name="phone" pattern="09[0-9]{8}" required />
+      <input type="tel" name="phone" pattern="09[0-9]{8}" required="">
       </div>
       <!-- 欄位待確認 -->
       <div class="form-group">
       <label class="required">出生年月日</label>
-      <input type="date" name="birthday" required />
+      <input type="date" name="birthday" required="">
       </div>
       
       <div class="form-group">
       <label class="required">地址</label>
-      <input type="text" name="address" required />
+      <input type="text" name="address" required="">
       </div>
       
       <div class="form-group">
@@ -526,5 +541,6 @@
     </form>
   </div>
 </div>
-  </body>
+</body>
+
 </html>

@@ -149,7 +149,7 @@
       .modal-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
         background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(5px);        
+        backdrop-filter: blur(5px);         
         -webkit-backdrop-filter: blur(5px);
         z-index: 2000; 
         display: none; 
@@ -305,7 +305,7 @@
            <div id="more-list-body" style="display: flex; flex-direction: column; gap: 12px;"></div>
         </div>
         <div class="modal-footer" style="display: flex; justify-content: center; align-items: center; gap: 15px;">
-           <button id="btn-add-in-list" class="modal-btn" style="background-color: #0984e3;">新增</button>
+           <button id="btn-add-in-list" class="modal-btn" style="background-color: #0984e3; display: none;">新增</button>
            <button id="btn-delete-multi" class="modal-btn btn-delete" disabled>刪除選取項目 (0)</button>
         </div>
       </div>
@@ -928,18 +928,10 @@
         updateDeleteButton();
 
         const btnAdd = document.getElementById('btn-add-in-list');
-        // 只有在「可服務時段」分頁才允許新增
-        if (currentTabMode === 'booking') {
-            btnAdd.style.display = 'none';
-        } else {
-            btnAdd.style.display = 'inline-block';
-            btnAdd.onclick = function() {
-                closeModal('moreListModal');
-                setTimeout(() => {
-                    showTimeSlotModal(currentListDateStr);
-                }, 200); 
-            };
-        }
+        // 【修改】將此按鈕永久隱藏，以強制一天只能有一個時段
+        // 如果當天有事件，使用者只能看到這裡，因為沒有新增按鈕，所以無法新增。
+        // 如果當天沒事件，使用者點擊日期會直接跳出 showTimeSlotModal，可以新增。
+        btnAdd.style.display = 'none';
 
         const btnDeleteMulti = document.getElementById('btn-delete-multi');
         btnDeleteMulti.onclick = function() {

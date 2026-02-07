@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <title>長輩個人資料</title>
 
     <style>
@@ -126,23 +129,28 @@
         background: rgba(0,0,0,0.5);
         display: none;
         justify-content: center;
-        align-items: center;
-        z-index:2000;
+        align-items: center; /* 讓 modal-content 垂直置中 */
+        z-index: 2000;
         backdrop-filter: blur(4px); 
-        overflow-y: auto; 
-        -webkit-overflow-scrolling: touch;
+        padding: 20px; /* 增加四周間距，確保不會貼邊 */
+        box-sizing: border-box;
       }
       
       .modal-content {
         background: #fff;
-        margin: 40px auto; 
-        overflow-y: auto;
+        /* margin: 40px auto;  <-- 這一行可以拿掉，由 overlay 的 padding 控制 */
         padding: 20px 15px;
         border-radius: 16px;
         position: relative;
-        width: 90%; /* 稍微縮小寬度 */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+        width: 90%;
         max-width: 400px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        
+        /* --- 關鍵修改點 --- */
+        max-height: 90vh;      /* 限制最大高度為螢幕高度的 90% */
+        overflow-y: auto;      /* 當內容超過 max-height 時，自動顯示垂直捲軸 */
+        display: flex;         /* 確保內部排版穩定 */
+        flex-direction: column;
       }
       
       .close-btn {
@@ -165,65 +173,63 @@
 
         /* modal 表單 */
       .elder-form {
-        max-width: 500px;
-        margin: 30px auto;
-        padding: 24px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        font-family: Arial, sans-serif;
-          }
+        max-width: 100%;      /* 改為 100% 配合父容器 */
+        margin: 10px 0;       /* 稍微調整間距 */
+        padding: 10px;        /* 縮減一些內距，把空間留給內容 */
+        box-shadow: none;     /* 因為外面已經有 modal-content 的陰影了 */
+      }
           
-          .elder-form h3 {
-            text-align: center;
-            margin-bottom: 20px;
-          }
-          
-          .form-group {
-            margin-bottom: 15px;
-          }
-          
-          .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #333;
-          }
-          
-          .form-group input,
-          .form-group select,
-          .form-group textarea {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-          }
-          
-          .form-group input:focus,
-          .form-group select:focus,
-          .form-group textarea:focus {
-            outline: none;
-            border-color: #4a90e2;
-          }
+      h3{
+        margin: 0;
+        text-align: center;
+        color: #2c3e50;
+      }
       
-          /* submit */
-          .btn {
-            padding: 14px;
-            border: none; 
-            border-radius: 12px; 
-            color: #fff; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-            margin-top: 25px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            font-weight: bold;
-            background-color: #4a90e2;
-          }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 93%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #4a90e2;
+      }
+  
+      /* submit */
+      .btn {
+        padding: 14px;
+        border: none; 
+        border-radius: 12px; 
+        color: #fff; 
+        cursor: pointer; 
+        font-size: 16px; 
+        width: 100%; 
+        margin-top: 25px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 8px; 
+        font-weight: bold;
+        background-color: #4a90e2;
+      }
       
     </style>
   </head>
@@ -281,13 +287,14 @@
       <!-- 這裡放使用者詳細資料 -->
       <div id="content"></div>
       
-    </div>
+  
 
       <!-- 返回頁面和修改按鈕 -->
+    <div>
       <a id="editBtn" class="edit" onclick="openElderModal()">修改資料</a>
       <a id="backBtn" class="back">回到原頁面</a>
-
-
+    </div>
+</div>
     <!-- JavaScript 區域 -->
     <script>
       let currentElder = null;
