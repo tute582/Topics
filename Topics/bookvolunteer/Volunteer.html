@@ -622,6 +622,7 @@
                 headerToolbar: { left: "prev,next", center: "title", right: "today" },
                 titleFormat: { year: 'numeric', month: 'long' },
                 eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
+                displayEventEnd: false, // <--- 新增這一行
                 fixedWeekCount: false, 
                 dayMaxEvents: 2, 
                 
@@ -896,7 +897,7 @@
           // 5. 通過所有檢查，執行新增
           const newEvent = {
             id: `new-${Date.now()}`,
-            title: `可服務 ${s}-${e}`, 
+            title: `開始可服務`, 
             start: startDt, 
             end: endDt, 
             classNames: ['available-slot'], 
@@ -968,8 +969,8 @@
           card.style.cssText = `border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 0; box-shadow: none; background-color: ${bgColor}; border-left: 1px solid #eee !important; display: flex; align-items: center;`;
           
           const startStr = formatTime(ev.start);
-          const endStr = ev.end ? formatTime(ev.end) : '';
-          const timeDisplay = endStr ? `${startStr} - ${endStr}` : startStr;
+          // 強制顯示為「XX:XX 開始可服務」
+          const timeDisplay = `${startStr} 開始可服務`;
           const locText = props.location ? `地點：${props.location}` : (props.note || '');
 
           card.innerHTML = `
