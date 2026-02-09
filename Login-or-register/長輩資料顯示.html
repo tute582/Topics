@@ -482,7 +482,30 @@
             });
      });
     })
-     
+    // 標籤選取邏輯
+      function setupTags(containerId) {
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } else {
+              showModal();
+            }
+          }
+        });
+      }
+      setupTags("seniorTags");
+
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
 
       
     </script>
@@ -520,6 +543,21 @@
           <div class="form-group">
             <label>健康備註</label>
             <textarea name="health_note" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>個性特質（可多選，最多6個）</label>
+            <div class="tags" id="seniorTags">
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">溫和親切</div>
+              <div class="tag">幽默風趣</div>
+              <div class="tag">熱愛生活</div>
+              <div class="tag">勤儉持家</div>
+              <div class="tag">關心家人</div>
+              <div class="tag">樂於助人</div>
+              <div class="tag">喜歡聊天</div>
+              <div class="tag">愛運動</div>
+              <div class="tag">生活規律</div>
+            </div>
           </div>
         
           <button type="submit"  class="btn">儲存修改</button>
