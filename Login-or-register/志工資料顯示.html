@@ -484,6 +484,32 @@
         });
       });
 
+        //tag 設計、邏輯
+        function setupTags(containerId) {
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } else {
+              showModal();
+            }
+          }
+        });
+      }
+      setupTags("volunteerTags");
+      
+
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
+
 
 
 </script>
@@ -498,11 +524,7 @@
 ">志工資料修改</h3>
     <!-- 你的原本表單，直接放進來 -->
     <form id="volunteerForm" class="form-section">
-           
-      
-      <div class="form-group" style="
-    /* width: 100%; */
-">
+     <div class="form-group" >
       <label class="required">姓名</label>
       <input type="text" name="volunteer_name" required="">
       </div>
@@ -517,10 +539,6 @@
       <input type="tel" name="phone" pattern="09[0-9]{8}" required="">
       </div>
       <!-- 欄位待確認 -->
-      <div class="form-group">
-      <label class="required">出生年月日</label>
-      <input type="date" name="birthday" required="">
-      </div>
       
       <div class="form-group">
       <label class="required">地址</label>
@@ -531,9 +549,25 @@
       <label>簡介與經驗</label>
       <textarea name="partner_experience" rows="3"></textarea>
       </div>
-      <!-- <div>
-            tag 選項
-      </div>  -->
+      <div class="form-group">
+          <label>服務特質（可多選，最多6個）</label>
+            <div class="tags" id="volunteerTags">
+              <div class="tag">熱心助人</div>
+              <div class="tag">有耐心</div>
+              <div class="tag">善於傾聽</div>
+              <div class="tag">責任感強</div>
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">細心謹慎</div>
+              <div class="tag">尊重他人</div>
+              <div class="tag">富有同理心</div>
+              <div class="tag">親切友善</div>
+              <div class="tag">善於溝通</div>
+              <div class="tag">守時負責</div>
+              <div class="tag">注重細節</div>
+              <div class="tag">樂於服務</div>
+              <div class="tag">願意傾聽意見</div>
+            </div>
+      </div>
       <div class="button-group">
         <button type="submit" class="btn  submit-btn" style="flex: 1;">儲存修改</button>
       </div>
