@@ -384,6 +384,7 @@
             name="birthday"
             class="real-picker-input"
             oninput="updateDateDisplay(this.value, 'volBirthdayDisplay')"
+            max="<?php echo date('Y-m-d'); ?>"
             required
           />
         </div>
@@ -445,6 +446,7 @@
             name="birthday"
             class="real-picker-input"
             oninput="updateDateDisplay(this.value, 'seniorBirthdayDisplay')"
+            max="<?php echo date('Y-m-d'); ?>"
             required
           />
         </div>
