@@ -440,13 +440,9 @@
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
         f.email.value = currentVolunteer.email || "";
         f.phone.value = currentVolunteer.phone || "";
-        f.birthday.value = currentVolunteer.birthday || "";
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
-        const birthday = document.getElementById('birthday');
-        
-        birthday.max = new Date().toISOString().split('T')[0];
       }
 
       //close modal
