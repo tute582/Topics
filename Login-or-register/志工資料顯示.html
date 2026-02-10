@@ -298,6 +298,83 @@
     </div>
      </div>
 
+        <!-- Modal 遮罩 -->
+<div id="volunteerModal" class="modal-overlay" style="display: none;;">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeVolunteerModal()"><i class="fas fa-times"></i></button>
+    <h3 style="
+    margin: 0;
+    text-align: center;
+    color:#2c3e50
+">志工資料修改</h3>
+    <!-- 你的原本表單，直接放進來 -->
+    <form id="volunteerForm" class="form-section">
+           
+      
+      <div class="form-group" style="
+    /* width: 100%; */
+">
+      <label class="required">姓名</label>
+      <input type="text" name="volunteer_name" required="">
+      </div>
+      
+      <div class="form-group">
+      <label class="required">電子郵件 Email</label>
+      <input type="email" name="email" required="">
+      </div>
+      
+      <div class="form-group">
+      <label class="required">連絡電話</label>
+      <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********"required="">
+      </div>
+      <!-- 欄位待確認 -->
+      
+      <div class="form-group">
+      <label class="required">地址</label>
+      <input type="text" name="address" required="">
+      </div>
+      
+      <div class="form-group">
+      <label>簡介與經驗</label>
+      <textarea name="partner_experience" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+          <label>服務特質（可多選，最多6個）</label>
+            <div class="tags" id="volunteerTags">
+              <div class="tag">熱心助人</div>
+              <div class="tag">有耐心</div>
+              <div class="tag">善於傾聽</div>
+              <div class="tag">責任感強</div>
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">細心謹慎</div>
+              <div class="tag">尊重他人</div>
+              <div class="tag">富有同理心</div>
+              <div class="tag">親切友善</div>
+              <div class="tag">善於溝通</div>
+              <div class="tag">守時負責</div>
+              <div class="tag">注重細節</div>
+              <div class="tag">樂於服務</div>
+              <div class="tag">願意傾聽意見</div>
+            </div>
+      </div>
+     
+      <div class="button-group">
+        <button type="submit" class="btn  submit-btn" style="flex: 1;">儲存修改</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+      <!-- tag modal -->
+       <div id="modal" class="modal">
+        <div class="modal-content">
+          <span id="closeModal" title="關閉">&times;</span>
+          <p style="font-size: 18px; font-weight: bold; margin-top: 10px">
+            最多只能選 6 個特質
+          </p>
+        </div>
+      </div>
+
     <!-- ======== JavaScript 資料載入區 ======== -->
     <script>
       let currentVolunteer = null;
@@ -517,76 +594,27 @@
               document.querySelectorAll(`#${containerId} .tag.selected`)
             ).map((tag) => tag.textContent.trim());
           }
+        // tag Modal 控制
+      function showModal() {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("show"), 10);
+      }
+      function hideModal() {
+        modal.classList.remove("show");
+        setTimeout(() => (modal.style.display = "none"), 300);
+      }
+      closeModal.addEventListener("click", hideModal);
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") hideModal();
+      });
+
     
 
 </script>
-    <!-- Modal 遮罩 -->
-<div id="volunteerModal" class="modal-overlay" style="display: none;;">
-  <div class="modal-content">
-    <button class="close-btn" onclick="closeVolunteerModal()"><i class="fas fa-times"></i></button>
-    <h3 style="
-    margin: 0;
-    text-align: center;
-    color:#2c3e50
-">志工資料修改</h3>
-    <!-- 你的原本表單，直接放進來 -->
-    <form id="volunteerForm" class="form-section">
-           
-      
-      <div class="form-group" style="
-    /* width: 100%; */
-">
-      <label class="required">姓名</label>
-      <input type="text" name="volunteer_name" required="">
-      </div>
-      
-      <div class="form-group">
-      <label class="required">電子郵件 Email</label>
-      <input type="email" name="email" required="">
-      </div>
-      
-      <div class="form-group">
-      <label class="required">連絡電話</label>
-      <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********"required="">
-      </div>
-      <!-- 欄位待確認 -->
-      
-      <div class="form-group">
-      <label class="required">地址</label>
-      <input type="text" name="address" required="">
-      </div>
-      
-      <div class="form-group">
-      <label>簡介與經驗</label>
-      <textarea name="partner_experience" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-          <label>服務特質（可多選，最多6個）</label>
-            <div class="tags" id="volunteerTags">
-              <div class="tag">熱心助人</div>
-              <div class="tag">有耐心</div>
-              <div class="tag">善於傾聽</div>
-              <div class="tag">責任感強</div>
-              <div class="tag">樂觀開朗</div>
-              <div class="tag">細心謹慎</div>
-              <div class="tag">尊重他人</div>
-              <div class="tag">富有同理心</div>
-              <div class="tag">親切友善</div>
-              <div class="tag">善於溝通</div>
-              <div class="tag">守時負責</div>
-              <div class="tag">注重細節</div>
-              <div class="tag">樂於服務</div>
-              <div class="tag">願意傾聽意見</div>
-            </div>
-      </div>
-     
-      <div class="button-group">
-        <button type="submit" class="btn  submit-btn" style="flex: 1;">儲存修改</button>
-      </div>
-
-    </form>
-  </div>
-</div>
+  
 </body>
 
 </html>
