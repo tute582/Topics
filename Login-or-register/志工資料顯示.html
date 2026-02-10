@@ -467,6 +467,7 @@
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
            const formData = new FormData(volunteerForm);
+          setupTags("volunteerTags");   //Test
       
           const payload = {
             volunteer_name: formData.get("volunteer_name"),
@@ -474,7 +475,7 @@
             phone: formData.get("phone"),
             address: formData.get("address"),
             partner_experience: formData.get("partner_experience"), 
-            // personality: getSelectedTags("volunteerTags"),
+            personality: getSelectedTags("volunteerTags"),   //test
           };
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
@@ -506,8 +507,32 @@
           
         });
       });
-
-
+ 
+        //tag 設定  test
+        // 標籤選取邏輯  (modal待確認)
+          function setupTags(containerId) {
+            const container = document.getElementById(containerId);
+            container.addEventListener("click", (e) => {
+              if (e.target.classList.contains("tag")) {
+                const selectedCount =
+                  container.querySelectorAll(".tag.selected").length;
+                if (e.target.classList.contains("selected")) {
+                  e.target.classList.remove("selected");
+                } else if (selectedCount < maxSelect) {
+                  e.target.classList.add("selected");
+                } else {
+                  showModal();
+                }
+              }
+            });
+          }
+          
+          function getSelectedTags(containerId) {
+            return Array.from(
+              document.querySelectorAll(`#${containerId} .tag.selected`)
+            ).map((tag) => tag.textContent.trim());
+          }
+    
 
 </script>
     <!-- Modal 遮罩 -->
