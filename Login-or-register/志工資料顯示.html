@@ -443,6 +443,7 @@
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
+        setupTags("volunteerTags");   //Test
       }
 
       //close modal
@@ -467,9 +468,7 @@
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
            const formData = new FormData(volunteerForm);
-          setupTags("volunteerTags");   //Test
-      
-          const payload = {
+            const payload = {
             volunteer_name: formData.get("volunteer_name"),
             email: formData.get("email"),
             phone: formData.get("phone"),
