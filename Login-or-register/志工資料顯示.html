@@ -435,7 +435,7 @@
         modal.style.display = "flex";
         const f = document.getElementById("volunteerForm");
         //Test tag
-        const maxSelect = 6;
+        
         setupTags("volunteerTags");   
         
         // 帶入目前資料
@@ -514,6 +514,7 @@
         //tag 設定  test
         // 標籤選取邏輯  (modal待確認)
           function setupTags(containerId) {
+            const maxSelect = 6;
             const container = document.getElementById(containerId);
             container.addEventListener("click", (e) => {
               if (e.target.classList.contains("tag")) {
