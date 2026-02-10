@@ -178,13 +178,7 @@
         padding: 10px;        /* 縮減一些內距，把空間留給內容 */
         box-shadow: none;     /* 因為外面已經有 modal-content 的陰影了 */
       }
-          
-      h3{
-        margin: 0;
-        text-align: center;
-        color: #2c3e50;
-      }
-      
+    
       .form-group {
         margin-bottom: 15px;
       }
@@ -229,6 +223,75 @@
         gap: 8px; 
         font-weight: bold;
         background-color: #4a90e2;
+      }
+      /* 標籤tag */
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+        user-select: none;
+      }
+
+      .tag:hover {
+        background-color: #e9ecef;
+      }
+
+      .tag.selected {
+        background: #0078d4;
+        color: white;
+        border-color: #0078d4;
+      }
+       /* tag modal */
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .modal.show {
+        opacity: 1;
+      }
+      .modal-c {
+        background-color: white;
+        padding: 25px 40px;
+        border-radius: 15px;
+        text-align: center;
+        position: relative;
+        min-width: 280px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      #closeModal {
+        background-color: transparent;
+        border: none;
+        color: #999;
+        font-size: 28px;
+        position: absolute;
+        top: 5px;
+        right: 15px;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      #closeModal:hover {
+        color: #e74c3c;
       }
       
     </style>
@@ -295,6 +358,72 @@
       <a id="backBtn" class="back">回到原頁面</a>
     </div>
 </div>
+
+        <!-- edit modal -->
+          <div id="elderModal" class="modal-overlay" style="display: none;">
+          <div class="modal-content">
+            <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
+            <h3 style="margin: 0;text-align: center;color:#2c3e50;">長輩資料修改</h3>
+          <form id="elderForm" class="elder-form">
+          <div class="form-group">
+            <label>姓名</label>
+            <input type="text" name="elder_name" required />
+          </div>
+        
+          <div class="form-group">
+            <label>連絡電話</label>
+            <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
+          </div>
+        
+          <div class="form-group">
+            <label>地址</label>
+            <input type="text" name="address" required />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人</label>
+            <input type="text" name="emergency_contact" required />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人電話</label>
+            <input type="tel" name="emergency_contact_phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
+          </div>
+        
+          <div class="form-group">
+            <label>健康備註</label>
+            <textarea name="health_note" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>個性特質（可多選，最多6個）</label>
+            <div class="tags" id="seniorTags">
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">溫和親切</div>
+              <div class="tag">幽默風趣</div>
+              <div class="tag">熱愛生活</div>
+              <div class="tag">勤儉持家</div>
+              <div class="tag">關心家人</div>
+              <div class="tag">樂於助人</div>
+              <div class="tag">喜歡聊天</div>
+              <div class="tag">愛運動</div>
+              <div class="tag">生活規律</div>
+            </div>
+          </div>
+        
+          <button type="submit"  class="btn">儲存修改</button>
+        </form>
+          </div>
+          </div>
+    <!-- tag modal -->
+       <div id="modal" class="modal">
+        <div class="modal-c">
+          <span id="closeModal" title="關閉">&times;</span>
+          <p style="font-size: 18px; font-weight: bold; margin-top: 10px">
+            最多只能選 6 個特質
+          </p>
+        </div>
+      </div>
+    
     <!-- JavaScript 區域 -->
     <script>
       let currentElder = null;
@@ -415,6 +544,8 @@
         document.getElementById("elderModal").style.display = "flex";
       
         const f = document.forms.elderForm;
+        
+        setupTags("seniorTags");
       
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
@@ -423,11 +554,24 @@
         f.emergency_contact_phone.value =
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
+
+        
       }
 
       //close modal
       function closeElderModal() {
-        document.getElementById("elderModal").style.display = "none";
+        const modal = document.getElementById("elderModal");
+        const t =document.getElementsByClassName("tag");
+        const l = t.length
+        if (!modal) {
+          console.error("找不到 volunteerModal");
+          return;
+        }
+        for (let i = 0; i < l ;i++ )
+        {
+         t[i].classList.remove("selected")
+        }
+        modal.style.display = "none";
       }
 
       //修改功能api
@@ -446,12 +590,11 @@
           const payload = {
             elder_name: formData.get("elder_name"),
             phone: formData.get("phone"),
-            birthday: formData.get("birthday"),
-            gender: formData.get("gender"),
             address: formData.get("address"),
             emergency_contact: formData.get("emergency_contact"),
             emergency_contact_phone: formData.get("emergency_contact_phone"),
             health_note: formData.get("health_note"),
+             preference_tags: getSelectedTags("seniorTags"),
           };
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
@@ -482,50 +625,50 @@
             });
      });
     })
-     
 
+      // 標籤選取邏輯
+      function setupTags(containerId) {
+        const maxSelect = 6;
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } else {
+                  showModal();
+                }
+          }
+        });
+      }
       
-    </script>
-          <div id="elderModal" class="modal-overlay">
-          <div class="modal-content">
-            <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
-            <form id="elderForm" class="elder-form">
-          <h3>長輩資料修改</h3>
-        
-          <div class="form-group">
-            <label>姓名</label>
-            <input type="text" name="elder_name" required />
-          </div>
-        
-          <div class="form-group">
-            <label>連絡電話</label>
-            <input type="tel" name="phone" required />
-          </div>
-        
-          <div class="form-group">
-            <label>地址</label>
-            <input type="text" name="address" required />
-          </div>
-        
-          <div class="form-group">
-            <label>緊急聯絡人</label>
-            <input type="text" name="emergency_contact" required />
-          </div>
-        
-          <div class="form-group">
-            <label>緊急聯絡人電話</label>
-            <input type="text" name="emergency_contact_phone" required />
-          </div>
-        
-          <div class="form-group">
-            <label>健康備註</label>
-            <textarea name="health_note" rows="3"></textarea>
-          </div>
-        
-          <button type="submit"  class="btn">儲存修改</button>
-        </form>
-          </div>
-        </div>
 
-  </body>
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
+      // tag Modal 控制
+      function showModal() {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("show"), 10);
+      }
+      function hideModal() {
+        modal.classList.remove("show");
+        setTimeout(() => (modal.style.display = "none"), 300);
+      }
+      closeModal.addEventListener("click", hideModal);
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") hideModal();
+      });
+ 
+    </script>
+    
+</body>
 </html>
