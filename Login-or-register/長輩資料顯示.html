@@ -183,7 +183,6 @@
         margin: 0;
         text-align: center;
         color: #2c3e50;
-        margin-bottom: 20px;   /*  test */
       }
       
       .form-group {
@@ -514,10 +513,11 @@
     </script>
           <div id="elderModal" class="modal-overlay">
           <div class="modal-content">
+          <div>
             <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
             <form id="elderForm" class="elder-form">
-          <h3>長輩資料修改</h3>
-        
+            <h3>長輩資料修改</h3>
+          </div>
           <div class="form-group">
             <label>姓名</label>
             <input type="text" name="elder_name" required />
