@@ -434,6 +434,8 @@
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
         const f = document.getElementById("volunteerForm");
+
+        setupTags("volunteerTags");   //Test
         
         // 帶入目前資料
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
@@ -444,7 +446,7 @@
           currentVolunteer.partner_experience || "";
 
         
-        setupTags("volunteerTags");   //Test
+        
       }
 
       //close modal
