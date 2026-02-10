@@ -317,6 +317,63 @@
       <a id="backBtn" class="back">回到原頁面</a>
     </div>
 </div>
+
+        <!-- edit modal -->
+          <div id="elderModal" class="modal-overlay" style="display: none;">
+          <div class="modal-content">
+            <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
+            <h3 style="margin: 0;text-align: center;color:#2c3e50;">長輩資料修改</h3>
+          <form id="elderForm" class="elder-form">
+          <div class="form-group">
+            <label>姓名</label>
+            <input type="text" name="elder_name" required />
+          </div>
+        
+          <div class="form-group">
+            <label>連絡電話</label>
+            <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
+          </div>
+        
+          <div class="form-group">
+            <label>地址</label>
+            <input type="text" name="address" required />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人</label>
+            <input type="text" name="emergency_contact" required />
+          </div>
+        
+          <div class="form-group">
+            <label>緊急聯絡人電話</label>
+            <input type="tel" name="emergency_contact_phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
+          </div>
+        
+          <div class="form-group">
+            <label>健康備註</label>
+            <textarea name="health_note" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>個性特質（可多選，最多6個）</label>
+            <div class="tags" id="seniorTags">
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">溫和親切</div>
+              <div class="tag">幽默風趣</div>
+              <div class="tag">熱愛生活</div>
+              <div class="tag">勤儉持家</div>
+              <div class="tag">關心家人</div>
+              <div class="tag">樂於助人</div>
+              <div class="tag">喜歡聊天</div>
+              <div class="tag">愛運動</div>
+              <div class="tag">生活規律</div>
+            </div>
+          </div>
+        
+          <button type="submit"  class="btn">儲存修改</button>
+        </form>
+          </div>
+          </div>
+    
     <!-- JavaScript 區域 -->
     <script>
       let currentElder = null;
@@ -535,60 +592,6 @@
       }
  
     </script>
-          <div id="elderModal" class="modal-overlay">
-          <div class="modal-content">
-            <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
-            <h3 style="margin: 0;text-align: center;color:#2c3e50;">長輩資料修改</h3>
-          <form id="elderForm" class="elder-form">
-          <div class="form-group">
-            <label>姓名</label>
-            <input type="text" name="elder_name" required />
-          </div>
-        
-          <div class="form-group">
-            <label>連絡電話</label>
-            <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
-          </div>
-        
-          <div class="form-group">
-            <label>地址</label>
-            <input type="text" name="address" required />
-          </div>
-        
-          <div class="form-group">
-            <label>緊急聯絡人</label>
-            <input type="text" name="emergency_contact" required />
-          </div>
-        
-          <div class="form-group">
-            <label>緊急聯絡人電話</label>
-            <input type="tel" name="emergency_contact_phone" pattern="09[0-9]{8}" title="輸入格式:09********" required />
-          </div>
-        
-          <div class="form-group">
-            <label>健康備註</label>
-            <textarea name="health_note" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label>個性特質（可多選，最多6個）</label>
-            <div class="tags" id="seniorTags">
-              <div class="tag">樂觀開朗</div>
-              <div class="tag">溫和親切</div>
-              <div class="tag">幽默風趣</div>
-              <div class="tag">熱愛生活</div>
-              <div class="tag">勤儉持家</div>
-              <div class="tag">關心家人</div>
-              <div class="tag">樂於助人</div>
-              <div class="tag">喜歡聊天</div>
-              <div class="tag">愛運動</div>
-              <div class="tag">生活規律</div>
-            </div>
-          </div>
-        
-          <button type="submit"  class="btn">儲存修改</button>
-        </form>
-          </div>
-          </div>
     
 </body>
 </html>
