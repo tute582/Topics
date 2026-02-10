@@ -437,6 +437,8 @@
         document.getElementById("elderModal").style.display = "flex";
       
         const f = document.forms.elderForm;
+        
+        setupTags("seniorTags");
       
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
@@ -445,6 +447,8 @@
         f.emergency_contact_phone.value =
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
+
+        
       }
 
       //close modal
@@ -503,6 +507,32 @@
             });
      });
     })
+
+      // 標籤選取邏輯
+      function setupTags(containerId) {
+        const maxSelect = 6;
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } else {
+                  showModal();
+                }
+          }
+        });
+      }
+      
+
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
  
     </script>
           <div id="elderModal" class="modal-overlay">
@@ -558,33 +588,7 @@
           <button type="submit"  class="btn">儲存修改</button>
         </form>
           </div>
-        </div>
-<script>
-    // 標籤選取邏輯
-      function setupTags(containerId) {
-        const container = document.getElementById(containerId);
-        container.addEventListener("click", (e) => {
-          if (e.target.classList.contains("tag")) {
-            const selectedCount =
-              container.querySelectorAll(".tag.selected").length;
-            if (e.target.classList.contains("selected")) {
-              e.target.classList.remove("selected");
-            } else if (selectedCount < maxSelect) {
-              e.target.classList.add("selected");
-            } 
-          }
-        });
-      }
-      setupTags("seniorTags");
-
-      function getSelectedTags(containerId) {
-        return Array.from(
-          document.querySelectorAll(`#${containerId} .tag.selected`)
-        ).map((tag) => tag.textContent.trim());
-      }
-  
-  
-</script>
+          </div>
     
 </body>
 </html>
