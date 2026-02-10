@@ -560,7 +560,18 @@
 
       //close modal
       function closeElderModal() {
-        document.getElementById("elderModal").style.display = "none";
+        const modal = document.getElementById("elderModal");
+        const t =document.getElementsByClassName("tag");
+        const l = t.length
+        if (!modal) {
+          console.error("找不到 volunteerModal");
+          return;
+        }
+        for (let i = 0; i < l ;i++ )
+        {
+         t[i].classList.remove("selected")
+        }
+        modal.style.display = "none";
       }
 
       //修改功能api
