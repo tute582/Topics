@@ -71,6 +71,62 @@
 
       .fc-button { font-size: 0.9em !important; padding: 0.4em 0.65em !important; }
 
+      /* ===== 日曆頂部導覽列（仿圖片樣式） ===== */
+      .fc-header-toolbar {
+        margin-bottom: 16px !important;
+      }
+      
+      /* 標題（2026 年 2 月） */
+      .fc-toolbar-title {
+        font-size: 26px !important;
+        font-weight: 700 !important;
+        color: #1f2937 !important; /* 深灰 */
+      }
+      
+      /* 所有按鈕共用 */
+      .fc .fc-button {
+        background: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        color: #374151 !important;
+        border-radius: 12px !important;
+        padding: 6px 14px !important;
+        box-shadow: none !important;
+        font-weight: 600;
+      }
+      
+      /* hover */
+      .fc .fc-button:hover {
+        background: #f9fafb !important;
+      }
+      
+      /* active / focus */
+      .fc .fc-button:focus,
+      .fc .fc-button:active {
+        box-shadow: none !important;
+        background: #f3f4f6 !important;
+      }
+      
+      /* 左右箭頭按鈕更小顆 */
+      .fc .fc-prev-button,
+      .fc .fc-next-button {
+        width: 36px;
+        height: 36px;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      /* 今天按鈕 */
+      .fc .fc-today-button {
+        font-size: 15px !important;
+      }
+      
+      /* 移除 FullCalendar 預設藍色 */
+      .fc .fc-button-primary {
+        background: none !important;
+      }
+      
       .fc-theme-standard td, .fc-theme-standard th {
           border-bottom: 1px solid #f0f0f0 !important;
           border-left: none !important; border-right: none !important; border-top: none !important;
@@ -619,8 +675,11 @@
                 locale: "zh-tw",
                 buttonText: { today: '回到今天' }, 
                 height: 'auto',
-                headerToolbar: { left: "prev,next", center: "title", right: "today" },
-                titleFormat: { year: 'numeric', month: 'long' },
+                headerToolbar: { left: "today", center: "title", right: "prev,next" },
+                // 原先: titleFormat: { year: 'numeric', month: 'long' },
+                titleFormat: function(date) {
+                  return `${date.date.year} 年 ${date.date.month + 1} 月`;
+                },
                 eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
                 displayEventEnd: false, // <--- 新增這一行
                 fixedWeekCount: false, 
@@ -813,7 +872,7 @@
               <button class="slot-select" data-start="14:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">下午</button>
               <button class="slot-select" data-start="18:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">晚上</button>
             </div>
-            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂開始時間</div>
+            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂開始時間（預設時長 1 小時）</div>
             <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:12px;">
               <input id="customStartTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
             </div>
