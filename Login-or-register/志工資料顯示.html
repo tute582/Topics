@@ -228,6 +228,33 @@
         font-weight: bold;
         background-color: #4a90e2;
       }
+        .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+        /* tag設定 */
+      .tag {
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+        user-select: none;
+      }
+
+      .tag:hover {
+        background-color: #e9ecef;
+      }
+
+      .tag.selected {
+        background: #0078d4;
+        color: white;
+        border-color: #0078d4;
+      }
 
     </style>
   </head>
@@ -450,7 +477,8 @@
             email: formData.get("email"),
             phone: formData.get("phone"),
             address: formData.get("address"),
-            partner_experience: formData.get("partner_experience"),           
+            partner_experience: formData.get("partner_experience"), 
+            // personality: getSelectedTags("volunteerTags"),
           };
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
@@ -513,7 +541,7 @@
       
       <div class="form-group">
       <label class="required">連絡電話</label>
-      <input type="tel" name="phone" pattern="09[0-9]{8}" required="">
+      <input type="tel" name="phone" pattern="09[0-9]{8}" title="輸入格式:09********"required="">
       </div>
       <!-- 欄位待確認 -->
       
@@ -526,9 +554,26 @@
       <label>簡介與經驗</label>
       <textarea name="partner_experience" rows="3"></textarea>
       </div>
-      <!-- <div>
-            tag 選項
-      </div>  -->
+      <div class="form-group">
+          <label>服務特質（可多選，最多6個）</label>
+            <div class="tags" id="volunteerTags">
+              <div class="tag">熱心助人</div>
+              <div class="tag">有耐心</div>
+              <div class="tag">善於傾聽</div>
+              <div class="tag">責任感強</div>
+              <div class="tag">樂觀開朗</div>
+              <div class="tag">細心謹慎</div>
+              <div class="tag">尊重他人</div>
+              <div class="tag">富有同理心</div>
+              <div class="tag">親切友善</div>
+              <div class="tag">善於溝通</div>
+              <div class="tag">守時負責</div>
+              <div class="tag">注重細節</div>
+              <div class="tag">樂於服務</div>
+              <div class="tag">願意傾聽意見</div>
+            </div>
+      </div>
+     
       <div class="button-group">
         <button type="submit" class="btn  submit-btn" style="flex: 1;">儲存修改</button>
       </div>
