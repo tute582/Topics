@@ -797,7 +797,7 @@
       }
 
       function showTimeSlotModal(dateStr) {
-        // 建立 Modal 介面
+        // 建立 Modal 介面（移除結束時間欄位）
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay show';
         overlay.style.zIndex = 3000;
@@ -809,15 +809,13 @@
               <span style="cursor:pointer;font-size:20px;" id="slotClose">×</span>
             </div>
             <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
-              <button class="slot-select" data-start="09:00" data-end="12:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">上午</button>
-              <button class="slot-select" data-start="14:00" data-end="17:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">下午</button>
-              <button class="slot-select" data-start="18:00" data-end="21:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">晚上</button>
+              <button class="slot-select" data-start="09:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">上午</button>
+              <button class="slot-select" data-start="14:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">下午</button>
+              <button class="slot-select" data-start="18:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">晚上</button>
             </div>
-            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂時間</div>
+            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂開始時間</div>
             <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:12px;">
               <input id="customStartTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
-              <span>~</span>
-              <input id="customEndTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
             </div>
             <div style="text-align:right;">
               <button id="slotCancel" style="padding:8px 12px;border-radius:8px;border:none;background:#aaa;color:#fff;cursor:pointer;margin-right:8px;">取消</button>
@@ -827,74 +825,71 @@
         document.body.appendChild(overlay);
 
         const startTimeInput = overlay.querySelector('#customStartTime');
-        const endTimeInput = overlay.querySelector('#customEndTime');
         
         const closeFunc = () => overlay.remove();
         overlay.querySelector('#slotClose').addEventListener('click', closeFunc);
         overlay.querySelector('#slotCancel').addEventListener('click', closeFunc);
 
-        // 快速按鈕事件
+        // 快速按鈕事件（只設定開始時間）
         overlay.querySelectorAll('.slot-select').forEach(btn => {
           btn.addEventListener('click', () => {
             startTimeInput.value = btn.dataset.start;
-            endTimeInput.value = btn.dataset.end;
             overlay.querySelectorAll('.slot-select').forEach(b => b.style.opacity = '0.6');
             btn.style.opacity = '1';
           });
         });
 
-        // =============== 確認按鈕的核心邏輯 ===============
+        // =============== 確認按鈕的核心邏輯（只使用開始時間，預設長度 1 小時） ===============
         overlay.querySelector('#slotConfirm').addEventListener('click', () => {
           const s = startTimeInput.value;
-          const e = endTimeInput.value;
           
-          // 1. 基礎驗證
-          if (!s || !e) { showCustomAlert('請填寫完整時間'); return; }
+          // 1. 基礎驗證（只驗證開始時間）
+          if (!s) { showCustomAlert('請填寫開始時間'); return; }
           
           const startDt = new Date(`${dateStr}T${s}:00`);
-          const endDt = new Date(`${dateStr}T${e}:00`);
+          // 預設結束時間 = 開始時間 + 1 小時
+          const endDt = new Date(startDt.getTime() + 60 * 60 * 1000);
           
           if (startDt >= endDt) { showCustomAlert('結束時間必須晚於開始時間'); return; }
           if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
 
           // 2. 取得當天所有事件 (包含綠色Available 與 灰色Occupied)
-          // 這裡使用 "當天起始" 與 "當天結束" 的時間範圍比對，最為精準
-          const dayStart = new Date(`${dateStr}T00:00:00`);
-          const dayEnd = new Date(`${dateStr}T23:59:59`);
-          
           const allEvents = calendarAvail ? calendarAvail.getEvents() : [];
 
-          // 過濾出落在當天範圍內的事件
+          // 3. 過濾出「當天」的所有事件（避免時區字串誤差）
+          const [targetYear, targetMonth, targetDay] = dateStr.split('-').map(Number);
+
           const dailyEvents = allEvents.filter(ev => {
-             // 只要事件的開始時間 >= 當天0點 且 <= 當天23點59分，就算當天
-             return ev.start >= dayStart && ev.start <= dayEnd;
+            if (!ev.start) return false;
+            const d = ev.start;
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            return y === targetYear && m === targetMonth && day === targetDay;
           });
 
-          // 3. 【每日上限檢查】
+          // 4. 【每日上限檢查】
           if (dailyEvents.length >= 2) {
             showCustomAlert(`新增失敗！\n日期：${dateStr}\n當天已排定 ${dailyEvents.length} 個時段\n(每日上限為 2 次)`);
-            return; // 強制中斷
+            return;
           }
 
-          // 4. 【時段重疊檢查】
+          // 5. 【時段重疊檢查】
           const newStartMs = startDt.getTime();
           const newEndMs = endDt.getTime();
 
           const hasOverlap = dailyEvents.some(ev => {
             const exStartMs = ev.start.getTime();
-            // 如果事件沒有結束時間，預設給它 1 小時長度來計算
             const exEndMs = ev.end ? ev.end.getTime() : (exStartMs + 60 * 60 * 1000);
-            
-            // 重疊公式：(新開始 < 舊結束) 且 (新結束 > 舊開始)
             return (newStartMs < exEndMs && newEndMs > exStartMs);
           });
 
           if (hasOverlap) {
             showCustomAlert('新增失敗：該時段與現有行程重疊！');
-            return; // 強制中斷
+            return;
           }
 
-          // 5. 通過所有檢查，執行新增
+          // 6. 通過所有檢查，執行新增（包含自動結束時間）
           const newEvent = {
             id: `new-${Date.now()}`,
             title: `開始可服務`, 
