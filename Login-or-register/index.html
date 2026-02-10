@@ -544,6 +544,7 @@
       //date 欄位設定
       const today = new Date().toISOString().split("T")[0];
       document.getElementsByName("birthday")[0].max=today
+      document.getElementsByName("birthday")[1].max=today
       // ====== 1. 日期顯示邏輯 (新增部分) ======
       function updateDateDisplay(dateValue, displayElementId) {
         const displayEl = document.getElementById(displayElementId);
