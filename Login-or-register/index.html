@@ -384,7 +384,6 @@
             name="birthday"
             class="real-picker-input"
             oninput="updateDateDisplay(this.value, 'volBirthdayDisplay')"
-            max="<?php echo date('Y-m-d'); ?>"
             required
           />
         </div>
@@ -446,7 +445,6 @@
             name="birthday"
             class="real-picker-input"
             oninput="updateDateDisplay(this.value, 'seniorBirthdayDisplay')"
-            max="<?php echo date('Y-m-d'); ?>"
             required
           />
         </div>
@@ -543,6 +541,9 @@
       const modal = document.getElementById("modal");
       const closeModal = document.getElementById("closeModal");
       const maxSelect = 6;
+      //日期設定
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("displayElementId").max = today;
 
       // ====== 1. 日期顯示邏輯 (新增部分) ======
       function updateDateDisplay(dateValue, displayElementId) {
@@ -552,6 +553,18 @@
           displayEl.style.color = "#888";
           return;
         }
+       //重複驗證日期
+         const today = new Date();
+        today.setHours(0, 0, 0, 0); // 只比日期
+      
+        const selectedDate = new Date(dateValue);
+      
+        if (selectedDate > today) {
+          displayEl.textContent = "日期不能大於今天";
+          displayEl.style.color = "red";
+          return;
+        }
+        
         const [year, month, day] = dateValue.split("-");
         // 顯示格式：2025 年 11 月 24 日
         displayEl.textContent = `${year} 年 ${month} 月 ${day} 日`;
