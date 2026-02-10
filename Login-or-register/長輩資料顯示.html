@@ -178,13 +178,7 @@
         padding: 10px;        /* 縮減一些內距，把空間留給內容 */
         box-shadow: none;     /* 因為外面已經有 modal-content 的陰影了 */
       }
-          
-      h3{
-        margin: 0;
-        text-align: center;
-        color: #2c3e50;
-      }
-      
+    
       .form-group {
         margin-bottom: 15px;
       }
@@ -513,11 +507,9 @@
     </script>
           <div id="elderModal" class="modal-overlay">
           <div class="modal-content">
-          <div>
             <button class="close-btn" onclick="closeElderModal()"><i class="fas fa-times"></i></button>
-            <form id="elderForm" class="elder-form">
-            <h3>長輩資料修改</h3>
-          </div>
+            <h3 style="margin: 0;text-align: center;color:#2c3e50">長輩資料修改</h3>
+          <form id="elderForm" class="elder-form">
           <div class="form-group">
             <label>姓名</label>
             <input type="text" name="elder_name" required />
