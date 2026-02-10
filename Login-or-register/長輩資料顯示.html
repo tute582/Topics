@@ -230,6 +230,34 @@
         font-weight: bold;
         background-color: #4a90e2;
       }
+      /* 標籤tag */
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+        user-select: none;
+      }
+
+      .tag:hover {
+        background-color: #e9ecef;
+      }
+
+      .tag.selected {
+        background: #0078d4;
+        color: white;
+        border-color: #0078d4;
+      }
       
     </style>
   </head>
@@ -446,12 +474,11 @@
           const payload = {
             elder_name: formData.get("elder_name"),
             phone: formData.get("phone"),
-            birthday: formData.get("birthday"),
-            gender: formData.get("gender"),
             address: formData.get("address"),
             emergency_contact: formData.get("emergency_contact"),
             emergency_contact_phone: formData.get("emergency_contact_phone"),
             health_note: formData.get("health_note"),
+             preference_tags: getSelectedTags("seniorTags"),
           };
       
           console.log("送出 payload 👉", payload); // 🔥一定要看
@@ -482,32 +509,7 @@
             });
      });
     })
-    // 標籤選取邏輯
-      function setupTags(containerId) {
-        const container = document.getElementById(containerId);
-        container.addEventListener("click", (e) => {
-          if (e.target.classList.contains("tag")) {
-            const selectedCount =
-              container.querySelectorAll(".tag.selected").length;
-            if (e.target.classList.contains("selected")) {
-              e.target.classList.remove("selected");
-            } else if (selectedCount < maxSelect) {
-              e.target.classList.add("selected");
-            } else {
-              showModal();
-            }
-          }
-        });
-      }
-      setupTags("seniorTags");
-
-      function getSelectedTags(containerId) {
-        return Array.from(
-          document.querySelectorAll(`#${containerId} .tag.selected`)
-        ).map((tag) => tag.textContent.trim());
-      }
-
-      
+ 
     </script>
           <div id="elderModal" class="modal-overlay">
           <div class="modal-content">
@@ -564,6 +566,32 @@
         </form>
           </div>
         </div>
+<script>
+    // 標籤選取邏輯
+      function setupTags(containerId) {
+        const container = document.getElementById(containerId);
+        container.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tag")) {
+            const selectedCount =
+              container.querySelectorAll(".tag.selected").length;
+            if (e.target.classList.contains("selected")) {
+              e.target.classList.remove("selected");
+            } else if (selectedCount < maxSelect) {
+              e.target.classList.add("selected");
+            } 
+          }
+        });
+      }
+      setupTags("seniorTags");
 
-  </body>
+      function getSelectedTags(containerId) {
+        return Array.from(
+          document.querySelectorAll(`#${containerId} .tag.selected`)
+        ).map((tag) => tag.textContent.trim());
+      }
+  
+  
+</script>
+    
+</body>
 </html>
