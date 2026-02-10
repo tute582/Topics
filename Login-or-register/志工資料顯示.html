@@ -468,7 +468,7 @@
             /* ======== 顯示詳細資料 ======== */
             const html = `
             <dl>
-              <dt>志工代碼</dt><dd>${d.vcode || ""}</dd>
+              <dt>00志工代碼</dt><dd>${d.vcode || ""}</dd>
               <dt>姓名</dt><dd class="edit">${d.volunteer_name || ""}</dd>
               <dt>電子郵件Email</dt><dd class="edit">${d.email || ""}</dd>
               <dt>連絡電話</dt><dd class="edit">${d.phone || ""}</dd>
@@ -554,9 +554,15 @@
       //close modal
       function closeVolunteerModal() {
         const modal = document.getElementById("volunteerModal");
+        const t =document.getElementsByClassName("tag");
+        const l = t.length
         if (!modal) {
           console.error("找不到 volunteerModal");
           return;
+        }
+        for (let i = 0; i < l ;i++ )
+        {
+         t[i].classList.remove("selected")
         }
         modal.style.display = "none";
       }
