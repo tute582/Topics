@@ -379,6 +379,9 @@
       <label>簡介與經驗</label>
       <textarea name="partner_experience" rows="3"></textarea>
       </div>
+      <div name="form-group" >
+          <label name="tagText"></label>
+      </div>
       <div class="form-group">
           <label>服務特質（可多選，最多6個）</label>
             <div class="tags" id="volunteerTags">
@@ -468,7 +471,7 @@
             /* ======== 顯示詳細資料 ======== */
             const html = `
             <dl>
-              <dt>志工代碼</dt><dd>${d.vcode || ""}</dd>
+              <dt>10志工代碼</dt><dd>${d.vcode || ""}</dd>
               <dt>姓名</dt><dd class="edit">${d.volunteer_name || ""}</dd>
               <dt>電子郵件Email</dt><dd class="edit">${d.email || ""}</dd>
               <dt>連絡電話</dt><dd class="edit">${d.phone || ""}</dd>
@@ -535,7 +538,8 @@
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
         const f = document.getElementById("volunteerForm");
-        //Test tag
+        
+        const tagText = document.getElementsByName("tagText")  //function text
         
         setupTags("volunteerTags");   
         
@@ -546,9 +550,8 @@
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
-
-        
-        
+         tagText[0].innerText  = currentVolunteer.personality || "";
+    
       }
 
       //close modal
