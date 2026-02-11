@@ -475,7 +475,7 @@
             /* ======== 顯示個人資料 ======== */
             const html = `
             <dl>
-              <dt>03姓名</dt><dd>${d.elder_name || ""}</dd>
+              <dt>00姓名</dt><dd>${d.elder_name || ""}</dd>
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${
@@ -543,14 +543,9 @@
       // openmodal
       function openElderModal() {
         if (!currentElder) return;
-      
         document.getElementById("elderModal").style.display = "flex";
-        
         const f = document.forms.elderForm;
         const tagText = document.getElementsByName("tagText")[0] //function text
-        
-        setupTags("seniorTags");
-        
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
         f.address.value = currentElder.address || "";
@@ -559,7 +554,7 @@
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
         tagText.innerText  = currentElder.preference_tags || "";
-        // document.getElementsByName("tagText")[0].innerText = currentElder.preference_tags || "";
+        setupTags("seniorTags");
         TagText(tagText)
       }
       // Edit Modal tag預設
@@ -576,7 +571,6 @@
                   }
               }
           }
-          console.log(text.innerText)
       }
 
       //close modal
