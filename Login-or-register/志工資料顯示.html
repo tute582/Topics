@@ -471,7 +471,7 @@
             /* ======== 顯示詳細資料 ======== */
             const html = `
             <dl>
-              <dt>10志工代碼</dt><dd>${d.vcode || ""}</dd>
+              <dt>11志工代碼</dt><dd>${d.vcode || ""}</dd>
               <dt>姓名</dt><dd class="edit">${d.volunteer_name || ""}</dd>
               <dt>電子郵件Email</dt><dd class="edit">${d.email || ""}</dd>
               <dt>連絡電話</dt><dd class="edit">${d.phone || ""}</dd>
@@ -537,12 +537,9 @@
 
         const modal = document.getElementById("volunteerModal");
         modal.style.display = "flex";
+            
         const f = document.getElementById("volunteerForm");
-        
-        const tagText = document.getElementsByName("tagText")  //function text
-        
-        setupTags("volunteerTags");   
-        
+        const tagText = document.getElementsByName("tagText")[0]  //function text
         // 帶入目前資料
         f.volunteer_name.value = currentVolunteer.volunteer_name || "";
         f.email.value = currentVolunteer.email || "";
@@ -550,7 +547,8 @@
         f.address.value = currentVolunteer.address || "";
         f.partner_experience.value =
           currentVolunteer.partner_experience || "";
-         tagText[0].innerText  = currentVolunteer.personality || "";
+        tagText.innerText  = currentVolunteer.personality || "";
+        setupTags("volunteerTags");   
     
       }
 
@@ -621,8 +619,7 @@
         });
       });
  
-        //tag 設定  test
-        // 標籤選取邏輯  (modal待確認)
+        // 標籤選取邏輯 
           function setupTags(containerId) {
             const maxSelect = 6;
             const container = document.getElementById(containerId);
