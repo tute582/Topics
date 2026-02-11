@@ -475,7 +475,7 @@
             /* ======== 顯示個人資料 ======== */
             const html = `
             <dl>
-              <dt>姓名</dt><dd>${d.elder_name || ""}</dd>
+              <dt>00姓名</dt><dd>${d.elder_name || ""}</dd>
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${
@@ -547,7 +547,7 @@
         document.getElementById("elderModal").style.display = "flex";
       
         const f = document.forms.elderForm;
-        
+        setupTags("seniorTags");
         
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
@@ -557,7 +557,7 @@
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
         f.tagText.innerText  = "Test(欄位設定)"
-        setupTags("seniorTags");
+        
       }
 
       //close modal
