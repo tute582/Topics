@@ -395,7 +395,7 @@
             <textarea name="health_note" rows="3"></textarea>
           </div>
           <div name="test" >
-            <input id="text" readonly>
+            <input id="text" >
           </div>
           <div class="form-group">
             <label>個性特質（可多選，最多6個）</label>
@@ -549,6 +549,7 @@
         const f = document.forms.elderForm;
         
         document.getElementById("text").value = d.preference_tags || "";
+        document.getElementById("text").readOnly=true
       
         f.elder_name.value = currentElder.elder_name || "";
         f.phone.value = currentElder.phone || "";
