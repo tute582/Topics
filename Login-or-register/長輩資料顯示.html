@@ -475,7 +475,7 @@
             /* ======== 顯示個人資料 ======== */
             const html = `
             <dl>
-              <dt>00姓名</dt><dd>${d.elder_name || ""}</dd>
+              <dt>01姓名</dt><dd>${d.elder_name || ""}</dd>
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${
@@ -567,7 +567,7 @@
           for (let i = 0; i < tagsL; i++) {
               for (let j = 0; j < divL; j++) {
                   if(tags[i] == div[j].innerText){
-                      tags[i].classList.add("selected")
+                      div[j].classList.add("selected")
                   }
               }
           }
