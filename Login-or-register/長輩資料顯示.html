@@ -556,7 +556,7 @@
         f.emergency_contact_phone.value =
           currentElder.emergency_contact_phone || "";
         f.health_note.value = currentElder.health_note || "";
-        f.tagText.innerText  = "Test(欄位設定)"
+        document.getElementsByName("tagText")[0].innerText = "Test(欄位設定)"
         
       }
 
