@@ -471,7 +471,7 @@
             /* ======== 顯示詳細資料 ======== */
             const html = `
             <dl>
-              <dt>11志工代碼</dt><dd>${d.vcode || ""}</dd>
+              <dt>12志工代碼</dt><dd>${d.vcode || ""}</dd>
               <dt>姓名</dt><dd class="edit">${d.volunteer_name || ""}</dd>
               <dt>電子郵件Email</dt><dd class="edit">${d.email || ""}</dd>
               <dt>連絡電話</dt><dd class="edit">${d.phone || ""}</dd>
@@ -549,7 +549,22 @@
           currentVolunteer.partner_experience || "";
         tagText.innerText  = currentVolunteer.personality || "";
         setupTags("volunteerTags");   
-    
+        TagText(tagText)
+      }
+      // Edit Modal tag預設
+      function TagText(text)
+      {
+          var tags = text.innerText.split(",");   //input
+          var tagsL = tags.length;  //input
+          const div = document.getElementsByClassName("tag")  //modal div
+          const divL =div.length;  //divl
+          for (let i = 0; i < tagsL; i++) {
+              for (let j = 0; j < divL; j++) {
+                  if(tags[i] == div[j].innerText){
+                      div[j].classList.add("selected")
+                  }
+              }
+          }
       }
 
       //close modal
