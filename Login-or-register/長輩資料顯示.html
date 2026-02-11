@@ -475,7 +475,7 @@
             /* ======== 顯示個人資料 ======== */
             const html = `
             <dl>
-              <dt>00姓名</dt><dd>${d.elder_name || ""}</dd>
+              <dt>01姓名</dt><dd>${d.elder_name || ""}</dd>
               <dt>連絡電話</dt><dd>${d.phone || ""}</dd>
               <dt>出生年月日</dt><dd>${d.birthday || ""}</dd>
               <dt>性別</dt><dd>${
@@ -547,7 +547,8 @@
         document.getElementById("elderModal").style.display = "flex";
         
         const f = document.forms.elderForm;
-        const tagText = document.getElementsByName("tagText")
+        const tagText = document.getElementsByName("tagText")  //function text
+        
         setupTags("seniorTags");
         
         f.elder_name.value = currentElder.elder_name || "";
@@ -559,12 +560,24 @@
         f.health_note.value = currentElder.health_note || "";
         tagText[0].innerText  = currentElder.preference_tags || "";
         // document.getElementsByName("tagText")[0].innerText = currentElder.preference_tags || "";
+        TagText(text)
       }
-      //Edit Modal tag預設
-      // function TagText(text)
-      // {
-      //   var textL = text.
-      // }
+      // Edit Modal tag預設
+      function TagText(tagText)
+      {
+          var textL = text.length;  //dbl
+          var tags = text.innerText.split(",");   //db
+          const div = document.getElementsByClassName("tag")  //modal div
+          const divL =div.length;  //divl
+          for (let i = 0; i < textL; i++) {
+              for (let j = 0; j < divL; j++) {
+                  if(tags[i] == div[j].innerText){
+                      tags[i].classList.add("selected")
+                  }
+              }
+          }
+          console.log(text.innerText)
+      }
 
       //close modal
       function closeElderModal() {
