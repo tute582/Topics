@@ -546,10 +546,11 @@
               const res = await fetch(`${BASE_API_URL}/volunteers/${uid}`);
               const json = await res.json();
               
-              if (json.success && json.data && json.data.available_time) {
+              // 【修改點：對接新的 available_times 欄位】
+              if (json.success && json.data && json.data.available_times) {
                   if (!calendarAvail) return;
 
-                  // 【關鍵修改 1】只清除 'available' 類型的事件，保留 'booked-sync' (灰色的預約)
+                  // 清除舊有的可服務事件
                   const currentEvents = calendarAvail.getEvents();
                   currentEvents.forEach(e => {
                       if (e.extendedProps.type === 'available') {
@@ -557,20 +558,30 @@
                       }
                   });
                   
-                  // 整理新資料
-                  const newEvents = json.data.available_time.map((slot, index) => ({
-                      id: `avail-${index}-${Date.now()}`,
-                      title: "開始可服務",
-                      start: slot.start, 
-                      end: slot.end,
-                      classNames: ['available-slot'],
-                      extendedProps: { note: "可預約", type: 'available' }
-                  }));
+                  // 【修改點：處理文字陣列格式 [ "2026-02-13 14:00", ... ]】
+                  const newEvents = json.data.available_times.map((startTimeStr, index) => {
+                      const startDate = new Date(startTimeStr.replace(' ', 'T')); // 轉為 ISO 可讀
+                      
+                      // 計算當天的 23:59:59 作為結束時間 (為了在日曆上畫出長度)
+                      const endDate = new Date(startDate);
+                      endDate.setHours(23, 59, 59);
+
+                      return {
+                          id: `avail-${index}-${Date.now()}`,
+                          title: "可服務時段",
+                          start: startDate, 
+                          end: endDate,
+                          classNames: ['available-slot'],
+                          extendedProps: { 
+                              note: "可預約 (整日)", 
+                              type: 'available',
+                              rawStart: startTimeStr // 保存原始字串以便 PATCH 時原樣送回
+                          }
+                      };
+                  });
                   
-                  // 新增事件到行事曆
                   newEvents.forEach(ev => calendarAvail.addEvent(ev));
 
-                  // 自動跳轉到最新資料日期
                   if (newEvents.length > 0) {
                       const firstEventDate = newEvents[0].start; 
                       calendarAvail.gotoDate(firstEventDate);
@@ -585,42 +596,48 @@
           }
       }
 
-      // 2. 更新志工可服務時段 (PATCH) - 新增或刪除後呼叫
+      // 2. 更新志工可服務時段 (PATCH) 
       async function updateAvailableTimeAPI(uid) {
-        if (!calendarAvail) return;
+          if (!calendarAvail) return;
 
-        // 從 Calendar 取出所有 'available' 的事件，轉回 API 需要的格式
-        const allAvailEvents = calendarAvail.getEvents().filter(e => e.extendedProps.type === 'available');
-        
-        const payloadData = allAvailEvents.map(e => ({
-            start: e.startStr, // ISO String (含時區)
-            end: e.endStr
-        }));
+          // 【修改點：只取出開始時間字串送回 API】
+          const allAvailEvents = calendarAvail.getEvents().filter(e => e.extendedProps.type === 'available');
+          
+          const payloadData = allAvailEvents.map(e => {
+              // 如果是剛新增的事件，處理格式
+              if (e.extendedProps.rawStart) return e.extendedProps.rawStart;
+              
+              const d = e.start;
+              const Y = d.getFullYear();
+              const M = String(d.getMonth() + 1).padStart(2, '0');
+              const D = String(d.getDate()).padStart(2, '0');
+              const HH = String(d.getHours()).padStart(2, '0');
+              const mm = String(d.getMinutes()).padStart(2, '0');
+              return `${Y}-${M}-${D} ${HH}:${mm}`;
+          });
 
-        try {
-            showLoading("更新中", "正在儲存您的班表...");
-            const res = await fetch(`${BASE_API_URL}/volunteers/${uid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ available_time: payloadData })
-            });
-            const result = await res.json();
-            
-            if (result.success) {
-                // 成功，不需要做什麼，因為 UI 已經先變更了
-                // 為了保險起見，也可以重新 fetch 一次，但為了流暢度先不做
-            } else {
-                showCustomAlert("更新失敗，請檢查網路連線");
-            }
-        } catch (error) {
-            console.error("Update API Error:", error);
-            showCustomAlert("更新發生錯誤");
-        } finally {
-            hideLoading();
-            updateMonthProgress();
-        }
+          try {
+              showLoading("更新中", "正在儲存您的班表...");
+              const res = await fetch(`${BASE_API_URL}/volunteers/${uid}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  // 【修改點：欄位名稱改為 available_times】
+                  body: JSON.stringify({ available_times: payloadData })
+              });
+              const result = await res.json();
+              
+              if (!result.success) {
+                  showCustomAlert("更新失敗：" + result.message);
+              }
+          } catch (error) {
+              console.error("Update API Error:", error);
+              showCustomAlert("更新發生錯誤");
+          } finally {
+              hideLoading();
+              updateMonthProgress();
+          }
       }
-
+      
       // 3. 取得所有預約資料 (GET)
       async function fetchAppointments(uid) {
         try {
@@ -978,7 +995,6 @@
       }
 
       function showTimeSlotModal(dateStr) {
-        // 建立 Modal 介面（移除結束時間欄位）
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay show';
         overlay.style.zIndex = 3000;
@@ -1018,74 +1034,6 @@
             overlay.querySelectorAll('.slot-select').forEach(b => b.style.opacity = '0.6');
             btn.style.opacity = '1';
           });
-        });
-
-        // =============== 確認按鈕的核心邏輯（只使用開始時間，預設長度 1 小時） ===============
-        overlay.querySelector('#slotConfirm').addEventListener('click', () => {
-          const s = startTimeInput.value;
-          
-          // 1. 基礎驗證（只驗證開始時間）
-          if (!s) { showCustomAlert('請填寫開始時間'); return; }
-          
-          const startDt = new Date(`${dateStr}T${s}:00`);
-          // 預設結束時間 = 開始時間 + 1 小時
-          const endDt = new Date(startDt.getTime() + 60 * 60 * 1000);
-          
-          if (startDt >= endDt) { showCustomAlert('結束時間必須晚於開始時間'); return; }
-          if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
-
-          // 2. 取得當天所有事件 (包含綠色Available 與 灰色Occupied)
-          const allEvents = calendarAvail ? calendarAvail.getEvents() : [];
-
-          // 3. 過濾出「當天」的所有事件（避免時區字串誤差）
-          const [targetYear, targetMonth, targetDay] = dateStr.split('-').map(Number);
-
-          const dailyEvents = allEvents.filter(ev => {
-            if (!ev.start) return false;
-            const d = ev.start;
-            const y = d.getFullYear();
-            const m = d.getMonth() + 1;
-            const day = d.getDate();
-            return y === targetYear && m === targetMonth && day === targetDay;
-          });
-
-          // 4. 【每日上限檢查】
-          if (dailyEvents.length >= 2) {
-            showCustomAlert(`新增失敗！\n日期：${dateStr}\n當天已排定 ${dailyEvents.length} 個時段\n(每日上限為 2 次)`);
-            return;
-          }
-
-          // 5. 【時段重疊檢查】
-          const newStartMs = startDt.getTime();
-          const newEndMs = endDt.getTime();
-
-          const hasOverlap = dailyEvents.some(ev => {
-            const exStartMs = ev.start.getTime();
-            const exEndMs = ev.end ? ev.end.getTime() : (exStartMs + 60 * 60 * 1000);
-            return (newStartMs < exEndMs && newEndMs > exStartMs);
-          });
-
-          if (hasOverlap) {
-            showCustomAlert('新增失敗：該時段與現有行程重疊！');
-            return;
-          }
-
-          // 6. 通過所有檢查，執行新增（包含自動結束時間）
-          const newEvent = {
-            id: `new-${Date.now()}`,
-            title: `開始可服務`, 
-            start: startDt, 
-            end: endDt, 
-            classNames: ['available-slot'], 
-            extendedProps: { note: '排班 (自訂)', type: 'available' }
-          };
-          
-          calendarAvail.addEvent(newEvent);
-          
-          // 呼叫 API 更新後端
-          updateAvailableTimeAPI(userId);
-
-          overlay.remove();
         });
       }
       
