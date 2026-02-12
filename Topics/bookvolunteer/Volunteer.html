@@ -1010,7 +1010,11 @@
               <button class="slot-select" data-start="14:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">下午</button>
               <button class="slot-select" data-start="18:00" style="padding:8px 12px;border-radius:8px;border:none;background:#6ee7b7;color:#333;cursor:pointer;font-weight:bold;">晚上</button>
             </div>
-            <div style="text-align:center;color:#666;margin-bottom:10px;">或選擇自訂開始時間（預設時長 1 小時）</div>
+            
+            <div id="timeHint" style="text-align:center;color:#0984e3;margin-bottom:10px;font-weight:bold;font-size:0.9em;">
+              請選擇或輸入開始時間
+            </div>
+
             <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:12px;">
               <input id="customStartTime" type="time" style="padding:8px;border:1px solid #ddd;border-radius:6px;" />
             </div>
@@ -1022,18 +1026,73 @@
         document.body.appendChild(overlay);
 
         const startTimeInput = overlay.querySelector('#customStartTime');
-        
-        const closeFunc = () => overlay.remove();
-        overlay.querySelector('#slotClose').addEventListener('click', closeFunc);
-        overlay.querySelector('#slotCancel').addEventListener('click', closeFunc);
+        const timeHint = overlay.querySelector('#timeHint');
 
-        // 快速按鈕事件（只設定開始時間）
+        // 2. 定義更新文字的函式
+        const updateHint = (timeValue) => {
+          if (timeValue) {
+            // 取得小時數，讓顯示更親切 (例如 09:00 -> 9點)
+            const hour = parseInt(timeValue.split(':')[0], 10);
+            timeHint.innerText = `自 ${hour} 點開始皆有空閒 (至當日 23:59)`;
+            timeHint.style.color = "#00b894"; // 變更顏色提示已選擇
+          } else {
+            timeHint.innerText = "或選擇自訂開始時間";
+            timeHint.style.color = "#666";
+          }
+        };
+
+        // 監聽時間輸入框變動
+        startTimeInput.addEventListener('input', (e) => {
+          updateHint(e.target.value);
+        });
+
+        // 監聽上午/下午/晚上按鈕點擊
         overlay.querySelectorAll('.slot-select').forEach(btn => {
           btn.addEventListener('click', () => {
-            startTimeInput.value = btn.dataset.start;
+            const selectedTime = btn.dataset.start;
+            startTimeInput.value = selectedTime;
+            updateHint(selectedTime); // 點擊按鈕同步更新文字
+            
             overlay.querySelectorAll('.slot-select').forEach(b => b.style.opacity = '0.6');
             btn.style.opacity = '1';
           });
+        });
+
+        // (其餘關閉與新增邏輯保持不變...)
+        const closeFunc = () => overlay.remove();
+        overlay.querySelector('#slotClose').addEventListener('click', closeFunc);
+        overlay.querySelector('#slotCancel').addEventListener('click', closeFunc);
+        
+        // 修改新增時段彈窗的確認邏輯
+        overlay.querySelector('#slotConfirm').addEventListener('click', () => {
+            const s = startTimeInput.value; // 例如 "14:00"
+            if (!s) { showCustomAlert('請選擇開始時間'); return; }
+            
+            const startTimeStr = `${dateStr} ${s}`; // 組合為 "2026-02-13 14:00"
+            const startDt = new Date(`${dateStr}T${s}:00`);
+            
+            if (startDt.getTime() <= Date.now()) { showCustomAlert('無法新增已過的時段'); return; }
+
+            // 計算結束時間 (當天 23:59) 給 FullCalendar 顯示用
+            const endDt = new Date(startDt);
+            endDt.setHours(23, 59, 59);
+
+            const newEvent = {
+                id: `new-${Date.now()}`,
+                title: `可服務 (自 ${s} 起)`, 
+                start: startDt, 
+                end: endDt, 
+                classNames: ['available-slot'], 
+                extendedProps: { 
+                    note: '排班', 
+                    type: 'available',
+                    rawStart: startTimeStr 
+                }
+            };
+            
+            calendarAvail.addEvent(newEvent);
+            updateAvailableTimeAPI(userId);
+            overlay.remove();
         });
       }
       
