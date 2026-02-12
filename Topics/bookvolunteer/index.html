@@ -1432,9 +1432,9 @@
             });
 
             const result = await res.json();
+            console.log("AI配對結果：", result);
             const matchedIds = result.volunteer_user_ids || [];
-            console.log("符合的志工 ID：", matchedIds);
-
+            
             const sorted = matchedIds
               .map((id) => volunteers.find((v) => v.userId === id))
               .filter((v) => v);
