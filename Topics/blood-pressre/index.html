@@ -1062,7 +1062,7 @@
         elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        recorded_time: toTaipeiTime(recorded_time),
+        recorded_time: recorded_time,
       };
 
       const tempRecord = {
@@ -1178,12 +1178,6 @@
           .sort(
             (a, b) => new Date(a.recorded_time) - new Date(b.recorded_time)
           );
-      }
-
-
-      //時區轉換  (SJY)
-      function toTaipeiTime(utcTime) {
-      return new Date(utcTime + "Z").toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
       }
 
       /* =================================================================
