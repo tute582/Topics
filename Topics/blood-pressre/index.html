@@ -1028,6 +1028,11 @@
       applyQuick("7");
     }
 
+      //時區轉換  (SJY)
+      function toTaipeiTime(utcTime) {
+      return new Date(utcTime + "Z").toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
+      }
+
     /* =================================================================
     5. 資料 CRUD 功能
     ================================================================= */
@@ -1062,7 +1067,7 @@
         elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        recorded_time: recorded_time,
+        recorded_time: toTaipeiTime(recorded_time),
       };
 
       const tempRecord = {
