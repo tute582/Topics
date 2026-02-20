@@ -222,17 +222,30 @@
             background-color: #fffde7 !important;
         }
 
+        /* --- 修正後的行程樣式：對應左圖紅框需求 --- */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
-            color: #2c3e50 !important;
             padding: 4px 6px !important; 
             margin: 2px 1px !important;
             display: flex !important;
             align-items: center !important;
             min-height: 28px !important;
             overflow: hidden !important;
+            width: 96% !important; /* 強制不擠出格線 */
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        /* 隱藏藍色小點點 */
+        .fc-daygrid-event-dot {
+            display: none !important;
+        }
+
+        /* 設定字體顏色為藍色（對應左圖） */
+        .fc-event-time, .fc-event-title {
+            color: #3b82f6 !important;
         }
 
         .fc-event-time {
@@ -498,6 +511,17 @@
                 dayMaxEvents: 2,
                 eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
                 moreLinkText: function(n) { return "+ " + n + " 更多"; },
+                
+                // --- 核心修正：解決 23:00~24:00 擠出格子的問題 ---
+                eventDidMount: function(info) {
+                    // 如果事件被判定為跨日(fc-h-event)且在月視圖，強制轉為單格 dot 樣式
+                    if (info.el.classList.contains('fc-h-event')) {
+                        info.el.classList.add('fc-daygrid-dot-event');
+                        info.el.classList.remove('fc-daygrid-block-event', 'fc-h-event');
+                    }
+                },
+                // ------------------------------------------
+
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
                 dateClick: function(info) { openDayView(info.dateStr); },
                 eventClick: function(info) {
