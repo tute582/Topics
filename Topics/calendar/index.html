@@ -113,7 +113,6 @@
             align-items: center !important;
         }
 
-        /* 關鍵修正：讓按鈕之間產生間距，不再黏在一起 */
         .fc-button {
             margin: 0 4px !important; 
             border-radius: 8px !important; 
@@ -196,7 +195,7 @@
             box-shadow: none !important;
         }
 
-        /* --- 日期格子與事件樣式修正 (修復 23:00 問題處) --- */
+        /* --- 日期格子樣式 --- */
         .fc-daygrid-day-top {
             display: flex !important;
             justify-content: center !important;
@@ -217,35 +216,45 @@
             background-color: #fffde7 !important;
         }
 
-        /* 關鍵：修正 23:00~24:00 顯示溢出 */
+        /* --- 關鍵修正：修正事件顯示效果，比照右圖 --- */
         .fc-daygrid-event {
             background-color: #79f2c0 !important;
             border: none !important;
             border-radius: 4px !important;
             color: #2c3e50 !important;
-            padding: 2px 4px !important; 
-            margin: 2px 1px !important;
-            display: block !important; /* 改為 block 確保時間與標題能自適應寬度 */
-            min-height: 24px !important;
+            padding: 1px 4px !important; 
+            margin: 1px 1px !important;
+            display: flex !important; /* 改回 flex 讓內容並排 */
+            align-items: center !important;
             overflow: hidden !important;
             white-space: nowrap !important;
+            min-height: 20px !important;
         }
 
+        /* 修正藍點樣式 */
+        .fc-daygrid-event-dot {
+            margin: 0 3px 0 0 !important;
+            border: 4px solid #4a90e2 !important; /* 藍色圓點 */
+        }
+
+        /* 修正時間文字 */
         .fc-event-time {
             font-weight: bold !important;
-            margin-right: 3px !important;
-            font-size: 11px !important; /* 微調字體大小，給予更多空間 */
-            display: inline-block !important;
+            margin-right: 2px !important;
+            font-size: 10px !important; /* 縮小一點確保並排 */
+            flex-shrink: 0 !important;
         }
 
+        /* 修正標題文字 */
         .fc-event-title {
-            font-size: 13px !important;
+            font-size: 12px !important;
             font-weight: 600 !important;
-            display: inline !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .fc-daygrid-more-link {
-            font-size: 13px !important;
+            font-size: 12px !important;
             font-weight: bold !important;
             color: #222 !important;
             padding-left: 5px !important;
@@ -489,6 +498,7 @@
                     return info.date.marker.getFullYear() + ' 年 ' + (info.date.marker.getMonth() + 1) + ' 月'; 
                 },
                 dayMaxEvents: 2,
+                // 強制時間顯示格式
                 eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
                 moreLinkText: function(n) { return "+ " + n + " 更多"; },
                 moreLinkClick: function(info) { openDayView(info.date.toISOString().split('T')[0]); return 'none'; },
