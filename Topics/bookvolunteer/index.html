@@ -763,7 +763,7 @@
       </div>
     </nav>
 
-    <h2 class="title" style="font-size: 24px">test輸入內容</h1>
+    <h2 class="title" style="font-size: 24px">Test輸入內容</h1>
     <form id="dataForm"onsubmit="return false;">
       <label
         >日期
@@ -1652,7 +1652,7 @@
             elder_name: userName,
             appointment_time: datetime,
             visit_type: departmentVal,
-            meeting_place: meetingPlaceVal,
+            // meeting_place: meetingPlaceVal,  SJY無此欄位
             meeting_address: addressFullVal,
             volunteer_user_id: volId,
             volunteer_name: volName,
@@ -1665,8 +1665,8 @@
           })
             .then(async (res) => {
               if(!res.ok){
-                const errorText = await res.json();
-                throw new Error(`${res.status},${JSON.stringify(errorText)}`);  //SJY 檢查API執行情形
+                // const errorText = await res.json();
+                throw new Error(`${res.status},${}`);  //SJY 檢查API執行情形
               }
               return res.json();})
             .then((data) => {
@@ -1676,7 +1676,7 @@
                 user: userName,
                 datetime: datetime,
                 department: departmentVal,
-                meetingPlace: meetingPlaceVal,
+                // meetingPlace: meetingPlaceVal, SJY無此欄位
                 address: addressFullVal,
                 event_id: data.data ? data.data.event_id : null,
               });
