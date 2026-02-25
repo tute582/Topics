@@ -1665,7 +1665,7 @@
           })
             .then((res) => {
               if(!res.ok){
-                const errorText = await res.json();
+                const errorText = res.json();
                 throw new Error(`${res.status},${errorText}`);  //SJY 檢查API執行情形
               }
               return})
