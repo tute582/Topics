@@ -1665,7 +1665,7 @@
           })
             .then((res) => {
               if(!res.ok){
-                throw new Error(`error:${res.status}`);  //SJY 檢查API執行情形
+                throw new Error(`error:${res.status},${res.statusText}`);  //SJY 檢查API執行情形
               }
               return res.json();})
             .then((data) => {
