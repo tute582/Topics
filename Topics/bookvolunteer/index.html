@@ -763,7 +763,7 @@
       </div>
     </nav>
 
-    <h2 class="title" style="font-size: 24px">Test輸入內容</h1>
+    <h2 class="title" style="font-size: 24px">輸入內容</h1>
     <form id="dataForm"onsubmit="return false;">
       <label
         >日期
@@ -1683,7 +1683,7 @@
             })
             .catch((err) => {
               console.error("預約失敗", err);
-              showAlert("預約請求失敗，請稍後再試");
+              showAlert(`預約請求失敗，請稍後再試 ${err}`);  //SJY
             });
         });
       })();
