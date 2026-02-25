@@ -763,7 +763,7 @@
       </div>
     </nav>
 
-    <h2 class="title" style="font-size: 24px">輸入內容</h1>
+    <h2 class="title" style="font-size: 24px">Test輸入內容</h1>
     <form id="dataForm"onsubmit="return false;">
       <label
         >日期
@@ -1663,7 +1663,11 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newBooking),
           })
-            .then((res) => res.json())
+            .then((res) => {
+              if(!res.ok){
+                throw new Error(`error:${res.status}`);  //SJY 檢查API執行情形
+              }
+              return res.json();})
             .then((data) => {
               console.log("預約成功", data);
               bookedList.push({
