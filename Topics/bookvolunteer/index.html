@@ -1665,8 +1665,8 @@
           })
             .then(async (res) => {
               if(!res.ok){
-                // const errorText = await res.json();
-                throw new Error(`${res.status},${}`);  //SJY 檢查API執行情形
+                const errorText = await res.json();
+                throw new Error(`${res.status},${errorText}`);  //SJY 檢查API執行情形
               }
               return res.json();})
             .then((data) => {
