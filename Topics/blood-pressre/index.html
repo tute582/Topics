@@ -519,7 +519,7 @@
     </nav>
 
     <div class="div-b">
-      <h1 class="title">輸入內容</h1>
+      <h1 class="title">01輸入內容</h1>
 
       <form id="bpForm">
         <div class="form-row date-row">
@@ -1112,8 +1112,10 @@
           } else {
             console.warn("後端回應錯誤：", result);
           }
+          alert(`API POST成功 , ${saved}`)  //SJY 查看log
         } catch (err) {
           console.error("API POST 錯誤：", err);
+          alert(`API POST失敗 ,${result}, ${err}`)  //SJY 查看error
         }
 
         form.reset();
