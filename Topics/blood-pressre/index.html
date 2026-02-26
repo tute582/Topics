@@ -1074,7 +1074,7 @@
           uuid: null,
           systolic,
           diastolic,
-          recorded_time,
+          recorded_time:toTaipeiTime(recorded_time),   //SJY
           status,
         };
         records.push(tempRecord);
@@ -1112,7 +1112,7 @@
           } else {
             console.warn("後端回應錯誤：", result);
           }
-          alert(`API POST成功`)  //SJY 查看log
+          alert(`API POST成功 , ${saved}`)  //SJY 查看log
         } catch (err) {
           console.error("API POST 錯誤：", err);
           alert(`API POST失敗 , ${err}`)  //SJY 查看error
