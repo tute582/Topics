@@ -1028,11 +1028,6 @@
       applyQuick("7");
     }
 
-      //時區轉換  (SJY)
-      function toTaipeiTime(utcTime) {
-      return new Date(utcTime + "Z").toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
-      }
-
     /* =================================================================
     5. 資料 CRUD 功能
     ================================================================= */
@@ -1067,14 +1062,14 @@
         elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        recorded_time:dateVal,   
+        recorded_time: recorded_time,
       };
 
       const tempRecord = {
           uuid: null,
           systolic,
           diastolic,
-          recorded_time, 
+          recorded_time,
           status,
         };
         records.push(tempRecord);
@@ -1099,8 +1094,7 @@
               elder_name: saved.elder_name,
               systolic: saved.systolic,
               diastolic: saved.diastolic,
-              recorded_time: saved.recorded_time, 
-              
+              recorded_time: saved.recorded_time,
               status: getStatus(saved.systolic, saved.diastolic),
               created_at: saved.created_at,
               remarks: saved.remarks || null,
@@ -1113,10 +1107,8 @@
           } else {
             console.warn("後端回應錯誤：", result);
           }
-          alert(`API POST成功 , ${saved}`)  //SJY 查看log
         } catch (err) {
           console.error("API POST 錯誤：", err);
-          alert(`API POST失敗 ,${result}, ${err}`)  //SJY 查看error
         }
 
         form.reset();
@@ -1186,6 +1178,12 @@
           .sort(
             (a, b) => new Date(a.recorded_time) - new Date(b.recorded_time)
           );
+      }
+
+
+      //時區轉換  (SJY)
+      function toTaipeiTime(utcTime) {
+      return new Date(utcTime + "Z").toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
       }
 
       /* =================================================================
