@@ -519,7 +519,7 @@
     </nav>
 
     <div class="div-b">
-      <h1 class="title">01輸入內容</h1>
+      <h1 class="title">輸入內容</h1>
 
       <form id="bpForm">
         <div class="form-row date-row">
@@ -1067,7 +1067,7 @@
         elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        recorded_time:toTaipeiTime(dateVal),    //SJY Test
+        recorded_time:dateVal,   
       };
 
       const tempRecord = {
@@ -1099,7 +1099,8 @@
               elder_name: saved.elder_name,
               systolic: saved.systolic,
               diastolic: saved.diastolic,
-              recorded_time: saved.recorded_time,    //SJY table
+              recorded_time: saved.recorded_time, 
+              
               status: getStatus(saved.systolic, saved.diastolic),
               created_at: saved.created_at,
               remarks: saved.remarks || null,
