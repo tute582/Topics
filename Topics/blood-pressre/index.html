@@ -1074,7 +1074,7 @@
           uuid: null,
           systolic,
           diastolic,
-          recorded_time:toTaipeiTime(recorded_time),   //SJY
+          recorded_time, 
           status,
         };
         records.push(tempRecord);
@@ -1099,7 +1099,7 @@
               elder_name: saved.elder_name,
               systolic: saved.systolic,
               diastolic: saved.diastolic,
-              recorded_time: saved.recorded_time,
+              recorded_time: toTaipeiTime(saved.recorded_time),    //SJY Test  
               status: getStatus(saved.systolic, saved.diastolic),
               created_at: saved.created_at,
               remarks: saved.remarks || null,
