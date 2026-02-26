@@ -1067,7 +1067,7 @@
         elder_name: userName,
         systolic: systolic,
         diastolic: diastolic,
-        recorded_time:recorded_time,
+        recorded_time:toTaipeiTime(dateVal),    //SJY Test
       };
 
       const tempRecord = {
@@ -1099,7 +1099,7 @@
               elder_name: saved.elder_name,
               systolic: saved.systolic,
               diastolic: saved.diastolic,
-              recorded_time: toTaipeiTime(saved.recorded_time),    //SJY Test  
+              recorded_time: saved.recorded_time,    //SJY table
               status: getStatus(saved.systolic, saved.diastolic),
               created_at: saved.created_at,
               remarks: saved.remarks || null,
