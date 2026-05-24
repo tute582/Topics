@@ -778,17 +778,19 @@
             const result = await response.json();
             
             if (result.success && Array.isArray(result.data)) {
-                dummyData = result.data.map(item => ({
-                    event_id: item.event_id,
-                    visit_time: item.visit_time,
-                    hospital_name: item.hospital_name || "",
-                    doctor_name: item.doctor_name,
-                    department: item.department,
-                    visit_details: item.visit_details,
-                    remarks: item.remarks,
-                    next_visit: item.next_visit_time,
-                    image_base64: item.image_base64
-                }));
+                dummyData = result.data
+                    .filter(item => item && item.event_id && item.visit_time) 
+                    .map(item => ({
+                        event_id: item.event_id,
+                        visit_time: item.visit_time,
+                        hospital_name: item.hospital_name || "",
+                        doctor_name: item.doctor_name,
+                        department: item.department,
+                        visit_details: item.visit_details,
+                        remarks: item.remarks,
+                        next_visit: item.next_visit_time,
+                        image_base64: item.image_base64
+                    }));
                 renderCards(dummyData);
             } else {
                 console.warn("API 回傳成功但無資料或格式錯誤", result);
