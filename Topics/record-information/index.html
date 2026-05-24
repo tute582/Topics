@@ -1165,9 +1165,7 @@
         if (event.data.type === 'resize-iframe') {
           const iframe = document.getElementById('cameraFrame');
           if (iframe) {
-            // 注意：因為我們已經設定了固定高度來對齊按鈕，這裡的自動調整高度可以視情況保留或註解掉
-            // 如果您的 UpdateImage.html 內容會變很多，可能需要特別處理，但目前為按鈕形式建議固定
-            // iframe.style.height = (event.data.height + 20) + 'px';
+            iframe.style.height = (event.data.height + 20) + 'px';
           }
         }
 
