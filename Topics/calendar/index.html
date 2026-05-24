@@ -639,7 +639,7 @@
                 document.getElementById("event").value = data.title;
                 document.getElementById("note").value = data.extendedProps.note || "";
                 document.getElementById("repeat").value = data.extendedProps.repeat || "none";
-                document.getElementById("reminder").value = data.extendedProps.reminder || "none";
+                document.getElementById("reminder").value = data.extendedProps.reminder || "0min";
             } else {
                 document.getElementById("dataForm").reset();
                 if (typeof data === 'string') {
