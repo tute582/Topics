@@ -433,7 +433,7 @@
                 <div class="select-wrapper">
                     <select id="reminder">
                         <option value="none">無</option>
-                        <option value="0min" selected>當下提醒</option>
+                        <option value="0min">當下提醒</option>
                         <option value="30min">30 分鐘前</option>
                         <option value="1h">1 小時前</option>
                         <option value="day">1 天前</option>
@@ -642,6 +642,11 @@
                 document.getElementById("reminder").value = data.extendedProps.reminder || "none";
             } else {
                 document.getElementById("dataForm").reset();
+                
+                // 🌟 關鍵修改：強制用 JavaScript 確保每次新增時，這兩個欄位一定回到預設值
+                document.getElementById("reminder").value = "0min";
+                document.getElementById("repeat").value = "none"; 
+
                 if (typeof data === 'string') {
                     document.getElementById("date").value = data;
                 } else {
